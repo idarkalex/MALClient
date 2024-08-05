@@ -39,7 +39,7 @@ namespace MALClient.XShared.NavArgs
         /// <returns></returns>
         public async Task Prepare()
         {
-            Id = await new AnimeDetailsHummingbirdQuery(Id).GetHummingbirdId();
+
         }
     }
 }

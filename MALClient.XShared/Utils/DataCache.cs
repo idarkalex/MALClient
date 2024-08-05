@@ -50,7 +50,6 @@ namespace MALClient.XShared.Utils
         {
 			await DataCacheService.ClearApiRelatedCache();
             _volatileDataCache.Clear();
-            AnimeDetailsHummingbirdQuery.MalToHumId?.Clear();
         }
 
         public static async Task ClearAnimeListData()
@@ -520,7 +519,7 @@ namespace MALClient.XShared.Utils
         {
             try
             {
-                await DataCacheService.SaveData(AnimeDetailsHummingbirdQuery.MalToHumId, "mal_to_hum.json", "");
+                //await DataCacheService.SaveData(AnimeDetailsHummingbirdQuery.MalToHumId, "mal_to_hum.json", "");
             }
             catch (Exception)
             {
@@ -539,7 +538,7 @@ namespace MALClient.XShared.Utils
             {
                 result = new Dictionary<int, int>();
             }
-            AnimeDetailsHummingbirdQuery.MalToHumId = result ?? new Dictionary<int, int>();
+            //AnimeDetailsHummingbirdQuery.MalToHumId = result ?? new Dictionary<int, int>();
         }
 
         #endregion

@@ -581,8 +581,9 @@ namespace MALClient.XShared.Comm.Profile
 
         public async Task<string> GetHummingBirdAvatarUrl()
         {
-            var raw = await GetRequestResponse();
-            return ((dynamic)JsonConvert.DeserializeObject(raw)).avatar.ToString();
+            return "";
+            // var raw = await GetRequestResponse();
+            // return ((dynamic)JsonConvert.DeserializeObject(raw)).avatar.ToString();
         }
 
         public async Task<HumProfileData> GetHumProfileData(bool force = false)

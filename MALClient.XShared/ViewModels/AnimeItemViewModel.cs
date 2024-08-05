@@ -883,7 +883,7 @@ namespace MALClient.XShared.ViewModels
             var id = Id;
             if (_seasonalState && Settings.SelectedApiType == ApiType.Hummingbird) //id switch
             {
-                id = await new AnimeDetailsHummingbirdQuery(id).GetHummingbirdId();
+
             }
             var navArgs = new AnimeDetailsPageNavigationArgs(id, Title, null, this,
                 argsOverride ?? ViewModelLocator.GeneralMain.GetCurrentListOrderParams())

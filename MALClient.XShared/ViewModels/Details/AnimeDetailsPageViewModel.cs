@@ -436,7 +436,7 @@ namespace MALClient.XShared.ViewModels.Details
             if (Settings.SelectedApiType == ApiType.Hummingbird)
                 //recoms and review have mal id so we have to walk around thid
             {
-                args.Id = await new AnimeDetailsHummingbirdQuery(args.Id).GetHummingbirdId();
+
             }
             ViewModelLocator.GeneralMain
                 .Navigate(PageIndex.PageAnimeDetails,

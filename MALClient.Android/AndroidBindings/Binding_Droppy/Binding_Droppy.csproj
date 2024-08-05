@@ -13,7 +13,7 @@
     <RootNamespace>Binding_Droppy</RootNamespace>
     <AssemblyName>Binding_Droppy</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkVersion>v11.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
     <AndroidClassParser>class-parse</AndroidClassParser>
     <AndroidCodegenTarget>XAJavaInterop1</AndroidCodegenTarget>
     <NoWarn>CS0109</NoWarn>

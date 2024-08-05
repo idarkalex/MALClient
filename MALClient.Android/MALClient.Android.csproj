@@ -17,8 +17,7 @@
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v13.0</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
@@ -384,10 +383,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Binding_InMobi\Binding_InMobi.csproj">
-      <Project>{ae5be2b1-eb85-402f-a1f2-bce1513a9bb0}</Project>
-      <Name>Binding_InMobi</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MALClient.Adapters\MALClient.Adapters.csproj">
       <Project>{9f8e953e-47a6-4f72-a2fe-bef7a2dae850}</Project>
       <Name>MALClient.Adapters</Name>
