@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MALClient.Models.Enums;
@@ -40,32 +42,84 @@ namespace MALClient.XShared.Comm.Anime
             doc.LoadHtml(raw);
             try
             {
-                var relationsNode = doc.DocumentNode.Descendants("table")
+                var relationsNode = doc.DocumentNode.Descendants("div")
                     .First(
                         node =>
                             node.Attributes.Contains("class") &&
                             node.Attributes["class"].Value ==
-                            "anime_detail_related_anime");
+                            "related-entries");
 
 
                 try
                 {
-                    var trs = relationsNode.Descendants("tr").ToList();
+                    var tile = relationsNode.Descendants("div")
+                        .First(
+                            node =>
+                                node.Attributes.Contains("class") &&
+                                node.Attributes["class"].Value ==
+                                "entries-tile");
+                    var tileContents = tile.Descendants("div")
+                        .Where(
+                            node =>
+                                node.Attributes.Contains("class") &&
+                                node.Attributes["class"].Value ==
+                                "content").ToList();
 
+                    foreach (var content in tileContents)
+                    {
+                        var relationDiv = content.Descendants("div")
+                        .First(
+                            node =>
+                                node.Attributes.Contains("class") &&
+                                node.Attributes["class"].Value ==
+                                "relation");
+
+                        var relation = WebUtility.HtmlDecode(relationDiv.InnerText.Trim());
+                        relation = Regex.Replace(relation.Trim(), @"\t|\n|\r|  ", "");
+
+                        var titleDiv = content.Descendants("div")
+                        .First(
+                            node =>
+                                node.Attributes.Contains("class") &&
+                                node.Attributes["class"].Value ==
+                                "title");
+
+                        var linkNode = titleDiv.Descendants("a").First();
+
+                        var current = new RelatedAnimeData();
+                        current.WholeRelation = relation;
+                        var link = linkNode.Attributes["href"].Value.Split('/');
+                        current.Type = link[3] == "anime"
+                            ? RelatedItemType.Anime
+                            : link[3] == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
+                        current.Id = Convert.ToInt32(link[4]);
+                        current.Title = WebUtility.HtmlDecode(linkNode.InnerText.Trim().Trim('\n'));
+                        output.Add(current);
+                    }
+                }
+                catch (Exception)
+                {
+                    //mystery
+                }
+
+                try
+                {
+                    var table = relationsNode.Descendants("table").First();
+                    var trs = table.Descendants("tr").ToList();
 
                     foreach (var t in trs)
                     {
-                        var tds = t.Descendants("td").ToList(); 
+                        var tds = t.Descendants("td").ToList();
                         var relation = WebUtility.HtmlDecode(tds[0].InnerText.Trim());
                         foreach (var linkNode in tds[1].Descendants("a"))
                         {
                             var current = new RelatedAnimeData();
                             current.WholeRelation = relation;
                             var link = linkNode.Attributes["href"].Value.Split('/');
-                            current.Type = link[1] == "anime"
+                            current.Type = link[3] == "anime"
                                 ? RelatedItemType.Anime
-                                : link[1] == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
-                            current.Id = Convert.ToInt32(link[2]);
+                                : link[3] == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
+                            current.Id = Convert.ToInt32(link[4]);
                             current.Title = WebUtility.HtmlDecode(linkNode.InnerText.Trim());
                             output.Add(current);
                         }
@@ -75,7 +129,7 @@ namespace MALClient.XShared.Comm.Anime
                 {
                     //mystery
                 }
-                
+
             }
             catch (Exception)
             {

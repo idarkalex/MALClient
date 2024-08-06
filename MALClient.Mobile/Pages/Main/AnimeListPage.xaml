@@ -145,6 +145,7 @@
                         <ToggleMenuFlyoutItem x:Name="SortNone" Text="None" Click="SelectSortMode" Style="{StaticResource SortBtnStyle}"/>
                         <MenuFlyoutSeparator Margin="-90,0,0,0" Width="150"/>
                         <ToggleMenuFlyoutItem x:Name="BtnOrderDescending" Text="Descending" Click="ChangeSortOrder" Style="{StaticResource SortBtnStyle}"/>
+                        <ToggleMenuFlyoutItem x:Name="BtnHideUncompleted" Text="Uncompleted" Click="ChangeSortOrder" Style="{StaticResource SortBtnStyle}"/>
                     </MenuFlyout>
                 </AppBarButton.Flyout>
             </AppBarButton>

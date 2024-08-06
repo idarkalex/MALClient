@@ -229,6 +229,15 @@ namespace MALClient.Android.Fragments
             descendingToggle.WithTextColorRes(ResourceExtension.BrushTextRes);
             items.Add(descendingToggle);
 
+            var hideCompletedToggle = new SwitchDrawerItem();
+            hideCompletedToggle.WithName("Hide Not Completed");
+            hideCompletedToggle.WithChecked(ViewModel.HideNotAired);
+            hideCompletedToggle.WithOnCheckedChangeListener(
+                new DrawerCheckedChangeListener(HideNotAiredToggleOnCheckedChange));
+            hideCompletedToggle.WithIdentifier(998878);
+            hideCompletedToggle.WithTextColorRes(ResourceExtension.BrushTextRes);
+            items.Add(hideCompletedToggle);
+
             RightDrawer.SetItems(items);
             RightDrawer.SetSelection((int)ViewModel.SortOption);
 
@@ -242,6 +251,11 @@ namespace MALClient.Android.Fragments
                 if (arg3.Identifier == 998877)
                 {
                     ViewModel.SortDescending = !ViewModel.SortDescending;
+                    ViewModel.RefreshList();
+                }
+                else if (arg3.Identifier == 998878) 
+                {
+                    ViewModel.HideNotAired = !ViewModel.HideNotAired;
                     ViewModel.RefreshList();
                 }
                 else
@@ -262,6 +276,12 @@ namespace MALClient.Android.Fragments
         private void DescendingToggleOnCheckedChange(IDrawerItem item, bool check)
         {
             ViewModel.SortDescending = check;
+            ViewModel.RefreshList();
+        }
+
+        private void HideNotAiredToggleOnCheckedChange(IDrawerItem item, bool check)
+        {
+            ViewModel.HideNotAired = check;
             ViewModel.RefreshList();
         }
 

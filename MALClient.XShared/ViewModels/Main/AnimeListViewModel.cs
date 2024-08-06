@@ -444,7 +444,10 @@ namespace MALClient.XShared.ViewModels.Main
 
             items = items.Where(item => status == AnimeStatus.AllOrAiring || item.MyStatus == status || (item.IsRewatching && status == AnimeStatus.Watching));
 
-            if(!queryCondition)
+            if (HideNotAired)
+                items = items.Where(item => item.AirDay == -1 && item.AllEpisodes != 0);
+
+            if (!queryCondition)
                 _prevAnimeStatus = status;
 
             if (queryCondition)

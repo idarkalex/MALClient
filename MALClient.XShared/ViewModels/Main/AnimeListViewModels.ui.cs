@@ -280,6 +280,18 @@ namespace MALClient.XShared.ViewModels.Main
             }
         }
 
+        private bool _hideNotAired;
+
+        public bool HideNotAired
+        {
+            get { return _hideNotAired; }
+            set
+            {
+                _hideNotAired = value;
+                RaisePropertyChanged(() => HideNotAired);
+            }
+        }
+
         private string _sort3Label = "Watched";
 
         public string Sort3Label

@@ -10,6 +10,7 @@ namespace MALClient.XShared.NavArgs
         public int SelectedItemIndex = -1;
         public bool ResetBackNav = true;
         public readonly bool Descending;
+        public readonly bool HideNotAired;
         public readonly bool NavArgs;
         public readonly int Status;
         public readonly int? StatusIndex;
