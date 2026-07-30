@@ -16,26 +16,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Visual Studio Xamarin workload
-        shell: pwsh
-        run: |
-          $vsInstaller = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
-          $vsPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
-          $arguments = @(
-            "modify"
-            "--installPath", $vsPath
-            "--installWhileRunning"
-            "--add", "Microsoft.VisualStudio.Workload.Xamarin"
-            "--quiet"
-            "--norestart"
-            "--wait"
-          )
-          $process = Start-Process -FilePath $vsInstaller -ArgumentList $arguments -Wait -PassThru
-          if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
-            Write-Host "VS installer exit code: $($process.ExitCode)"
-            throw "Failed to install Xamarin workload"
-          }
-          Write-Host "Xamarin workload installed successfully"
+      - name: Setup Xamarin Android
+        uses: xamarin/setup-xamarin@v2
+        with:
+          xamarin-android: true
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
