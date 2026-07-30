@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageTargetFallback>$(PackageTargetFallback);portable-win+net45+wp8+win81+wpa8</PackageTargetFallback>
+        <AssetTargetFallback>$(AssetTargetFallback);portable-win+net45+wp8+win81+wpa8</AssetTargetFallback>
         <LangVersion>latest</LangVersion>
     </PropertyGroup> 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='AndroidRelease|AnyCPU'">
@@ -25,9 +25,7 @@
       <Reference Include="libvideo">
         <HintPath>Lib\libvideo.dll</HintPath>
       </Reference>
-      <Reference Include="Microsoft.CSharp">
-        <HintPath>..\..\..\..\..\..\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\ReferenceAssemblies\Microsoft\Framework\MonoAndroid\v1.0\Microsoft.CSharp.dll</HintPath>
-      </Reference>
+      <Reference Include="Microsoft.CSharp" />
       <Reference Include="ModernHttpClient">
         <HintPath>..\..\..\.nuget\packages\modernhttpclient\2.4.2\lib\MonoAndroid\ModernHttpClient.dll</HintPath>
       </Reference>
