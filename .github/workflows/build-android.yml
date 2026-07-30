@@ -16,6 +16,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Xamarin Android workload
+        run: dotnet workload install maui-android
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
