@@ -37,20 +37,34 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore MALClient.sln
 
-      - name: Debug MSBuild setup
+      - name: Debug build environment
         shell: pwsh
         run: |
-          Get-Command msbuild.exe | Select-Object Source
-          Write-Host "=== Checking Xamarin targets ==="
-          $p = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Xamarin\Android"
-          if (Test-Path $p) { Get-ChildItem $p -Filter "*.targets" | Select-Object Name }
-          else { Write-Host "Xamarin targets NOT found at $p" }
+          $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
+          $vsPath = & $vswhere -latest -products * -property installationPath
+          Write-Host "VS Path: $vsPath"
+          Write-Host "=== MSBuild ==="
+          Get-Command msbuild.exe | Select-Object Source, FileVersionInfo
+          Write-Host "=== Xamarin targets (64-bit) ==="
+          $p64 = "$vsPath\MSBuild\Xamarin\Android"
+          if (Test-Path $p64) { Get-ChildItem $p64 -Filter "*.targets" | Select-Object Name }
+          else { Write-Host "NOT found at $p64" }
+          $p86 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Xamarin\Android"
+          Write-Host "=== Xamarin targets (32-bit) ==="
+          if (Test-Path $p86) { Get-ChildItem $p86 -Filter "*.targets" | Select-Object Name }
+          else { Write-Host "NOT found at $p86" }
+          Write-Host "=== Android SDK ==="
+          if ($env:ANDROID_HOME) { Write-Host "ANDROID_HOME=$env:ANDROID_HOME" }
+          else { Write-Host "ANDROID_HOME not set" }
+          if (Test-Path "C:\Program Files (x86)\Android\android-sdk") { Write-Host "Android SDK at default path" }
 
       - name: Build Android APK (Release)
         shell: cmd
         run: |
-          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a"
-          if errorlevel 1 exit /b 1
+          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" /v:d > "%RUNNER_TEMP%\msbuild-out.txt" 2>&1
+          set ERR=%ERRORLEVEL%
+          type "%RUNNER_TEMP%\msbuild-out.txt"
+          if %ERR% neq 0 exit /b 1
 
       - name: Sign APK (if keystore secrets provided)
         if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
