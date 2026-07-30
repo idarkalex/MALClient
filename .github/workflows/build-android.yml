@@ -1,0 +1,75 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [mal-alternative-api]
+    tags: ['v*']
+  pull_request:
+    branches: [mal-alternative-api]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore MALClient.sln
+
+      - name: Build Android APK (Release)
+        run: msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" /m
+
+      - name: Sign APK (if keystore secrets provided)
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        shell: pwsh
+        run: |
+          $keystorePath = "$env:RUNNER_TEMP\keystore.jks"
+          [System.IO.File]::WriteAllBytes($keystorePath, [System.Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
+          $buildTools = Get-ChildItem "$env:ANDROID_HOME\build-tools" -Directory | Sort-Object Name -Descending | Select-Object -First 1
+          $apksigner = Join-Path $buildTools.FullName "apksigner.bat"
+          $apks = Get-ChildItem -Path "MALClient.Android\bin\AndroidRelease" -Filter "*.apk" -Recurse
+          foreach ($apk in $apks) {
+            & $apksigner sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEY_PASSWORD" $apk.FullName
+            Write-Host "Signed: $($apk.Name)"
+          }
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MALClient-Android-Release
+          path: MALClient.Android\bin\AndroidRelease\*.apk
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MALClient-Android-Release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *.apk
+          generate_release_notes: true

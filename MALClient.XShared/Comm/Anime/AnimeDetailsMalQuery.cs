@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
 
@@ -14,15 +14,10 @@ namespace MALClient.XShared.Comm.Anime
         private readonly int _id;
         private readonly bool _anime;
 
-        public AnimeDetailsMalQuery(int id,bool anime)
+        public AnimeDetailsMalQuery(int id, bool anime)
         {
             _id = id;
             _anime = anime;
-            Request =
-                WebRequest.Create(
-                    Uri.EscapeUriString($"https://myanimelist.net/{(anime ? "anime" : "manga")}/{id}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public async Task<AnimeScrappedDetails> GetDetails(bool force)
@@ -32,100 +27,138 @@ namespace MALClient.XShared.Comm.Anime
             if (possibleData != null)
                 return possibleData;
 
-            var output = new AnimeScrappedDetails();
-            var raw = await GetRequestResponse();
-            if (string.IsNullOrEmpty(raw))
-                return null;
-            var doc = new HtmlDocument();
-            doc.LoadHtml(raw);
+            var output = new AnimeScrappedDetails { Id = _id };
 
-            output.Id = _id;
-
-            bool recording = false;
-            string currentString = "";
-            int currentStage = 0;
             try
             {
-                foreach (var child in doc.FirstOfDescendantsWithClass("td", "borderClass").FirstChild.ChildNodes)
+                if (!_anime)
                 {
-
-                    if (!recording)
-                    {
-                        if (child.Attributes.Contains("class") &&
-                            child.Attributes["class"].Value.Contains("js-sns-icon-container"))
-                            recording = true;
-                        continue;
-                    }
-                    if (child.Name == "div" && child.Attributes.Contains("class") && child.Attributes["class"].Value.Contains("mauto"))
-                        break;
-
-                    if (child.Name == "h2")
-                    {
-                        currentStage++;
-                        continue;
-                    }
-                    if (child.Name == "div")
-                    {
-                        var doubleGenreNodes = child.Descendants("span")
-                            .Where(node => node.Attributes.Contains("itemprop"))
-                            .ToList();
-                        try
-                        {
-                            foreach (var node in doubleGenreNodes)
-                            {
-                                child.RemoveChild(node);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            
-                        }
-
-                        currentString = Regex.Replace(WebUtility.HtmlDecode(child.InnerText.Replace('\n', ' ').Trim()), @"[ ]{2,}", " ");
-                        switch (currentStage)
-                        {
-                            case 1:
-                                output.AlternativeTitles.Add(currentString);
-                                break;
-                            case 2:
-                                output.Information.Add(currentString);
-                                break;
-                            case 3:
-                                output.Statistics.Add(currentString);
-                                break;
-                        }
-                    }
-
-
+                    DataCache.SaveData(output, _id.ToString(), "anime_details_scrapped");
+                    return output;
                 }
 
-                if (_anime)
+                var data = await JikanClient.GetDataAsync($"anime/{_id}");
+
+                var type = GetString(data, "type");
+                var episodes = GetString(data, "episodes");
+                var status = GetString(data, "status");
+                var aired = "";
+                if (data.TryGetProperty("aired", out var airedObj))
                 {
-                    foreach (var row in doc.FirstOfDescendantsWithClass("div", "theme-songs js-theme-songs ending").Descendants("td"))
+                    var from = GetString(airedObj, "from");
+                    var to = GetString(airedObj, "to");
+                    if (!string.IsNullOrEmpty(from))
                     {
-                        if (row.ChildNodes.Any(n => n.HasClass("theme-song-artist")))
-                        {
-                            if (!string.IsNullOrWhiteSpace(row.InnerText))
-                                output.Endings.Add(WebUtility.HtmlDecode(row.InnerText.Trim()));
-                        }
+                        aired = from;
+                        if (!string.IsNullOrEmpty(to))
+                            aired += " to " + to;
                     }
-                    foreach (var row in doc.FirstOfDescendantsWithClass("div", "theme-songs js-theme-songs opnening").Descendants("td"))
+                }
+                var premiered = GetString(data, "season") ?? "";
+                if (data.TryGetProperty("year", out var yearProp) && yearProp.ValueKind == JsonValueKind.Number)
+                    premiered = $"{premiered} {yearProp.GetInt32()}".Trim();
+                var broadcast = "";
+                if (data.TryGetProperty("broadcast", out var bc))
+                {
+                    var day = GetString(bc, "day");
+                    var time = GetString(bc, "time");
+                    if (!string.IsNullOrEmpty(day))
+                        broadcast = $"{day} at {time} (JST)";
+                }
+                var producers = GetNameList(data, "producers");
+                var licensors = GetNameList(data, "licensors");
+                var studios = GetNameList(data, "studios");
+                var source = GetString(data, "source");
+                var genres = GetNameList(data, "genres");
+                var themes = GetNameList(data, "themes");
+                var demographics = GetNameList(data, "demographics");
+                var duration = GetString(data, "duration");
+                var rating = GetString(data, "rating");
+                var popularity = GetInt(data, "popularity");
+                var scoredBy = GetInt(data, "scored_by");
+                var rank = GetInt(data, "rank");
+                var members = GetInt(data, "members");
+                var favorites = GetInt(data, "favorites");
+
+                var info = new List<string>();
+                if (!string.IsNullOrEmpty(type)) info.Add($"Type: {type}");
+                if (!string.IsNullOrEmpty(episodes) && episodes != "0") info.Add($"Episodes: {episodes}");
+                if (!string.IsNullOrEmpty(status)) info.Add($"Status: {status}");
+                if (!string.IsNullOrEmpty(aired)) info.Add($"Aired: {aired}");
+                if (!string.IsNullOrEmpty(premiered)) info.Add($"Premiered: {premiered}");
+                if (!string.IsNullOrEmpty(broadcast)) info.Add($"Broadcast: {broadcast}");
+                if (producers.Count > 0) info.Add($"Producers: {string.Join(", ", producers)}");
+                if (licensors.Count > 0) info.Add($"Licensors: {string.Join(", ", licensors)}");
+                if (studios.Count > 0) info.Add($"Studios: {string.Join(", ", studios)}");
+                if (!string.IsNullOrEmpty(source)) info.Add($"Source: {source}");
+                if (genres.Count > 0) info.Add($"Genres: {string.Join(", ", genres)}");
+                if (themes.Count > 0) info.Add($"Themes: {string.Join(", ", themes)}");
+                if (demographics.Count > 0) info.Add($"Demographics: {string.Join(", ", demographics)}");
+                if (!string.IsNullOrEmpty(duration)) info.Add($"Duration: {duration}");
+                if (!string.IsNullOrEmpty(rating)) info.Add($"Rating: {rating}");
+                output.Information.AddRange(info);
+
+                var stats = new List<string>();
+                if (!string.IsNullOrEmpty(scoreBy.ToString())) stats.Add($"Score: {GetDouble(data, "score"):N2} (scored by {scoredBy:N0} users)");
+                if (rank > 0) stats.Add($"Rank: #{rank}");
+                if (popularity > 0) stats.Add($"Popularity: #{popularity}");
+                if (members > 0) stats.Add($"Members: {members:N0}");
+                if (favorites > 0) stats.Add($"Favorites: {favorites:N0}");
+                output.Statistics.AddRange(stats);
+
+                output.AlternativeTitles.Add(GetString(data, "title_japanese"));
+                var english = GetString(data, "title_english");
+                if (!string.IsNullOrEmpty(english))
+                    output.AlternativeTitles.Add(english);
+
+                try
+                {
+                    var themesData = await JikanClient.GetDataAsync($"anime/{_id}/themes");
+                    if (themesData.TryGetProperty("openings", out var ops))
                     {
-                        if (row.ChildNodes.Any(n => n.HasClass("theme-song-artist")))
-                        {
-                            if (!string.IsNullOrWhiteSpace(row.InnerText))
-                                output.Openings.Add(WebUtility.HtmlDecode(row.InnerText.Trim()));
-                        }
+                        foreach (var op in ops.EnumerateArray())
+                            output.Openings.Add(op.GetString() ?? "");
                     }
+                    if (themesData.TryGetProperty("endings", out var eds))
+                    {
+                        foreach (var ed in eds.EnumerateArray())
+                            output.Endings.Add(ed.GetString() ?? "");
+                    }
+                }
+                catch
+                {
+                    // themes may not be available
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                //hatemeł
+                // fallthrough
             }
-            
-            DataCache.SaveData(output,_id.ToString(), "anime_details_scrapped");
+
+            DataCache.SaveData(output, _id.ToString(), "anime_details_scrapped");
             return output;
+        }
+
+        private static string GetString(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static int GetInt(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+
+        private static double GetDouble(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDouble() : 0;
+
+        private static List<string> GetNameList(JsonElement el, string prop)
+        {
+            if (!el.TryGetProperty(prop, out var arr) || arr.ValueKind != JsonValueKind.Array)
+                return new List<string>();
+            var list = new List<string>();
+            foreach (var item in arr.EnumerateArray())
+            {
+                if (item.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
+                    list.Add(name.GetString());
+            }
+            return list;
         }
     }
 }

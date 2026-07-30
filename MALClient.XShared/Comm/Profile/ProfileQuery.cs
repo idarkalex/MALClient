@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using JikanDotNet;
 using MALClient.Models.Enums;
 using MALClient.Models.Models;
 using MALClient.Models.Models.ApiResponses;
@@ -111,43 +111,38 @@ namespace MALClient.XShared.Comm.Profile
 
                 try
                 {
-                    var jikan = JikanClient.Jikan;
-                    var favs = await jikan.GetUserFavoritesAsync(_userName);
-                    foreach (var favAnime in favs.Data.Anime)
-                    {
-                        current.FavouriteAnime.Add((int)favAnime.MalId);
-                    }  
-                    
-                    foreach (var favAnime in favs.Data.Manga)
-                    {
-                        current.FavouriteManga.Add((int)favAnime.MalId);
-                    }    
-                    
-                    foreach (var favChar in favs.Data.Characters)
+                    var favs = await JikanClient.GetDataAsync($"users/{Uri.EscapeDataString(_userName)}/favorites");
+                    foreach (var favAnime in GetEnumerable(favs, "anime"))
+                        current.FavouriteAnime.Add(GetInt(favAnime, "mal_id"));
+
+                    foreach (var favManga in GetEnumerable(favs, "manga"))
+                        current.FavouriteManga.Add(GetInt(favManga, "mal_id"));
+
+                    foreach (var favChar in GetEnumerable(favs, "characters"))
                     {
                         current.FavouriteCharacters.Add(new AnimeCharacter
                         {
-                            Id = favChar.MalId.ToString(),
-                            Name = favChar.Name,
-                            ImgUrl = favChar.Images.JPG.ImageUrl,
-                            FromAnime = favChar.Url.Contains("manga"),
-                            Notes = favChar.Title,
-                            ShowId = favChar.MalId.ToString()
+                            Id = GetString(favChar, "mal_id"),
+                            Name = GetString(favChar, "name"),
+                            ImgUrl = GetNestedString(favChar, "images", "jpg", "image_url"),
+                            FromAnime = GetString(favChar, "url")?.Contains("manga") ?? false,
+                            Notes = GetString(favChar, "title"),
+                            ShowId = GetString(favChar, "mal_id"),
                         });
-                    }        
-                    
-                    foreach (var favChar in favs.Data.People)
+                    }
+
+                    foreach (var favPerson in GetEnumerable(favs, "people"))
                     {
                         current.FavouritePeople.Add(new AnimeStaffPerson
                         {
-                            Id = favChar.MalId.ToString(),
-                            Name = favChar.Name,
-                            ImgUrl = favChar.Images.JPG.ImageUrl,
-                            Notes = favChar.Title,
+                            Id = GetString(favPerson, "mal_id"),
+                            Name = GetString(favPerson, "name"),
+                            ImgUrl = GetNestedString(favPerson, "images", "jpg", "image_url"),
+                            Notes = GetString(favPerson, "title"),
                         });
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     //no favs
                 }
@@ -598,6 +593,29 @@ namespace MALClient.XShared.Comm.Profile
             var raw = await GetRequestResponse();
             return JsonConvert.DeserializeObject<List<HumStoryObject>>(raw,
                 new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+        }
+
+        private static string GetString(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static int GetInt(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+
+        private static string GetNestedString(JsonElement el, params string[] props)
+        {
+            foreach (var prop in props.Take(props.Length - 1))
+                if (!el.TryGetProperty(prop, out el)) return "";
+            return GetString(el, props.Last());
+        }
+
+        private static IEnumerable<JsonElement> GetEnumerable(JsonElement el, string prop)
+        {
+            if (!el.TryGetProperty(prop, out var arr) || arr.ValueKind != JsonValueKind.Array)
+                return Enumerable.Empty<JsonElement>();
+            var list = new List<JsonElement>();
+            foreach (var item in arr.EnumerateArray())
+                list.Add(item.Clone());
+            return list;
         }
     }
 

@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Android.Runtime;
-using JikanDotNet;
-using JikanDotNet.Config;
-using Newtonsoft.Json;
 using AnimeEpisode = MALClient.Models.Models.Anime.AnimeEpisode;
 
 namespace MALClient.XShared.Comm.Anime
@@ -24,54 +20,55 @@ namespace MALClient.XShared.Comm.Anime
             {
                 var result = new List<AnimeEpisode>();
                 int page = 1;
-                var jikan = JikanClient.Jikan;
                 while (true)
                 {
                     try
                     {
-
-                        var episodes = await jikan.GetAnimeEpisodesAsync(animeId, page);
-                        result.AddRange(episodes.Data.Select(episode => new AnimeEpisode
+                        var (items, hasNext) = await JikanClient.GetPaginatedAsync($"anime/{animeId}/episodes?page={page}");
+                        foreach (var ep in items)
                         {
-                            EpisodeId = episode.MalId,
-                            Filler = episode.Filler ?? false,
-                            ForumUrl = episode.ForumUrl,
-                            Recap = episode.Recap ?? false,
-                            Title = episode.Title,
-                            TitleJapanese = episode.TitleJapanese,
-                            TitleRomanji = episode.Title,
-                            VideoUrl = episode.Url
-                        }));
+                            result.Add(new AnimeEpisode
+                            {
+                                EpisodeId = GetInt(ep, "mal_id"),
+                                Filler = GetBool(ep, "filler"),
+                                ForumUrl = GetString(ep, "forum_url"),
+                                Recap = GetBool(ep, "recap"),
+                                Title = GetString(ep, "title"),
+                                TitleJapanese = GetString(ep, "title_japanese"),
+                                TitleRomanji = GetString(ep, "title"),
+                                VideoUrl = GetString(ep, "url"),
+                            });
+                        }
 
-                        if (episodes.Data.Count < 100)
+                        if (!hasNext)
                             break;
 
                         page++;
-
                         if (page > 10)
                             break;
                     }
-                    catch (Exception e)
+                    catch
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1));
                     }
                 }
-      
-                _cache[animeId] = result;
 
+                _cache[animeId] = result;
                 return result;
             }
-            catch (Exception)
+            catch
             {
                 return null;
             }
         }
 
-        [Preserve(AllMembers = true)]
-        class RootObject
-        {
-            [JsonProperty("episodes")]
-            public List<AnimeEpisode> Episodes { get; set; }
-        }
+        private static string GetString(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static int GetInt(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+
+        private static bool GetBool(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.True;
     }
 }

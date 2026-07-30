@@ -1,19 +1,85 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using JikanDotNet;
-using JikanDotNet.Config;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace MALClient.XShared.Comm;
-public static class JikanClient
+namespace MALClient.XShared.Comm
 {
-    public static readonly Jikan Jikan = new Jikan(new JikanClientConfiguration
+    public static class JikanClient
     {
-        SuppressException = true,
-        LimiterConfigurations = new List<TaskLimiterConfiguration>
+        private static readonly HttpClient Client = new HttpClient();
+        private static readonly SemaphoreSlim RateLimiter = new SemaphoreSlim(1, 1);
+        private static DateTime _lastRequest = DateTime.MinValue;
+
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
-            new TaskLimiterConfiguration(3, TimeSpan.FromSeconds(1)),
-            new TaskLimiterConfiguration(60, TimeSpan.FromSeconds(60))
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        static JikanClient()
+        {
+            Client.DefaultRequestHeaders.Add("User-Agent", "MALClient/3.0");
         }
-    });
+
+        private static async Task<string> GetStringAsync(string url)
+        {
+            await RateLimiter.WaitAsync();
+            try
+            {
+                var sinceLast = DateTime.UtcNow - _lastRequest;
+                if (sinceLast.TotalMilliseconds < 350)
+                    await Task.Delay(350 - (int)sinceLast.TotalMilliseconds);
+
+                _lastRequest = DateTime.UtcNow;
+                return await Client.GetStringAsync(url);
+            }
+            finally
+            {
+                RateLimiter.Release();
+            }
+        }
+
+        public static async Task<JsonElement> GetDataAsync(string endpoint)
+        {
+            var json = await GetStringAsync($"https://api.jikan.moe/v4/{endpoint}");
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.GetProperty("data").Clone();
+        }
+
+        public static async Task<(List<JsonElement> Items, bool HasNextPage)> GetPaginatedAsync(string endpoint)
+        {
+            var json = await GetStringAsync($"https://api.jikan.moe/v4/{endpoint}");
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var data = root.GetProperty("data");
+            var items = new List<JsonElement>();
+            foreach (var item in data.EnumerateArray())
+                items.Add(item.Clone());
+
+            var hasNext = false;
+            if (root.TryGetProperty("pagination", out var pagination))
+                hasNext = pagination.GetProperty("has_next_page").GetBoolean();
+
+            return (items, hasNext);
+        }
+
+        public static async Task<List<JsonElement>> GetAllPagesAsync(Func<int, string> endpointForPage, int maxPages = 10)
+        {
+            var allItems = new List<JsonElement>();
+            for (int page = 1; page <= maxPages; page++)
+            {
+                var (items, hasNext) = await GetPaginatedAsync(endpointForPage(page));
+                allItems.AddRange(items);
+                if (!hasNext) break;
+
+                var sinceLast = DateTime.UtcNow - _lastRequest;
+                if (sinceLast.TotalMilliseconds < 500)
+                    await Task.Delay(500 - (int)sinceLast.TotalMilliseconds);
+            }
+            return allItems;
+        }
+    }
 }

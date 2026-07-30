@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Android.Runtime;
-using JikanDotNet;
 using MALClient.Models.Models.Anime;
-using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Utils;
-using MALClient.XShared.ViewModels;
-using Newtonsoft.Json;
 
 namespace MALClient.XShared.Comm.Manga
 {
@@ -21,10 +15,6 @@ namespace MALClient.XShared.Comm.Manga
         public MangaSearchQuery(string query)
         {
             _query = query;
-            Request = WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/api/manga/search.xml?q={query}"));
-            Request.Credentials = Credentials.GetHttpCreditentials();
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public async Task<List<AnimeGeneralDetailsData>> GetSearchResults()
@@ -33,33 +23,46 @@ namespace MALClient.XShared.Comm.Manga
 
             try
             {
-                var jikan = JikanClient.Jikan;
-                var searchResult = await jikan.SearchMangaAsync(_query);
+                var (items, _) = await JikanClient.GetPaginatedAsync($"manga?q={Uri.EscapeDataString(_query)}&sfw");
 
-                foreach (var result in searchResult.Data)
+                foreach (var result in items)
                 {
-
                     output.Add(new AnimeGeneralDetailsData
                     {
-                        Id = (int)result.MalId,
-                        AllVolumes = result.Volumes ?? 0,
-                        Title = WebUtility.HtmlDecode(result.Title),
-                        ImgUrl = result.Images.JPG.ImageUrl,
-                        Type = result.Type,
-                        Synopsis = WebUtility.HtmlDecode(result.Synopsis),
-                        MalId = (int)result.MalId,
-                        GlobalScore = (float) (result.Score ?? 0),
+                        Id = GetInt(result, "mal_id"),
+                        AllVolumes = GetInt(result, "volumes"),
+                        Title = GetString(result, "title"),
+                        ImgUrl = GetNestedString(result, "images", "jpg", "image_url"),
+                        Type = GetString(result, "type"),
+                        Synopsis = GetString(result, "synopsis"),
+                        MalId = GetInt(result, "mal_id"),
+                        GlobalScore = (float)GetDouble(result, "score"),
                         Status = "Unknown"
                     });
                 }
-
             }
-            catch (Exception e)
+            catch
             {
-                return output;
+                // fallthrough
             }
 
             return output;
+        }
+
+        private static string GetString(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static int GetInt(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+
+        private static double GetDouble(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDouble() : 0;
+
+        private static string GetNestedString(JsonElement el, params string[] props)
+        {
+            foreach (var prop in props.Take(props.Length - 1))
+                if (!el.TryGetProperty(prop, out el)) return "";
+            return GetString(el, props.Last());
         }
     }
 }

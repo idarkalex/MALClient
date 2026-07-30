@@ -1074,23 +1074,32 @@ namespace MALClient.XShared.ViewModels.Main
                 var currSeasonIndex = -1;
                 try
                 {
-                    var seasons = await JikanClient.Jikan.GetSeasonArchiveAsync();
+                    var (items, _) = await JikanClient.GetPaginatedAsync("seasons");
 
-                    foreach (var season in seasons.Data.Take(3))
+                    foreach (var s in items.Take(3))
                     {
-                        foreach (var yearSeason in season.Season)
+                        var year = s.GetProperty("year").GetInt32();
+                        var seasons = s.GetProperty("seasons");
+                        foreach (var yearSeason in seasons.EnumerateArray())
                         {
-                            SeasonSelection.Add(new AnimeSeason { Name = $"{yearSeason} {season.Year}", Year = season.Year, Season = yearSeason});
+                            var seasonStr = yearSeason.GetString();
+                            SeasonSelection.Add(new AnimeSeason
+                            {
+                                Name = $"{seasonStr} {year}",
+                                Year = year,
+                                Season = seasonStr switch
+                                {
+                                    "winter" => JikanDotNet.Season.Winter,
+                                    "spring" => JikanDotNet.Season.Spring,
+                                    "summer" => JikanDotNet.Season.Summer,
+                                    "fall" => JikanDotNet.Season.Fall,
+                                    _ => JikanDotNet.Season.Fall
+                                }
+                            });
                             i++;
                         }
-
-                        //if (seasonalUrl.Key == CurrentSeason.Name)
-                        //{
-                        //    _seasonalUrlsSelectedIndex = i - 1;
-                        //    RaisePropertyChanged(() => SeasonalUrlsSelectedIndex);
-                        //}
                     }
-                    //we have set artificial default one because we did not know what lays ahead of us
+
                     if (setDefaultSeason && currSeasonIndex != -1)
                     {
                         CurrentSeason = SeasonSelection[currSeasonIndex];
@@ -1098,7 +1107,7 @@ namespace MALClient.XShared.ViewModels.Main
                         RaisePropertyChanged(() => SeasonalUrlsSelectedIndex);
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }

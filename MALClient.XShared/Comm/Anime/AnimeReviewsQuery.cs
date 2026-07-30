@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android.Runtime;
 using HtmlAgilityPack;
-using JikanDotNet;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
 

@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
-using JikanDotNet;
 using MALClient.Models.Models;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.Utils;
@@ -27,31 +25,51 @@ namespace MALClient.XShared.Comm.Profile
 
             try
             {
-                var jikan = JikanClient.Jikan;
-                var result = await jikan.GetUserFriendsAsync(_userName);
+                var (items, _) = await JikanClient.GetPaginatedAsync(
+                    $"users/{Uri.EscapeDataString(_userName)}/friends");
 
-                foreach (var friend in result.Data)
+                foreach (var friend in items)
                 {
+                    var user = friend.GetProperty("user");
                     output.Add(new MalFriend
                     {
-                        Id = friend.User.Url,
+                        Id = GetString(user, "url"),
                         User = new MalUser
                         {
-                            ImgUrl = friend.User.Images.JPG.ImageUrl,
-                            Name = friend.User.Username,
+                            ImgUrl = GetNestedString(user, "images", "jpg", "image_url"),
+                            Name = GetString(user, "username"),
                         },
-                        FriendsSince = friend.FriendsSince?.ToString("yyyy-MM-dd") ?? "N/A",
-                        LastOnline = friend.LastOnline?.ToString("yyyy-MM-dd") ?? "N/A",
+                        FriendsSince = GetDateString(friend, "friends_since"),
+                        LastOnline = GetDateString(user, "last_online"),
                     });
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                //HTML as always
+                // fallback to HTML
             }
-  
 
             return output;
+        }
+
+        private static string GetString(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static string GetNestedString(JsonElement el, params string[] props)
+        {
+            foreach (var prop in props.Take(props.Length - 1))
+                if (!el.TryGetProperty(prop, out el)) return "";
+            return GetString(el, props.Last());
+        }
+
+        private static string GetDateString(JsonElement el, string prop)
+        {
+            if (!el.TryGetProperty(prop, out var p) || p.ValueKind != JsonValueKind.String)
+                return "N/A";
+            var val = p.GetString();
+            if (DateTime.TryParse(val, out var dt))
+                return dt.ToString("yyyy-MM-dd");
+            return val;
         }
     }
 }

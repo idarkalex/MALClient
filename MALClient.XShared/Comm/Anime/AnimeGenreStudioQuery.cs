@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
-using JikanDotNet;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
@@ -24,98 +22,83 @@ namespace MALClient.XShared.Comm.Anime
             _genre = genre;
             _page = page;
             _genreMode = true;
-            Request =
-                WebRequest.Create(
-                    Uri.EscapeUriString($"https://myanimelist.net/anime/genre/{(int) genre}?page={page}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public AnimeGenreStudioQuery(AnimeStudios studio, int page = 1)
         {
             _studio = studio;
             _page = page;
-            Request =
-                WebRequest.Create(
-                    Uri.EscapeUriString($"https://myanimelist.net/anime/producer/{(int) studio}?page={page}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+            _genreMode = false;
         }
 
         public async Task<List<SeasonalAnimeData>> GetAnime()
         {
-            var output =
-                await
-                    DataCache.RetrieveData<List<SeasonalAnimeData>>(
-                        _genreMode ? $"genre_{_genre}_{_page}" : $"studio_{_studio}_{_page}",
-                        _genreMode ? "AnimesByGenre" : "AnimesByStudio", 7) ??
-                new List<SeasonalAnimeData>();
+            var cacheKey = _genreMode ? $"genre_{_genre}_{_page}" : $"studio_{_studio}_{_page}";
+            var cacheRegion = _genreMode ? "AnimesByGenre" : "AnimesByStudio";
+            var output = await DataCache.RetrieveData<List<SeasonalAnimeData>>(cacheKey, cacheRegion, 7)
+                         ?? new List<SeasonalAnimeData>();
             if (output.Count > 0)
                 return output;
 
-            var jikan = JikanClient.Jikan;
-
-            var jikanPage = _page;
             try
             {
+                var endpoint = _genreMode
+                    ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc"
+                    : $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc";
 
+                var (items, _) = await JikanClient.GetPaginatedAsync(endpoint);
 
-                if (_genreMode)
+                int index = (_page - 1) * 25 + 1;
+                foreach (var entry in items)
                 {
-                    var genres = await jikan.SearchAnimeAsync(new AnimeSearchConfig
+                    output.Add(new SeasonalAnimeData
                     {
-                        Genres = new List<AnimeGenreSearch> { (AnimeGenreSearch)_genre },
-                        Page = jikanPage
+                        Title = GetString(entry, "title"),
+                        Id = GetInt(entry, "mal_id"),
+                        ImgUrl = GetNestedString(entry, "images", "jpg", "image_url"),
+                        Episodes = GetInt(entry, "episodes").ToString(),
+                        Score = (float)GetDouble(entry, "score"),
+                        Genres = GetGenreNames(entry),
+                        Index = index++
                     });
-
-                    foreach (var animeSubEntry in genres.Data)
-                    {
-                        output.Add(new SeasonalAnimeData
-                        {
-                            Title = animeSubEntry.Title,
-                            Id = (int)animeSubEntry.MalId,
-                            ImgUrl = animeSubEntry.Images.JPG.ImageUrl,
-                            Episodes = (animeSubEntry.Episodes ?? 0).ToString(),
-                            Score = (float)(animeSubEntry.Score ?? 0),
-                            Genres = animeSubEntry.Genres.Select(item => item.Name).ToList(),
-                            Index = genres.Data.FindIndex(animeSubEntry) + (25 * (_page - 1)) + 1 
-                        });
-                    }
-                }
-                else
-                {
-                    var genres = await jikan.SearchAnimeAsync(new AnimeSearchConfig
-                    {
-                        ProducerIds = new List<long> { (long)_studio },
-                        Page = jikanPage
-                    });
-                    foreach (var animeSubEntry in genres.Data)
-                    {
-                        output.Add(new SeasonalAnimeData
-                        {
-                            Title = animeSubEntry.Title,
-                            Id = (int)animeSubEntry.MalId,
-                            ImgUrl = animeSubEntry.Images.JPG.ImageUrl,
-                            Episodes = (animeSubEntry.Episodes ?? 0).ToString(),
-                            Score = (float)(animeSubEntry.Score ?? 0),
-                            Genres = animeSubEntry.Genres.Select(item => item.Name).ToList(),
-                            Index = genres.Data.FindIndex(animeSubEntry) + (25 * (_page - 1)) + 1
-                        });
-                    }
                 }
             }
-            catch (Exception e)
+            catch
             {
                 return output;
             }
 
-
-            if (_genreMode)
-                DataCache.SaveData(output, $"genre_{_genre}_page{_page}", "AnimesByGenre");
-            else
-                DataCache.SaveData(output, $"studio_{_studio}_page{_page}", "AnimesByStudio");
-
+            DataCache.SaveData(output, cacheKey, cacheRegion);
             return output;
+        }
+
+        private static string GetString(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static int GetInt(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+
+        private static double GetDouble(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDouble() : 0;
+
+        private static string GetNestedString(JsonElement el, params string[] props)
+        {
+            foreach (var prop in props.Take(props.Length - 1))
+                if (!el.TryGetProperty(prop, out el)) return "";
+            return GetString(el, props.Last());
+        }
+
+        private static List<string> GetGenreNames(JsonElement el)
+        {
+            if (!el.TryGetProperty("genres", out var genres) || genres.ValueKind != JsonValueKind.Array)
+                return new List<string>();
+            var list = new List<string>();
+            foreach (var g in genres.EnumerateArray())
+            {
+                if (g.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
+                    list.Add(name.GetString());
+            }
+            return list;
         }
     }
 }
