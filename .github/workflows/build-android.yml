@@ -16,13 +16,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Install Xamarin Android workload
-        run: dotnet workload install maui-android
+      - name: Install Visual Studio Xamarin workload
+        shell: pwsh
+        run: |
+          $vsPath = "C:\Program Files\Microsoft Visual Studio\18\Enterprise"
+          $vsInstaller = Join-Path $vsPath "vs_enterprise.exe"
+          $arguments = @(
+            "modify"
+            "--installWhileRunning"
+            "--add", "Microsoft.VisualStudio.Workload.Xamarin"
+            "--quiet"
+            "--norestart"
+            "--wait"
+          )
+          $process = Start-Process -FilePath $vsInstaller -ArgumentList $arguments -Wait -PassThru -NoNewWindow
+          if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
+            Write-Host "VS installer exit code: $($process.ExitCode)"
+            throw "Failed to install Xamarin workload"
+          }
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
