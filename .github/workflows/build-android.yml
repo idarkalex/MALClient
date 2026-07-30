@@ -32,11 +32,37 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2
 
+      - name: Check environment
+        shell: pwsh
+        run: |
+          $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
+          $vsPath = & $vswhere -latest -products * -property installationPath
+          Write-Host "VS Path: $vsPath"
+
+          # Check Xamarin targets
+          $targets = "$vsPath\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets"
+          $targets2 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets"
+          $targets3 = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets"
+          Write-Host "Checking target files..."
+          foreach ($t in @($targets, $targets2, $targets3)) {
+            if (Test-Path $t) { Write-Host "FOUND: $t" } else { Write-Host "NOT FOUND: $t" }
+          }
+
+          # Also check via MSBuildExtensionsPath
+          msbuild /version
+          $extPath = & msbuild /version /nologo 2>$null | Select-String "MSBuildExtensionsPath" -SimpleMatch
+          Write-Host "MSBuild version info:"
+          msbuild /version /nologo
+
       - name: Restore NuGet packages
         run: nuget restore MALClient.sln
 
       - name: Build Android APK (Release)
-        run: msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" /m
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" 2>&1
+          if ($LASTEXITCODE -ne 0) { throw "Build failed with exit code $LASTEXITCODE" }
 
       - name: Sign APK (if keystore secrets provided)
         if: env.ANDROID_KEYSTORE_BASE64 != ''
