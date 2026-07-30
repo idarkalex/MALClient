@@ -40,11 +40,26 @@ jobs:
       - name: Build Android APK (Release)
         shell: pwsh
         run: |
-          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a"
-          if ($LASTEXITCODE -ne 0) { throw "Build failed with exit code $LASTEXITCODE" }
+          $logFile = "$env:RUNNER_TEMP\msbuild.log"
+          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" *>$logFile
+          $exitCode = $LASTEXITCODE
+          Get-Content -Path $logFile | Select-Object -First 200
+          Write-Host "MSBuild exit code: $exitCode"
+          if ($exitCode -ne 0) {
+            Get-Content -Path $logFile | Select-Object -Last 100
+            throw "Build failed with exit code $exitCode"
+          }
+
+      - name: Upload MSBuild log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MSBuild-Log
+          path: ${{ runner.temp }}\msbuild.log
+          retention-days: 7
 
       - name: Sign APK (if keystore secrets provided)
-        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
         shell: pwsh
         run: |
           $keystorePath = "$env:RUNNER_TEMP\keystore.jks"
@@ -63,6 +78,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Upload APK artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MALClient-Android-Release
