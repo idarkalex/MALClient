@@ -322,7 +322,8 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_round.png" />
   </ItemGroup>
-  <PackageReference Include="FastAdapter.Xamarin.Droid">
+  <ItemGroup>
+    <PackageReference Include="FastAdapter.Xamarin.Droid">
       <Version>1.6.0.2</Version>
     </PackageReference>
     <PackageReference Include="MaterialDrawer.Xamarin.Droid">
