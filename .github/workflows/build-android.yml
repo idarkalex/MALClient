@@ -37,35 +37,20 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore MALClient.sln
 
-      - name: Verify Xamarin targets
+      - name: Debug MSBuild setup
         shell: pwsh
         run: |
-          $targets = Get-ChildItem -Path "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VisualStudio\v17.0\Xamarin\Android\Xamarin.Android.CSharp.targets" -ErrorAction SilentlyContinue
-          if ($targets) { Write-Host "Xamarin targets FOUND at $targets" }
-          else { Write-Host "Xamarin targets NOT FOUND" }
-          $msbuild = Get-Command msbuild.exe -ErrorAction SilentlyContinue
-          if ($msbuild) { Write-Host "MSBuild at: $($msbuild.Source)" }
-          else { Write-Host "MSBuild NOT in PATH" }
+          Get-Command msbuild.exe | Select-Object Source
+          Write-Host "=== Checking Xamarin targets ==="
+          $p = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Xamarin\Android"
+          if (Test-Path $p) { Get-ChildItem $p -Filter "*.targets" | Select-Object Name }
+          else { Write-Host "Xamarin targets NOT found at $p" }
 
       - name: Build Android APK (Release)
-        shell: pwsh
+        shell: cmd
         run: |
-          $logFile = "$env:RUNNER_TEMP\msbuild.log"
-          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" 2>&1 | Tee-Object -FilePath $logFile
-          $exitCode = $LASTEXITCODE
-          if ($exitCode -ne 0) {
-            Write-Host "=== LAST 50 LINES OF MSBUILD OUTPUT ==="
-            Get-Content -Path $logFile -Tail 50
-            throw "Build failed with exit code $exitCode"
-          }
-
-      - name: Upload MSBuild log (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: MSBuild-Log
-          path: ${{ runner.temp }}\msbuild.log
-          retention-days: 7
+          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a"
+          if errorlevel 1 exit /b 1
 
       - name: Sign APK (if keystore secrets provided)
         if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
