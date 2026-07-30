@@ -59,17 +59,20 @@ jobs:
           if (Test-Path "C:\Program Files (x86)\Android\android-sdk") { Write-Host "Android SDK at default path" }
 
       - name: Build Android APK (Release)
-        shell: cmd
+        shell: pwsh
         run: |
-          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" > "%RUNNER_TEMP%\msbuild-out.txt" 2>&1
-          set ERR=%ERRORLEVEL%
-          type "%RUNNER_TEMP%\msbuild-out.txt"
-          if %ERR% neq 0 (
-            findstr /n /c:"error CS" "%RUNNER_TEMP%\msbuild-out.txt"
-            findstr /n /c:"error :" "%RUNNER_TEMP%\msbuild-out.txt"
-            findstr /n /c:"error XA" "%RUNNER_TEMP%\msbuild-out.txt"
-            exit /b 1
-          )
+          $logFile = "$env:RUNNER_TEMP\msbuild.txt"
+          $msbuildPath = (Get-Command msbuild.exe).Source
+          & $msbuildPath MALClient.Android\MALClient.Android.csproj /t:Rebuild '/p:Configuration=AndroidRelease' '/p:Platform=Any CPU' '/p:AndroidUseSharedRuntime=False' '/p:EmbedAssembliesIntoApk=True' '/p:AndroidSupportedAbis=armeabi-v7a;x86;x86_64;arm64-v8a' 2>&1 | Tee-Object -FilePath $logFile
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -ne 0) {
+            $tail = Get-Content -Path $logFile -Tail 30
+            Write-Host "=== LAST 30 LINES OF MSBUILD OUTPUT ==="
+            $tail | ForEach-Object { Write-Host "##[error]$_" }
+            "### MSBuild Last 30 Lines" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+            $tail | ForEach-Object { $_ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append }
+            throw "MSBuild exit code: $exitCode"
+          }
 
       - name: Sign APK (if keystore secrets provided)
         if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
