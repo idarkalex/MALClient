@@ -23,14 +23,14 @@ jobs:
           $vsPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
           $arguments = @(
             "modify"
-            "--installPath", "`"$vsPath`""
+            "--installPath", $vsPath
             "--installWhileRunning"
             "--add", "Microsoft.VisualStudio.Workload.Xamarin"
             "--quiet"
             "--norestart"
             "--wait"
           )
-          $process = Start-Process -FilePath $vsInstaller -ArgumentList $arguments -Wait -PassThru -NoNewWindow
+          $process = Start-Process -FilePath $vsInstaller -ArgumentList $arguments -Wait -PassThru
           if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
             Write-Host "VS installer exit code: $($process.ExitCode)"
             throw "Failed to install Xamarin workload"
