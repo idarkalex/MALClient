@@ -29,32 +29,8 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2
 
-      - name: Check environment
-        shell: pwsh
-        run: |
-          Write-Host "=== VSWhere ==="
-          $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
-          & $vswhere -latest -products * -property installationPath
-
-          Write-Host "=== Checking Xamarin targets ==="
-          $paths = @(
-            "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets"
-            "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets"
-            "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets"
-          )
-          foreach ($p in $paths) {
-            if (Test-Path $p) { Write-Host "FOUND: $p" } else { Write-Host "NOT FOUND: $p" }
-          }
-
-          Write-Host "=== MSBuild discovery ==="
-          $vsPath = & $vswhere -latest -products * -property installationPath
-          $msbuild = Join-Path $vsPath "MSBuild\Current\Bin\MSBuild.exe"
-          if (Test-Path $msbuild) { Write-Host "MSBuild: $msbuild" }
-          else {
-            $msbuild = Join-Path $vsPath "MSBuild\15.0\Bin\MSBuild.exe"
-            if (Test-Path $msbuild) { Write-Host "MSBuild: $msbuild" }
-            else { Write-Host "MSBuild not found at VS path" }
-          }
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
       - name: Restore NuGet packages
         run: nuget restore MALClient.sln
@@ -62,13 +38,16 @@ jobs:
       - name: Build Android APK (Release)
         shell: pwsh
         run: |
+          # Use VS-installed MSBuild (not the one from PATH via setup-msbuild)
           $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
           $vsPath = & $vswhere -latest -products * -property installationPath
+          Write-Host "VS Path: $vsPath"
           $msbuild = Join-Path $vsPath "MSBuild\Current\Bin\MSBuild.exe"
           if (-not (Test-Path $msbuild)) {
             $msbuild = Join-Path $vsPath "MSBuild\15.0\Bin\MSBuild.exe"
           }
           Write-Host "Using MSBuild: $msbuild"
+          if (-not (Test-Path $msbuild)) { throw "MSBuild not found!" }
           & $msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" /p:MSBuildExtensionsPath="$vsPath\MSBuild" 2>&1
           if ($LASTEXITCODE -ne 0) { throw "Build failed with exit code $LASTEXITCODE" }
 
