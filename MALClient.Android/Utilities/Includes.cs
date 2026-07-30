@@ -5,7 +5,6 @@ using System.Windows.Input;
 using Android.Support.Design.Widget;
 using Android.Views;
 using Android.Widget;
-using AoLibs.Adapters.Android;
 using MALClient.Android.Adapters;
 using MALClient.Android.BackgroundTasks;
 using MALClient.Android.Fragments.SettingsFragments;

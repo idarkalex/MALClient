@@ -6,7 +6,7 @@ using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
-using AoLibs.Adapters.Android.Recycler;
+using MALClient.Android.AoLibsCompat;
 using FFImageLoading;
 using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;

@@ -14,7 +14,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using AoLibs.Adapters.Core.Interfaces;
+
 using Com.Shehabic.Droppy;
 using FFImageLoading;
 using GalaSoft.MvvmLight.Helpers;
