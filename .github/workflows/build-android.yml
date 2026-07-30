@@ -23,11 +23,13 @@ jobs:
           $vsPath = & $vswhere -latest -products * -property installationPath
           Write-Host "VS Path: $vsPath"
           $installer = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
-          $proc = Start-Process -FilePath $installer -Wait -PassThru -ArgumentList @("modify", "--installPath", $vsPath, "--add", "Microsoft.VisualStudio.Workload.Xamarin", "--quiet", "--norestart", "--wait")
-          Write-Host "Exit code: $($proc.ExitCode)"
+          & $installer modify --installPath "$vsPath" --add Microsoft.VisualStudio.Workload.Xamarin --quiet --norestart --wait
+          $exitCode = $LASTEXITCODE
+          Write-Host "Exit code: $exitCode"
+          if ($exitCode -ne 0) { throw "Installer failed with exit code $exitCode" }
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2
@@ -38,24 +40,7 @@ jobs:
       - name: Build Android APK (Release)
         shell: pwsh
         run: |
-          $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
-          $vsPath = & $vswhere -latest -products * -property installationPath
-          Write-Host "VS Path: $vsPath"
-
-          # Use VS Developer Command Prompt to set up environment
-          $vsDevCmd = Join-Path $vsPath "Common7\Tools\VsDevCmd.bat"
-          Write-Host "VsDevCmd: $vsDevCmd"
-
-          # Find MSBuild
-          $msbuild = Join-Path $vsPath "MSBuild\Current\Bin\MSBuild.exe"
-          if (-not (Test-Path $msbuild)) {
-            $msbuild = Join-Path $vsPath "MSBuild\15.0\Bin\MSBuild.exe"
-          }
-          Write-Host "Using MSBuild: $msbuild"
-          if (-not (Test-Path $msbuild)) { throw "MSBuild not found!" }
-
-          # Build
-          & $msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" 2>&1
+          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a"
           if ($LASTEXITCODE -ne 0) { throw "Build failed with exit code $LASTEXITCODE" }
 
       - name: Sign APK (if keystore secrets provided)
