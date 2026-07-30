@@ -16,14 +16,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Xamarin Android workload
+      - name: Install Xamarin Android SDK
         shell: pwsh
         run: |
           $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
           $vsPath = & $vswhere -latest -products * -property installationPath
           Write-Host "VS Path: $vsPath"
           $installer = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
-          & $installer modify --installPath "$vsPath" --add Microsoft.VisualStudio.Workload.Xamarin --quiet --norestart --wait
+          & $installer modify --installPath "$vsPath" --add Microsoft.VisualStudio.Workload.NetCrossPlat --add Component.Xamarin --quiet --norestart --wait
           $exitCode = $LASTEXITCODE
           Write-Host "Exit code: $exitCode"
           if ($exitCode -ne 0) { throw "Installer failed with exit code $exitCode" }
@@ -37,16 +37,25 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore MALClient.sln
 
+      - name: Verify Xamarin targets
+        shell: pwsh
+        run: |
+          $targets = Get-ChildItem -Path "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VisualStudio\v17.0\Xamarin\Android\Xamarin.Android.CSharp.targets" -ErrorAction SilentlyContinue
+          if ($targets) { Write-Host "Xamarin targets FOUND at $targets" }
+          else { Write-Host "Xamarin targets NOT FOUND" }
+          $msbuild = Get-Command msbuild.exe -ErrorAction SilentlyContinue
+          if ($msbuild) { Write-Host "MSBuild at: $($msbuild.Source)" }
+          else { Write-Host "MSBuild NOT in PATH" }
+
       - name: Build Android APK (Release)
         shell: pwsh
         run: |
           $logFile = "$env:RUNNER_TEMP\msbuild.log"
-          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" *>$logFile
+          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=AndroidRelease /p:Platform="Any CPU" /p:AndroidUseSharedRuntime=False /p:EmbedAssembliesIntoApk=True /p:AndroidSupportedAbis="armeabi-v7a;x86;x86_64;arm64-v8a" 2>&1 | Tee-Object -FilePath $logFile
           $exitCode = $LASTEXITCODE
-          Get-Content -Path $logFile | Select-Object -First 200
-          Write-Host "MSBuild exit code: $exitCode"
           if ($exitCode -ne 0) {
-            Get-Content -Path $logFile | Select-Object -Last 100
+            Write-Host "=== LAST 50 LINES OF MSBUILD OUTPUT ==="
+            Get-Content -Path $logFile -Tail 50
             throw "Build failed with exit code $exitCode"
           }
 
