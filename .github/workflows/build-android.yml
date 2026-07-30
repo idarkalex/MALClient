@@ -19,10 +19,11 @@ jobs:
       - name: Install Visual Studio Xamarin workload
         shell: pwsh
         run: |
-          $vsPath = "C:\Program Files\Microsoft Visual Studio\18\Enterprise"
-          $vsInstaller = Join-Path $vsPath "vs_enterprise.exe"
+          $vsInstaller = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+          $vsPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
           $arguments = @(
             "modify"
+            "--installPath", "`"$vsPath`""
             "--installWhileRunning"
             "--add", "Microsoft.VisualStudio.Workload.Xamarin"
             "--quiet"
@@ -34,6 +35,7 @@ jobs:
             Write-Host "VS installer exit code: $($process.ExitCode)"
             throw "Failed to install Xamarin workload"
           }
+          Write-Host "Xamarin workload installed successfully"
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
