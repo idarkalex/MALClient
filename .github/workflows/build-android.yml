@@ -16,10 +16,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Xamarin Android
-        uses: xamarin/setup-xamarin@v2
-        with:
-          xamarin-android: true
+      - name: Install Xamarin Android via VS installer
+        shell: pwsh
+        run: |
+          $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
+          $vsPath = & $vswhere -latest -products * -property installationPath
+          Write-Host "VS Path: $vsPath"
+          $installer = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+          & $installer modify --installPath $vsPath --add Microsoft.VisualStudio.Workload.Xamarin --quiet --norestart --wait
+          if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) {
+            throw "VS installer failed with exit code $LASTEXITCODE"
+          }
+          Write-Host "Xamarin workload installed"
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
