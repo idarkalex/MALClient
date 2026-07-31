@@ -92,7 +92,7 @@ namespace MALClient.XShared.Comm.Anime
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
 
         private static int GetInt(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var p) ? p.GetInt32() : 0;
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
 
         private static double GetDouble(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDouble() : 0;

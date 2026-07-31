@@ -26,64 +26,74 @@ namespace MALClient.XShared.Comm.Anime
 
             if (output.Count != 0) return output;
 
-            int currentPage = 1;
-            try
+            const int maxAttempts = 3;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                while (true)
+                var result = new List<SeasonalAnimeData>();
+                try
                 {
-                    var requestedYear = _season.Year != 0 ? _season.Year : DateTime.UtcNow.Year;
-                    var requestedSeason = _season.Year != 0 ? SeasonEnumToString(_season.Season) : GetCurrentSeason();
-
-                    var (items, hasNext) = await JikanClient.GetPaginatedAsync(
-                        $"seasons/{requestedYear}/{requestedSeason}?page={currentPage}");
-
-                    foreach (var entry in items)
+                    int currentPage = 1;
+                    while (true)
                     {
-                        var airDay = -1;
-                        var airStartDate = "";
-                        if (entry.TryGetProperty("broadcast", out var broadcast) &&
-                            broadcast.TryGetProperty("day", out var dayProp) &&
-                            dayProp.ValueKind == JsonValueKind.String)
+                        var requestedYear = _season.Year != 0 ? _season.Year : DateTime.UtcNow.Year;
+                        var requestedSeason = _season.Year != 0 ? SeasonEnumToString(_season.Season) : GetCurrentSeason();
+
+                        var (items, hasNext) = await JikanClient.GetPaginatedAsync(
+                            $"seasons/{requestedYear}/{requestedSeason}?page={currentPage}");
+
+                        foreach (var entry in items)
                         {
-                            airDay = DayOfWeekStringToInt(dayProp.GetString());
-                        }
-                        if (entry.TryGetProperty("aired", out var aired) &&
-                            aired.TryGetProperty("from", out var fromProp) &&
-                            fromProp.ValueKind == JsonValueKind.String)
-                        {
-                            var fromStr = fromProp.GetString();
-                            if (DateTime.TryParse(fromStr, out var dt))
-                                airStartDate = dt.ToString("yyyy-MM-dd");
+                            var airDay = -1;
+                            var airStartDate = "";
+                            if (entry.TryGetProperty("broadcast", out var broadcast) &&
+                                broadcast.TryGetProperty("day", out var dayProp) &&
+                                dayProp.ValueKind == JsonValueKind.String)
+                            {
+                                airDay = DayOfWeekStringToInt(dayProp.GetString());
+                            }
+                            if (entry.TryGetProperty("aired", out var aired) &&
+                                aired.TryGetProperty("from", out var fromProp) &&
+                                fromProp.ValueKind == JsonValueKind.String)
+                            {
+                                var fromStr = fromProp.GetString();
+                                if (DateTime.TryParse(fromStr, out var dt))
+                                    airStartDate = dt.ToString("yyyy-MM-dd");
+                            }
+
+                            result.Add(new SeasonalAnimeData
+                            {
+                                Title = GetString(entry, "title"),
+                                Id = GetInt(entry, "mal_id"),
+                                ImgUrl = GetNestedString(entry, "images", "jpg", "image_url"),
+                                Episodes = GetInt(entry, "episodes").ToString(),
+                                Score = (float)GetDouble(entry, "score"),
+                                Genres = GetGenreNames(entry),
+                                Index = result.Count + 1,
+                                AirDay = airDay,
+                                AirStartDate = airStartDate,
+                            });
                         }
 
-                        output.Add(new SeasonalAnimeData
-                        {
-                            Title = GetString(entry, "title"),
-                            Id = GetInt(entry, "mal_id"),
-                            ImgUrl = GetNestedString(entry, "images", "jpg", "image_url"),
-                            Episodes = GetInt(entry, "episodes").ToString(),
-                            Score = (float)GetDouble(entry, "score"),
-                            Genres = GetGenreNames(entry),
-                            Index = output.Count + 1,
-                            AirDay = airDay,
-                            AirStartDate = airStartDate,
-                        });
+                        if (!hasNext)
+                            break;
+
+                        await Task.Delay(TimeSpan.FromMilliseconds(500));
+                        currentPage++;
                     }
 
-                    if (!hasNext)
-                        break;
-
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
-                    currentPage++;
+                    DataCache.SaveSeasonalData(result, _season.Name);
+                    return result;
                 }
+                catch (Exception)
+                {
+                    if (attempt == maxAttempts)
+                        return result;
 
-                DataCache.SaveSeasonalData(output, _season.Name);
-                return output;
+                    await Task.Delay(TimeSpan.FromSeconds(2 * attempt));
+                }
             }
-            catch (Exception)
-            {
-                return output;
-            }
+
+            return output;
         }
 
         private static string GetCurrentSeason()

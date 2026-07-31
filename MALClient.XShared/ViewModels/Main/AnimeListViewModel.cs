@@ -964,6 +964,7 @@ namespace MALClient.XShared.ViewModels.Main
                 CurrentSeason = new AnimeSeason {Name = "Airing" };
                 setDefaultSeason = true;
             }
+            await LoadSeasonSelection(setDefaultSeason);
             //get top or seasonal anime
             var data = new List<ISeasonalAnimeBaseData>();
             page = page == 0 ? 1 : page;
@@ -1067,54 +1068,86 @@ namespace MALClient.XShared.ViewModels.Main
                     // wat
                 }
             }
-            if (WorkMode == AnimeListWorkModes.SeasonalAnime && SeasonSelection.Count == 0)
-            {
-                SeasonSelection.Clear();
-                var i = 0;
-                var currSeasonIndex = -1;
-                try
-                {
-                    var (items, _) = await JikanClient.GetPaginatedAsync("seasons");
-
-                    foreach (var s in items.Take(3))
-                    {
-                        var year = s.GetProperty("year").GetInt32();
-                        var seasons = s.GetProperty("seasons");
-                        foreach (var yearSeason in seasons.EnumerateArray())
-                        {
-                            var seasonStr = yearSeason.GetString();
-                            SeasonSelection.Add(new AnimeSeason
-                            {
-                                Name = $"{seasonStr} {year}",
-                                Year = year,
-                                Season = seasonStr switch
-                                {
-                                    "winter" => JikanDotNet.Season.Winter,
-                                    "spring" => JikanDotNet.Season.Spring,
-                                    "summer" => JikanDotNet.Season.Summer,
-                                    "fall" => JikanDotNet.Season.Fall,
-                                    _ => JikanDotNet.Season.Fall
-                                }
-                            });
-                            i++;
-                        }
-                    }
-
-                    if (setDefaultSeason && currSeasonIndex != -1)
-                    {
-                        CurrentSeason = SeasonSelection[currSeasonIndex];
-                        _seasonalUrlsSelectedIndex = currSeasonIndex;
-                        RaisePropertyChanged(() => SeasonalUrlsSelectedIndex);
-                    }
-                }
-                catch (Exception)
-                {
-
-                }
-            }
 
             _fetchingSeasonal = false;
             RefreshList();
+        }
+
+        private async Task LoadSeasonSelection(bool setDefaultSeason)
+        {
+            if (WorkMode != AnimeListWorkModes.SeasonalAnime || SeasonSelection.Count != 0)
+                return;
+
+            SeasonSelection.Clear();
+            var currentSeasonName = $"{GetCurrentSeasonName()} {DateTime.UtcNow.Year}";
+            try
+            {
+                var (items, _) = await JikanClient.GetPaginatedAsync("seasons");
+
+                foreach (var s in items.Take(3))
+                {
+                    var year = s.GetProperty("year").GetInt32();
+                    var seasons = s.GetProperty("seasons");
+                    foreach (var yearSeason in seasons.EnumerateArray())
+                    {
+                        var seasonStr = yearSeason.GetString();
+                        SeasonSelection.Add(new AnimeSeason
+                        {
+                            Name = $"{seasonStr} {year}",
+                            Year = year,
+                            Season = seasonStr switch
+                            {
+                                "winter" => Season.Winter,
+                                "spring" => Season.Spring,
+                                "summer" => Season.Summer,
+                                "fall" => Season.Fall,
+                                _ => Season.Fall
+                            }
+                        });
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            if (SeasonSelection.Count == 0)
+            {
+                var currentYear = DateTime.UtcNow.Year;
+                foreach (var seasonStr in new[] { "winter", "spring", "summer", "fall" })
+                    SeasonSelection.Add(new AnimeSeason
+                    {
+                        Name = $"{seasonStr} {currentYear}",
+                        Year = currentYear,
+                        Season = seasonStr switch
+                        {
+                            "winter" => Season.Winter,
+                            "spring" => Season.Spring,
+                            "summer" => Season.Summer,
+                            _ => Season.Fall
+                        }
+                    });
+            }
+
+            var currSeasonIndex = SeasonSelection.FindIndex(s => s.Name == currentSeasonName);
+
+            if (setDefaultSeason && currSeasonIndex != -1)
+            {
+                CurrentSeason = SeasonSelection[currSeasonIndex];
+                _seasonalUrlsSelectedIndex = currSeasonIndex;
+                RaisePropertyChanged(() => SeasonalUrlsSelectedIndex);
+            }
+        }
+
+        private static string GetCurrentSeasonName()
+        {
+            return DateTime.UtcNow.Month switch
+            {
+                <= 3 => "winter",
+                <= 6 => "spring",
+                <= 9 => "summer",
+                _ => "fall"
+            };
         }
 
         /// <summary>
