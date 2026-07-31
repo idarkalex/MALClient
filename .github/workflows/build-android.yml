@@ -13,6 +13,9 @@ jobs:
     runs-on: windows-2022
     permissions:
       contents: write
+    env:
+      ANDROID_HOME: C:\Program Files (x86)\Android\android-sdk
+      ANDROID_SDK_ROOT: C:\Program Files (x86)\Android\android-sdk
 
     steps:
       - name: Checkout repository
@@ -168,11 +171,18 @@ jobs:
         run: |
           $keystorePath = "$env:RUNNER_TEMP\keystore.jks"
           [System.IO.File]::WriteAllBytes($keystorePath, [System.Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
-          $buildTools = Get-ChildItem "$env:ANDROID_HOME\build-tools" -Directory | Sort-Object Name -Descending | Select-Object -First 1
+          Write-Host "Keystore written: $((Get-Item $keystorePath).Length) bytes"
+          $sdkRoot = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { "C:\Program Files (x86)\Android\android-sdk" }
+          $buildTools = Get-ChildItem (Join-Path $sdkRoot "build-tools") -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
+          if (-not $buildTools) { throw "No build-tools found under $sdkRoot" }
           $apksigner = Join-Path $buildTools.FullName "apksigner.bat"
+          if (-not (Test-Path $apksigner)) { throw "apksigner not found at $apksigner" }
+          Write-Host "Using apksigner: $apksigner"
           $apks = Get-ChildItem -Path "MALClient.Android\bin\Release" -Filter "*.apk" -Recurse
+          if (-not $apks) { throw "No APK found to sign under MALClient.Android\bin\Release" }
           foreach ($apk in $apks) {
             & $apksigner sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEY_PASSWORD" $apk.FullName
+            if ($LASTEXITCODE -ne 0) { throw "apksigner failed on $($apk.Name)" }
             Write-Host "Signed: $($apk.Name)"
           }
         env:
