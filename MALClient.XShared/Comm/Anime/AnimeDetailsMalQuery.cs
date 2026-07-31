@@ -99,7 +99,8 @@ namespace MALClient.XShared.Comm.Anime
                 output.Information.AddRange(info);
 
                 var stats = new List<string>();
-                if (!string.IsNullOrEmpty(scoreBy.ToString())) stats.Add($"Score: {GetDouble(data, "score"):N2} (scored by {scoredBy:N0} users)");
+                var score = GetDouble(data, "score");
+                if (score > 0) stats.Add($"Score: {score:N2} (scored by {scoredBy:N0} users)");
                 if (rank > 0) stats.Add($"Rank: #{rank}");
                 if (popularity > 0) stats.Add($"Popularity: #{popularity}");
                 if (members > 0) stats.Add($"Members: {members:N0}");

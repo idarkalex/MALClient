@@ -113,6 +113,14 @@ jobs:
           }
           throw "Build failed"
 
+      - name: Upload msbuild log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: msbuild-log
+          path: ${{ runner.temp }}\msbuild.txt
+          if-no-files-found: error
+
       - name: Sign APK (if keystore secrets provided)
         if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
         shell: pwsh
