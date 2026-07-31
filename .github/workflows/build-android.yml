@@ -144,7 +144,7 @@ jobs:
               git config user.email "ci@example.com"
               git config user.name "CI Bot"
               Copy-Item $logFile "$env:GITHUB_WORKSPACE\ci-msbuild.log"
-              git add ci-msbuild.log
+              git add -f ci-msbuild.log
               git commit -m "ci: upload msbuild log for $env:GITHUB_SHA" --allow-empty
               git push "https://x-access-token:$env:GITHUB_TOKEN@github.com/idarkalex/MALClient.git" HEAD:refs/heads/ci-logs --force
               Write-Host "##[error]msbuild log pushed to ci-logs branch"
