@@ -118,7 +118,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             var baseUrl =
                 $"https://api.myanimelist.net/v2/anime/season/{year}/{season}" +
-                "?limit=100&fields=id,title,main_picture,mean,media_type,num_episodes,genres,broadcast,start_date";
+                "?sort=anime_num_list_users&limit=100&fields=id,title,main_picture,mean,media_type,num_episodes,genres,broadcast,start_date";
 
             var clients = new List<HttpClient>();
             try
