@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MALClient.Models.Models.Anime;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
+using MALClient.XShared.ViewModels;
 
 namespace MALClient.XShared.Comm.Anime
 {
@@ -84,10 +85,13 @@ namespace MALClient.XShared.Comm.Anime
                     DataCache.SaveSeasonalData(result, _season.Name);
                     return result;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     if (attempt == maxAttempts)
+                    {
+                        ResourceLocator.ClipboardProvider.SetText($"[Seasonal] {_season.Name}\n{e}");
                         return result;
+                    }
 
                     await Task.Delay(TimeSpan.FromSeconds(2 * attempt));
                 }
