@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MALClient.Models.Models.Anime;
@@ -27,6 +28,9 @@ namespace MALClient.XShared.Comm.Anime
 
             if (output.Count != 0) return output;
 
+            var requestedYear = _season.Year != 0 ? _season.Year : DateTime.UtcNow.Year;
+            var requestedSeason = _season.Year != 0 ? SeasonEnumToString(_season.Season) : GetCurrentSeason();
+
             const int maxAttempts = 3;
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
@@ -36,9 +40,6 @@ namespace MALClient.XShared.Comm.Anime
                     int currentPage = 1;
                     while (true)
                     {
-                        var requestedYear = _season.Year != 0 ? _season.Year : DateTime.UtcNow.Year;
-                        var requestedSeason = _season.Year != 0 ? SeasonEnumToString(_season.Season) : GetCurrentSeason();
-
                         var (items, hasNext) = await JikanClient.GetPaginatedAsync(
                             $"seasons/{requestedYear}/{requestedSeason}?page={currentPage}");
 
@@ -89,6 +90,13 @@ namespace MALClient.XShared.Comm.Anime
                 {
                     if (attempt == maxAttempts)
                     {
+                        var official = await GetSeasonalFromOfficialMalApi(requestedYear, requestedSeason);
+                        if (official.Count != 0)
+                        {
+                            DataCache.SaveSeasonalData(official, _season.Name);
+                            return official;
+                        }
+
                         ResourceLocator.ClipboardProvider.SetText($"[Seasonal] {_season.Name}\n{e}");
                         return result;
                     }
@@ -98,6 +106,121 @@ namespace MALClient.XShared.Comm.Anime
             }
 
             return output;
+        }
+
+        private static async Task<List<SeasonalAnimeData>> GetSeasonalFromOfficialMalApi(int year, string season)
+        {
+            var baseUrl =
+                $"https://api.myanimelist.net/v2/anime/season/{year}/{season}" +
+                "?limit=100&fields=id,title,main_picture,mean,media_type,num_episodes,genres,broadcast,start_date";
+
+            var clients = new List<HttpClient>();
+            try
+            {
+                clients.Add(await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync());
+            }
+            catch (Exception)
+            {
+            }
+            var anonClient = new HttpClient();
+            anonClient.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", "183063f74126e7551b00c3b4de66986c");
+            clients.Add(anonClient);
+
+            foreach (var client in clients)
+            {
+                var result = new List<SeasonalAnimeData>();
+                var offset = 0;
+                var ok = true;
+                while (true)
+                {
+                    try
+                    {
+                        using var response = await client.GetAsync($"{baseUrl}&offset={offset}");
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            ok = false;
+                            break;
+                        }
+
+                        var json = await response.Content.ReadAsStringAsync();
+                        using var doc = JsonDocument.Parse(json);
+                        var root = doc.RootElement;
+
+                        if (root.TryGetProperty("data", out var dataArr) &&
+                            dataArr.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var entry in dataArr.EnumerateArray())
+                                result.Add(ParseSeasonalEntry(entry, result.Count + 1));
+                        }
+
+                        var hasNext = root.TryGetProperty("paging", out var paging) &&
+                                      paging.ValueKind == JsonValueKind.Object &&
+                                      paging.TryGetProperty("next", out var next) &&
+                                      next.ValueKind == JsonValueKind.String &&
+                                      !string.IsNullOrEmpty(next.GetString());
+                        if (!hasNext)
+                            break;
+
+                        offset += 100;
+                    }
+                    catch (Exception)
+                    {
+                        ok = false;
+                        break;
+                    }
+                }
+
+                if (ok && result.Count != 0)
+                    return result;
+            }
+
+            return new List<SeasonalAnimeData>();
+        }
+
+        private static SeasonalAnimeData ParseSeasonalEntry(JsonElement entry, int index)
+        {
+            var airDay = -1;
+            var airStartDate = "";
+            if (entry.TryGetProperty("broadcast", out var broadcast) &&
+                broadcast.TryGetProperty("day_of_the_week", out var dayProp) &&
+                dayProp.ValueKind == JsonValueKind.String)
+            {
+                airDay = dayProp.GetString()?.ToLowerInvariant() switch
+                {
+                    "monday" => 1,
+                    "tuesday" => 2,
+                    "wednesday" => 3,
+                    "thursday" => 4,
+                    "friday" => 5,
+                    "saturday" => 6,
+                    "sunday" => 7,
+                    _ => -1
+                };
+            }
+            if (entry.TryGetProperty("start_date", out var startProp) &&
+                startProp.ValueKind == JsonValueKind.String)
+            {
+                var startStr = startProp.GetString();
+                if (DateTime.TryParse(startStr, out var dt))
+                    airStartDate = dt.ToString("yyyy-MM-dd");
+            }
+
+            var imgUrl = GetNestedString(entry, "main_picture", "large");
+            if (string.IsNullOrEmpty(imgUrl))
+                imgUrl = GetNestedString(entry, "main_picture", "medium");
+
+            return new SeasonalAnimeData
+            {
+                Title = GetString(entry, "title"),
+                Id = GetInt(entry, "id"),
+                ImgUrl = imgUrl,
+                Episodes = GetInt(entry, "num_episodes").ToString(),
+                Score = (float)GetDouble(entry, "mean"),
+                Genres = GetGenreNames(entry),
+                Index = index,
+                AirDay = airDay,
+                AirStartDate = airStartDate,
+            };
         }
 
         private static string GetCurrentSeason()
