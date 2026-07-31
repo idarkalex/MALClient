@@ -24,6 +24,19 @@ namespace MALClient.XShared.Comm.Anime
 
             try
             {
+                output = await TryGetDetailsFromOfficialMalApi(id, animeMode);
+                if (output != null)
+                {
+                    DataCache.SaveAnimeSearchResultsData(id, output, animeMode);
+                    return output;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            try
+            {
                 var data = await JikanClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}");
 
                 if (animeMode)
@@ -82,13 +95,6 @@ namespace MALClient.XShared.Comm.Anime
             }
             catch (Exception e)
             {
-                output = await TryGetDetailsFromOfficialMalApi(id, animeMode);
-                if (output != null)
-                {
-                    DataCache.SaveAnimeSearchResultsData(id, output, animeMode);
-                    return output;
-                }
-
                 ResourceLocator.ClipboardProvider.SetText(
                     $"[Details] {(animeMode ? "anime" : "manga")}/{id}\n{e}");
             }
