@@ -16,6 +16,12 @@ namespace MALClient.XShared.Comm
         private const int RequestSpacingMs = 1100;
         private const int MaxAttempts = 4;
 
+        private static readonly string[] BaseUrls =
+        {
+            "https://api.tenrai.org/v1",
+            "https://api.jikan.moe/v4"
+        };
+
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -27,7 +33,29 @@ namespace MALClient.XShared.Comm
             Client.DefaultRequestHeaders.Add("User-Agent", "MALClient/3.0");
         }
 
-        private static async Task<string> GetStringAsync(string url)
+        private static async Task<string> GetStringAsync(string endpoint)
+        {
+            Exception lastError = null;
+            foreach (var baseUrl in BaseUrls)
+            {
+                try
+                {
+                    return await GetStringCoreAsync($"{baseUrl}/{endpoint}");
+                }
+                catch (HttpRequestException e)
+                {
+                    lastError = e;
+                }
+                catch (TaskCanceledException e)
+                {
+                    lastError = e;
+                }
+            }
+
+            throw lastError ?? new HttpRequestException("All Jikan mirrors failed.");
+        }
+
+        private static async Task<string> GetStringCoreAsync(string url)
         {
             for (int attempt = 1; attempt <= MaxAttempts; attempt++)
             {
@@ -83,16 +111,21 @@ namespace MALClient.XShared.Comm
             throw new HttpRequestException("Unexpected retry exhaustion.");
         }
 
+        public static async Task<string> GetRawJsonAsync(string endpoint)
+        {
+            return await GetStringAsync(endpoint);
+        }
+
         public static async Task<JsonElement> GetDataAsync(string endpoint)
         {
-            var json = await GetStringAsync($"https://api.jikan.moe/v4/{endpoint}");
+            var json = await GetStringAsync(endpoint);
             using var doc = JsonDocument.Parse(json);
             return doc.RootElement.GetProperty("data").Clone();
         }
 
         public static async Task<(List<JsonElement> Items, bool HasNextPage)> GetPaginatedAsync(string endpoint)
         {
-            var json = await GetStringAsync($"https://api.jikan.moe/v4/{endpoint}");
+            var json = await GetStringAsync(endpoint);
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
             var data = root.GetProperty("data");

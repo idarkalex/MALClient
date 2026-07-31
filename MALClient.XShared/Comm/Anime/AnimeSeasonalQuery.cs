@@ -136,17 +136,13 @@ namespace MALClient.XShared.Comm.Anime
             {
                 var result = new List<SeasonalAnimeData>();
                 var offset = 0;
-                var ok = true;
                 while (true)
                 {
                     try
                     {
                         using var response = await client.GetAsync($"{baseUrl}&offset={offset}");
                         if (!response.IsSuccessStatusCode)
-                        {
-                            ok = false;
                             break;
-                        }
 
                         var json = await response.Content.ReadAsStringAsync();
                         using var doc = JsonDocument.Parse(json);
@@ -155,8 +151,14 @@ namespace MALClient.XShared.Comm.Anime
                         if (root.TryGetProperty("data", out var dataArr) &&
                             dataArr.ValueKind == JsonValueKind.Array)
                         {
-                            foreach (var entry in dataArr.EnumerateArray())
+                            foreach (var item in dataArr.EnumerateArray())
+                            {
+                                var entry = item;
+                                if (item.TryGetProperty("node", out var node) &&
+                                    node.ValueKind == JsonValueKind.Object)
+                                    entry = node;
                                 result.Add(ParseSeasonalEntry(entry, result.Count + 1));
+                            }
                         }
 
                         var hasNext = root.TryGetProperty("paging", out var paging) &&
@@ -171,12 +173,11 @@ namespace MALClient.XShared.Comm.Anime
                     }
                     catch (Exception)
                     {
-                        ok = false;
                         break;
                     }
                 }
 
-                if (ok && result.Count != 0)
+                if (result.Count != 0)
                     return result;
             }
 

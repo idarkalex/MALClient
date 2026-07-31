@@ -39,102 +39,67 @@ namespace MALClient.XShared.Comm.Anime
 
             try
             {
-                Root reviews = null;
+                var json = await JikanClient.GetRawJsonAsync(
+                    $"{(anime ? "anime" : "manga")}/{_targetId}/reviews?page=1");
+                var reviews = JsonSerializer.Deserialize<Root>(json);
 
-                while (true)
+                if (reviews?.Data != null)
                 {
-                    if (_anime)
+                    foreach (var review in reviews.Data)
                     {
-                        try
+                        output.Add(new AnimeReviewData
                         {
-                            var json = await _client.GetStringAsync(
-                                $"https://api.jikan.moe/v4/anime/{_targetId}/reviews?page=1");
-                            reviews = JsonSerializer.Deserialize<Root>(json);
-                            break;
-                        }
-                        catch (HttpRequestException e)
-                        {
-                            if (e.Message.Contains("429"))
-                                await Task.Delay(TimeSpan.FromSeconds(1));
-                            else
-                                throw;
-                        }
-
+                            AuthorAvatar = review.User.Images.Jpg.ImageUrl ?? review.User.Images.Webp.ImageUrl,
+                            Author = review.User.Username,
+                            Date = review.Date?.ToString("d") ?? "N/A",
+                            EpisodesSeen = review.EpisodesWatched?.ToString() ?? "N/A",
+                            HelpfulCount = review.Reactions.Informative.ToString() ?? "N/A",
+                            Id = review.MalId.ToString(),
+                            OverallRating = review.Score?.ToString() ?? "N/A",
+                            Review = review.Review,
+                            HasSpoilers = review.IsSpoiler,
+                            IsPreliminary = review.IsPreliminary,
+                            Score = new List<ReviewScore>
+                            {
+                                new ReviewScore
+                                {
+                                    Field = "Informative",
+                                    Score = review.Reactions.Informative?.ToString() ?? "N/A"
+                                },
+                                new ReviewScore
+                                {
+                                    Field = "Confusing",
+                                    Score = review.Reactions.Confusing?.ToString() ?? "N/A"
+                                },
+                                new ReviewScore
+                                {
+                                    Field = "Creative",
+                                    Score = review.Reactions.Creative?.ToString() ?? "N/A"
+                                },
+                                new ReviewScore
+                                {
+                                    Field = "Funny",
+                                    Score = review.Reactions.Funny?.ToString() ?? "N/A"
+                                },
+                                new ReviewScore
+                                {
+                                    Field = "Love It",
+                                    Score = review.Reactions.LoveIt?.ToString() ?? "N/A"
+                                },
+                                new ReviewScore
+                                {
+                                    Field = "Well Written",
+                                    Score = review.Reactions.WellWritten?.ToString() ?? "N/A"
+                                },
+                            }
+                        });
                     }
-                    else
-                    {
-                        try
-                        {
-                            var json = await _client.GetStringAsync(
-                                $"https://api.jikan.moe/v4/manga/{_targetId}/reviews?page=1");
-                            reviews = JsonSerializer.Deserialize<Root>(json);
-                            break;
-                        }
-                        catch (HttpRequestException e)
-                        {
-                            if (e.Message.Contains("429"))
-                                await Task.Delay(TimeSpan.FromSeconds(1));
-                            else
-                                throw;
-                        }
-                    }
-                }
-
-                foreach (var review in reviews.Data)
-                {
-                    output.Add(new AnimeReviewData
-                    {
-                        AuthorAvatar = review.User.Images.Jpg.ImageUrl ?? review.User.Images.Webp.ImageUrl,
-                        Author = review.User.Username,
-                        Date = review.Date?.ToString("d") ?? "N/A",
-                        EpisodesSeen = review.EpisodesWatched?.ToString() ?? "N/A",
-                        HelpfulCount = review.Reactions.Informative.ToString() ?? "N/A",
-                        Id = review.MalId.ToString(),
-                        OverallRating = review.Score?.ToString() ?? "N/A",
-                        Review = review.Review,
-                        HasSpoilers = review.IsSpoiler,
-                        IsPreliminary = review.IsPreliminary,
-                        Score = new List<ReviewScore>
-                        {
-                            new ReviewScore
-                            {
-                                Field = "Informative",
-                                Score = review.Reactions.Informative?.ToString() ?? "N/A"
-                            },
-                            new ReviewScore
-                            {
-                                Field = "Confusing",
-                                Score = review.Reactions.Confusing?.ToString() ?? "N/A"
-                            },
-                            new ReviewScore
-                            {
-                                Field = "Creative",
-                                Score = review.Reactions.Creative?.ToString() ?? "N/A"
-                            },
-                            new ReviewScore
-                            {
-                                Field = "Funny",
-                                Score = review.Reactions.Funny?.ToString() ?? "N/A"
-                            },
-                            new ReviewScore
-                            {
-                                Field = "Love It",
-                                Score = review.Reactions.LoveIt?.ToString() ?? "N/A"
-                            },
-                            new ReviewScore
-                            {
-                                Field = "Well Written",
-                                Score = review.Reactions.WellWritten?.ToString() ?? "N/A"
-                            },
-                        }
-                    });
 
                     DataCache.SaveAnimeReviews(_targetId, output, _anime);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                
             }
             
             return output;
