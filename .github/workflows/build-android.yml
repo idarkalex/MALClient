@@ -183,7 +183,6 @@ jobs:
           }
           if (-not $env:ANDROID_KEYSTORE_PASSWORD) { throw "ANDROID_KEYSTORE_PASSWORD secret is missing" }
           if (-not $env:ANDROID_KEY_ALIAS) { throw "ANDROID_KEY_ALIAS secret is missing" }
-          if (-not $env:ANDROID_KEY_PASSWORD) { throw "ANDROID_KEY_PASSWORD secret is missing" }
           Write-Host "Keystore written: $((Get-Item $keystorePath).Length) bytes"
           Write-Host "Keystore sha256: $((Get-FileHash $keystorePath -Algorithm SHA256).Hash)"
 
@@ -196,14 +195,14 @@ jobs:
           Write-Host "Using apksigner.jar: $apksignerJar"
 
           Write-Host "=== Verifying keystore with keytool ==="
-          & $keytool -list -keystore $keystorePath -storepass $env:ANDROID_KEYSTORE_PASSWORD -alias $env:ANDROID_KEY_ALIAS -keypass $env:ANDROID_KEY_PASSWORD 2>&1 | ForEach-Object { Write-Host "KEYTOOL: $_" }
+          & $keytool -list -keystore $keystorePath -storepass $env:ANDROID_KEYSTORE_PASSWORD -alias $env:ANDROID_KEY_ALIAS 2>&1 | ForEach-Object { Write-Host "KEYTOOL: $_" }
           if ($LASTEXITCODE -ne 0) { throw "Keystore verification FAILED. Check ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD against the keystore." }
 
           $apks = Get-ChildItem -Path "MALClient.Android\bin\Release" -Filter "*.apk" -Recurse
           if (-not $apks) { throw "No APK found to sign under MALClient.Android\bin\Release" }
           foreach ($apk in $apks) {
             Write-Host "=== Signing $($apk.Name) ==="
-            & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEY_PASSWORD" $apk.FullName 2>&1 | ForEach-Object { Write-Host "APKSIGNER: $_" }
+            & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" $apk.FullName 2>&1 | ForEach-Object { Write-Host "APKSIGNER: $_" }
             if ($LASTEXITCODE -ne 0) { throw "apksigner failed on $($apk.Name) with exit code $LASTEXITCODE" }
             & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar verify --print-certs $apk.FullName 2>&1 | ForEach-Object { Write-Host "VERIFY: $_" }
             Write-Host "Signed: $($apk.Name)"
@@ -212,7 +211,6 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Upload APK artifact
         if: success()
