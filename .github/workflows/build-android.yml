@@ -22,6 +22,29 @@ jobs:
           distribution: microsoft
           java-version: 17
 
+      - name: Install Android SDK platforms
+        shell: pwsh
+        run: |
+          $sdk = "C:\Program Files (x86)\Android\android-sdk"
+          if (-not (Test-Path $sdk)) { New-Item -ItemType Directory -Path $sdk -Force | Out-Null }
+          $sdkmanager = Get-ChildItem -Path $sdk -Recurse -Filter "sdkmanager.bat" -ErrorAction SilentlyContinue | Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $sdkmanager) {
+            $zip = "$env:TEMP\cmdtools.zip"
+            Invoke-WebRequest -Uri "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip" -OutFile $zip -UseBasicParsing
+            $tmp = "$env:TEMP\cmdtools"
+            if (Test-Path $tmp) { Remove-Item -Recurse -Force $tmp }
+            Expand-Archive -Path $zip -DestinationPath $tmp -Force
+            New-Item -ItemType Directory -Path "$sdk\cmdline-tools\latest" -Force | Out-Null
+            Copy-Item "$tmp\cmdline-tools\*" "$sdk\cmdline-tools\latest" -Recurse -Force
+            $sdkmanager = "$sdk\cmdline-tools\latest\bin\sdkmanager.bat"
+          }
+          Write-Host "Using sdkmanager: $($sdkmanager.FullName)"
+          "y" | & $sdkmanager.FullName --licenses 2>&1 | Out-Null
+          & $sdkmanager.FullName --install "platforms;android-28" "platforms;android-31" "platforms;android-33" "build-tools;34.0.0" 2>&1 | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "sdkmanager install failed" }
+          Write-Host "Installed platforms:"
+          Get-ChildItem "$sdk\platforms" -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+
       - name: Install Xamarin Android SDK
         shell: pwsh
         run: |
