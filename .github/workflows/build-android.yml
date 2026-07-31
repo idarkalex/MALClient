@@ -128,10 +128,16 @@ jobs:
         run: |
           $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $apk) {
-            Write-Host "##[error]No APK in MALClient.Android\bin. Dumping bin tree:"
-            Get-ChildItem -Path "MALClient.Android\bin" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 40 -ExpandProperty FullName | ForEach-Object { Write-Host "##[error]BIN: $_" }
-            Write-Host "##[error]Searching whole workspace for .apk:"
-            Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 10 -ExpandProperty FullName | ForEach-Object { Write-Host "##[error]APK: $_" }
+            Write-Host "##[error]No APK in MALClient.Android\bin"
+            $logFile = "$env:RUNNER_TEMP\msbuild.txt"
+            if (Test-Path $logFile) {
+              Write-Host "##[error]=== msbuild lines mentioning apk ==="
+              Select-String -Path $logFile -Pattern "apk|SignAndroidPackage|_BuildApk|Package" -CaseSensitive:$false | Select-Object -First 4 | ForEach-Object { Write-Host "##[error]APKLOG: $($_.Line)" }
+              Write-Host "##[error]=== msbuild tail ==="
+              Get-Content $logFile -Tail 6 | ForEach-Object { Write-Host "##[error]LOG: $_" }
+            }
+            Write-Host "##[error]Searching workspace for .apk:"
+            Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 5 -ExpandProperty FullName | ForEach-Object { Write-Host "##[error]APK: $_" }
             exit 1
           }
           Write-Host "Found APK: $($apk.FullName)"
