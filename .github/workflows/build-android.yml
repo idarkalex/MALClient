@@ -92,7 +92,7 @@ jobs:
       - name: Build Android APK (Release)
         shell: cmd
         run: |
-          msbuild MALClient.Android\MALClient.Android.csproj /t:Rebuild /p:Configuration=Release /p:Platform=AnyCPU > "%RUNNER_TEMP%\msbuild.txt" 2>&1
+          msbuild MALClient.Android\MALClient.Android.csproj /t:SignAndroidPackage /p:Configuration=Release /p:Platform=AnyCPU > "%RUNNER_TEMP%\msbuild.txt" 2>&1
           set ERR=%ERRORLEVEL%
           type "%RUNNER_TEMP%\msbuild.txt"
           if %ERR% neq 0 ( exit /b 1 )
