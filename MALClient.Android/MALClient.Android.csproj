@@ -96,6 +96,7 @@
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AoLibsCompat\ObservableRecyclerAdapter.cs" />
     <Compile Include="Activities\MainActivity.ads.cs" />
     <Compile Include="Activities\MainActivity.cs" />
     <Compile Include="Activities\MainActivity.hamburger.cs" />
