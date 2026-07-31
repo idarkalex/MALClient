@@ -28,18 +28,16 @@ jobs:
           path: ${{ github.workspace }}\packages
           key: nuget-${{ hashFiles('**/packages.config') }}-v3
 
-      - name: Cache VS installer packages
-        uses: actions/cache@v4
-        with:
-          path: C:\ProgramData\Microsoft\VisualStudio\Packages
-          key: vs-installer-packages-3
-
-      - name: Cache Android SDK
+      - name: Cache Android SDK platforms
         id: cache-sdk
         uses: actions/cache@v4
         with:
-          path: C:\Program Files (x86)\Android\android-sdk
-          key: android-sdk-3
+          path: |
+            C:\Program Files (x86)\Android\android-sdk\platforms\android-28
+            C:\Program Files (x86)\Android\android-sdk\platforms\android-31
+            C:\Program Files (x86)\Android\android-sdk\platforms\android-33
+            C:\Program Files (x86)\Android\android-sdk\build-tools\34.0.0
+          key: android-sdk-platforms-1
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
@@ -69,7 +67,7 @@ jobs:
         run: |
           Write-Host "SDK cache hit: ${{ steps.cache-sdk.outputs.cache-hit }}"
           $sdk = "C:\Program Files (x86)\Android\android-sdk"
-          $required = @("platforms\android-28", "platforms\android-31", "platforms\android-33")
+          $required = @("platforms\android-28", "platforms\android-31", "platforms\android-33", "build-tools\34.0.0")
           $missing = $required | Where-Object { -not (Test-Path (Join-Path $sdk $_)) }
           if (-not $missing) {
             Write-Host "Android platforms already present, skipping install"
