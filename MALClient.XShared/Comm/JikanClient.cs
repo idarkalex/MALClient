@@ -18,8 +18,7 @@ namespace MALClient.XShared.Comm
 
         private static readonly string[] BaseUrls =
         {
-            "https://api.tenrai.org/v1",
-            "https://api.jikan.moe/v4"
+            "https://api.tenrai.org/v1"
         };
 
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
