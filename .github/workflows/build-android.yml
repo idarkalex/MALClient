@@ -80,11 +80,11 @@ jobs:
           if (Test-Path $logFile) {
             $lines = Get-Content -Path $logFile
             Write-Host "Total lines: $($lines.Count)"
-            $tail = $lines | Select-Object -Last 40
-            Write-Host "=== LAST 40 LINES ==="
-            $tail | ForEach-Object { if ($_ -match "error|Error|warning|Warning|FAILED|fatal|cannot|not found|missing") { Write-Host "##[error]$_" } else { Write-Host $_ } }
-            "### MSBuild Build Failure - Last 40 Lines" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
-            $tail | ForEach-Object { $_ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append }
+            $errors = $lines | Where-Object { $_ -match ":\s*error|Error\(s\)|Build FAILED|MSBUILD\s*:" }
+            Write-Host "=== ERRORS ($($errors.Count)) ==="
+            $errors | ForEach-Object { Write-Host "##[error]$_" }
+            "### MSBuild Build Errors" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+            $errors | ForEach-Object { $_ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append }
           } else {
             Write-Host "##[error]Log file not found at $logFile"
           }
@@ -98,7 +98,7 @@ jobs:
           [System.IO.File]::WriteAllBytes($keystorePath, [System.Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
           $buildTools = Get-ChildItem "$env:ANDROID_HOME\build-tools" -Directory | Sort-Object Name -Descending | Select-Object -First 1
           $apksigner = Join-Path $buildTools.FullName "apksigner.bat"
-          $apks = Get-ChildItem -Path "MALClient.Android\bin\AndroidRelease" -Filter "*.apk" -Recurse
+          $apks = Get-ChildItem -Path "MALClient.Android\bin\Release" -Filter "*.apk" -Recurse
           foreach ($apk in $apks) {
             & $apksigner sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEY_PASSWORD" $apk.FullName
             Write-Host "Signed: $($apk.Name)"
