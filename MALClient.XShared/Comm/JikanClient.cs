@@ -13,6 +13,9 @@ namespace MALClient.XShared.Comm
         private static readonly SemaphoreSlim RateLimiter = new SemaphoreSlim(1, 1);
         private static DateTime _lastRequest = DateTime.MinValue;
 
+        private const int RequestSpacingMs = 1100;
+        private const int MaxAttempts = 4;
+
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -26,20 +29,58 @@ namespace MALClient.XShared.Comm
 
         private static async Task<string> GetStringAsync(string url)
         {
-            await RateLimiter.WaitAsync();
-            try
+            for (int attempt = 1; attempt <= MaxAttempts; attempt++)
             {
-                var sinceLast = DateTime.UtcNow - _lastRequest;
-                if (sinceLast.TotalMilliseconds < 350)
-                    await Task.Delay(350 - (int)sinceLast.TotalMilliseconds);
+                HttpResponseMessage response;
+                await RateLimiter.WaitAsync();
+                try
+                {
+                    var sinceLast = DateTime.UtcNow - _lastRequest;
+                    if (sinceLast.TotalMilliseconds < RequestSpacingMs)
+                        await Task.Delay(RequestSpacingMs - (int)sinceLast.TotalMilliseconds);
 
-                _lastRequest = DateTime.UtcNow;
-                return await Client.GetStringAsync(url);
+                    _lastRequest = DateTime.UtcNow;
+                    response = await Client.GetAsync(url);
+                }
+                finally
+                {
+                    RateLimiter.Release();
+                }
+
+                using (response)
+                {
+                    var status = (int)response.StatusCode;
+
+                    if (status == 429)
+                    {
+                        var retryAfterSeconds = response.Headers.RetryAfter?.Delta?.TotalSeconds;
+                        var delay = retryAfterSeconds ?? 2.0 * attempt;
+                        if (attempt < MaxAttempts)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(Math.Min(delay, 15)));
+                            continue;
+                        }
+                        throw new HttpRequestException("Jikan rate limit exceeded (429).");
+                    }
+
+                    if (status >= 500)
+                    {
+                        if (attempt < MaxAttempts)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(2 * attempt));
+                            continue;
+                        }
+                        throw new HttpRequestException($"Jikan server error {(int)response.StatusCode}.");
+                    }
+
+                    if (!response.IsSuccessStatusCode)
+                        throw new HttpRequestException($"Jikan request failed: {(int)response.StatusCode}");
+
+                    return await response.Content.ReadAsStringAsync();
+                }
             }
-            finally
-            {
-                RateLimiter.Release();
-            }
+
+            throw new HttpRequestException("Unexpected retry exhaustion.");
         }
 
         public static async Task<JsonElement> GetDataAsync(string endpoint)
@@ -74,10 +115,6 @@ namespace MALClient.XShared.Comm
                 var (items, hasNext) = await GetPaginatedAsync(endpointForPage(page));
                 allItems.AddRange(items);
                 if (!hasNext) break;
-
-                var sinceLast = DateTime.UtcNow - _lastRequest;
-                if (sinceLast.TotalMilliseconds < 500)
-                    await Task.Delay(500 - (int)sinceLast.TotalMilliseconds);
             }
             return allItems;
         }

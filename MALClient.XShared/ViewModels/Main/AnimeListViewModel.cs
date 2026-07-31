@@ -1079,6 +1079,8 @@ namespace MALClient.XShared.ViewModels.Main
                 return;
 
             SeasonSelection.Clear();
+            SeasonYears.Clear();
+            SeasonYears.Add(DateTime.UtcNow.Year.ToString());
             var currentSeasonName = $"{GetCurrentSeasonName()} {DateTime.UtcNow.Year}";
             try
             {
@@ -1087,6 +1089,9 @@ namespace MALClient.XShared.ViewModels.Main
                 foreach (var s in items.Take(3))
                 {
                     var year = s.GetProperty("year").GetInt32();
+                    var yearStr = year.ToString();
+                    if (!SeasonYears.Contains(yearStr))
+                        SeasonYears.Add(yearStr);
                     var seasons = s.GetProperty("seasons");
                     foreach (var yearSeason in seasons.EnumerateArray())
                     {
@@ -1128,6 +1133,9 @@ namespace MALClient.XShared.ViewModels.Main
                         }
                     });
             }
+
+            SeasonYears.Sort();
+            SeasonYears.Reverse();
 
             var currSeasonIndex = SeasonSelection.FindIndex(s => s.Name == currentSeasonName);
 
