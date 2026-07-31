@@ -128,8 +128,10 @@ jobs:
         run: |
           $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $apk) {
-            Write-Host "##[error]No APK produced in MALClient.Android\bin"
-            Get-ChildItem -Path "MALClient.Android\bin" -Recurse -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+            Write-Host "##[error]No APK in MALClient.Android\bin. Dumping bin tree:"
+            Get-ChildItem -Path "MALClient.Android\bin" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 40 -ExpandProperty FullName | ForEach-Object { Write-Host "##[error]BIN: $_" }
+            Write-Host "##[error]Searching whole workspace for .apk:"
+            Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 10 -ExpandProperty FullName | ForEach-Object { Write-Host "##[error]APK: $_" }
             exit 1
           }
           Write-Host "Found APK: $($apk.FullName)"
