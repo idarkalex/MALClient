@@ -483,9 +483,6 @@
     <AndroidResource Include="Resources\drawable\dialog_corner_background.xml" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\drawable\get_it_on_windows.png" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon_acc_settings.xml" />
   </ItemGroup>
   <ItemGroup>
