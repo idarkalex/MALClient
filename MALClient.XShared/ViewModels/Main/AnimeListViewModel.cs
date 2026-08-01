@@ -307,7 +307,8 @@ namespace MALClient.XShared.ViewModels.Main
                         if (!gotArgs)
                         {
                             SortDescending = false;
-                            SetSortOrder(SortOptions.SortWatched); //index
+                            //Seasonal defaults to MAL score (descending), other modes to index order
+                            SetSortOrder(WorkMode == AnimeListWorkModes.SeasonalAnime ? SortOptions.SortScore : SortOptions.SortWatched);
                             SetDesiredStatus(null);
                             CurrentSeason = null;
                             SeasonSelection.Clear();
