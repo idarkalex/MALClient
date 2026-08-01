@@ -358,7 +358,7 @@ namespace MALClient.Android.Fragments
             foreach (var season in ViewModel.SeasonSelection)
             {
                 var item = HamburgerUtilities.GetBaseSecondaryItem();
-                item.WithName(season.Name);
+                item.WithName(season.DisplayName);
                 item.WithIdentifier(index++);
 
                 items.Add(item);

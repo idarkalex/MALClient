@@ -53,6 +53,8 @@ namespace MALClient.Android
                 //HttpClient = new HttpClient(new NativeMessageHandler(false, new TLSConfig())
                 //    {AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate}),
                 ExecuteCallbacksOnUIThread = true,
+                MaxParallelDownloads = 12,
+                BitmapOptimizations = true,
                 //AnimateGifs = false,
             });
             //System.Diagnostics.Debug.WriteLine($"ImgSer init {sp.ElapsedMilliseconds}");

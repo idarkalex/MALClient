@@ -1134,6 +1134,17 @@ namespace MALClient.XShared.ViewModels.Main
                     });
             }
 
+            var ordered = SeasonSelection
+                .OrderByDescending(s => s.Year)
+                .ThenByDescending(s => SeasonRank(s.Season))
+                .ToList();
+            SeasonSelection.Clear();
+            foreach (var season in ordered)
+            {
+                season.IsCurrentSeason = season.Name == currentSeasonName;
+                SeasonSelection.Add(season);
+            }
+
             SeasonYears.Sort();
             SeasonYears.Reverse();
 
@@ -1155,6 +1166,18 @@ namespace MALClient.XShared.ViewModels.Main
                 <= 6 => "spring",
                 <= 9 => "summer",
                 _ => "fall"
+            };
+        }
+
+        private static int SeasonRank(JikanDotNet.Season season)
+        {
+            return season switch
+            {
+                JikanDotNet.Season.Winter => 0,
+                JikanDotNet.Season.Spring => 1,
+                JikanDotNet.Season.Summer => 2,
+                JikanDotNet.Season.Fall => 3,
+                _ => 3
             };
         }
 

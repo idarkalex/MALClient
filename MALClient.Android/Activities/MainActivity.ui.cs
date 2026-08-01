@@ -231,7 +231,7 @@ namespace MALClient.Android.Activities
                     if (ViewModelLocator.AnimeList.WorkMode == AnimeListWorkModes.SeasonalAnime)
                     {
                         _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
-                            ViewModelLocator.AnimeList.SeasonSelection.Select(season => season.Name).ToList(),
+                            ViewModelLocator.AnimeList.SeasonSelection.Select(season => season.DisplayName).ToList(),
                             OnUpperStatusSeasonSelected);
                     }
                     else

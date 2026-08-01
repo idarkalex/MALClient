@@ -211,7 +211,7 @@ namespace MALClient.Android.Flyouts
             int index = 0;
             foreach (var season in viewModel.SeasonSelection)
             {
-                droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(BuildItem(context, season.Name, listener, index++)));
+                droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(BuildItem(context, season.DisplayName, listener, index++)));
             }
             droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(Resource.Layout.SeasonSelectionPopup));
 

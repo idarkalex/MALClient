@@ -35,7 +35,12 @@ namespace MALClient.Android
                     pos = originUrl.IndexOf(".webp", StringComparison.InvariantCulture);
 
                 if (pos != -1)
+                {
+                    var stem = originUrl.Substring(0, pos);
+                    if (stem.EndsWith("l") || stem.EndsWith("m") || stem.EndsWith("s"))
+                        return originUrl;
                     return originUrl.Insert(pos, "l");
+                }
                 return originUrl;
             }
             return originUrl;
@@ -74,7 +79,7 @@ namespace MALClient.Android
                     return;
 
                 image.SetImageResource(global::Android.Resource.Color.Transparent);
-                var work = ImageService.Instance.LoadUrl(targetUrl);
+                var work = ImageService.Instance.LoadUrl(targetUrl).DownSampleInDip(0, 320);
                 if (loader != null)
                     work.Finish(scheduledWork => loader.Visibility = ViewStates.Gone);
                 if (imgLoaded != true && !LoadedImgs.Contains(targetUrl))
