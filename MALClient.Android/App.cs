@@ -53,7 +53,7 @@ namespace MALClient.Android
                 //HttpClient = new HttpClient(new NativeMessageHandler(false, new TLSConfig())
                 //    {AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate}),
                 ExecuteCallbacksOnUIThread = true,
-                MaxParallelDownloads = 12,
+                DecodingMaxParallelTasks = 6,
                 BitmapOptimizations = true,
                 //AnimateGifs = false,
             });
