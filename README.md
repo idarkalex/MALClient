@@ -6,11 +6,11 @@
   Robust MyAnimeList client application interfacing with the official MAL API, available on Android.
 </p>
 
-> **Nota importante (v1.0.0):** la API de Jikan original (`api.jikan.moe`) dejó de estar disponible de forma fiable (errores 504 / timeouts), por lo que la app ahora usa exclusivamente el mirror estable **`https://api.tenrai.org/v1`** (compatible 1:1 con Jikan v4). Esto restaura la carga de temporadas, top, estudios, géneros y detalles. La API oficial de MAL se sigue usando para la lista de anime/manga, búsqueda y puntuaciones.
+> **Important note (v1.0.0):** the original Jikan API (`api.jikan.moe`) is no longer reliably available (504 errors / timeouts), so the app now uses exclusively the stable mirror **`https://api.tenrai.org/v1`** (1:1 compatible with Jikan v4). This restores loading of seasonal, top, studios, genres and details. The official MAL API is still used for the anime/manga list, search and scores.
 
-### Descarga
+### Download
 
-Obtén la última APK firmada desde [Releases](https://github.com/idarkalex/MALClient/releases).
+Get the latest signed APK from [Releases](https://github.com/idarkalex/MALClient/releases).
 
 ### Screenshots
 
