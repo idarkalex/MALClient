@@ -237,37 +237,3 @@ jobs:
           files: |
             **/*.apk
           generate_release_notes: true
-
-  continuous-release:
-    if: github.ref == 'refs/heads/mal-alternative-api' && github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download APK artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: MALClient-Android-Release
-
-      - name: Publish APK to continuous release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: continuous
-          name: Continuous Build (latest)
-          body: |
-            APK publicado automáticamente desde el último build exitoso.
-
-            SHA: `${{ github.sha }}`
-            Fecha: ${{ github.event.head_commit.timestamp }}
-          files: |
-            **/*.apk
-          target_commitish: ${{ github.sha }}
-
-      - name: Ensure continuous release is not a prerelease
-        shell: bash
-        run: |
-          gh release edit continuous --prerelease=false -R idarkalex/MALClient 2>/dev/null || true
-        env:
-          GH_TOKEN: ${{ github.token }}

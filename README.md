@@ -3,33 +3,16 @@
 <p align="center">
   <img src="images/app-logo.png" width="150px">
   <br><br>
-  It's rather robust MyAnimeList client application interfacing with both "official" api and the website api with wild endpoints with cookies and such. Right now it's available on Windows 10 devices and Android.
+  Robust MyAnimeList client application interfacing with the official MAL API, available on Android.
 </p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>
-        <a href="https://www.microsoft.com/store/apps/9nblggh5f3bl?ocid=badge">
-          <img src="https://assets.windowsphone.com/f2f77ec7-9ba9-4850-9ebe-77e366d08adc/English_Get_it_Win_10_InvariantCulture_Default.png" width="150px" alt="Get it on Windows 10" />
-        </a>
-      </td>
-      <td>
-        <a href='https://play.google.com/store/apps/details?id=com.drutol.malclient&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'>
-          <img alt='Get it on Google Play' width="220px" src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/>
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+> **Nota importante (v1.0.0):** la API de Jikan original (`api.jikan.moe`) dejó de estar disponible de forma fiable (errores 504 / timeouts), por lo que la app ahora usa exclusivamente el mirror estable **`https://api.tenrai.org/v1`** (compatible 1:1 con Jikan v4). Esto restaura la carga de temporadas, top, estudios, géneros y detalles. La API oficial de MAL se sigue usando para la lista de anime/manga, búsqueda y puntuaciones.
 
-[![Discord](https://img.shields.io/badge/discord-Join%20us%20on%20Discord!-7289da.svg?longCache=true&style=for-the-badge&logo=discord)](https://discord.gg/5yETtFT)
+### Descarga
+
+Obtén la última APK firmada desde [Releases](https://github.com/idarkalex/MALClient/releases).
 
 ### Screenshots
-#### UWP
-<p align="center">
-  <img src="images/uwp-preview.png">
-</p>
 
 #### Android
 <p align="center">
@@ -60,15 +43,14 @@
 * Top anime/manga.
   * With multiple categories
 * Seasonal anime
-  * With multiple season selection
+  * With multiple season selection (ordered by date, current season marked, default sort by MAL score)
 * Anime by studio and genre
 * Global anime & manga recommendations
 * Calendar
   * With countdowns to next episode
 * Mal articles
   * Mal news
-* Live tiles
-* Mal messaging 
+* Mal messaging
 * Tons of settings
 * Mal profile
   * With navigation across other's profiles
@@ -82,7 +64,7 @@
 * And much more!
 
 ### Compilation
-You should be able to compile this thing out of the box, you may have to generate certificate for UWP though.
+You should be able to compile this thing out of the box, you may have to generate certificate for Android though.
 There's also "Secrets.cs" file with some configs... you will have to make it yourself.
 ### Code
 Spaghetti landfill.
