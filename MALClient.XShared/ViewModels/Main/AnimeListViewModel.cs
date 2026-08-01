@@ -664,8 +664,14 @@ namespace MALClient.XShared.ViewModels.Main
         /// <param name="option"></param>
         public void SetSortOrder(SortOptions? option)
         {
-            option = option ??
-             (WorkMode == AnimeListWorkModes.Manga ? Settings.MangaSortOrder : Settings.AnimeSortOrder);
+            if (option == null)
+            {
+                var saved = WorkMode == AnimeListWorkModes.Manga ? Settings.MangaSortOrder : Settings.AnimeSortOrder;
+                if (WorkMode == AnimeListWorkModes.SeasonalAnime && saved == SortOptions.SortTitle)
+                    option = SortOptions.SortScore;
+                else
+                    option = saved;
+            }
             if (Settings.AutoDescendingSorting && option != null)
             {
                 switch (option)
