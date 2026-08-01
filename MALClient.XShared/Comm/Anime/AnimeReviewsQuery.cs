@@ -40,9 +40,8 @@ namespace MALClient.XShared.Comm.Anime
             try
             {
                 var json = await JikanClient.GetRawJsonAsync(
-                    $"{(anime ? "anime" : "manga")}/{_targetId}/reviews?page=1");
+                    $"{(_anime ? "anime" : "manga")}/{_targetId}/reviews?page=1");
                 var reviews = JsonSerializer.Deserialize<Root>(json);
-
                 if (reviews?.Data != null)
                 {
                     foreach (var review in reviews.Data)
