@@ -268,7 +268,6 @@ jobs:
 
             SHA: `${{ github.sha }}`
             Fecha: ${{ github.event.head_commit.timestamp }}
-          prerelease: true
           files: |
             **/*.apk
           target_commitish: ${{ github.sha }}
