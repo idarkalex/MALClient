@@ -229,9 +229,6 @@ namespace MALClient.Android.Adapters
                 //TODO, let's encrypt cert expired and caused issues
                 ServerCertificateCustomValidationCallback = (message, certificate2, chain, errors) =>
                 {
-                    if (message.RequestUri.ToString().StartsWith("https://api.jikan.moe"))
-                        return true;
-
                     if (errors == SslPolicyErrors.None)
                         return true;
 
