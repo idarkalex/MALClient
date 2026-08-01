@@ -17,12 +17,12 @@ First, replace the values in quotes below:
 ### System
 
 * MALClient Version: `M.m.r.p` 
-* Platform: `Android|UWP`
+* Platform: `Android`
 <!--
 Example:
 
 * MALClient Version: `5.4.4.0`
-* Platform: `UWP`
+* Platform: `Android`
 
 -->
 

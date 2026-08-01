@@ -32,10 +32,6 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         protected override void InitBindings()
         {
-            AboutPageGetItOnWindows.SetOnClickListener(
-                new OnClickListener(view => ResourceLocator.SystemControlsLauncherService.LaunchUri(
-                    new Uri("https://www.microsoft.com/store/apps/9NBLGGH5F3BL?ocid=android"))));
-
             AboutPageViewSourceButton.SetOnClickListener(
                 new OnClickListener(view => ResourceLocator.SystemControlsLauncherService.LaunchUri(
                     new Uri("https://github.com/Drutol/MALClient"))));
@@ -117,7 +113,6 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         #region Views
 
-        private FrameLayout _aboutPageGetItOnWindows;
         private Button _aboutPageViewSourceButton;
         private Button _aboutPageIssuesBoard;
         private Button _aboutPageDonate1Button;
@@ -125,8 +120,6 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private Button _aboutPageDonate3Button;
         private Button _aboutPageDonate4Button;
         private Button _aboutPageChangelogButton;
-
-        public FrameLayout AboutPageGetItOnWindows => _aboutPageGetItOnWindows ?? (_aboutPageGetItOnWindows = FindViewById<FrameLayout>(Resource.Id.AboutPageGetItOnWindows));
 
         public Button AboutPageViewSourceButton => _aboutPageViewSourceButton ?? (_aboutPageViewSourceButton = FindViewById<Button>(Resource.Id.AboutPageViewSourceButton));
 

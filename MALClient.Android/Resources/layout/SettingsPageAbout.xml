@@ -15,16 +15,8 @@
       android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" />
 
     <TextView android:lineSpacingExtra="2dp"
-              android:layout_width="wrap_content" android:text="Hi! Thanks for checking out this app ^^ I hope you like it. MALClient has been around since March 2016, available on Windows 10, both desktop and mobile. I'll use this opportunity to invite you to try it out :)" android:layout_marginTop="10dp"
+              android:layout_width="wrap_content" android:text="Hi! Thanks for checking out this app ^^ I hope you like it. MALClient has been around since March 2016. I'll use this opportunity to invite you to try it out :)" android:layout_marginTop="10dp"
               android:layout_height="wrap_content" android:textColor="?BrushText"/>
-
-    <FrameLayout android:id="@+id/AboutPageGetItOnWindows"
-                 android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:clickable="true" android:focusable="true"
-                 android:layout_height="wrap_content" android:foreground="?selectableItemBackground">
-      <ImageView
-        android:layout_width="wrap_content" android:adjustViewBounds="true" android:layout_margin="30dp" android:maxWidth="300dp"
-        android:layout_height="wrap_content" android:src="@drawable/get_it_on_windows"/>
-    </FrameLayout>
 
 
     <TextView android:lineSpacingExtra="2dp"
@@ -159,7 +151,7 @@
       android:textSize="@dimen/FontSizeHuge" />
 
     <TextView android:lineSpacingExtra="2dp"
-              android:layout_width="wrap_content" android:text="This app was written using C# and Xamarin, with business logic shared across Windows and Android. It's a viable alternative to java... what isn't... かな..." android:layout_marginTop="10dp"
+              android:layout_width="wrap_content" android:text="This app was written using C# and Xamarin for Android. It's a viable alternative to java... what isn't... かな..." android:layout_marginTop="10dp"
               android:layout_height="wrap_content" android:textColor="?BrushText"/>
 
     <FFImageLoading.Views.ImageViewAsync android:elevation="4dp"
