@@ -209,25 +209,47 @@ namespace MALClient.Android.UserControls
             AnimeGridItemFavouriteIndicator.Visibility = ViewModel.IsFavouriteVisibility
                 ? ViewStates.Visible
                 : ViewStates.Gone;
-            AnimeGridItemTopRightInfo.Visibility = ViewModel.UpdateButtonsVisibility ? ViewStates.Visible : ViewStates.Gone;
 
             AnimeGridItemCurrentWatchingStatus.Text = ViewModel.MyStatusBindShort;
             AnimeGridItemWatchedStatus.Text = ViewModel.MyEpisodesBindShort;
-            if (Settings.DisplayUnsetScores)
+
+            var globalScore = ViewModel.GlobalScoreBind;
+            if (ViewModel.MyScore > 0)
             {
+                AnimeGridItemScore.Visibility = ViewStates.Visible;
+                AnimeGridItemScore.Text = ViewModel.MyScoreBindShort;
+            }
+            else if (!string.IsNullOrEmpty(globalScore))
+            {
+                AnimeGridItemScore.Visibility = ViewStates.Visible;
+                AnimeGridItemScore.Text = globalScore;
+            }
+            else if (Settings.DisplayUnsetScores)
+            {
+                AnimeGridItemScore.Visibility = ViewStates.Visible;
                 AnimeGridItemScore.Text = ViewModel.MyScoreBindShort;
             }
             else
             {
-                if (ViewModel.MyScore <= 0)
-                {
-                    AnimeGridItemScore.Visibility = ViewStates.Gone;
-                }
-                else
-                {
-                    AnimeGridItemScore.Visibility = ViewStates.Visible;
-                    AnimeGridItemScore.Text = ViewModel.MyScoreBindShort;
-                }
+                AnimeGridItemScore.Visibility = ViewStates.Gone;
+            }
+
+            if (ViewModel.UpdateButtonsVisibility)
+            {
+                AnimeGridItemTopRightInfo.Visibility = ViewStates.Visible;
+                AnimeGridItemCurrentWatchingStatus.Visibility = ViewStates.Visible;
+                AnimeGridItemWatchedStatusButton.Visibility = ViewStates.Visible;
+            }
+            else if (!string.IsNullOrEmpty(globalScore))
+            {
+                AnimeGridItemTopRightInfo.Visibility = ViewStates.Visible;
+                AnimeGridItemCurrentWatchingStatus.Visibility = ViewStates.Gone;
+                AnimeGridItemWatchedStatusButton.Visibility = ViewStates.Gone;
+                AnimeGridItemFavouriteIndicator.Visibility = ViewStates.Gone;
+            }
+            else
+            {
+                AnimeGridItemTopRightInfo.Visibility = ViewStates.Gone;
             }
 
             AnimeGridItemAddToListButton.Visibility = ViewModel.AddToListVisibility ? ViewStates.Visible : ViewStates.Gone;

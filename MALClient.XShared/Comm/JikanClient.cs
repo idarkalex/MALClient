@@ -13,7 +13,7 @@ namespace MALClient.XShared.Comm
         private static readonly SemaphoreSlim RateLimiter = new SemaphoreSlim(1, 1);
         private static DateTime _lastRequest = DateTime.MinValue;
 
-        private const int RequestSpacingMs = 1100;
+        private const int RequestSpacingMs = 500;
         private const int MaxAttempts = 4;
 
         private static readonly string[] BaseUrls =

@@ -22,9 +22,13 @@ namespace MALClient.XShared.Comm.Anime
 
         public async Task<List<SeasonalAnimeData>> GetSeasonalAnime(bool force = false)
         {
-            var output = force
-                ? new List<SeasonalAnimeData>()
-                : await DataCache.RetrieveSeasonalData(_season.Name) ?? new List<SeasonalAnimeData>();
+            var output = new List<SeasonalAnimeData>();
+            if (!force)
+            {
+                var cached = await DataCache.RetrieveSeasonalData(_season.Name);
+                if (cached != null && cached.All(i => !string.IsNullOrEmpty(i.Title) && i.Id != 0))
+                    output = cached;
+            }
 
             if (output.Count != 0) return output;
 
@@ -92,7 +96,6 @@ namespace MALClient.XShared.Comm.Anime
                         if (!hasNext)
                             break;
 
-                        await Task.Delay(TimeSpan.FromMilliseconds(500));
                         currentPage++;
                     }
 
@@ -121,12 +124,15 @@ namespace MALClient.XShared.Comm.Anime
                 "?sort=anime_num_list_users&limit=100&fields=id,title,main_picture,mean,media_type,num_episodes,genres,broadcast,start_date";
 
             var clients = new List<HttpClient>();
-            try
+            if (!string.IsNullOrEmpty(Settings.RefreshToken))
             {
-                clients.Add(await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync());
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    clients.Add(await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync());
+                }
+                catch (Exception)
+                {
+                }
             }
             var anonClient = new HttpClient();
             anonClient.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", "183063f74126e7551b00c3b4de66986c");
