@@ -2,10 +2,10 @@ name: Build Android APK
 
 on:
   push:
-    branches: [mal-alternative-api]
+    branches: [main]
     tags: ['v*']
   pull_request:
-    branches: [mal-alternative-api]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
