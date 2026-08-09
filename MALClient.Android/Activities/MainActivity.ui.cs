@@ -390,7 +390,7 @@ namespace MALClient.Android.Activities
         {
             if (_upperFilterMenu == null)
                 return;
-            ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopManga((MangaTopType)i));
+            ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopMangaCategory((MangaTopType)i));
             _upperFilterMenu.Dismiss(true);
             _upperFilterMenu = null;
         }

@@ -282,7 +282,7 @@ namespace MALClient.Android.Activities
                 Enum.GetValues(typeof(MangaTopType)).Cast<MangaTopType>().Select(type => type.ToString()).ToList(),
                 i =>
                 {
-                    ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopManga((MangaTopType)i));
+                    ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopMangaCategory((MangaTopType)i));
                     _moreMenu.Dismiss(true);
                     _drawer.CloseDrawer();
                 });

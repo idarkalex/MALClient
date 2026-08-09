@@ -68,7 +68,7 @@ namespace MALClient.XShared.NavArgs
         public static AnimeListPageNavigationArgs TopManga
             => new AnimeListPageNavigationArgs { WorkMode = AnimeListWorkModes.TopManga };
 
-        public static AnimeListPageNavigationArgs TopManga(MangaTopType type) =>
+        public static AnimeListPageNavigationArgs TopMangaCategory(MangaTopType type) =>
             new AnimeListPageNavigationArgs { WorkMode = AnimeListWorkModes.TopManga, MangaTopWorkMode = type };
 
         public static AnimeListPageNavigationArgs TopAnime(TopAnimeType type) =>
