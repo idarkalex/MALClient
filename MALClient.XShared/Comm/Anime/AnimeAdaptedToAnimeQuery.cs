@@ -100,7 +100,7 @@ namespace MALClient.XShared.Comm.Anime
                         continue;
                     current.Id = Convert.ToInt32(href.Substring(mangaIdx + "/manga/".Length).Split('/')[0]);
 
-                    var img = item.Descendants("img").FirstOrDefault();
+                    var img = item.Descendants("img").FirstOrDefault(node => node.Attributes.Contains("data-src"));
                     if (img != null)
                     {
                         var src = img.Attributes.Contains("data-src")

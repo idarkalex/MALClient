@@ -252,3 +252,35 @@ jobs:
           body_path: RELEASE_NOTES.md
           files: |
             **/*.apk
+
+  publish-nightly:
+    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MALClient-Android-Release
+
+      - name: Publish nightly APK release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          apk=$(find . -name '*.apk' -type f | head -n1)
+          if [ -z "$apk" ]; then
+            echo "::error::No APK found"
+            exit 1
+          fi
+          echo "APK: $apk"
+          gh release delete nightly --repo "$GITHUB_REPOSITORY" --yes >/dev/null 2>&1 || true
+          gh release create nightly "$apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Nightly build - $(date -u +%Y-%m-%d)" \
+            --notes "Latest APK from the main branch (commit $GITHUB_SHA). Download the .apk file directly from the Assets section." \
+            --latest --prerelease
