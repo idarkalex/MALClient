@@ -106,9 +106,9 @@ namespace MALClient.XShared.Comm.Anime
                 case MangaTopType.Manga:
                     return $"topmanga.php?type=manga&limit={page*50}";
                 case MangaTopType.Novels:
-                    return $"topmanga.php?type=novel&limit={page*50}";
+                    return $"topmanga.php?type=novels&limit={page*50}";
                 case MangaTopType.LightNovels:
-                    return $"topmanga.php?type=lightnovel&limit={page*50}";
+                    return $"topmanga.php?type=lightnovels&limit={page*50}";
                 case MangaTopType.OneShots:
                     return $"topmanga.php?type=oneshots&limit={page*50}";
                 case MangaTopType.Doujinshi:

@@ -517,7 +517,7 @@ namespace MALClient.XShared.Utils
             {
                 await Task.Run(async () =>
                 {
-                    await DataCacheService.SaveData(data, $"topmanga_{type}_data.json", "");
+                    await DataCacheService.SaveData(data, $"topmanga_{type}_data_v2.json", "");
                 });
             }
             catch (Exception)
@@ -530,7 +530,7 @@ namespace MALClient.XShared.Utils
         {
             try
             {
-                return await DataCacheService.RetrieveData<List<TopAnimeData>>($"topmanga_{type}_data.json", "", 14);
+                return await DataCacheService.RetrieveData<List<TopAnimeData>>($"topmanga_{type}_data_v2.json", "", 14);
             }
             catch (Exception)
             {

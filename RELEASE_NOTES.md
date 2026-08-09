@@ -1,3 +1,8 @@
+## What's new in 1.2.1
+
+### Bug fixes
+- Fix: **Top novels** and **Top light novels** under Top manga showed the wrong ranking (the whole top list) because the MAL filter used the singular `type=novel`/`type=lightnovel`. Correct filters `type=novels`/`type=lightnovels` applied, and stale cached rankings are invalidated.
+
 ## What's new in 1.2.0
 
 ### Manga browsing improvements
