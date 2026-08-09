@@ -94,7 +94,11 @@ namespace MALClient.XShared.Comm.Anime
                     if (titleNode == null)
                         continue;
                     current.Title = WebUtility.HtmlDecode(titleNode.InnerText).Trim();
-                    current.Id = Convert.ToInt32(titleNode.Attributes["href"].Value.Substring("/manga/".Length).Split('/')[0]);
+                    var href = titleNode.Attributes["href"].Value;
+                    var mangaIdx = href.IndexOf("/manga/", StringComparison.Ordinal);
+                    if (mangaIdx == -1)
+                        continue;
+                    current.Id = Convert.ToInt32(href.Substring(mangaIdx + "/manga/".Length).Split('/')[0]);
 
                     var img = item.Descendants("img").FirstOrDefault();
                     if (img != null)
