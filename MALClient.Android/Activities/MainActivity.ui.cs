@@ -240,7 +240,7 @@ namespace MALClient.Android.Activities
                     else if (workMode == AnimeListWorkModes.TopAnime || workMode == AnimeListWorkModes.TopManga)
                     {
                         _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
-                            Enum.GetValues(typeof(TopAnimeType)).Cast<TopAnimeType>().Select(type => type.ToString()).ToList(),
+                            System.Enum.GetValues(typeof(TopAnimeType)).Cast<TopAnimeType>().Select(type => type.ToString()).ToList(),
                             OnUpperTopTypeSelected);
                     }
                     else
