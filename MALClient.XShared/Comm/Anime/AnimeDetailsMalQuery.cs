@@ -54,7 +54,7 @@ namespace MALClient.XShared.Comm.Anime
                             aired += " to " + to;
                     }
                 }
-                var premiered = GetString(data, "season") ?? "";
+                var premiered = CapitalizeSeason(GetString(data, "season") ?? "");
                 if (data.TryGetProperty("year", out var yearProp) && yearProp.ValueKind == JsonValueKind.Number)
                     premiered = $"{premiered} {yearProp.GetInt32()}".Trim();
                 var broadcast = "";
@@ -149,6 +149,13 @@ namespace MALClient.XShared.Comm.Anime
                 return date;
             var tIndex = date.IndexOf('T');
             return tIndex > 0 ? date.Substring(0, tIndex) : date;
+        }
+
+        private static string CapitalizeSeason(string season)
+        {
+            if (string.IsNullOrEmpty(season))
+                return season;
+            return char.ToUpperInvariant(season[0]) + season.Substring(1);
         }
 
         private static int GetInt(JsonElement el, string prop) =>
