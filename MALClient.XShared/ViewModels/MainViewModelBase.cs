@@ -49,22 +49,37 @@ namespace MALClient.XShared.ViewModels
             CheckForUpdates();
         }
 
-        private async void CheckForUpdates()
+        public AppUpdateInfo UpdateInfo { get; private set; }
+
+        public async void CheckForUpdates()
+        {
+            await CheckForUpdatesAsync();
+        }
+
+        public async Task<AppUpdateInfo> CheckForUpdatesAsync()
         {
             try
             {
-                var version = new Version(await new AppUpdateQuery().GetRequestResponse());
+                var info = await new AppUpdateQuery().GetUpdateInfo();
+                if (info == null)
+                    return null;
+
+                var version = new Version(info.Version);
                 var currentVersion = new Version(ResourceLocator.ChangelogProvider.CurrentVersion);
 
                 if (version > currentVersion)
+                {
+                    UpdateInfo = info;
                     UpdateAvailable = true;
-
+                    return info;
+                }
             }
             catch
             {
                 //no version available
             }
 
+            return null;
         }
 
         public bool UpdateAvailable

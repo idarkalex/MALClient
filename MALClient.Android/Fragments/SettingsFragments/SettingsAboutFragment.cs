@@ -48,6 +48,29 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
             AboutPageChangelogButton.SetOnClickListener(
                 new OnClickListener(view => ChangelogDialog.BuildChangelogDialog(ResourceLocator.ChangelogProvider)));
+
+            AboutPageCheckUpdatesButton.SetOnClickListener(new OnClickListener(view =>
+            {
+                AboutPageCheckUpdatesButton.Enabled = false;
+                CheckForUpdates();
+            }));
+        }
+
+        private async void CheckForUpdates()
+        {
+            var info = await ViewModelLocator.GeneralMain.CheckForUpdatesAsync();
+            AboutPageCheckUpdatesButton.Enabled = true;
+
+            if (info == null)
+            {
+                ResourceLocator.MessageDialogProvider.ShowMessageDialog(
+                    $"You are running the latest version of MAL Client ({ResourceLocator.ChangelogProvider.CurrentVersion}).",
+                    "Check for updates");
+            }
+            else
+            {
+                MainActivity.PromptUpdate();
+            }
         }
 
         private async void AboutPageDonateButtonOnClick(View view)
@@ -120,6 +143,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private Button _aboutPageDonate3Button;
         private Button _aboutPageDonate4Button;
         private Button _aboutPageChangelogButton;
+        private Button _aboutPageCheckUpdatesButton;
 
         public Button AboutPageViewSourceButton => _aboutPageViewSourceButton ?? (_aboutPageViewSourceButton = FindViewById<Button>(Resource.Id.AboutPageViewSourceButton));
 
@@ -134,6 +158,8 @@ namespace MALClient.Android.Fragments.SettingsFragments
         public Button AboutPageDonate4Button => _aboutPageDonate4Button ?? (_aboutPageDonate4Button = FindViewById<Button>(Resource.Id.AboutPageDonate4Button));
 
         public Button AboutPageChangelogButton => _aboutPageChangelogButton ?? (_aboutPageChangelogButton = FindViewById<Button>(Resource.Id.AboutPageChangelogButton));
+
+        public Button AboutPageCheckUpdatesButton => _aboutPageCheckUpdatesButton ?? (_aboutPageCheckUpdatesButton = FindViewById<Button>(Resource.Id.AboutPageCheckUpdatesButton));
 
         #endregion
     }

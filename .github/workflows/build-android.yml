@@ -167,7 +167,12 @@ jobs:
             exit 1
           }
           Write-Host "Found APK: $($apk.FullName)"
-          "apk_path=$($apk.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          [xml]$manifestXml = Get-Content "MALClient.Android\Properties\AndroidManifest.xml"
+          $version = $manifestXml.manifest.GetAttribute("android:versionName")
+          $newPath = Join-Path $apk.DirectoryName "MALClient-v$version.apk"
+          Copy-Item -Path $apk.FullName -Destination $newPath -Force
+          Write-Host "Renamed APK to: $newPath"
+          "apk_path=$newPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Sign APK (if keystore secrets provided)
         if: success() && env.ANDROID_KEYSTORE_BASE64 != ''

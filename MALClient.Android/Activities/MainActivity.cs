@@ -22,6 +22,7 @@ using MALClient.Android.ViewModels;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.Notifications;
 using MALClient.XShared.BL;
+using MALClient.XShared.Comm;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Comm.MagicalRawQueries;
 using MALClient.XShared.Comm.Manga;
@@ -329,6 +330,59 @@ namespace MALClient.Android.Activities
             ResourceLocator.HandyDataStorage.SaveData();
 #pragma warning restore 4014
             base.OnPause();
+        }
+
+        private static bool _updatePromptShown;
+
+        public static void PromptUpdate()
+        {
+            if (_updatePromptShown || MainActivity.CurrentContext == null)
+                return;
+
+            _updatePromptShown = true;
+
+            var info = ViewModelLocator.GeneralMain.UpdateInfo;
+            if (info == null)
+            {
+                _updatePromptShown = false;
+                return;
+            }
+
+            ResourceLocator.MessageDialogProvider.ShowMessageDialogWithInput(
+                $"A new version ({info.Version}) of MAL Client is available. Download and install it now?",
+                "Update available",
+                "Update", "Later",
+                () => DownloadAndInstallUpdate(info));
+        }
+
+        public static async void DownloadAndInstallUpdate(AppUpdateInfo info)
+        {
+            var context = MainActivity.CurrentContext;
+            if (context == null || info == null)
+                return;
+
+            var success = false;
+            try
+            {
+                ResourceLocator.MessageDialogProvider.ShowLoadingPopup("Downloading update", "Downloading the new version of MAL Client...");
+                success = await MALClient.Android.Utilities.UpdateInstaller.DownloadAndInstall(info, context);
+            }
+            catch (Exception)
+            {
+                success = false;
+            }
+            finally
+            {
+                ResourceLocator.MessageDialogProvider.HideLoadingDialog();
+            }
+
+            if (!success)
+            {
+                ResourceLocator.MessageDialogProvider.ShowMessageDialog(
+                    "Something went wrong while downloading the update. Check your connection and try again later.",
+                    "Update failed");
+                _updatePromptShown = false;
+            }
         }
     }
 }

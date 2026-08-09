@@ -17,7 +17,13 @@ namespace MALClient.Models.Models.ApiResponses
     {
         [JsonProperty("media_type")] public string MediaType { get; set; }
         [JsonProperty("start_year")] public int StartYear { get; set; }
-        [JsonProperty("aired")] public string Aired { get; set; }
+        private string _aired;
+        [JsonProperty("aired")]
+        public string Aired
+        {
+            get => _aired;
+            set => _aired = SanitizeDate(value);
+        }
         [JsonProperty("score")] public string Score { get; set; }
         [JsonProperty("status")] public string Status { get; set; }
         [JsonProperty("published")] public string Published { get; set; }
@@ -26,6 +32,13 @@ namespace MALClient.Models.Models.ApiResponses
         [JsonProperty("alternative_name")] public string AlternativeName { get; set; }
         [JsonProperty("birthday")] public string Birthday { get; set; }
 
+        private static string SanitizeDate(string date)
+        {
+            if (string.IsNullOrEmpty(date))
+                return date;
+            var tIndex = date.IndexOf('T');
+            return tIndex > 0 ? date.Substring(0, tIndex) : date;
+        }
     }
     [Preserve(AllMembers = true)]
     public class Item

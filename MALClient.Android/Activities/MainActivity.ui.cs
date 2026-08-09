@@ -130,6 +130,8 @@ namespace MALClient.Android.Activities
                     {
                         view.Visibility = ViewStates.Visible;
                     }
+
+                    PromptUpdate();
                 }
             }));
 

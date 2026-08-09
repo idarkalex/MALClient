@@ -1,16 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.drutol.malclient" android:installLocation="auto" android:versionName="1.5.13.11" android:versionCode="169">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.idarkalex.malclient" android:installLocation="auto" android:versionName="1.0.0" android:versionCode="169">
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 	<uses-sdk android:minSdkVersion="22" android:targetSdkVersion="34" />
-	<application android:label="MALClient" android:icon="@mipmap/ic_launcher">
+	<application android:label="MAL Client" android:icon="@mipmap/ic_launcher">
 		<uses-library android:name="org.apache.http.legacy" android:required="false" />
 		<meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
 		<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8220174765620095~3319675764" />
 		<meta-data android:name="com.google.android.play.billingclient.version" android:value="6.0.0" />
+		<provider android:name="android.support.v4.content.FileProvider" android:authorities="com.idarkalex.malclient.fileprovider" android:exported="false" android:grantUriPermissions="true">
+			<meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+		</provider>
 	</application>
 </manifest>
 <!--android:networkSecurityConfig="@xml/debug_ca"-->

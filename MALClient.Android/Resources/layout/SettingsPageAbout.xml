@@ -91,6 +91,14 @@
             android:layout_width="wrap_content" style="@style/AccentButtonStyle"
             android:layout_height="wrap_content" android:text="Give me the news!" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
 
+    <TextView android:lineSpacingExtra="2dp"
+              android:layout_width="wrap_content" android:text="If you'd like to check whether a newer version of the app is available, use the button below." android:layout_marginTop="10dp"
+              android:layout_height="wrap_content" android:textColor="?BrushText"/>
+
+    <Button android:id="@+id/AboutPageCheckUpdatesButton"
+            android:layout_width="wrap_content" style="@style/AccentButtonStyle"
+            android:layout_height="wrap_content" android:text="Check for updates" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
+
 
     <TextView
       android:layout_width="wrap_content"

@@ -45,8 +45,8 @@ namespace MALClient.XShared.Comm.Anime
                 var aired = "";
                 if (data.TryGetProperty("aired", out var airedObj))
                 {
-                    var from = GetString(airedObj, "from");
-                    var to = GetString(airedObj, "to");
+                    var from = SanitizeDate(GetString(airedObj, "from"));
+                    var to = SanitizeDate(GetString(airedObj, "to"));
                     if (!string.IsNullOrEmpty(from))
                     {
                         aired = from;
@@ -142,6 +142,14 @@ namespace MALClient.XShared.Comm.Anime
 
         private static string GetString(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static string SanitizeDate(string date)
+        {
+            if (string.IsNullOrEmpty(date))
+                return date;
+            var tIndex = date.IndexOf('T');
+            return tIndex > 0 ? date.Substring(0, tIndex) : date;
+        }
 
         private static int GetInt(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;

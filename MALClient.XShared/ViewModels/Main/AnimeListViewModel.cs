@@ -1105,7 +1105,7 @@ namespace MALClient.XShared.ViewModels.Main
                         var seasonStr = yearSeason.GetString();
                         SeasonSelection.Add(new AnimeSeason
                         {
-                            Name = $"{seasonStr} {year}",
+                            Name = $"{CapitalizeSeason(seasonStr)} {year}",
                             Year = year,
                             Season = seasonStr switch
                             {
@@ -1129,7 +1129,7 @@ namespace MALClient.XShared.ViewModels.Main
                 foreach (var seasonStr in new[] { "winter", "spring", "summer", "fall" })
                     SeasonSelection.Add(new AnimeSeason
                     {
-                        Name = $"{seasonStr} {currentYear}",
+                        Name = $"{CapitalizeSeason(seasonStr)} {currentYear}",
                         Year = currentYear,
                         Season = seasonStr switch
                         {
@@ -1165,14 +1165,21 @@ namespace MALClient.XShared.ViewModels.Main
             }
         }
 
+        private static string CapitalizeSeason(string season)
+        {
+            if (string.IsNullOrEmpty(season))
+                return season;
+            return char.ToUpperInvariant(season[0]) + season.Substring(1);
+        }
+
         private static string GetCurrentSeasonName()
         {
             return DateTime.UtcNow.Month switch
             {
-                <= 3 => "winter",
-                <= 6 => "spring",
-                <= 9 => "summer",
-                _ => "fall"
+                <= 3 => "Winter",
+                <= 6 => "Spring",
+                <= 9 => "Summer",
+                _ => "Fall"
             };
         }
 
