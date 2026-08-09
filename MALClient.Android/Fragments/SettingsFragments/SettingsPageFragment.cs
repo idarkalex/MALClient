@@ -3,7 +3,6 @@ using Android.OS;
 using Android.Support.V4.App;
 using Android.Widget;
 using GalaSoft.MvvmLight.Command;
-using MALClient.Android.Adapters;
 using MALClient.Android.Resources;
 using MALClient.Android.ViewModels;
 using MALClient.Models.Enums;
@@ -34,7 +33,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
             ViewModel.NavigationRequest += ViewModelOnNavigationRequest;
             ViewModelLocator.NavMgr.DeregisterBackNav();
             ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
-            ViewModelLocator.GeneralMain.CurrentStatus = $"Settings - {ChangelogProvider.Version}";
+            ViewModelLocator.GeneralMain.CurrentStatus = "Settings";
         }
 
         private void ViewModelOnNavigationRequest(SettingsPageIndex page)

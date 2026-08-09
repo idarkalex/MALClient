@@ -113,7 +113,9 @@ namespace MALClient.XShared.Comm.Anime
             {
             }
             
-            return output;
+            return output
+                .OrderByDescending(r => int.TryParse(r.HelpfulCount, out var helpful) ? helpful : 0)
+                .ToList();
         }
     }
 
