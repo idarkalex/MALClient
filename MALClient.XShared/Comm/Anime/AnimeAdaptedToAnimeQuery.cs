@@ -63,8 +63,8 @@ namespace MALClient.XShared.Comm.Anime
         public async Task<List<TopAnimeData>> GetAdaptedToAnimeData(bool force = false)
         {
             if (!force)
-                if (_prevQueriesCache.ContainsKey(_type))
-                    return _prevQueriesCache[_type];
+                if (_prevQueriesCache.TryGetValue(_type, out var cached) && cached.Count > 0)
+                    return cached;
 
             var output = force ? new List<TopAnimeData>() : (await DataCache.RetrieveAdaptedToAnimeData(_type) ?? new List<TopAnimeData>());
             if (output.Count > 0)
@@ -133,8 +133,11 @@ namespace MALClient.XShared.Comm.Anime
                 }
             }
 
-            DataCache.SaveAdaptedToAnimeData(output, _type);
-            _prevQueriesCache[_type] = output;
+            if (output.Count > 0)
+            {
+                DataCache.SaveAdaptedToAnimeData(output, _type);
+                _prevQueriesCache[_type] = output;
+            }
             return output;
         }
     }
