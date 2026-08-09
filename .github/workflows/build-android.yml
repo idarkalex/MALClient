@@ -143,7 +143,10 @@ jobs:
         if: success()
         shell: pwsh
         run: |
-          $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*-Signed.apk" } | Select-Object -First 1
+          if (-not $apk) {
+            $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
           if (-not $apk) {
             Write-Host "##[error]No APK in MALClient.Android\bin"
             $logFile = "$env:RUNNER_TEMP\msbuild.txt"
@@ -166,8 +169,16 @@ jobs:
             }
             exit 1
           }
+          $finalName = if ($apk.Name -like "*-Signed.apk") { $apk.Name.Substring(0, $apk.Name.Length - "-Signed.apk".Length) + ".apk" } else { $apk.Name }
+          $finalPath = Join-Path $apk.DirectoryName $finalName
+          if ($apk.FullName -ne $finalPath) {
+            Copy-Item -Path $apk.FullName -Destination $finalPath -Force
+          }
+          Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -ne $finalPath } | Remove-Item -Force -ErrorAction SilentlyContinue
           Write-Host "Found APK: $($apk.FullName)"
-          "apk_path=$($apk.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "APK path: $finalPath"
+          "apk_path=$finalPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Sign APK (if keystore secrets provided)
         if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
@@ -202,10 +213,6 @@ jobs:
             Write-Host "=== Signing $($apk.Name) ==="
             & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" $apk.FullName 2>&1 | ForEach-Object { Write-Host "APKSIGNER: $_" }
             if ($LASTEXITCODE -ne 0) { throw "apksigner failed on $($apk.Name) with exit code $LASTEXITCODE" }
-            $signedPath = Join-Path $apk.DirectoryName ($apk.BaseName + "-Signed.apk")
-            if (Test-Path $signedPath) {
-              Move-Item -Path $signedPath -Destination $apk.FullName -Force
-            }
             & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar verify --print-certs $apk.FullName 2>&1 | ForEach-Object { Write-Host "VERIFY: $_" }
             Write-Host "Signed: $($apk.Name)"
           }
