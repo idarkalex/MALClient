@@ -167,12 +167,7 @@ jobs:
             exit 1
           }
           Write-Host "Found APK: $($apk.FullName)"
-          [xml]$manifestXml = Get-Content "MALClient.Android\Properties\AndroidManifest.xml"
-          $version = $manifestXml.manifest.GetAttribute("android:versionName")
-          $newPath = Join-Path $apk.DirectoryName "MALClient-v$version.apk"
-          Copy-Item -Path $apk.FullName -Destination $newPath -Force
-          Write-Host "Renamed APK to: $newPath"
-          "apk_path=$newPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "apk_path=$($apk.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Sign APK (if keystore secrets provided)
         if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
@@ -231,6 +226,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download APK artifact
         uses: actions/download-artifact@v4
         with:
@@ -239,6 +237,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: MALClient ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
           files: |
             **/*.apk
-          generate_release_notes: true
