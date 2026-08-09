@@ -283,4 +283,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --title "Nightly build - $(date -u +%Y-%m-%d)" \
             --notes "Latest APK from the main branch (commit $GITHUB_SHA). Download the .apk file directly from the Assets section." \
-            --latest --prerelease
+            --prerelease
