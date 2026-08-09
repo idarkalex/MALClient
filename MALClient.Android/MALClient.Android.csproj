@@ -291,6 +291,7 @@
     <Compile Include="Utilities\MemoryWatcher.cs" />
     <Compile Include="Utilities\RateReminderPopUp.cs" />
     <Compile Include="Utilities\TabStripExtensions.cs" />
+    <Compile Include="Utilities\UpdateInstaller.cs" />
     <Compile Include="Utilities\Web\DataJavascriptInterface.cs" />
     <Compile Include="ViewHolders\CommentViewHolder.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
@@ -1225,6 +1226,9 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\xml\debug_ca.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\xml\file_paths.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\mipmap-hdpi\icon.png" />
