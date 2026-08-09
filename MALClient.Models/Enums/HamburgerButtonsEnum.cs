@@ -14,6 +14,7 @@
         MangaSearch,
         TopAnime,
         TopManga,
+        MangaAdapted,
         Calendar,
         Articles,
         News,

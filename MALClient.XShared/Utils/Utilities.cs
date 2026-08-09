@@ -275,6 +275,8 @@ namespace MALClient.XShared.Utils
                     return HamburgerButtons.TopAnime;
                 case PageIndex.PageTopManga:
                     return HamburgerButtons.TopManga;
+                case PageIndex.PageMangaAdapted:
+                    return HamburgerButtons.MangaAdapted;
                 case PageIndex.PageCalendar:
                     return HamburgerButtons.Calendar;
                 case PageIndex.PageArticles:

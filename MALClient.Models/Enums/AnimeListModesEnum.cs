@@ -15,7 +15,9 @@
         [EnumUtilities.AnimeListWorkModeEnumMember(AllowLoadingMore = true)]
         AnimeByGenre,
         [EnumUtilities.AnimeListWorkModeEnumMember(AllowLoadingMore = true)]
-        AnimeByStudio
+        AnimeByStudio,
+        [EnumUtilities.AnimeListWorkModeEnumMember(AllowLoadingMore = false)]
+        MangaAdapted
     }
 
     public enum AnimeListDisplayModes

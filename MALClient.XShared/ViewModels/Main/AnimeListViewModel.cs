@@ -210,6 +210,10 @@ namespace MALClient.XShared.ViewModels.Main
                     {
                         MangaTopWorkMode = args.MangaTopWorkMode;
                     }
+                    else if (WorkMode == AnimeListWorkModes.MangaAdapted)
+                    {
+                        MangaAdaptedWorkMode = args.MangaAdaptedWorkMode;
+                    }
                     else if (WorkMode == AnimeListWorkModes.AnimeByGenre)
                     {
                         Genre = args.Genre;
@@ -294,6 +298,7 @@ namespace MALClient.XShared.ViewModels.Main
                     case AnimeListWorkModes.SeasonalAnime:
                     case AnimeListWorkModes.TopAnime:
                     case AnimeListWorkModes.TopManga:
+                    case AnimeListWorkModes.MangaAdapted:
                     case AnimeListWorkModes.AnimeByGenre:
                     case AnimeListWorkModes.AnimeByStudio:
                         Loading = true;
@@ -321,7 +326,8 @@ namespace MALClient.XShared.ViewModels.Main
 
                         Sort3Label = "Index";
                         await FetchSeasonalData();
-                        if (WorkMode == AnimeListWorkModes.TopAnime || WorkMode == AnimeListWorkModes.TopManga)
+                        if (WorkMode == AnimeListWorkModes.TopAnime || WorkMode == AnimeListWorkModes.TopManga ||
+                            WorkMode == AnimeListWorkModes.MangaAdapted)
                         {
                             AppbarBtnPinTileVisibility = AppBtnSortingVisibility = false;
                             AnimeItemsDisplayContext = AnimeItemDisplayContext.Index;
@@ -437,6 +443,7 @@ namespace MALClient.XShared.ViewModels.Main
                         items = _animeLibraryDataStorage.AllLoadedMangaItemAbstractions;
                         break;
                     case AnimeListWorkModes.TopManga:
+                    case AnimeListWorkModes.MangaAdapted:
                         items = _animeLibraryDataStorage.AllLoadedSeasonalMangaItems;
                         break;
                     default:
@@ -995,6 +1002,12 @@ namespace MALClient.XShared.ViewModels.Main
                             : await new AnimeTopQuery(MangaTopWorkMode, page - 1).GetTopAnimeData(force));
                     data.AddRange(topResponse ?? new List<TopAnimeData>());
                     break;
+                case AnimeListWorkModes.MangaAdapted:
+                    List<TopAnimeData> adaptedResponse = null;
+                    await Task.Run(async () =>
+                        adaptedResponse = await new AnimeAdaptedToAnimeQuery(MangaAdaptedWorkMode).GetAdaptedToAnimeData(force));
+                    data.AddRange(adaptedResponse ?? new List<TopAnimeData>());
+                    break;
                 case AnimeListWorkModes.AnimeByGenre:
                 case AnimeListWorkModes.AnimeByStudio:
                     var query = WorkMode == AnimeListWorkModes.AnimeByStudio
@@ -1016,7 +1029,7 @@ namespace MALClient.XShared.ViewModels.Main
             }
             List<AnimeItemAbstraction> source;
             List<AnimeItemAbstraction> target;
-            if (WorkMode == AnimeListWorkModes.TopManga)
+            if (WorkMode == AnimeListWorkModes.TopManga || WorkMode == AnimeListWorkModes.MangaAdapted)
             {
                 //We have to load base mnga item first if not loaded before.
                 if (_animeLibraryDataStorage.AllLoadedMangaItemAbstractions.Count == 0 && !_attemptedMangaFetch)
@@ -1058,7 +1071,7 @@ namespace MALClient.XShared.ViewModels.Main
                     else
                         abstraction = source.FirstOrDefault(item => item.MalId == animeData.Id);
                     if (abstraction == null)
-                        target.Add(new AnimeItemAbstraction(animeData as SeasonalAnimeData, WorkMode != AnimeListWorkModes.TopManga));
+                        target.Add(new AnimeItemAbstraction(animeData as SeasonalAnimeData, WorkMode != AnimeListWorkModes.TopManga && WorkMode != AnimeListWorkModes.MangaAdapted));
                     else
                     {
                         //AnimeAirDay
@@ -1202,7 +1215,8 @@ namespace MALClient.XShared.ViewModels.Main
         private async void ReloadList()
         {
             if (WorkMode == AnimeListWorkModes.SeasonalAnime || WorkMode == AnimeListWorkModes.TopAnime ||
-                WorkMode == AnimeListWorkModes.TopManga || WorkMode == AnimeListWorkModes.AnimeByGenre ||
+                WorkMode == AnimeListWorkModes.TopManga || WorkMode == AnimeListWorkModes.MangaAdapted ||
+                WorkMode == AnimeListWorkModes.AnimeByGenre ||
                 WorkMode == AnimeListWorkModes.AnimeByStudio)
                 await FetchSeasonalData(true);
             else
@@ -1474,6 +1488,8 @@ namespace MALClient.XShared.ViewModels.Main
                     page.CurrentStatus = $"Top {TopAnimeWorkMode} - {Utils.Utilities.StatusToString((int)GetDesiredStatus(), WorkMode == AnimeListWorkModes.Manga)}";
                 else if (WorkMode == AnimeListWorkModes.TopManga)
                     page.CurrentStatus = $"Top {(MangaTopWorkMode == MangaTopType.All ? "Manga" : MangaTopWorkMode.ToString())} - {Utils.Utilities.StatusToString((int)GetDesiredStatus(), WorkMode == AnimeListWorkModes.Manga)}";
+                else if (WorkMode == AnimeListWorkModes.MangaAdapted)
+                    page.CurrentStatus = $"Adapted to anime - {AnimeAdaptedToAnimeQuery.ToDisplayName(MangaAdaptedWorkMode)}";
                 else if (WorkMode == AnimeListWorkModes.AnimeByStudio)
                     page.CurrentStatus = $"Studio - {Studio.GetDescription()}"; //Page 1 - {CurrentPage}
                 else if (WorkMode == AnimeListWorkModes.AnimeByGenre)
@@ -1536,7 +1552,7 @@ namespace MALClient.XShared.ViewModels.Main
             if (value == null &&
                 (WorkMode == AnimeListWorkModes.SeasonalAnime || WorkMode == AnimeListWorkModes.AnimeByGenre ||
                  WorkMode == AnimeListWorkModes.AnimeByStudio || WorkMode == AnimeListWorkModes.TopAnime ||
-                 WorkMode == AnimeListWorkModes.TopManga))
+                 WorkMode == AnimeListWorkModes.TopManga || WorkMode == AnimeListWorkModes.MangaAdapted))
                 value = (int) AnimeStatus.AllOrAiring;
 
             value = value ??

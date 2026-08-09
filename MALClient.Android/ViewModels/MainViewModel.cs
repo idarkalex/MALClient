@@ -81,6 +81,7 @@ namespace MALClient.Android.ViewModels
             if (index == PageIndex.PageSeasonal ||
                 index == PageIndex.PageMangaList ||
                 index == PageIndex.PageTopManga ||
+                index == PageIndex.PageMangaAdapted ||
                 index == PageIndex.PageTopAnime)
                 index = PageIndex.PageAnimeList;
 
@@ -124,6 +125,9 @@ namespace MALClient.Android.ViewModels
                             break;
                         case AnimeListWorkModes.TopManga:
                             ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.TopManga);
+                            break;
+                        case AnimeListWorkModes.MangaAdapted:
+                            ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.MangaAdapted);
                             break;
                         case AnimeListWorkModes.AnimeByGenre:
                             ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.AnimeList);

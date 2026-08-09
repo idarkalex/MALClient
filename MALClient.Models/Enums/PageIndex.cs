@@ -28,6 +28,8 @@
         PageTopAnime,
         [EnumUtilities.PageIndexEnumMember(OffPage = false)]
         PageTopManga,
+        [EnumUtilities.PageIndexEnumMember(OffPage = false)]
+        PageMangaAdapted,
         [EnumUtilities.PageIndexEnumMember(OffPage = false,RequiresSyncBlock = true)]
         PageCalendar,
         [EnumUtilities.PageIndexEnumMember(OffPage = false)]

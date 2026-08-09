@@ -138,7 +138,8 @@ namespace MALClient.XShared.ViewModels
                 Genre = page.Genre,
                 Studio = page.Studio,
                 TopWorkMode = page.TopAnimeWorkMode,
-                MangaTopWorkMode = page.MangaTopWorkMode
+                MangaTopWorkMode = page.MangaTopWorkMode,
+                MangaAdaptedWorkMode = page.MangaAdaptedWorkMode
             };
         }
 

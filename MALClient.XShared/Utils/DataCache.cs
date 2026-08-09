@@ -539,6 +539,34 @@ namespace MALClient.XShared.Utils
             return null;
         }
 
+        public static async void SaveAdaptedToAnimeData(List<TopAnimeData> data, MangaAdaptedType type)
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    await DataCacheService.SaveData(data, $"adapted_{type}_data.json", "");
+                });
+            }
+            catch (Exception)
+            {
+                //magic
+            }
+        }
+
+        public static async Task<List<TopAnimeData>> RetrieveAdaptedToAnimeData(MangaAdaptedType type)
+        {
+            try
+            {
+                return await DataCacheService.RetrieveData<List<TopAnimeData>>($"adapted_{type}_data.json", "", 14);
+            }
+            catch (Exception)
+            {
+                //No file
+            }
+            return null;
+        }
+
         #endregion
 
         #region MalToHum

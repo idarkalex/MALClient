@@ -67,6 +67,8 @@ namespace MALClient.Android.Activities
                     return AnimeListPageNavigationArgs.TopAnime(TopAnimeType.General);
                 case PageIndex.PageTopManga:
                     return AnimeListPageNavigationArgs.TopManga;
+                case PageIndex.PageMangaAdapted:
+                    return AnimeListPageNavigationArgs.MangaAdapted(MangaAdaptedType.AiringNow);
                 case PageIndex.PageArticles:
                     return MalArticlesPageNavigationArgs.Articles;
                 case PageIndex.PageNews:
@@ -193,6 +195,11 @@ namespace MALClient.Android.Activities
                 topMangaButton.WithIdentifier((int)PageIndex.PageTopManga);
                 topMangaButton.WithIcon(Resource.Drawable.icon_fav_outline);
 
+                var mangaAdaptedButton = GetBaseSecondaryItem(OnMangaAdaptedMore);
+                mangaAdaptedButton.WithName("Adapted to anime");
+                mangaAdaptedButton.WithIdentifier((int)PageIndex.PageMangaAdapted);
+                mangaAdaptedButton.WithIcon(Resource.Drawable.icon_list);
+
                 builder.WithDrawerItems(new List<IDrawerItem>()
                 {
                     animeButton,
@@ -204,6 +211,7 @@ namespace MALClient.Android.Activities
                     mangaSubHeader,//
                     mangaListButton,
                     topMangaButton,
+                    mangaAdaptedButton,
                     othersSubHeader,//
                     articlesButton,
                     videoButton,
@@ -283,6 +291,19 @@ namespace MALClient.Android.Activities
                 i =>
                 {
                     ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopMangaCategory((MangaTopType)i));
+                    _moreMenu.Dismiss(true);
+                    _drawer.CloseDrawer();
+                });
+            _moreMenu.Show();
+        }
+
+        private void OnMangaAdaptedMore(View view)
+        {
+            _moreMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, view,
+                Enum.GetValues(typeof(MangaAdaptedType)).Cast<MangaAdaptedType>().Select(AnimeAdaptedToAnimeQuery.ToDisplayName).ToList(),
+                i =>
+                {
+                    ViewModel.Navigate(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted((MangaAdaptedType)i));
                     _moreMenu.Dismiss(true);
                     _drawer.CloseDrawer();
                 });
@@ -395,6 +416,9 @@ namespace MALClient.Android.Activities
                     break;
                 case HamburgerButtons.TopManga:
                     id = (long) PageIndex.PageTopManga;
+                    break;
+                case HamburgerButtons.MangaAdapted:
+                    id = (long) PageIndex.PageMangaAdapted;
                     break;
                 case HamburgerButtons.Calendar:
                     id = (long) PageIndex.PageCalendar;
@@ -628,11 +652,16 @@ namespace MALClient.Android.Activities
                     topMangaButton.WithIdentifier((int)PageIndex.PageTopManga);
                     topMangaButton.WithIcon(Resource.Drawable.icon_fav_outline);
 
-                    _drawer.AddItemsAtPosition(6, mangaSubHeader, mangaListButton, topMangaButton);
+                    var mangaAdaptedButton = GetBaseSecondaryItem(OnMangaAdaptedMore);
+                    mangaAdaptedButton.WithName("Adapted to anime");
+                    mangaAdaptedButton.WithIdentifier((int)PageIndex.PageMangaAdapted);
+                    mangaAdaptedButton.WithIcon(Resource.Drawable.icon_list);
+
+                    _drawer.AddItemsAtPosition(6, mangaSubHeader, mangaListButton, topMangaButton, mangaAdaptedButton);
                 }
                 else
                 {
-                    _drawer.RemoveItems(55779988, (long)PageIndex.PageMangaList, (long)PageIndex.PageTopManga);
+                    _drawer.RemoveItems(55779988, (long)PageIndex.PageMangaList, (long)PageIndex.PageTopManga, (long)PageIndex.PageMangaAdapted);
                 }
             }
         }

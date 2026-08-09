@@ -249,6 +249,12 @@ namespace MALClient.Android.Activities
                             System.Enum.GetValues(typeof(MangaTopType)).Cast<MangaTopType>().Select(type => type.ToString()).ToList(),
                             OnUpperMangaTopTypeSelected);
                     }
+                    else if (workMode == AnimeListWorkModes.MangaAdapted)
+                    {
+                        _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
+                            System.Enum.GetValues(typeof(MangaAdaptedType)).Cast<MangaAdaptedType>().Select(AnimeAdaptedToAnimeQuery.ToDisplayName).ToList(),
+                            OnUpperMangaAdaptedSelected);
+                    }
                     else
                     {
                         _upperFilterMenu = AnimeListPageFlyoutBuilder.BuildForAnimeStatusSelection(this, MainPageCurrentStatus,
@@ -391,6 +397,15 @@ namespace MALClient.Android.Activities
             if (_upperFilterMenu == null)
                 return;
             ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopMangaCategory((MangaTopType)i));
+            _upperFilterMenu.Dismiss(true);
+            _upperFilterMenu = null;
+        }
+
+        private void OnUpperMangaAdaptedSelected(int i)
+        {
+            if (_upperFilterMenu == null)
+                return;
+            ViewModel.Navigate(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted((MangaAdaptedType)i));
             _upperFilterMenu.Dismiss(true);
             _upperFilterMenu = null;
         }

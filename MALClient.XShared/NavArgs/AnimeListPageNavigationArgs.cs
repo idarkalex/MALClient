@@ -19,6 +19,7 @@ namespace MALClient.XShared.NavArgs
         public SortOptions SortOption;
         public TopAnimeType TopWorkMode = TopAnimeType.General;
         public MangaTopType MangaTopWorkMode = MangaTopType.All;
+        public MangaAdaptedType MangaAdaptedWorkMode = MangaAdaptedType.AiringNow;
         public AnimeListWorkModes WorkMode = AnimeListWorkModes.Anime;
         public AnimeGenreSearch Genre;
         public AnimeStudios Studio;
@@ -73,6 +74,9 @@ namespace MALClient.XShared.NavArgs
 
         public static AnimeListPageNavigationArgs TopAnime(TopAnimeType type) =>
             new AnimeListPageNavigationArgs { WorkMode = AnimeListWorkModes.TopAnime, TopWorkMode = type };
+
+        public static AnimeListPageNavigationArgs MangaAdapted(MangaAdaptedType type) =>
+            new AnimeListPageNavigationArgs { WorkMode = AnimeListWorkModes.MangaAdapted, MangaAdaptedWorkMode = type };
     }
 
     
