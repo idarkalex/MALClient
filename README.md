@@ -6,7 +6,9 @@
   Robust MyAnimeList client application interfacing with the official MAL API, available on Android.
 </p>
 
-> **Important note (v1.0.0):** the app loads seasonal, top, studios, genres, details and other metadata exclusively from the stable **Tenrai API** (**`https://api.tenrai.org/v1`**). The official MAL API is still used for the anime/manga list, search and scores.
+> This is a community-maintained fork of the [original MALClient by Drutol](https://github.com/Drutol/MALClient).
+
+> **Important note:** most metadata (details, themes, episodes, seasonal, studios, genres, search, favourites) is served by the **Tenrai API** (**`https://api.tenrai.org/v1`**). Top anime/top manga and the "Adapted to anime" section are scraped directly from MyAnimeList. The official MAL API is used for the anime/manga list, search and scores.
 
 ### Download
 
@@ -40,8 +42,9 @@ Get the latest signed APK from [Releases](https://github.com/idarkalex/MALClient
   * Characters & Staff
   * Mal statistics
   * Promotional videos
-* Top anime/manga.
-  * With multiple categories
+* Top anime/manga with real MyAnimeList categories (top manga: All, Manga, Novels, Light Novels, One Shots, Doujinshi, Manhwa, Manhua, Popular, Favourited).
+  * Category switcher in the top status bar and the ⋮ overflow menu.
+* "Adapted to anime" manga section (All / Airing Now / Upcoming Anime).
 * Seasonal anime
   * With multiple season selection (ordered by date, current season marked, default sort by MAL score)
 * Anime by studio and genre
@@ -64,18 +67,18 @@ Get the latest signed APK from [Releases](https://github.com/idarkalex/MALClient
 * And much more!
 
 ### Compilation
-You should be able to compile this thing out of the box, you may have to generate certificate for Android though.
-There's also "Secrets.cs" file with some configs... you will have to make it yourself.
-### Code
-Spaghetti landfill.
-Well... there's a metric ton of legacy thingies especially in navigation and pages that were made in the beggining like anime list or anime details. I'm not proud of these but I'm not planning to rewrite them. Stuff that has been added later on is nicer and somewhat decently organised. I started this app when I knew nothing so yeah, works but code is smelly.
+No local build required: the signed APK is built automatically by GitHub Actions
+(`.github/workflows/build-android.yml`) on every push to `main` and on pull requests,
+and every `v*` tag additionally publishes a GitHub Release with the APK attached.
+Grab the latest build from [Releases](https://github.com/idarkalex/MALClient/releases).
+
 ### "Protocol"
 
 If you'd like for some reason to launch my app externally you can do so by using this protocol:
 ```
 malclient://<your everyday MAL link>
 ```
-List of all accepted urls can be found [here](https://github.com/Drutol/MALClient/blob/714a73a3f4389a3212843fda243c1034c7347144/MALClient.XShared/Utils/MalLinkParser.cs)
+List of all accepted urls can be found [here](MALClient.XShared/Utils/MalLinkParser.cs)
 
 ### Icon
 
@@ -83,6 +86,8 @@ Icon was donated by @richardbmx! Great thanks!
 
 ### Donations
 
-Well, if you really like my app I won't stop you:
+This PayPal belongs to the author of the **original** MALClient project
+([Drutol](https://github.com/Drutol)), not to the maintainer of this fork. If you'd like
+to support the original author you won't be stopped:
 
 [![paypal](https://www.paypalobjects.com/webstatic/mktg/merchant_portal/button/donate.en.png)](https://www.paypal.me/drutol)
