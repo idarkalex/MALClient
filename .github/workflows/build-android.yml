@@ -202,6 +202,10 @@ jobs:
             Write-Host "=== Signing $($apk.Name) ==="
             & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" $apk.FullName 2>&1 | ForEach-Object { Write-Host "APKSIGNER: $_" }
             if ($LASTEXITCODE -ne 0) { throw "apksigner failed on $($apk.Name) with exit code $LASTEXITCODE" }
+            $signedPath = Join-Path $apk.DirectoryName ($apk.BaseName + "-Signed.apk")
+            if (Test-Path $signedPath) {
+              Move-Item -Path $signedPath -Destination $apk.FullName -Force
+            }
             & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar verify --print-certs $apk.FullName 2>&1 | ForEach-Object { Write-Host "VERIFY: $_" }
             Write-Host "Signed: $($apk.Name)"
           }
