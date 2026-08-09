@@ -23,11 +23,28 @@ namespace MALClient.XShared.Comm.Anime
         Manga
     }
 
+    public enum MangaTopType
+    {
+        All,
+        Manga,
+        Novels,
+        LightNovels,
+        OneShots,
+        Doujinshi,
+        Manhwa,
+        Manhua,
+        Popular,
+        Favourited
+    }
+
 
     public class AnimeTopQuery : Query
     {
         private static Dictionary<TopAnimeType,List<TopAnimeData>> _prevQueriesCache = new Dictionary<TopAnimeType, List<TopAnimeData>>();
+        private static Dictionary<MangaTopType, List<TopAnimeData>> _prevMangaQueriesCache = new Dictionary<MangaTopType, List<TopAnimeData>>();
         private TopAnimeType _type;
+        private MangaTopType _mangaType;
+        private bool _isManga;
         private int _page;
         public AnimeTopQuery(TopAnimeType topType,int page = 0)
         {
@@ -38,6 +55,19 @@ namespace MALClient.XShared.Comm.Anime
             Request.Method = "GET";
             _page = page;
             _type = topType;
+            _isManga = false;
+        }
+
+        public AnimeTopQuery(MangaTopType topType, int page = 0)
+        {
+            Request =
+                WebRequest.Create(
+                    Uri.EscapeUriString($"https://myanimelist.net/{GetMangaEndpoint(topType, page)}"));
+            Request.ContentType = "application/x-www-form-urlencoded";
+            Request.Method = "GET";
+            _page = page;
+            _mangaType = topType;
+            _isManga = true;
         }
 
         private string GetEndpoint(TopAnimeType type,int page)
@@ -67,16 +97,59 @@ namespace MALClient.XShared.Comm.Anime
             }
         }
 
+        private string GetMangaEndpoint(MangaTopType type, int page)
+        {
+            switch (type)
+            {
+                case MangaTopType.All:
+                    return $"topmanga.php?limit={page*50}";
+                case MangaTopType.Manga:
+                    return $"topmanga.php?type=manga&limit={page*50}";
+                case MangaTopType.Novels:
+                    return $"topmanga.php?type=novel&limit={page*50}";
+                case MangaTopType.LightNovels:
+                    return $"topmanga.php?type=lightnovel&limit={page*50}";
+                case MangaTopType.OneShots:
+                    return $"topmanga.php?type=oneshots&limit={page*50}";
+                case MangaTopType.Doujinshi:
+                    return $"topmanga.php?type=doujin&limit={page*50}";
+                case MangaTopType.Manhwa:
+                    return $"topmanga.php?type=manhwa&limit={page*50}";
+                case MangaTopType.Manhua:
+                    return $"topmanga.php?type=manhua&limit={page*50}";
+                case MangaTopType.Popular:
+                    return $"topmanga.php?type=bypopularity&limit={page*50}";
+                case MangaTopType.Favourited:
+                    return $"topmanga.php?type=favorite&limit={page*50}";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+        }
+
         public async Task<List<TopAnimeData>> GetTopAnimeData(bool force = false)
         {
             if (!force)
-                if (_prevQueriesCache.ContainsKey(_type))
+            {
+                if (_isManga)
+                {
+                    if (_prevMangaQueriesCache.ContainsKey(_mangaType))
+                        return _prevMangaQueriesCache[_mangaType];
+                }
+                else if (_prevQueriesCache.ContainsKey(_type))
                     return _prevQueriesCache[_type];
+            }
 
-            var output = force ? new List<TopAnimeData>() : (await DataCache.RetrieveTopAnimeData(_type) ?? new List<TopAnimeData>());
+            var output = force
+                ? new List<TopAnimeData>()
+                : _isManga
+                    ? (await DataCache.RetrieveTopMangaData(_mangaType) ?? new List<TopAnimeData>())
+                    : (await DataCache.RetrieveTopAnimeData(_type) ?? new List<TopAnimeData>());
             if (output.Count > 0)
             {
-                _prevQueriesCache[_type] = output;
+                if (_isManga)
+                    _prevMangaQueriesCache[_mangaType] = output;
+                else
+                    _prevQueriesCache[_type] = output;
                 return output;
             }
             var raw = await GetRequestResponse();
@@ -92,7 +165,7 @@ namespace MALClient.XShared.Comm.Anime
                 return new List<TopAnimeData>();
 
             var i = 50*_page;
-            string imgUrlType = _type == TopAnimeType.Manga ? "manga/" : "anime/";
+            string imgUrlType = _isManga ? "manga/" : "anime/";
             foreach (var item in topNodes.Descendants("tr").Where(node => node.Attributes.Contains("class") && node.Attributes["class"].Value == "ranking-list"))
             {
                 try
@@ -137,10 +210,18 @@ namespace MALClient.XShared.Comm.Anime
                 }
             }
             if (_page != 0) //merge data
-                output = _prevQueriesCache[_type].Union(output).Distinct().ToList();
+                output = (_isManga ? _prevMangaQueriesCache[_mangaType] : _prevQueriesCache[_type]).Union(output).Distinct().ToList();
 
-            DataCache.SaveTopAnimeData(output, _type);
-            _prevQueriesCache[_type] = output;
+            if (_isManga)
+            {
+                DataCache.SaveTopMangaData(output, _mangaType);
+                _prevMangaQueriesCache[_mangaType] = output;
+            }
+            else
+            {
+                DataCache.SaveTopAnimeData(output, _type);
+                _prevQueriesCache[_type] = output;
+            }
             return output;
         }
     }

@@ -389,6 +389,8 @@ namespace MALClient.XShared.ViewModels.Main
 
         public TopAnimeType TopAnimeWorkMode { get; set; }
 
+        public MangaTopType MangaTopWorkMode { get; set; }
+
         private AnimeListDisplayModes _displayMode;
 
         public AnimeListDisplayModes DisplayMode

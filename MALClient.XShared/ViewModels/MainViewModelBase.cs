@@ -137,7 +137,8 @@ namespace MALClient.XShared.ViewModels
                 ResetBackNav = page.ResetedNavBack,
                 Genre = page.Genre,
                 Studio = page.Studio,
-                TopWorkMode = page.TopAnimeWorkMode
+                TopWorkMode = page.TopAnimeWorkMode,
+                MangaTopWorkMode = page.MangaTopWorkMode
             };
         }
 

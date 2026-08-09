@@ -188,7 +188,7 @@ namespace MALClient.Android.Activities
                 mangaListButton.WithIdentifier((int)PageIndex.PageMangaList);
                 mangaListButton.WithIcon(Resource.Drawable.icon_list);
 
-                var topMangaButton = GetBaseSecondaryItem();
+                var topMangaButton = GetBaseSecondaryItem(OnTopMangaMore);
                 topMangaButton.WithName("Top manga");
                 topMangaButton.WithIdentifier((int)PageIndex.PageTopManga);
                 topMangaButton.WithIcon(Resource.Drawable.icon_fav_outline);
@@ -274,6 +274,19 @@ namespace MALClient.Android.Activities
                 });
             _moreMenu.Show();
 
+        }
+
+        private void OnTopMangaMore(View view)
+        {
+            _moreMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, view,
+                Enum.GetValues(typeof(MangaTopType)).Cast<MangaTopType>().Select(type => type.ToString()).ToList(),
+                i =>
+                {
+                    ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopManga((MangaTopType)i));
+                    _moreMenu.Dismiss(true);
+                    _drawer.CloseDrawer();
+                });
+            _moreMenu.Show();
         }
 
         private void OnAnimeListMore(View view)
@@ -610,7 +623,7 @@ namespace MALClient.Android.Activities
                     mangaListButton.WithIdentifier((int)PageIndex.PageMangaList);
                     mangaListButton.WithIcon(Resource.Drawable.icon_list);
 
-                    var topMangaButton = GetBaseSecondaryItem();
+                    var topMangaButton = GetBaseSecondaryItem(OnTopMangaMore);
                     topMangaButton.WithName("Top manga");
                     topMangaButton.WithIdentifier((int)PageIndex.PageTopManga);
                     topMangaButton.WithIcon(Resource.Drawable.icon_fav_outline);

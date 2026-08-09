@@ -206,6 +206,10 @@ namespace MALClient.XShared.ViewModels.Main
                         TopAnimeWorkMode = args.TopWorkMode;
                         ViewModelLocator.GeneralHamburger.SetActiveButton(args.TopWorkMode); //we have to have it
                     }
+                    else if (WorkMode == AnimeListWorkModes.TopManga)
+                    {
+                        MangaTopWorkMode = args.MangaTopWorkMode;
+                    }
                     else if (WorkMode == AnimeListWorkModes.AnimeByGenre)
                     {
                         Genre = args.Genre;
@@ -986,11 +990,9 @@ namespace MALClient.XShared.ViewModels.Main
                 case AnimeListWorkModes.TopManga:
                     List<TopAnimeData> topResponse = null;
                     await Task.Run(async () =>
-                        topResponse = await
-                            new AnimeTopQuery(
-                                WorkMode == AnimeListWorkModes.TopAnime
-                                    ? TopAnimeWorkMode
-                                    : TopAnimeType.Manga, page - 1).GetTopAnimeData(force));
+                        topResponse = WorkMode == AnimeListWorkModes.TopAnime
+                            ? await new AnimeTopQuery(TopAnimeWorkMode, page - 1).GetTopAnimeData(force)
+                            : await new AnimeTopQuery(MangaTopWorkMode, page - 1).GetTopAnimeData(force));
                     data.AddRange(topResponse ?? new List<TopAnimeData>());
                     break;
                 case AnimeListWorkModes.AnimeByGenre:
@@ -1471,7 +1473,7 @@ namespace MALClient.XShared.ViewModels.Main
                 if (WorkMode == AnimeListWorkModes.TopAnime)
                     page.CurrentStatus = $"Top {TopAnimeWorkMode} - {Utils.Utilities.StatusToString((int)GetDesiredStatus(), WorkMode == AnimeListWorkModes.Manga)}";
                 else if (WorkMode == AnimeListWorkModes.TopManga)
-                    page.CurrentStatus = $"Top Manga - {Utils.Utilities.StatusToString((int)GetDesiredStatus(), WorkMode == AnimeListWorkModes.Manga)}";
+                    page.CurrentStatus = $"Top {(MangaTopWorkMode == MangaTopType.All ? "Manga" : MangaTopWorkMode.ToString())} - {Utils.Utilities.StatusToString((int)GetDesiredStatus(), WorkMode == AnimeListWorkModes.Manga)}";
                 else if (WorkMode == AnimeListWorkModes.AnimeByStudio)
                     page.CurrentStatus = $"Studio - {Studio.GetDescription()}"; //Page 1 - {CurrentPage}
                 else if (WorkMode == AnimeListWorkModes.AnimeByGenre)
