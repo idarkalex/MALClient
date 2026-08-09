@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -43,7 +43,7 @@ namespace MALClient.XShared.Comm.Anime
                 var page = 1;
                 while (page <= 3)
                 {
-                    var json = await JikanClient.GetRawJsonAsync(
+                    var json = await TenraiClient.GetRawJsonAsync(
                         $"{(_anime ? "anime" : "manga")}/{_targetId}/reviews?page={page}");
                     var reviews = JsonSerializer.Deserialize<Root>(json);
                     if (reviews?.Data == null || reviews.Data.Count == 0)

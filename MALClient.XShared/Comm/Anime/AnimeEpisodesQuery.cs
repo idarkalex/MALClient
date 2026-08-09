@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -24,7 +24,7 @@ namespace MALClient.XShared.Comm.Anime
                 {
                     try
                     {
-                        var (items, hasNext) = await JikanClient.GetPaginatedAsync($"anime/{animeId}/episodes?page={page}");
+                        var (items, hasNext) = await TenraiClient.GetPaginatedAsync($"anime/{animeId}/episodes?page={page}");
                         foreach (var ep in items)
                         {
                             result.Add(new AnimeEpisode

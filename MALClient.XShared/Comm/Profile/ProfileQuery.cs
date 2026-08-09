@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -111,7 +111,7 @@ namespace MALClient.XShared.Comm.Profile
 
                 try
                 {
-                    var favs = await JikanClient.GetDataAsync($"users/{Uri.EscapeDataString(_userName)}/favorites");
+                    var favs = await TenraiClient.GetDataAsync($"users/{Uri.EscapeDataString(_userName)}/favorites");
                     foreach (var favAnime in GetEnumerable(favs, "anime"))
                         current.FavouriteAnime.Add(GetInt(favAnime, "mal_id"));
 

@@ -225,3 +225,5 @@ _pkginfo.txt
 
 MALClient.Android/Resources/Resource.Designer.cs
 MALClient.XShared/Secrets.cs
+
+.build-artifacts/

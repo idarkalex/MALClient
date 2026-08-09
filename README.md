@@ -6,7 +6,7 @@
   Robust MyAnimeList client application interfacing with the official MAL API, available on Android.
 </p>
 
-> **Important note (v1.0.0):** the original Jikan API (`api.jikan.moe`) is no longer reliably available (504 errors / timeouts), so the app now uses exclusively the stable mirror **`https://api.tenrai.org/v1`** (1:1 compatible with Jikan v4). This restores loading of seasonal, top, studios, genres and details. The official MAL API is still used for the anime/manga list, search and scores.
+> **Important note (v1.0.0):** the app loads seasonal, top, studios, genres, details and other metadata exclusively from the stable **Tenrai API** (**`https://api.tenrai.org/v1`**). The official MAL API is still used for the anime/manga list, search and scores.
 
 ### Download
 

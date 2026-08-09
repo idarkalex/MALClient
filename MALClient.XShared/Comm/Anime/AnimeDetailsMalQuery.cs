@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -37,7 +37,7 @@ namespace MALClient.XShared.Comm.Anime
                     return output;
                 }
 
-                var data = await JikanClient.GetDataAsync($"anime/{_id}");
+                var data = await TenraiClient.GetDataAsync($"anime/{_id}");
 
                 var type = GetString(data, "type");
                 var episodes = GetString(data, "episodes");
@@ -114,7 +114,7 @@ namespace MALClient.XShared.Comm.Anime
 
                 try
                 {
-                    var themesData = await JikanClient.GetDataAsync($"anime/{_id}/themes");
+                    var themesData = await TenraiClient.GetDataAsync($"anime/{_id}/themes");
                     if (themesData.TryGetProperty("openings", out var ops))
                     {
                         foreach (var op in ops.EnumerateArray())

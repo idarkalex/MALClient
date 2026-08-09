@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -25,7 +25,7 @@ namespace MALClient.XShared.Comm.Anime
 
             try
             {
-                var (items, _) = await JikanClient.GetPaginatedAsync($"anime?q={Uri.EscapeDataString(_query)}&sfw");
+                var (items, _) = await TenraiClient.GetPaginatedAsync($"anime?q={Uri.EscapeDataString(_query)}&sfw");
 
                 foreach (var result in items)
                 {

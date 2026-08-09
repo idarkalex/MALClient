@@ -1,5 +1,4 @@
-﻿using JikanDotNet;
-using MALClient.Models.Enums;
+﻿using MALClient.Models.Enums;
 using MALClient.Models.Models.Anime;
 using MALClient.XShared.Comm.Anime;
 

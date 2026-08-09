@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JikanDotNet;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
@@ -47,7 +46,7 @@ namespace MALClient.XShared.Comm.Anime
                     ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc"
                     : $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc";
 
-                var (items, _) = await JikanClient.GetPaginatedAsync(endpoint);
+                var (items, _) = await TenraiClient.GetPaginatedAsync(endpoint);
 
                 int index = (_page - 1) * 25 + 1;
                 foreach (var entry in items)

@@ -1,6 +1,4 @@
-﻿using JikanDotNet;
-
-namespace MALClient.Models.Models.Anime
+﻿namespace MALClient.Models.Models.Anime
 {
     public class AnimeSeason
     {

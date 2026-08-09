@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -25,7 +25,7 @@ namespace MALClient.XShared.Comm.Profile
 
             try
             {
-                var (items, _) = await JikanClient.GetPaginatedAsync(
+                var (items, _) = await TenraiClient.GetPaginatedAsync(
                     $"users/{Uri.EscapeDataString(_userName)}/friends");
 
                 foreach (var friend in items)

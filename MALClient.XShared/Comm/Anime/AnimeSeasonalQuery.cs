@@ -57,7 +57,7 @@ namespace MALClient.XShared.Comm.Anime
                     int currentPage = 1;
                     while (true)
                     {
-                        var (items, hasNext) = await JikanClient.GetPaginatedAsync(
+                        var (items, hasNext) = await TenraiClient.GetPaginatedAsync(
                             $"seasons/{requestedYear}/{requestedSeason}?page={currentPage}");
 
                         foreach (var entry in items)
@@ -247,14 +247,14 @@ namespace MALClient.XShared.Comm.Anime
             };
         }
 
-        private static string SeasonEnumToString(JikanDotNet.Season season)
+        private static string SeasonEnumToString(Season season)
         {
             return season switch
             {
-                JikanDotNet.Season.Winter => "winter",
-                JikanDotNet.Season.Spring => "spring",
-                JikanDotNet.Season.Summer => "summer",
-                JikanDotNet.Season.Fall => "fall",
+                Season.Winter => "winter",
+                Season.Spring => "spring",
+                Season.Summer => "summer",
+                Season.Fall => "fall",
                 _ => "fall"
             };
         }

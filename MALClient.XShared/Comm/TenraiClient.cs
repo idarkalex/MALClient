@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MALClient.XShared.Comm
 {
-    public static class JikanClient
+    public static class TenraiClient
     {
         private static readonly HttpClient Client = new HttpClient();
         private static readonly SemaphoreSlim RateLimiter = new SemaphoreSlim(1, 1);
@@ -27,7 +27,7 @@ namespace MALClient.XShared.Comm
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        static JikanClient()
+        static TenraiClient()
         {
             Client.DefaultRequestHeaders.Add("User-Agent", "MALClient/3.0");
         }
@@ -51,7 +51,7 @@ namespace MALClient.XShared.Comm
                 }
             }
 
-            throw lastError ?? new HttpRequestException("All Jikan mirrors failed.");
+            throw lastError ?? new HttpRequestException("All Tenrai mirrors failed.");
         }
 
         private static async Task<string> GetStringCoreAsync(string url)
@@ -87,7 +87,7 @@ namespace MALClient.XShared.Comm
                             await Task.Delay(TimeSpan.FromSeconds(Math.Min(delay, 15)));
                             continue;
                         }
-                        throw new HttpRequestException("Jikan rate limit exceeded (429).");
+                        throw new HttpRequestException("Tenrai rate limit exceeded (429).");
                     }
 
                     if (status >= 500)
@@ -97,11 +97,11 @@ namespace MALClient.XShared.Comm
                             await Task.Delay(TimeSpan.FromSeconds(2 * attempt));
                             continue;
                         }
-                        throw new HttpRequestException($"Jikan server error {(int)response.StatusCode}.");
+                        throw new HttpRequestException($"Tenrai server error {(int)response.StatusCode}.");
                     }
 
                     if (!response.IsSuccessStatusCode)
-                        throw new HttpRequestException($"Jikan request failed: {(int)response.StatusCode}");
+                        throw new HttpRequestException($"Tenrai request failed: {(int)response.StatusCode}");
 
                     return await response.Content.ReadAsStringAsync();
                 }

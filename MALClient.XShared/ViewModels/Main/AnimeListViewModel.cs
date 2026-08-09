@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using JikanDotNet;
 using MALClient.Models.Enums;
 using MALClient.Models.Models;
 using MALClient.Models.Models.Anime;
@@ -1091,7 +1090,7 @@ namespace MALClient.XShared.ViewModels.Main
             var currentSeasonName = $"{GetCurrentSeasonName()} {DateTime.UtcNow.Year}";
             try
             {
-                var (items, _) = await JikanClient.GetPaginatedAsync("seasons");
+                var (items, _) = await TenraiClient.GetPaginatedAsync("seasons");
 
                 foreach (var s in items.Take(3))
                 {
@@ -1183,14 +1182,14 @@ namespace MALClient.XShared.ViewModels.Main
             };
         }
 
-        private static int SeasonRank(JikanDotNet.Season season)
+        private static int SeasonRank(Season season)
         {
             return season switch
             {
-                JikanDotNet.Season.Winter => 0,
-                JikanDotNet.Season.Spring => 1,
-                JikanDotNet.Season.Summer => 2,
-                JikanDotNet.Season.Fall => 3,
+                Season.Winter => 0,
+                Season.Spring => 1,
+                Season.Summer => 2,
+                Season.Fall => 3,
                 _ => 3
             };
         }

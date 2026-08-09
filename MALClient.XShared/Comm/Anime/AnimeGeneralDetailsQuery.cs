@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -37,7 +37,7 @@ namespace MALClient.XShared.Comm.Anime
 
             try
             {
-                var data = await JikanClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}");
+                var data = await TenraiClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}");
 
                 if (animeMode)
                 {

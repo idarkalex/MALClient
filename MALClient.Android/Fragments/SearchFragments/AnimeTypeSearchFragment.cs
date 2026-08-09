@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
-using JikanDotNet;
 using MALClient.Android.Activities;
 using MALClient.Android.Resources;
 using MALClient.Models.Enums;
