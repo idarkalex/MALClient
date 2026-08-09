@@ -548,8 +548,6 @@ namespace MALClient.Android.Activities
 
                     _supportMenu.Menu.Add(0,0,0,"GitHub Feedback");
                     _supportMenu.Menu.Add(0,1,0,"Review");
-                    _supportMenu.Menu.Add(0,2,0,"Donate Google");
-                    //_supportMenu.Menu.Add(0,3,0,"Donate PayPal");
                     _supportMenu.Menu.Add(0,4,0,"Turn on ads");
 
                     _supportMenu.Show();
@@ -576,18 +574,10 @@ namespace MALClient.Android.Activities
 
                 case 0:
                     ResourceLocator.SystemControlsLauncherService.LaunchUri(
-                        new Uri("https://github.com/Drutol/MALClient/issues"));
+                        new Uri("https://github.com/idarkalex/MALClient/issues"));
                     break;
                 case 1:
                     AndroidViewModelLocator.Settings.ReviewCommand.Execute(null);
-                    break;
-                case 2:
-                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageSettings,SettingsPageIndex.About);
-                    SetActiveButton(HamburgerButtons.Settings);
-                    _drawer.CloseDrawer();
-                    break;
-                case 3:
-                    ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri("https://www.paypal.me/drutol"));
                     break;
                 case 4:
                     ViewModelLocator.GeneralMain.Navigate(PageIndex.PageSettings,SettingsPageIndex.Ads);

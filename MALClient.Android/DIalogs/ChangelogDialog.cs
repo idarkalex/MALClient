@@ -32,8 +32,8 @@ namespace MALClient.Android.DIalogs
         public static void BuildChangelogDialog(IChangeLogProvider changeLogProvider)
         {
             var dialogBuilder = DialogPlus.NewDialog(MainActivity.CurrentContext);
-            dialogBuilder.SetGravity((int)(GravityFlags.Top));
-            dialogBuilder.SetMargin(DimensionsHelper.DpToPx(40), DimensionsHelper.DpToPx(75), DimensionsHelper.DpToPx(2), 0);
+            dialogBuilder.SetGravity((int)(GravityFlags.Center));
+            dialogBuilder.SetMargin(DimensionsHelper.DpToPx(24), DimensionsHelper.DpToPx(24), DimensionsHelper.DpToPx(24), DimensionsHelper.DpToPx(24));
             dialogBuilder.SetContentHolder(new ViewHolder(Resource.Layout.ChangelogDialog));
             dialogBuilder.SetContentBackgroundResource(Resource.Color.Transparent);
             dialogBuilder.SetOnDismissListener(

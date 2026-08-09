@@ -230,11 +230,18 @@ namespace MALClient.Android.Activities
             {
                 if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList)
                 {
-                    if (ViewModelLocator.AnimeList.WorkMode == AnimeListWorkModes.SeasonalAnime)
+                    var workMode = ViewModelLocator.AnimeList.WorkMode;
+                    if (workMode == AnimeListWorkModes.SeasonalAnime)
                     {
                         _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
                             ViewModelLocator.AnimeList.SeasonSelection.Select(season => season.DisplayName).ToList(),
                             OnUpperStatusSeasonSelected);
+                    }
+                    else if (workMode == AnimeListWorkModes.TopAnime || workMode == AnimeListWorkModes.TopManga)
+                    {
+                        _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
+                            Enum.GetValues(typeof(TopAnimeType)).Cast<TopAnimeType>().Select(type => type.ToString()).ToList(),
+                            OnUpperTopTypeSelected);
                     }
                     else
                     {
@@ -360,6 +367,15 @@ namespace MALClient.Android.Activities
             if (_upperFilterMenu == null)
                 return;
             ViewModelLocator.AnimeList.SeasonalUrlsSelectedIndex = i1;
+            _upperFilterMenu.Dismiss(true);
+            _upperFilterMenu = null;
+        }
+
+        private void OnUpperTopTypeSelected(int i)
+        {
+            if (_upperFilterMenu == null)
+                return;
+            ViewModel.Navigate(PageIndex.PageTopAnime, AnimeListPageNavigationArgs.TopAnime((TopAnimeType)i));
             _upperFilterMenu.Dismiss(true);
             _upperFilterMenu = null;
         }

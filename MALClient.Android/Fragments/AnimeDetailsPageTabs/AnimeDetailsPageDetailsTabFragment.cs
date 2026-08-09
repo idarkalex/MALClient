@@ -225,7 +225,10 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             var view = Activity.LayoutInflater.Inflate(Resource.Layout.DetailItemView, null);
             view.FindViewById<TextView>(Resource.Id.DetailItemCategoryTextView).Text = tuple.Item1;
-            view.FindViewById<TextView>(Resource.Id.DetailItemContentTextView).Text = tuple.Item2;
+            var contentTextView = view.FindViewById<TextView>(Resource.Id.DetailItemContentTextView);
+            contentTextView.Text = tuple.Item2;
+            if (tuple.Item1 == "Alt. Titles")
+                contentTextView.SetMaxLines(int.MaxValue);
 
             view.FindViewById(Resource.Id.DetailItemRootContainer).SetBackgroundColor(
                 new Color(i % 2 == 0

@@ -31,13 +31,14 @@ namespace MALClient.Android.Adapters
 
         public bool NewChangelog { get; set; }
 
-        public string DateWithVersion => $"{_currentVersion} - 07.06.2023";
+        public string DateWithVersion => $"MALClient v{_currentVersion}";
 
         public List<string> Changelog => new List<string>
         {
-           "Fixed forum messages not displaying.",
-           "Fixed occasional errors when updating.",
-           "Fixed anime recommendations.",
+           "Reviews are now fetched directly from the MyAnimeList website, showing the full review list in the same order as on the site.",
+           "Fixed the season label in the anime details screen.",
+           "Fixed genre browsing returning empty results for several genres.",
+           "Improved API reliability and data freshness.",
         };
     }
 }

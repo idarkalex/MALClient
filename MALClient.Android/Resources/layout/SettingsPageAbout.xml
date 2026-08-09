@@ -39,47 +39,12 @@
               android:layout_width="wrap_content" android:text="There are also forum topics on MAL, feel free to drop in." android:layout_marginTop="10dp"
               android:layout_height="wrap_content" android:textColor="?BrushText"/>
 
-    <TextView android:layout_marginTop="20dp"
-              android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="Support"
-              android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" />
-
-    <TextView android:lineSpacingExtra="2dp"
-              android:layout_width="wrap_content" android:text="If you like this app so much that you'd like to support its development you can turn ads on in settings or donate directly via PlayStore." android:layout_marginTop="10dp"
-              android:layout_height="wrap_content" android:textColor="?BrushText"/>
-
-
-    <LinearLayout
-      android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="20dp"
-      android:layout_height="wrap_content" android:orientation="horizontal">
-
-      <Button android:id="@+id/AboutPageDonate1Button"
-              android:layout_width="wrap_content" style="@style/AccentButtonStyle" android:layout_marginEnd="20dp"
-              android:layout_height="wrap_content" android:text="Donation 1" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
-      <Button android:id="@+id/AboutPageDonate2Button"
-              android:layout_width="wrap_content" style="@style/AccentButtonStyle"
-              android:layout_height="wrap_content" android:text="Donation 2" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-      android:layout_width="wrap_content" android:layout_gravity="center_horizontal"
-      android:layout_height="wrap_content" android:orientation="horizontal">
-
-      <Button android:id="@+id/AboutPageDonate3Button"
-              android:layout_width="wrap_content" style="@style/AccentButtonStyle" android:layout_marginEnd="20dp"
-              android:layout_height="wrap_content" android:text="Donation 3" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
-      <Button android:id="@+id/AboutPageDonate4Button"
-              android:layout_width="wrap_content" style="@style/AccentButtonStyle"
-              android:layout_height="wrap_content" android:text="Donation 4" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
-
-    </LinearLayout>
-
     <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center_horizontal"
       android:fontFamily="@string/font_family_light"
-      android:text="Changelog"
+      android:text="Changelog" android:layout_marginTop="20dp"
       android:textColor="?AccentColour"
       android:textSize="@dimen/FontSizeHuge" />
 
@@ -128,6 +93,17 @@
       android:text="Piotr Szymczak"
       android:textColor="?AccentColourDark"
       android:textSize="@dimen/FontSizeBig" />
+
+    <TextView android:lineSpacingExtra="2dp"
+              android:layout_width="wrap_content" android:text="Currently maintained by" android:layout_marginTop="15dp"
+              android:layout_height="wrap_content" android:textColor="?BrushText"/>
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_horizontal"
+      android:text="\@idarkalex" android:layout_marginTop="10dp"
+      android:textColor="?AccentColourDark"
+      android:textSize="@dimen/FontSizeHuge" />
 
     <TextView android:lineSpacingExtra="2dp"
               android:layout_width="wrap_content" android:text="Also huge thanks to these two brave testers who made this app actually usable ^^ Applauze!" android:layout_marginTop="10dp"
