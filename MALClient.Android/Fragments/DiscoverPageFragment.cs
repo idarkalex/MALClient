@@ -67,9 +67,14 @@ namespace MALClient.Android.Fragments
 
         private void DiscoverPageRefreshOnRefresh(object sender, EventArgs e)
         {
-            DiscoverPageRefresh.Refreshing = false;
             ClearSections();
-            LoadSections();
+            ReloadSectionsAsync();
+        }
+
+        private async void ReloadSectionsAsync()
+        {
+            await LoadSections();
+            DiscoverPageRefresh.Refreshing = false;
         }
 
         private void ClearSections()
@@ -83,7 +88,7 @@ namespace MALClient.Android.Fragments
             DiscoverNewsRow.RemoveAllViews();
         }
 
-        private async void LoadSections()
+        private async Task LoadSections()
         {
             try
             {
@@ -375,7 +380,7 @@ namespace MALClient.Android.Fragments
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
             {
-                var view = new AnimeGridItem(Activity, false, null);
+                var view = new AnimeGridItem(Activity, false, null, true);
                 view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
                 {
                     TopMargin = verticalMargin,
@@ -434,7 +439,11 @@ namespace MALClient.Android.Fragments
                     // network on main thread
                 }
                 view.SetOnClickListener(new OnClickListener(v =>
-                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageNews, MalArticlesPageNavigationArgs.News)));
+                {
+                    ViewModelLocator.MalArticles.PendingArticle = (v.Tag as MalNewsUnitModel) ?? item;
+                    NavigateTo(PageIndex.PageNews, MalArticlesPageNavigationArgs.News);
+                }));
+                view.Tag = item;
                 DiscoverNewsRow.AddView(view);
             }
         }

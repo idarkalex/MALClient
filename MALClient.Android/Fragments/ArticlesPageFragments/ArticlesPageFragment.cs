@@ -63,6 +63,13 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
             ArticlesPageWebView.SetWebViewClient(_listenableWebClient);
             ArticlesPageWebView.Settings.JavaScriptEnabled = true;
 
+            if (ViewModel.PendingArticle != null)
+            {
+                var article = ViewModel.PendingArticle;
+                ViewModel.PendingArticle = null;
+                ViewModel.LoadArticleCommand.Execute(article);
+            }
+
             Bindings.Add(
                 this.SetBinding(() => ViewModel.WebViewVisibility,
                     () => ArticlesPageWebView.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));

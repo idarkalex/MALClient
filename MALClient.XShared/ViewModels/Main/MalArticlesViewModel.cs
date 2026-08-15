@@ -107,6 +107,7 @@ namespace MALClient.XShared.ViewModels.Main
         private bool _loadingData;
         public ArticlePageWorkMode? PrevWorkMode;
         public int CurrentNews = -1;
+        public MalNewsUnitModel PendingArticle;
         public async void Init(MalArticlesPageNavigationArgs args,bool force = false)
         {
             if (args == null) //refresh
