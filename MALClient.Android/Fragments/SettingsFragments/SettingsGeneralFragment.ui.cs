@@ -19,6 +19,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         private RadioButton _settingsPageGeneralRadioAnimeList;
         private RadioButton _settingsPageGeneralRadioMangaList;
+        private RadioButton _settingsPageGeneralRadioDiscover;
         private RadioGroup _settingsPageGeneralStartPageRadioGroup;
         private RadioButton _settingsPageGeneralRadioDarkTheme;
         private RadioButton _settingsPageGeneralRadioLightTheme;
@@ -87,6 +88,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         public RadioButton SettingsPageGeneralRadioAnimeList => _settingsPageGeneralRadioAnimeList ?? (_settingsPageGeneralRadioAnimeList = FindViewById<RadioButton>(Resource.Id.SettingsPageGeneralRadioAnimeList));
         public RadioButton SettingsPageGeneralRadioMangaList => _settingsPageGeneralRadioMangaList ?? (_settingsPageGeneralRadioMangaList = FindViewById<RadioButton>(Resource.Id.SettingsPageGeneralRadioMangaList));
+        public RadioButton SettingsPageGeneralRadioDiscover => _settingsPageGeneralRadioDiscover ?? (_settingsPageGeneralRadioDiscover = FindViewById<RadioButton>(Resource.Id.SettingsPageGeneralRadioDiscover));
         public RadioGroup SettingsPageGeneralStartPageRadioGroup => _settingsPageGeneralStartPageRadioGroup ?? (_settingsPageGeneralStartPageRadioGroup = FindViewById<RadioGroup>(Resource.Id.SettingsPageGeneralStartPageRadioGroup));
         public RadioButton SettingsPageGeneralRadioDarkTheme => _settingsPageGeneralRadioDarkTheme ?? (_settingsPageGeneralRadioDarkTheme = FindViewById<RadioButton>(Resource.Id.SettingsPageGeneralRadioDarkTheme));
         public RadioButton SettingsPageGeneralRadioLightTheme => _settingsPageGeneralRadioLightTheme ?? (_settingsPageGeneralRadioLightTheme = FindViewById<RadioButton>(Resource.Id.SettingsPageGeneralRadioLightTheme));
