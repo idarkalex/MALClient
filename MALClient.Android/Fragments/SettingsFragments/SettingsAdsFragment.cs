@@ -141,7 +141,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         public void OnNothingSelected(AdapterView parent)
         {
-            throw new NotImplementedException();
+            //no-op: nothing to do when no selection remains
         }
     }
 }
