@@ -577,18 +577,6 @@ namespace MALClient.XShared.ViewModels.Main
             }
         }
 
-        private bool _authenticatedControlsVisibility;
-
-        public bool AuthenticatedControlsVisibility
-        {
-            get => _authenticatedControlsVisibility;
-            set
-            {
-                _authenticatedControlsVisibility = value;
-                RaisePropertyChanged(() => AuthenticatedControlsVisibility);
-            }
-        }
-
         private bool _commentInputBoxVisibility;
 
         public bool CommentInputBoxVisibility
