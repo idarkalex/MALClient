@@ -11,10 +11,10 @@ using MALClient.Models.Models;
 using MALClient.Models.Models.Favourites;
 using MALClient.Models.Models.Library;
 using MALClient.XShared.Comm;
+using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Comm.MagicalRawQueries.Profile;
 using MALClient.XShared.Comm.Profile;
 using MALClient.XShared.Delegates;
-using MALClient.XShared.Interfaces;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 
@@ -22,8 +22,6 @@ namespace MALClient.XShared.ViewModels.Main
 {
     public sealed class ProfilePageViewModel : ViewModelBase
     {
-        private readonly IAnimeLibraryDataStorage _animeLibraryDataStorage;
-
         private List<int> _animeChartValues = new List<int>();
 
         private string _currUser;
@@ -33,9 +31,8 @@ namespace MALClient.XShared.ViewModels.Main
         private ObservableCollection<MalComment> _malComments = new ObservableCollection<MalComment>();
         public ProfilePageNavigationArgs PrevArgs;
 
-        public ProfilePageViewModel(IAnimeLibraryDataStorage animeLibraryDataStorage)
+        public ProfilePageViewModel()
         {
-            _animeLibraryDataStorage = animeLibraryDataStorage;
             MaxWidth = AnimeItemViewModel.MaxWidth;
         }
 
@@ -181,85 +178,18 @@ namespace MALClient.XShared.ViewModels.Main
                 }
                 else
                 {
-                    if (!_animeLibraryDataStorage.OthersAbstractions.ContainsKey(args.TargetUser ?? ""))
-                    {
-                        LoadingOhersLibrariesProgressVisiblity = true;
-                        var data = new List<ILibraryData>();
-                        await
-                            Task.Run(
-                                async () =>
-                                    data =
-                                        await
-                                            new LibraryListQuery(args.TargetUser, AnimeListWorkModes.Anime)
-                                                .GetLibrary(false));
+                    LoadingOhersLibrariesProgressVisiblity = true;
+                    FavAnime = await ResolveOtherUserItems(CurrentData.FavouriteAnime, true);
+                    FavManga = await ResolveOtherUserItems(CurrentData.FavouriteManga, false);
+                    RecentAnime = await ResolveOtherUserItems(CurrentData.RecentAnime, true);
+                    RecentManga = await ResolveOtherUserItems(CurrentData.RecentManga, false);
+                    LoadingOhersLibrariesProgressVisiblity = false;
+                    MyFriends = CurrentData.Friends;
 
-                        var abstractions = new List<AnimeItemAbstraction>();
-                        foreach (var libraryData in data)
-                            abstractions.Add(new AnimeItemAbstraction(false, libraryData as AnimeLibraryItemData));
-
-                        await
-                            Task.Run(
-                                async () =>
-                                    data =
-                                        await
-                                            new LibraryListQuery(args.TargetUser, AnimeListWorkModes.Manga)
-                                                .GetLibrary(false));
-
-                        var mangaAbstractions = new List<AnimeItemAbstraction>();
-                        foreach (
-                            var libraryData in data)
-                            mangaAbstractions.Add(new AnimeItemAbstraction(false, libraryData as MangaLibraryItemData));
-
-                        lock (_animeLibraryDataStorage.OthersAbstractions)
-                        {
-                            if (!_animeLibraryDataStorage.OthersAbstractions.ContainsKey(args.TargetUser))
-                                _animeLibraryDataStorage.OthersAbstractions.Add(args.TargetUser,
-                                    new Tuple<List<AnimeItemAbstraction>, List<AnimeItemAbstraction>>(abstractions,
-                                        mangaAbstractions));
-                        }
-
-                        LoadingOhersLibrariesProgressVisiblity = false;
-                    }
-
-                    var source = _animeLibraryDataStorage.OthersAbstractions[args.TargetUser];
-                    var list = new List<AnimeItemViewModel>();
-                    foreach (var id in CurrentData.FavouriteAnime)
-                    {
-                        var data = source.Item1.FirstOrDefault(abs => abs.Id == id);
-
-                        if (data != null)
-                            list.Add(data.ViewModel);
-                    }
-                    FavAnime = list;
-                    list = new List<AnimeItemViewModel>();
-                    foreach (var id in CurrentData.FavouriteManga)
-                    {
-                        var data = source.Item2.FirstOrDefault(abs => abs.Id == id);
-
-                        if (data != null)
-                            list.Add(data.ViewModel);
-                    }
-                    FavManga = list;
-                    list = new List<AnimeItemViewModel>();
-                    foreach (var id in CurrentData.RecentAnime)
-                    {
-                        var data = source.Item1.FirstOrDefault(abs => abs.Id == id);
-
-                        if (data != null)
-                            list.Add(data.ViewModel);
-                    }
-                    RecentAnime = list;
-                    list = new List<AnimeItemViewModel>();
-                    foreach (var id in CurrentData.RecentManga)
-                    {
-                        var data = source.Item2.FirstOrDefault(abs => abs.Id == id);
-
-                        if (data != null)
-                            list.Add(data.ViewModel);
-                    }
-                    RecentManga = list;
-
-                    CountTime(source.Item1);
+                    var animeTime = TimeSpan.FromDays(CurrentData.AnimeDays);
+                    ApproxTimeSpentOnAnime = FormatTime(animeTime);
+                    ApproxTimeSpentOnAnimeAndMovies = FormatTime(animeTime);
+                    ApproxTimeSpentOnMovies = "";
                 }
                 AnimeChartValues = new List<int>
                 {
@@ -318,28 +248,109 @@ namespace MALClient.XShared.ViewModels.Main
                 var timeMovies = TimeSpan.FromMinutes(movies);
 
 
-                ApproxTimeSpentOnAnime = Format(timeAnime);
-                ApproxTimeSpentOnMovies = Format(timeMovies);
-                ApproxTimeSpentOnAnimeAndMovies = Format(timeBoth);
+                ApproxTimeSpentOnAnime = FormatTime(timeAnime);
+                ApproxTimeSpentOnMovies = FormatTime(timeMovies);
+                ApproxTimeSpentOnAnimeAndMovies = FormatTime(timeBoth);
+            }
+        }
 
-                string Format(TimeSpan time)
+        private async Task<List<AnimeItemViewModel>> ResolveOtherUserItems(IEnumerable<int> ids, bool anime)
+        {
+            var list = new List<AnimeItemViewModel>();
+            foreach (var id in ids)
+            {
+                try
                 {
-                    var str = "";
-                    if (time.Days > 30)
-                    {
-                        var m = time.Days / 30;
-                        str = $"{m}mo ";
-                        time = time.Subtract(TimeSpan.FromDays(m * 30));
-                    }
-
-                    if (time.Days > 0)
-                        str += $"{time.Days}d ";
-                    str += $"{time.Hours}h ";
-                    str += $"{time.Minutes}m ";
-                    str += $"{time.Seconds}s ";
-                    return str;
+                    var details =
+                        await new AnimeGeneralDetailsQuery().GetAnimeDetails(false, id.ToString(), "", anime);
+                    if (details == null)
+                        continue;
+                    list.Add(anime
+                        ? new AnimeItemAbstraction(false, new AnimeLibraryItemData
+                        {
+                            Id = details.Id,
+                            MalId = details.MalId,
+                            Title = details.Title,
+                            ImgUrl = details.ImgUrl,
+                            AllEpisodes = details.AllEpisodes,
+                            Type = (int)ParseAnimeType(details.Type),
+                            AlternateTitle = details.AlternateTitle
+                        }).ViewModel
+                        : new AnimeItemAbstraction(false, new MangaLibraryItemData
+                        {
+                            Id = details.Id,
+                            MalId = details.MalId,
+                            Title = details.Title,
+                            ImgUrl = details.ImgUrl,
+                            AllEpisodes = details.AllEpisodes,
+                            AllVolumes = details.AllVolumes,
+                            Type = (int)ParseMangaType(details.Type),
+                            AlternateTitle = details.AlternateTitle
+                        }).ViewModel);
+                }
+                catch (Exception)
+                {
+                    // skip failed resolutions
                 }
             }
+            return list;
+        }
+
+        private static AnimeType ParseAnimeType(string type)
+        {
+            switch (type?.ToLowerInvariant())
+            {
+                case "movie":
+                    return AnimeType.Movie;
+                case "ova":
+                    return AnimeType.OVA;
+                case "ona":
+                    return AnimeType.ONA;
+                case "special":
+                    return AnimeType.Special;
+                case "music":
+                    return AnimeType.Music;
+                default:
+                    return AnimeType.TV;
+            }
+        }
+
+        private static MangaType ParseMangaType(string type)
+        {
+            switch (type?.ToLowerInvariant())
+            {
+                case "novel":
+                    return MangaType.Novel;
+                case "manhwa":
+                    return MangaType.Manhwa;
+                case "manhua":
+                    return MangaType.Manhua;
+                case "oneshot":
+                case "one-shot":
+                    return MangaType.OneShot;
+                case "doujinshi":
+                    return MangaType.Doujinshi;
+                default:
+                    return MangaType.Manga;
+            }
+        }
+
+        private static string FormatTime(TimeSpan time)
+        {
+            var str = "";
+            if (time.Days > 30)
+            {
+                var m = time.Days / 30;
+                str = $"{m}mo ";
+                time = time.Subtract(TimeSpan.FromDays(m * 30));
+            }
+
+            if (time.Days > 0)
+                str += $"{time.Days}d ";
+            str += $"{time.Hours}h ";
+            str += $"{time.Minutes}m ";
+            str += $"{time.Seconds}s ";
+            return str;
         }
 
         private void NavigateDetails(AnimeCharacter character)

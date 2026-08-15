@@ -175,6 +175,7 @@ namespace MALClient.XShared.ViewModels.Main
             RaisePropertyChanged(() => OtherData);
             try
             {
+                await _animeLibraryDataStorage.EnsureOthersLibraryLoadedAsync(_navArgs.CompareWith.Name);
                 var otherItems = _animeLibraryDataStorage.OthersAbstractions[_navArgs.CompareWith.Name].Item1;
 
                 foreach (var myItem in _animeLibraryDataStorage.AllLoadedAuthAnimeItems)

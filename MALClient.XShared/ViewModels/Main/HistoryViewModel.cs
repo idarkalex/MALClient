@@ -109,6 +109,7 @@ namespace MALClient.XShared.ViewModels.Main
                 {
                     try
                     {
+                        await _animeLibraryDataStorage.EnsureOthersLibraryLoadedAsync(args.Source);
                         var others = _animeLibraryDataStorage.OthersAbstractions[args.Source];
                         foreach (var key in history.Keys)
                         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MALClient.XShared.Delegates;
 using MALClient.XShared.ViewModels;
 
@@ -43,5 +44,10 @@ namespace MALClient.XShared.Interfaces
 
 
         void Reset();
+
+        /// <summary>
+        /// Loads and caches the full anime/manga library of another user (for comparison/history views).
+        /// </summary>
+        Task EnsureOthersLibraryLoadedAsync(string user);
     }
 }
