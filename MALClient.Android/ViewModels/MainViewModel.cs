@@ -253,6 +253,7 @@ namespace MALClient.Android.ViewModels
                     CurrentStatus = "Discover";
                     RefreshButtonVisibility = false;
                     RefreshDataCommand = new RelayCommand(() => { /* not used */ });
+                    ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.Discover);
                     MainNavigationRequested?.Invoke(new DiscoverPageFragment());
                     break;
                 case PageIndex.PageMessanging:
