@@ -348,6 +348,28 @@ namespace MALClient.Android.Activities
         public async Task UpdateProfileImg(bool dl = true)
         {
             UpdateLogInLabel();
+            LoadProfileImage(dl);
+        }
+
+        private void LoadProfileImage(bool force)
+        {
+            if (_accountHamburgerView == null)
+                return;
+            var avatar = _accountHamburgerView.FindViewById<ImageViewAsync>(Resource.Id.HamburgerProfileItemImage);
+            if (avatar == null)
+                return;
+            var cacheDuration = force ? TimeSpan.Zero : TimeSpan.FromMinutes(10);
+            ImageService.Instance
+                .LoadUrl($"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.webp", cacheDuration)
+                .FadeAnimation(false).Transform(new CircleTransformation())
+                .Error(e =>
+                {
+                    ImageService.Instance
+                        .LoadUrl($"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.jpg", cacheDuration)
+                        .FadeAnimation(false).Transform(new CircleTransformation())
+                        .Into(avatar);
+                })
+                .Into(avatar);
         }
 
         public void SetActiveButton(HamburgerButtons val)
@@ -526,20 +548,9 @@ namespace MALClient.Android.Activities
 
                 }
 
-                ImageService.Instance
-                    .LoadUrl($"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.webp",
-                        TimeSpan.FromMinutes(10))
-                    .FadeAnimation(false).Transform(new CircleTransformation())
-                    .Error(e =>
-                    {
-                        ImageService.Instance
-                            .LoadUrl($"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.jpg",
-                                TimeSpan.FromMinutes(10))
-                            .FadeAnimation(false).Transform(new CircleTransformation())
-                            .Into(_accountHamburgerView.FindViewById<ImageViewAsync>(Resource.Id
-                                .HamburgerProfileItemImage));
-                    })
-                    .Into(_accountHamburgerView.FindViewById<ImageViewAsync>(Resource.Id.HamburgerProfileItemImage));
+                LoadProfileImage(false);
+                var profileLabel = _accountHamburgerView.FindViewById<TextView>(Resource.Id.HamburgerProfileItemLabel);
+                profileLabel.Text = Credentials.UserName;
                 btn.WithView(_footerView);
                 btn.WithSelectable(false);
                 btn.WithDivider(false);
