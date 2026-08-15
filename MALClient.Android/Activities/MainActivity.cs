@@ -44,6 +44,7 @@ namespace MALClient.Android.Activities
         WindowSoftInputMode = SoftInput.AdjustUnspecified, MainLauncher = true, LaunchMode = LaunchMode.SingleInstance,
         Theme = "@style/Theme.Splash", 
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    [MetaData("android.app.shortcuts", Resource = "@xml/shortcuts")]
     public partial class MainActivity : AppCompatActivity, IDimensionsProvider
     {
         private static bool _staticInitPerformed;
@@ -228,7 +229,26 @@ namespace MALClient.Android.Activities
             {
                 Tuple<int, string> navArgs = null;
                 Tuple<PageIndex, object> fullNavArgs = null;
-                if (args.Contains('~')) //from notification -> mark read
+                if (args.StartsWith("malplus://"))
+                {
+                    switch (args.Substring("malplus://".Length))
+                    {
+                        case "discover":
+                            fullNavArgs = new Tuple<PageIndex, object>(PageIndex.PageDiscover, null);
+                            break;
+                        case "animelist":
+                            fullNavArgs = new Tuple<PageIndex, object>(PageIndex.PageAnimeList, null);
+                            break;
+                        case "mangalist":
+                            fullNavArgs = new Tuple<PageIndex, object>(PageIndex.PageMangaList, null);
+                            break;
+                        case "profile":
+                            fullNavArgs = new Tuple<PageIndex, object>(PageIndex.PageProfile,
+                                new ProfilePageNavigationArgs { TargetUser = Credentials.UserName });
+                            break;
+                    }
+                }
+                else if (args.Contains('~')) //from notification -> mark read
                 {
                     var arg = args;
                     var pos = arg.IndexOf('~');

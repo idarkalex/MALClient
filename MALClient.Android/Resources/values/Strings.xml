@@ -793,4 +793,12 @@
     <string name="fa_icon_youtube" translatable="false">&#xf167;</string>
     <string name="fa_icon_youtube_play" translatable="false">&#xf16a;</string>
     <string name="fa_icon_youtube_square" translatable="false">&#xf166;</string>
+    <string name="shortcut_discover">Discover</string>
+    <string name="shortcut_discover_long">Discover home page</string>
+    <string name="shortcut_animelist">Anime list</string>
+    <string name="shortcut_animelist_long">My anime list</string>
+    <string name="shortcut_mangalist">Manga list</string>
+    <string name="shortcut_mangalist_long">My manga list</string>
+    <string name="shortcut_profile">Profile</string>
+    <string name="shortcut_profile_long">My profile</string>
 </resources>

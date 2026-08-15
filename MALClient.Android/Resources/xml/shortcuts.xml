@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <shortcut
+      android:shortcutId="discover"
+      android:enabled="true"
+      android:icon="@drawable/icon_shortcut_home"
+      android:shortcutShortLabel="@string/shortcut_discover"
+      android:shortcutLongLabel="@string/shortcut_discover_long">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:data="malplus://discover"
+        android:targetPackage="com.idarkalex.malplus"
+        android:targetClass="MALClient.Android.Activities.MainActivity" />
+  </shortcut>
+  <shortcut
+      android:shortcutId="animelist"
+      android:enabled="true"
+      android:icon="@drawable/icon_shortcut_video"
+      android:shortcutShortLabel="@string/shortcut_animelist"
+      android:shortcutLongLabel="@string/shortcut_animelist_long">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:data="malplus://animelist"
+        android:targetPackage="com.idarkalex.malplus"
+        android:targetClass="MALClient.Android.Activities.MainActivity" />
+  </shortcut>
+  <shortcut
+      android:shortcutId="mangalist"
+      android:enabled="true"
+      android:icon="@drawable/icon_shortcut_books"
+      android:shortcutShortLabel="@string/shortcut_mangalist"
+      android:shortcutLongLabel="@string/shortcut_mangalist_long">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:data="malplus://mangalist"
+        android:targetPackage="com.idarkalex.malplus"
+        android:targetClass="MALClient.Android.Activities.MainActivity" />
+  </shortcut>
+  <shortcut
+      android:shortcutId="profile"
+      android:enabled="true"
+      android:icon="@drawable/icon_shortcut_account"
+      android:shortcutShortLabel="@string/shortcut_profile"
+      android:shortcutLongLabel="@string/shortcut_profile_long">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:data="malplus://profile"
+        android:targetPackage="com.idarkalex.malplus"
+        android:targetClass="MALClient.Android.Activities.MainActivity" />
+  </shortcut>
+</shortcuts>
