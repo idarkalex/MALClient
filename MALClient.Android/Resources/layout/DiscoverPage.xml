@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/DiscoverPageRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?BrushDeepBackground"
-    android:fillViewport="true">
+    android:background="?BrushDeepBackground">
+
+  <ScrollView
+      android:id="@+id/DiscoverPageScroll"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="?BrushDeepBackground"
+      android:fillViewport="true">
 
   <LinearLayout
       android:layout_width="match_parent"
@@ -307,4 +315,5 @@
     </HorizontalScrollView>
 
   </LinearLayout>
-</ScrollView>
+  </ScrollView>
+</MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>

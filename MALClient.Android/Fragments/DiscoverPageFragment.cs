@@ -60,7 +60,27 @@ namespace MALClient.Android.Fragments
                 NavigateTo(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted(MangaAdaptedType.AiringNow))));
             DiscoverNewsSeeAll.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PageNews, MalArticlesPageNavigationArgs.News)));
+            DiscoverPageRefresh.ScrollingView = DiscoverPageScroll;
+            DiscoverPageRefresh.Refresh += DiscoverPageRefreshOnRefresh;
             LoadSections();
+        }
+
+        private void DiscoverPageRefreshOnRefresh(object sender, EventArgs e)
+        {
+            DiscoverPageRefresh.Refreshing = false;
+            ClearSections();
+            LoadSections();
+        }
+
+        private void ClearSections()
+        {
+            DiscoverWatchingRow.RemoveAllViews();
+            DiscoverReadingRow.RemoveAllViews();
+            DiscoverSeasonalRow.RemoveAllViews();
+            DiscoverTopAnimeRow.RemoveAllViews();
+            DiscoverTopMangaRow.RemoveAllViews();
+            DiscoverAdaptedRow.RemoveAllViews();
+            DiscoverNewsRow.RemoveAllViews();
         }
 
         private async void LoadSections()
@@ -456,6 +476,8 @@ namespace MALClient.Android.Fragments
 
         #region Views
 
+        private ScrollView _discoverPageScroll;
+        private ScrollableSwipeToRefreshLayout _discoverPageRefresh;
         private TextView _discoverWatchingSeeAll;
         private TextView _discoverReadingSeeAll;
         private TextView _discoverSeasonalSeeAll;
@@ -478,6 +500,8 @@ namespace MALClient.Android.Fragments
         private LinearLayout _discoverWatchingRow;
         private LinearLayout _discoverReadingRow;
 
+        public ScrollView DiscoverPageScroll => _discoverPageScroll ?? (_discoverPageScroll = FindViewById<ScrollView>(Resource.Id.DiscoverPageScroll));
+        public ScrollableSwipeToRefreshLayout DiscoverPageRefresh => _discoverPageRefresh ?? (_discoverPageRefresh = FindViewById<ScrollableSwipeToRefreshLayout>(Resource.Id.DiscoverPageRefresh));
         public TextView DiscoverWatchingSeeAll => _discoverWatchingSeeAll ?? (_discoverWatchingSeeAll = FindViewById<TextView>(Resource.Id.DiscoverWatchingSeeAll));
         public TextView DiscoverReadingSeeAll => _discoverReadingSeeAll ?? (_discoverReadingSeeAll = FindViewById<TextView>(Resource.Id.DiscoverReadingSeeAll));
         public TextView DiscoverSeasonalSeeAll => _discoverSeasonalSeeAll ?? (_discoverSeasonalSeeAll = FindViewById<TextView>(Resource.Id.DiscoverSeasonalSeeAll));
