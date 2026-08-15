@@ -63,6 +63,48 @@
         android:paddingTop="8dp"
         android:gravity="center_vertical">
       <TextView
+          android:id="@+id/DiscoverReadingHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@string/font_family_light"
+          android:text="Leyendo"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverReadingSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverReadingRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:gravity="center_vertical">
+      <TextView
           android:id="@+id/DiscoverSeasonalHeader"
           android:layout_width="0dp"
           android:layout_height="wrap_content"
