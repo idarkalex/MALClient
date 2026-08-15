@@ -15,7 +15,7 @@ jobs:
   build:
     runs-on: windows-2022
     permissions:
-      contents: write
+      contents: read
     env:
       ANDROID_HOME: C:\Program Files (x86)\Android\android-sdk
       ANDROID_SDK_ROOT: C:\Program Files (x86)\Android\android-sdk
@@ -107,13 +107,57 @@ jobs:
           Write-Host "NuGet cache hit: ${{ steps.cache-nuget.outputs.cache-hit }}"
           nuget restore MALClient.sln
 
-      - name: Build Android APK (Release)
-        shell: cmd
+      - name: Prepare keystore for in-build signing
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        shell: pwsh
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          msbuild MALClient.Android\MALClient.Android.csproj /t:SignAndroidPackage /p:Configuration=Release /p:Platform=AnyCPU /m /p:UseSharedCompilation=true > "%RUNNER_TEMP%\msbuild.txt" 2>&1
-          set ERR=%ERRORLEVEL%
-          type "%RUNNER_TEMP%\msbuild.txt"
-          if %ERR% neq 0 ( exit /b 1 )
+          $keystorePath = "$env:RUNNER_TEMP\keystore.jks"
+          try {
+            [System.IO.File]::WriteAllBytes($keystorePath, [System.Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
+          } catch {
+            throw "ANDROID_KEYSTORE_BASE64 is not valid base64. Re-add the secret with the exact single-line value. Error: $($_.Exception.Message)"
+          }
+          if (-not $env:ANDROID_KEYSTORE_PASSWORD) { throw "ANDROID_KEYSTORE_PASSWORD secret is missing" }
+          if (-not $env:ANDROID_KEY_ALIAS) { throw "ANDROID_KEY_ALIAS secret is missing" }
+          Write-Host "Keystore written: $((Get-Item $keystorePath).Length) bytes"
+          & "$env:JAVA_HOME\bin\keytool.exe" -list -keystore $keystorePath -storepass $env:ANDROID_KEYSTORE_PASSWORD -alias $env:ANDROID_KEY_ALIAS 2>&1 | ForEach-Object { Write-Host "KEYTOOL: $_" }
+          if ($LASTEXITCODE -ne 0) { throw "Keystore verification FAILED. Check ANDROID_KEYSTORE_PASSWORD and ANDROID_KEY_ALIAS against the keystore." }
+
+      - name: Build Android (Release APK + AAB)
+        shell: pwsh
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          $buildArgs = @(
+            "MALClient.Android\MALClient.Android.csproj",
+            "/t:SignAndroidPackage",
+            "/p:Configuration=Release",
+            "/p:Platform=AnyCPU",
+            "/m",
+            "/p:UseSharedCompilation=true"
+          )
+          if ($env:ANDROID_KEYSTORE_BASE64) {
+            $buildArgs += "/p:AndroidKeyStore=true"
+            $buildArgs += "/p:AndroidSigningKeyStore=$env:RUNNER_TEMP\keystore.jks"
+            $buildArgs += "/p:AndroidSigningStorePass=$env:ANDROID_KEYSTORE_PASSWORD"
+            $buildArgs += "/p:AndroidSigningKeyAlias=$env:ANDROID_KEY_ALIAS"
+            $buildArgs += "/p:AndroidSigningKeyPass=$env:ANDROID_KEYSTORE_PASSWORD"
+          }
+          & msbuild @buildArgs > "$env:RUNNER_TEMP\msbuild.txt" 2>&1
+          $err = $LASTEXITCODE
+          if ($env:ANDROID_KEYSTORE_BASE64) {
+            $log = Get-Content "$env:RUNNER_TEMP\msbuild.txt" -Raw
+            $log = $log.Replace($env:ANDROID_KEYSTORE_PASSWORD, '***')
+            Set-Content -Path "$env:RUNNER_TEMP\msbuild.txt" -Value $log -NoNewline -Encoding utf8
+          }
+          Get-Content "$env:RUNNER_TEMP\msbuild.txt"
+          if ($err -ne 0) { exit $err }
 
       - name: Show build errors
         if: failure()
@@ -141,34 +185,21 @@ jobs:
           path: ${{ runner.temp }}\msbuild.txt
           if-no-files-found: ignore
 
-      - name: Locate APK
+      - name: Locate APK and AAB
         id: apk
         if: success()
         shell: pwsh
         run: |
+          $logFile = "$env:RUNNER_TEMP\msbuild.txt"
+
           $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*-Signed.apk" } | Select-Object -First 1
           if (-not $apk) {
             $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1
           }
           if (-not $apk) {
             Write-Host "##[error]No APK in MALClient.Android\bin"
-            $logFile = "$env:RUNNER_TEMP\msbuild.txt"
             if (Test-Path $logFile) {
-              Write-Host "##[error]=== msbuild lines mentioning apk ==="
-              Select-String -Path $logFile -Pattern "apk|SignAndroidPackage|_BuildApk|Package" -CaseSensitive:$false | Select-Object -First 4 | ForEach-Object { Write-Host "##[error]APKLOG: $($_.Line)" }
-              Write-Host "##[error]=== msbuild tail ==="
               Get-Content $logFile -Tail 6 | ForEach-Object { Write-Host "##[error]LOG: $_" }
-            }
-            Write-Host "##[error]Searching workspace for .apk:"
-            Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 5 -ExpandProperty FullName | ForEach-Object { Write-Host "##[error]APK: $_" }
-            if (Test-Path $logFile) {
-              git config user.email "ci@example.com"
-              git config user.name "CI Bot"
-              Copy-Item $logFile "$env:GITHUB_WORKSPACE\ci-msbuild.log"
-              git add -f ci-msbuild.log
-              git commit -m "ci: upload msbuild log for $env:GITHUB_SHA" --allow-empty
-              git push "https://x-access-token:$env:GITHUB_TOKEN@github.com/idarkalex/MALClient.git" HEAD:refs/heads/ci-logs --force
-              Write-Host "##[error]msbuild log pushed to ci-logs branch"
             }
             exit 1
           }
@@ -180,49 +211,16 @@ jobs:
           Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -ne $finalPath } | Remove-Item -Force -ErrorAction SilentlyContinue
           Write-Host "Found APK: $($apk.FullName)"
-          Write-Host "APK path: $finalPath"
+          Write-Host "APK size (MB): $([math]::Round((Get-Item $finalPath).Length / 1MB, 2))"
           "apk_path=$finalPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-      - name: Sign APK (if keystore secrets provided)
-        if: success() && env.ANDROID_KEYSTORE_BASE64 != ''
-        shell: pwsh
-        run: |
-          $keystorePath = "$env:RUNNER_TEMP\keystore.jks"
-          try {
-            [System.IO.File]::WriteAllBytes($keystorePath, [System.Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
-          } catch {
-            throw "ANDROID_KEYSTORE_BASE64 is not valid base64. Re-add the secret with the exact single-line value. Error: $($_.Exception.Message)"
+          $aab = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.aab" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $aab) {
+            Write-Host "##[warning]No AAB produced in MALClient.Android\bin"
+          } else {
+            Write-Host "Found AAB: $($aab.FullName)"
+            "aab_path=$($aab.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           }
-          if (-not $env:ANDROID_KEYSTORE_PASSWORD) { throw "ANDROID_KEYSTORE_PASSWORD secret is missing" }
-          if (-not $env:ANDROID_KEY_ALIAS) { throw "ANDROID_KEY_ALIAS secret is missing" }
-          Write-Host "Keystore written: $((Get-Item $keystorePath).Length) bytes"
-          Write-Host "Keystore sha256: $((Get-FileHash $keystorePath -Algorithm SHA256).Hash)"
-
-          $sdkRoot = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { "C:\Program Files (x86)\Android\android-sdk" }
-          $buildTools = Get-ChildItem (Join-Path $sdkRoot "build-tools") -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
-          if (-not $buildTools) { throw "No build-tools found under $sdkRoot" }
-          $apksignerJar = Join-Path $buildTools.FullName "lib\apksigner.jar"
-          if (-not (Test-Path $apksignerJar)) { throw "apksigner.jar not found at $apksignerJar" }
-          $keytool = Join-Path $env:JAVA_HOME "bin\keytool.exe"
-          Write-Host "Using apksigner.jar: $apksignerJar"
-
-          Write-Host "=== Verifying keystore with keytool ==="
-          & $keytool -list -keystore $keystorePath -storepass $env:ANDROID_KEYSTORE_PASSWORD -alias $env:ANDROID_KEY_ALIAS 2>&1 | ForEach-Object { Write-Host "KEYTOOL: $_" }
-          if ($LASTEXITCODE -ne 0) { throw "Keystore verification FAILED. Check ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD against the keystore." }
-
-          $apks = Get-ChildItem -Path "MALClient.Android\bin\Release" -Filter "*.apk" -Recurse
-          if (-not $apks) { throw "No APK found to sign under MALClient.Android\bin\Release" }
-          foreach ($apk in $apks) {
-            Write-Host "=== Signing $($apk.Name) ==="
-            & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar sign --ks $keystorePath --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" --ks-key-alias $env:ANDROID_KEY_ALIAS --key-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" $apk.FullName 2>&1 | ForEach-Object { Write-Host "APKSIGNER: $_" }
-            if ($LASTEXITCODE -ne 0) { throw "apksigner failed on $($apk.Name) with exit code $LASTEXITCODE" }
-            & $env:JAVA_HOME\bin\java.exe -jar $apksignerJar verify --print-certs $apk.FullName 2>&1 | ForEach-Object { Write-Host "VERIFY: $_" }
-            Write-Host "Signed: $($apk.Name)"
-          }
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
 
       - name: Upload APK artifact
         if: success()
@@ -230,6 +228,14 @@ jobs:
         with:
           name: MALClient-Android-Release
           path: ${{ steps.apk.outputs.apk_path }}
+          if-no-files-found: error
+
+      - name: Upload AAB artifact
+        if: success() && steps.apk.outputs.aab_path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: MALClient-Android-aab
+          path: ${{ steps.apk.outputs.aab_path }}
           if-no-files-found: error
 
   release:
@@ -242,6 +248,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Verify versionName matches tag
+        shell: bash
+        run: |
+          versionName=$(grep -oP 'android:versionName="\K[^"]+' MALClient.Android/Properties/AndroidManifest.xml)
+          tag="${GITHUB_REF_NAME#v}"
+          echo "versionName=$versionName tag=$tag"
+          if [ -z "$versionName" ]; then
+            echo "::error::Could not read android:versionName from AndroidManifest.xml"
+            exit 1
+          fi
+          if [ "$versionName" != "$tag" ]; then
+            echo "::error::versionName ($versionName) does not match release tag ($tag). Bump the manifest (versionName + versionCode) and commit before tagging."
+            exit 1
+          fi
 
       - name: Download APK artifact
         uses: actions/download-artifact@v4
