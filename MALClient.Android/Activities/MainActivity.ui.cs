@@ -243,7 +243,7 @@ namespace MALClient.Android.Activities
                             "Adaptados",
                             "Noticias"
                         },
-                        OnUpperDiscoverSectionSelected);
+                        OnUpperDiscoverSectionSelected, "Discover");
                     _upperFilterMenu.Show();
                 }
                 else if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList)
