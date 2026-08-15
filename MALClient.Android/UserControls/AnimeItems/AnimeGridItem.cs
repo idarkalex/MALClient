@@ -7,6 +7,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using FFImageLoading.Views;
+using MALClient.Android.Listeners;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 
