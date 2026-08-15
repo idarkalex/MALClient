@@ -181,11 +181,6 @@ namespace MALClient.Android.UserControls
 
         #endregion
 
-        public override void OnViewModelSet()
-        {
-            BindModelBasic();
-        }
-
         protected override void BindModelBasic()
         {
             AnimeGridItemTitle.Text = ViewModel.Title;
