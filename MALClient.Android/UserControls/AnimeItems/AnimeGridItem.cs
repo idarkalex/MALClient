@@ -319,9 +319,7 @@ namespace MALClient.Android.UserControls
         protected override void RootContainerInit()
         {
             RootContainer.SetOnClickListener(new OnClickListener(view => ContainerOnClick()));
-            // Original: AnimeGridItemMoreButton.SetOnClickListener(new OnClickListener(view => MoreButtonOnClick()));
-            // Menu is now triggered via long-press on the entire card:
-            RootContainer.SetOnLongClickListener(new OnLongClickListener(delegate { MoreButtonOnClick(); }));
+            // Long-press menu disabled - temporarily removed due to GC crash issues
 
             AnimeGridItemTagsButton.SetOnClickListener(new OnClickListener(OnTagsButtonClick));
 
