@@ -509,10 +509,9 @@ namespace MALClient.Android.Fragments
                 }
                 view.SetOnClickListener(new OnClickListener(v =>
                 {
-                    ViewModelLocator.MalArticles.PendingArticle = (v.Tag as MalNewsUnitModel) ?? item;
+                    ViewModelLocator.MalArticles.PendingArticle = item;
                     NavigateTo(PageIndex.PageNews, MalArticlesPageNavigationArgs.News);
                 }));
-                view.Tag = item;
                 DiscoverNewsRow.AddView(view);
             }
         }
@@ -531,7 +530,7 @@ namespace MALClient.Android.Fragments
 
         public void ScrollToTop()
         {
-            DiscoverPageScroll.FullScroll(Android.Views.FocusSearchDirection.Up);
+            DiscoverPageScroll.FullScroll(global::Android.Views.FocusSearchDirection.Up);
         }
 
         public void ScrollToSection(int index)
@@ -552,9 +551,9 @@ namespace MALClient.Android.Fragments
             var target = headers[index];
             if (target.Visibility != ViewStates.Visible)
                 return;
-            var targetRect = new Android.Graphics.Rect();
+            var targetRect = new global::Android.Graphics.Rect();
             target.GetGlobalVisibleRect(targetRect);
-            var scrollRect = new Android.Graphics.Rect();
+            var scrollRect = new global::Android.Graphics.Rect();
             DiscoverPageScroll.GetGlobalVisibleRect(scrollRect);
             DiscoverPageScroll.SmoothScrollTo(0, targetRect.Top - scrollRect.Top + DiscoverPageScroll.ScrollY);
         }
