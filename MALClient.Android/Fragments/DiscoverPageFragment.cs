@@ -526,6 +526,31 @@ namespace MALClient.Android.Fragments
             DiscoverPageScroll.FullScroll(Android.Views.FocusSearchDirection.Up);
         }
 
+        public void ScrollToSection(int index)
+        {
+            var headers = new[]
+            {
+                DiscoverWatchingHeader,
+                DiscoverReadingHeader,
+                DiscoverCompletedHeader,
+                DiscoverSeasonalHeader,
+                DiscoverTopAnimeHeader,
+                DiscoverTopMangaHeader,
+                DiscoverAdaptedHeader,
+                DiscoverNewsHeader
+            };
+            if (index < 0 || index >= headers.Length)
+                return;
+            var target = headers[index];
+            if (target.Visibility != ViewStates.Visible)
+                return;
+            var targetRect = new Android.Graphics.Rect();
+            target.GetGlobalVisibleRect(targetRect);
+            var scrollRect = new Android.Graphics.Rect();
+            DiscoverPageScroll.GetGlobalVisibleRect(scrollRect);
+            DiscoverPageScroll.SmoothScrollTo(0, targetRect.Top - scrollRect.Top + DiscoverPageScroll.ScrollY);
+        }
+
         private static AnimeSeason GetCurrentSeason()
         {
             var now = DateTime.UtcNow;

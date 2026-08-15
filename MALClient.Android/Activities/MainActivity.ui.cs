@@ -231,7 +231,20 @@ namespace MALClient.Android.Activities
             {
                 if (ViewModel.CurrentMainPage == PageIndex.PageDiscover)
                 {
-                    (_lastFragment as DiscoverPageFragment)?.ScrollToTop();
+                    _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
+                        new List<string>
+                        {
+                            "Sigo viendo",
+                            "Leyendo",
+                            "Completados",
+                            "Temporada",
+                            "Top anime",
+                            "Top manga",
+                            "Adaptados",
+                            "Noticias"
+                        },
+                        OnUpperDiscoverSectionSelected);
+                    _upperFilterMenu.Show();
                 }
                 else if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList)
                 {
@@ -384,6 +397,15 @@ namespace MALClient.Android.Activities
             if (_upperFilterMenu == null)
                 return;
             ViewModelLocator.AnimeList.SeasonalUrlsSelectedIndex = i1;
+            _upperFilterMenu.Dismiss(true);
+            _upperFilterMenu = null;
+        }
+
+        private void OnUpperDiscoverSectionSelected(int i)
+        {
+            if (_upperFilterMenu == null)
+                return;
+            (_lastFragment as DiscoverPageFragment)?.ScrollToSection(i);
             _upperFilterMenu.Dismiss(true);
             _upperFilterMenu = null;
         }
