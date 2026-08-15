@@ -16,13 +16,11 @@ namespace MALClient.XShared.ViewModels.Main
 {
     public class WallpapersViewModel : ViewModelBase
     {
-        private WallpaperPageNavigationArgs _prevArgs;
         private ObservableCollection<WallpaperItemViewModel> _wallpapers;
         private bool _loadingWallpapersVisibility;
         private bool _noWallpapersNoticeVisibility;
         private int _currentPage;
         private ICommand _goForwardCommand;
-        private ICommand _goBackwardsCommand;
         private ICommand _refreshCommand;
 
         public ObservableCollection<WallpaperItemViewModel> Wallpapers
@@ -82,14 +80,6 @@ namespace MALClient.XShared.ViewModels.Main
                                                 CurrentPage++;
                                                 LoadWallpapers();
                                             }));
-
-        public ICommand GoBackwardsCommand => _goBackwardsCommand ?? (_goBackwardsCommand = new RelayCommand(() =>
-                                              {
-                                                  if(LoadingWallpapersVisibility)
-                                                      return;
-                                                  CurrentPage--;
-                                                  LoadWallpapers();
-                                              }));
 
         public ICommand RefreshCommand => _refreshCommand ?? (_refreshCommand = new RelayCommand(() =>
                                           {

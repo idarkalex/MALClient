@@ -19,7 +19,6 @@ namespace MALClient.XShared.ViewModels.Clubs
 {
     public class ClubIndexViewModel : ViewModelBase
     {
-        private readonly IMessageDialogProvider _dialogProvider;
         private bool _loading;
         private SmartObservableCollection<MalClubEntry> _clubs;
         private string _searchQuery;
@@ -33,9 +32,8 @@ namespace MALClient.XShared.ViewModels.Clubs
         private ICommand _joinClubCommand;
         private bool _myClubsEmptyNoticeVisibility;
 
-        public ClubIndexViewModel(IMessageDialogProvider dialogProvider)
+        public ClubIndexViewModel()
         {
-            _dialogProvider = dialogProvider;
         }
 
         public bool Loading

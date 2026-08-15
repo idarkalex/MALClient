@@ -8,7 +8,6 @@ using MALClient.Models.Enums;
 using MALClient.Models.Models.Anime;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Comm.Manga;
-using MALClient.XShared.Interfaces;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 
@@ -18,7 +17,6 @@ namespace MALClient.XShared.ViewModels.Main
 
     public class SearchPageViewModel : ViewModelBase
     {
-        private readonly IAnimeLibraryDataStorage _animeLibraryDataStorage;
         private readonly HashSet<string> _filters = new HashSet<string>();
         private bool _animeSearch; // default to anime
         private string _currrentFilter;

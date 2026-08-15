@@ -27,7 +27,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
     class AnimeDetailsPageCharactersTabFragment : MalFragmentBase
     {
         private AnimeDetailsPageViewModel ViewModel;
-        private GridViewColumnHelper _gridHelper;
 
         protected override void Init(Bundle savedInstanceState)
         {

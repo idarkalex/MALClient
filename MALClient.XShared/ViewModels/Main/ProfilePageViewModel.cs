@@ -138,7 +138,6 @@ namespace MALClient.XShared.ViewModels.Main
                 LoadingAboutMeVisibility = AboutMeWebViewVisibility = false;
                 if (authenticatedUser)
                 {
-                    _initialized = true;
                     var list = new List<AnimeItemViewModel>();
                     foreach (var id in CurrentData.FavouriteAnime)
                     {
@@ -392,18 +391,12 @@ namespace MALClient.XShared.ViewModels.Main
         private List<AnimeItemViewModel> _favAnime;
         private List<AnimeItemViewModel> _favManga;
 
-        private bool _initialized;
-
 
         private bool _loadingVisibility;
 
         private List<int> _mangaChartValues = new List<int>();
 
-        private ICommand _navigateCharPageCommand;
-
         private ICommand _navigateDetailsCommand;
-
-        private ICommand _navigatePersonPageCommand;
 
         private ICommand _navAnimeListCommand;
 
@@ -423,16 +416,6 @@ namespace MALClient.XShared.ViewModels.Main
                             ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageProfile,
                                 new ProfilePageNavigationArgs {TargetUser = CurrentData.User.Name});
                         }));
-
-        public ICommand NavigateClubsCommand
-            =>
-                new RelayCommand(() =>
-                {
-
-                    ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageProfile,
-                        new ProfilePageNavigationArgs { TargetUser = CurrentData.User.Name });
-                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageClubIndex);
-                });
 
         private ICommand _sendCommentCommand;
 
@@ -634,16 +617,6 @@ namespace MALClient.XShared.ViewModels.Main
 
         public ICommand NavigateDetailsCommand
             => _navigateDetailsCommand ?? (_navigateDetailsCommand = new RelayCommand<AnimeCharacter>(NavigateDetails));
-
-        public ICommand NavigateCharPageCommand
-            =>
-                _navigateCharPageCommand ??
-                (_navigateCharPageCommand = new RelayCommand<AnimeCharacter>(NavigateCharacterWebPage));
-
-        public ICommand NavigatePersonPageCommand
-            =>
-                _navigatePersonPageCommand ??
-                (_navigatePersonPageCommand = new RelayCommand<AnimeStaffPerson>(NavigatePersonWebPage));
 
         public ICommand NavigateAnimeListCommand
             =>
@@ -901,8 +874,6 @@ namespace MALClient.XShared.ViewModels.Main
         private ICommand _navigateStaffDetailsCommand;
         private bool _emptyCommentsNoticeVisibility;
         private bool _areFavsExpanded;
-        private ICommand _toggleFavsCommand;
-        private ICommand _toggleAboutCommand;
 
 
         public bool IsSendCommentButtonEnabled
@@ -960,17 +931,6 @@ namespace MALClient.XShared.ViewModels.Main
                             ViewModelLocator.GeneralMain.Navigate(PageIndex.PageStaffDetails,
                                 new StaffDetailsNaviagtionArgs {Id = int.Parse(entry.Id)});
                         }));
-
-        public ICommand ToggleFavsCommand
-            => _toggleFavsCommand ?? (_toggleFavsCommand = new RelayCommand(() => AreFavsExpanded = !AreFavsExpanded));
-
-        public ICommand ToggleAboutCommand
-            => _toggleAboutCommand ?? (_toggleAboutCommand = new RelayCommand(() =>
-            {
-                AboutMeWebViewVisibility = !AboutMeWebViewVisibility;
-                if (AboutMeWebViewVisibility)
-                    AboutMeHtmlContent = CurrentData.HtmlContent;
-            }));
 
         public ICommand NavigateMessagingCommand
             => new RelayCommand(

@@ -26,7 +26,6 @@ namespace MALClient.Android.Fragments.DetailsFragments
     public class PersonDetailsPageProdTabFragment : MalFragmentBase
     {
         private StaffDetailsViewModel ViewModel = ViewModelLocator.StaffDetails;
-        private GridViewColumnHelper _gridViewColumnHelper;
 
         protected override void Init(Bundle savedInstanceState)
         {

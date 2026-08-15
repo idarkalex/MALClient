@@ -28,16 +28,12 @@ namespace MALClient.XShared.ViewModels.Main
     public class LogInViewModel : ViewModelBase
     {
         private readonly IMalHttpContextProvider _httpContextProvider;
-        private ICommand _focusMalCommand;
-        private ICommand _focusHumCommand;
         private ICommand _logOutCommand;
         private ICommand _logInCommand;
 		private ICommand _problemsCommand;
         private ICommand _navigateRegister;
         private bool _authenticating;
         private bool _logOutButtonVisibility;
-        private bool _isHumToggleChecked;
-        private bool _isMalToggleChecked;
         private ApiType _currentApiType;
 
         public LogInViewModel(IMalHttpContextProvider httpContextProvider)
@@ -97,16 +93,6 @@ namespace MALClient.XShared.ViewModels.Main
             ViewModelLocator.GeneralHamburger.UpdateLogInLabel();
             LogOutButtonVisibility = false;
         });
-
-        public ICommand FocusMalCommand => _focusMalCommand ?? (_focusMalCommand = new RelayCommand(() =>
-                                           {                                 
-                                               CurrentApiType = ApiType.Mal;
-                                           }));
-
-        public ICommand FocusHumCommand => _focusHumCommand ?? (_focusHumCommand = new RelayCommand(() =>
-                                           {                                                                                        
-                                               CurrentApiType = ApiType.Hummingbird;
-                                           }));
 
         public ICommand LogInCommand => _logInCommand ??= new RelayCommand(AttemptAuthentication);
 

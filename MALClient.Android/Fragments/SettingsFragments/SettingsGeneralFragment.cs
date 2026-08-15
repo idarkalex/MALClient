@@ -322,7 +322,6 @@ namespace MALClient.Android.Fragments.SettingsFragments
         //}
 
         private List<ImageButton> _accentButtons;
-        private bool _amoledDarkTheme;
 
         private void UpdateColourSelection()
         {
