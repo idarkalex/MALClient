@@ -11,16 +11,16 @@
     android:orientation="vertical">
 
     <TextView
-      android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="Welcome!"
+      android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="Welcome to MAL+!"
       android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" />
 
     <TextView android:lineSpacingExtra="2dp"
-              android:layout_width="wrap_content" android:text="Hi! Thanks for checking out this app ^^ I hope you like it. MALClient has been around since March 2016. I'll use this opportunity to invite you to try it out :)" android:layout_marginTop="10dp"
+              android:layout_width="wrap_content" android:text="Hi! Thanks for checking out this app ^^ MAL+ is an enhanced, open-source MyAnimeList client. It grew out of MALClient (around since March 2016) and adds its own twist: top manga categories, adapted-to-anime tracking and more." android:layout_marginTop="10dp"
               android:layout_height="wrap_content" android:textColor="?BrushText"/>
 
 
     <TextView android:lineSpacingExtra="2dp"
-              android:layout_width="wrap_content" android:text="So... with this being out of the way I'd also like to mention that this app is fully open source and the entirety of its code is hosted on GitHub." android:layout_marginTop="10dp"
+              android:layout_width="wrap_content" android:text="The app is fully open source and the entirety of its code is hosted on GitHub." android:layout_marginTop="10dp"
               android:layout_height="wrap_content" android:textColor="?BrushText"/>
 
     <Button android:id="@+id/AboutPageViewSourceButton"

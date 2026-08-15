@@ -349,7 +349,7 @@ namespace MALClient.Android.Activities
             }
 
             ResourceLocator.MessageDialogProvider.ShowMessageDialogWithInput(
-                $"A new version ({info.Version}) of MAL Client is available. Download and install it now?",
+                $"A new version ({info.Version}) of MAL+ is available. Download and install it now?",
                 "Update available",
                 "Update", "Later",
                 () => DownloadAndInstallUpdate(info));
@@ -364,7 +364,7 @@ namespace MALClient.Android.Activities
             var success = false;
             try
             {
-                ResourceLocator.MessageDialogProvider.ShowLoadingPopup("Downloading update", "Downloading the new version of MAL Client...");
+                ResourceLocator.MessageDialogProvider.ShowLoadingPopup("Downloading update", "Downloading the new version of MAL+...");
                 success = await MALClient.Android.Utilities.UpdateInstaller.DownloadAndInstall(info, context);
             }
             catch (Exception)

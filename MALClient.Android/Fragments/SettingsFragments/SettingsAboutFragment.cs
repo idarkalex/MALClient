@@ -58,7 +58,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
             if (info == null)
             {
                 ResourceLocator.MessageDialogProvider.ShowMessageDialog(
-                    $"You are running the latest version of MAL Client ({ResourceLocator.ChangelogProvider.CurrentVersion}).",
+                    $"You are running the latest version of MAL+ ({ResourceLocator.ChangelogProvider.CurrentVersion}).",
                     "Check for updates");
             }
             else
