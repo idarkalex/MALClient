@@ -321,7 +321,7 @@ namespace MALClient.Android.UserControls
             RootContainer.SetOnClickListener(new OnClickListener(view => ContainerOnClick()));
             // Original: AnimeGridItemMoreButton.SetOnClickListener(new OnClickListener(view => MoreButtonOnClick()));
             // Menu is now triggered via long-press on the entire card:
-            RootContainer.SetOnLongClickListener(new OnLongClickListener(view => { MoreButtonOnClick(); return true; }));
+            RootContainer.SetOnLongClickListener(new OnLongClickListener(view => { MoreButtonOnClick(); return false; }));
 
             AnimeGridItemTagsButton.SetOnClickListener(new OnClickListener(OnTagsButtonClick));
 
