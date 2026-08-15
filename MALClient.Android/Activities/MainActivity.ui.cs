@@ -528,28 +528,28 @@ namespace MALClient.Android.Activities
                 switch (AndroidColourThemeHelper.CurrentTheme)
                 {
                     case AndroidColorThemes.Orange:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_Orange);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_Orange);
                         break;
                     case AndroidColorThemes.Purple:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_Purple);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_Purple);
                         break;
                     case AndroidColorThemes.Blue:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_Blue);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_Blue);
                         break;
                     case AndroidColorThemes.Lime:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_Lime);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_Lime);
                         break;
                     case AndroidColorThemes.Pink:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_Pink);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_Pink);
                         break;
                     case AndroidColorThemes.Cyan:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_Cyan);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_Cyan);
                         break;
                     case AndroidColorThemes.SkyBlue:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_SkyBlue);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_SkyBlue);
                         break;
                     case AndroidColorThemes.Red:
-                        SetTheme(Resource.Style.Theme_MALClient_Dark_Red);
+                        SetTheme(Resource.Style.Theme_MALPlus_Dark_Red);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -569,28 +569,28 @@ namespace MALClient.Android.Activities
                 switch (AndroidColourThemeHelper.CurrentTheme)
                 {
                     case AndroidColorThemes.Orange:
-                        SetTheme(Resource.Style.Theme_MALClient_Light_Orange);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_Orange);
                         break;                                  
                     case AndroidColorThemes.Purple:             
-                        SetTheme(Resource.Style.Theme_MALClient_Light_Purple);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_Purple);
                         break;
                     case AndroidColorThemes.Blue:
-                        SetTheme(Resource.Style.Theme_MALClient_Light_Blue);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_Blue);
                         break;
                     case AndroidColorThemes.Lime:
-                        SetTheme(Resource.Style.Theme_MALClient_Light_Lime);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_Lime);
                         break;
                     case AndroidColorThemes.Pink:
-                        SetTheme(Resource.Style.Theme_MALClient_Light_Pink);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_Pink);
                         break;
                     case AndroidColorThemes.Cyan:
-                        SetTheme(Resource.Style.Theme_MALClient_Light_Cyan);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_Cyan);
                         break;
                     case AndroidColorThemes.SkyBlue:
-                        SetTheme(Resource.Style.Theme_MALClient_Light_SkyBlue);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_SkyBlue);
                         break;
                     case AndroidColorThemes.Red:
-                        SetTheme(Resource.Style.Theme_MALClient_Light_Red);
+                        SetTheme(Resource.Style.Theme_MALPlus_Light_Red);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

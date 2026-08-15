@@ -37,7 +37,7 @@
     <item name="android:minHeight">20dp</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.Orange" parent="Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.Orange" parent="Theme.MALPlus.Dark">
     <item name="AccentColour">@color/OrangeAccentColour</item>
     <item name="AccentColourDark">@color/OrangeAccentColourDark</item>
     <item name="AccentColourLight">@color/OrangeAccentColourLight</item>
@@ -57,7 +57,7 @@
     <item name="colorControlActivated">@color/OrangeAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.Purple" parent="Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.Purple" parent="Theme.MALPlus.Dark">
     <item name="AccentColour">@color/PurpleAccentColour</item>
     <item name="AccentColourDark">@color/PurpleAccentColourDark</item>
     <item name="AccentColourLight">@color/PurpleAccentColourLight</item>
@@ -77,7 +77,7 @@
     <item name="colorControlActivated">@color/PurpleAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.Blue" parent="Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.Blue" parent="Theme.MALPlus.Dark">
     <item name="AccentColour">@color/BlueAccentColour</item>
     <item name="AccentColourDark">@color/BlueAccentColourDark</item>
     <item name="AccentColourLight">@color/BlueAccentColourLight</item>
@@ -97,7 +97,7 @@
     <item name="colorControlActivated">@color/BlueAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.Lime" parent="Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.Lime" parent="Theme.MALPlus.Dark">
     <item name="AccentColour">@color/LimeAccentColour</item>
     <item name="AccentColourDark">@color/LimeAccentColourDark</item>
     <item name="AccentColourLight">@color/LimeAccentColourLight</item>
@@ -117,7 +117,7 @@
     <item name="colorControlActivated">@color/LimeAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.Pink" parent="@style/Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.Pink" parent="@style/Theme.MALPlus.Dark">
     <item name="AccentColour">@color/PinkAccentColour</item>
     <item name="AccentColourDark">@color/PinkAccentColourDark</item>
     <item name="AccentColourLight">@color/PinkAccentColourLight</item>
@@ -137,7 +137,7 @@
     <item name="colorControlActivated">@color/PinkAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.Cyan" parent="@style/Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.Cyan" parent="@style/Theme.MALPlus.Dark">
     <item name="AccentColour">@color/CyanAccentColour</item>
     <item name="AccentColourDark">@color/CyanAccentColourDark</item>
     <item name="AccentColourLight">@color/CyanAccentColourLight</item>
@@ -157,7 +157,7 @@
     <item name="colorControlActivated">@color/CyanAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.SkyBlue" parent="@style/Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.SkyBlue" parent="@style/Theme.MALPlus.Dark">
     <item name="AccentColour">@color/SkyBlueAccentColour</item>
     <item name="AccentColourDark">@color/SkyBlueAccentColourDark</item>
     <item name="AccentColourLight">@color/SkyBlueAccentColourLight</item>
@@ -177,7 +177,7 @@
     <item name="colorControlActivated">@color/SkyBlueAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Dark.Red" parent="@style/Theme.MALClient.Dark">
+  <style name="Theme.MALPlus.Dark.Red" parent="@style/Theme.MALPlus.Dark">
     <item name="AccentColour">@color/RedAccentColour</item>
     <item name="AccentColourDark">@color/RedAccentColourDark</item>
     <item name="AccentColourLight">@color/RedAccentColourLight</item>
@@ -197,7 +197,7 @@
     <item name="colorControlActivated">@color/RedAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.Orange" parent="Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.Orange" parent="Theme.MALPlus.Light">
     <item name="AccentColour">@color/OrangeAccentColour</item>
     <item name="AccentColourDark">@color/OrangeAccentColourDark</item>
     <item name="AccentColourLight">@color/OrangeAccentColourLight</item>
@@ -219,7 +219,7 @@
     <item name="colorControlActivated">@color/OrangeAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.Purple" parent="Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.Purple" parent="Theme.MALPlus.Light">
     <item name="AccentColour">@color/PurpleAccentColour</item>
     <item name="AccentColourDark">@color/PurpleAccentColourDark</item>
     <item name="AccentColourLight">@color/PurpleAccentColourLight</item>
@@ -241,7 +241,7 @@
     <item name="colorControlActivated">@color/PurpleAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.Blue" parent="Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.Blue" parent="Theme.MALPlus.Light">
     <item name="AccentColour">@color/BlueAccentColour</item>
     <item name="AccentColourDark">@color/BlueAccentColourDark</item>
     <item name="AccentColourLight">@color/BlueAccentColourLight</item>
@@ -263,7 +263,7 @@
     <item name="colorControlActivated">@color/BlueAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.Lime" parent="Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.Lime" parent="Theme.MALPlus.Light">
     <item name="AccentColour">@color/LimeAccentColour</item>
     <item name="AccentColourDark">@color/LimeAccentColourDark</item>
     <item name="AccentColourLight">@color/LimeAccentColourLight</item>
@@ -285,7 +285,7 @@
     <item name="colorControlActivated">@color/LimeAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.Pink" parent="@style/Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.Pink" parent="@style/Theme.MALPlus.Light">
     <item name="AccentColour">@color/PinkAccentColour</item>
     <item name="AccentColourDark">@color/PinkAccentColourDark</item>
     <item name="AccentColourLight">@color/PinkAccentColourLight</item>
@@ -307,7 +307,7 @@
     <item name="colorControlActivated">@color/PinkAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.Cyan" parent="@style/Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.Cyan" parent="@style/Theme.MALPlus.Light">
     <item name="AccentColour">@color/CyanAccentColour</item>
     <item name="AccentColourDark">@color/CyanAccentColourDark</item>
     <item name="AccentColourLight">@color/CyanAccentColourLight</item>
@@ -329,7 +329,7 @@
     <item name="colorControlActivated">@color/CyanAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.SkyBlue" parent="@style/Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.SkyBlue" parent="@style/Theme.MALPlus.Light">
     <item name="AccentColour">@color/SkyBlueAccentColour</item>
     <item name="AccentColourDark">@color/SkyBlueAccentColourDark</item>
     <item name="AccentColourLight">@color/SkyBlueAccentColourLight</item>
@@ -351,7 +351,7 @@
     <item name="colorControlActivated">@color/SkyBlueAccentColourDark</item>
   </style>
 
-  <style name="Theme.MALClient.Light.Red" parent="@style/Theme.MALClient.Light">
+  <style name="Theme.MALPlus.Light.Red" parent="@style/Theme.MALPlus.Light">
     <item name="AccentColour">@color/RedAccentColour</item>
     <item name="AccentColourDark">@color/RedAccentColourDark</item>
     <item name="AccentColourLight">@color/RedAccentColourLight</item>
@@ -375,7 +375,7 @@
 
 
 
-  <style name="Theme.MALClient.Dark" parent="Theme.AppCompat.NoActionBar">
+  <style name="Theme.MALPlus.Dark" parent="Theme.AppCompat.NoActionBar">
 
     <item name="android:colorEdgeEffect">#e6e6e6</item>
     <item name="BrushText">@color/DarkBrushText</item>
@@ -426,7 +426,7 @@
     <item name="android:navigationBarColor">@android:color/black</item>
   </style>
 
-  <style name="Theme.MALClient.Light" parent="Theme.AppCompat.Light.NoActionBar">
+  <style name="Theme.MALPlus.Light" parent="Theme.AppCompat.Light.NoActionBar">
 
     <item name="BrushText">@color/LightBrushText</item>
     <item name="BrushTextInverted">@color/LightBrushTextInverted</item>

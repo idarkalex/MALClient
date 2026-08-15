@@ -33,7 +33,7 @@ namespace MALClient.Android.Resources
             {
                 return
                     (AndroidColorThemes)
-                    (ResourceLocator.ApplicationDataService[nameof(AndroidColorThemes)] ?? AndroidColorThemes.Orange);
+                    (ResourceLocator.ApplicationDataService[nameof(AndroidColorThemes)] ?? AndroidColorThemes.Blue);
             }
             set { ResourceLocator.ApplicationDataService[nameof(AndroidColorThemes)] = (int) value; }
         }

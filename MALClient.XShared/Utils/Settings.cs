@@ -73,9 +73,7 @@ namespace MALClient.XShared.Utils
         {
             get
             {
-                if (ViewModelLocator.Mobile)
-                    return (int)(ApplicationDataService["SelectedTheme"] ?? 0);
-
+                // MAL+ default: always Dark theme (1)
                 return (int)(ApplicationDataService["SelectedTheme"] ?? 1);
             }
             set => ApplicationDataService["SelectedTheme"] = value;
