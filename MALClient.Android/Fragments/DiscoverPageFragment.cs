@@ -63,6 +63,7 @@ namespace MALClient.Android.Fragments
                 NavigateTo(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted(MangaAdaptedType.AiringNow))));
             DiscoverNewsSeeAll.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PageNews, MalArticlesPageNavigationArgs.News)));
+            DiscoverSeasonalHeader.Text = $"Seasonal - {GetCurrentSeason().Name}";
             DiscoverPageRefresh.ScrollingView = DiscoverPageScroll;
             DiscoverPageRefresh.Refresh += DiscoverPageRefreshOnRefresh;
             LoadSections();
