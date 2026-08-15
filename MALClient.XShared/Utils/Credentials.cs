@@ -66,7 +66,7 @@ namespace MALClient.XShared.Utils
             Query.RefreshClientAuthHeader();
 
             if (!string.IsNullOrWhiteSpace(passwd))
-                PasswordVault.Add(new VaultCredential((type == ApiType.Mal ? "MALClient" : "MALClientHum"), UserName, Password));
+                PasswordVault.Add(new VaultCredential((type == ApiType.Mal ? "MALPlus" : "MALPlusHum"), UserName, Password));
         }
 
         public static void Reset()
@@ -106,11 +106,11 @@ namespace MALClient.XShared.Utils
                 VaultCredential credential = null;
                 try
                 {
-                    credential = PasswordVault.Get("MALClient");
+                    credential = PasswordVault.Get("MALPlus");
                 }
                 catch (Exception)
                 {
-                    credential = PasswordVault.Get("MALClientHum");
+                    credential = PasswordVault.Get("MALPlusHum");
                     deductedApiType = ApiType.Hummingbird;
                 }
                 if (credential != null)

@@ -249,12 +249,12 @@ namespace MALClient.Android.BackgroundTasks
                 var notificationManager = (NotificationManager)context.GetSystemService(Context.NotificationService);
                 if (Build.VERSION.SdkInt >= global::Android.OS.BuildVersionCodes.O)
                 {
-                    if (notificationManager.GetNotificationChannel("malclient_notifications") == null)
+                    if (notificationManager.GetNotificationChannel("malplus_notifications") == null)
                     {
-                        var notificationChannel = new NotificationChannel("malclient_notifications",
+                        var notificationChannel = new NotificationChannel("malplus_notifications",
                             new Java.Lang.String("MyAnimeList.net notifications"), NotificationImportance.Default)
                         {
-                            Name = "MALClient",
+                            Name = "MAL+",
                             Description = "Notifications from MyAnimeList.net"
                         };
 
@@ -264,8 +264,8 @@ namespace MALClient.Android.BackgroundTasks
                     }
                 }
 
-                var notificationBuilder = new NotificationCompat.Builder(context, "malclient_notifications")
-                    .SetCategory("MALClient")
+                var notificationBuilder = new NotificationCompat.Builder(context, "malplus_notifications")
+                    .SetCategory("MAL+")
                     .SetSmallIcon(Resource.Drawable.ic_stat_name)
                     .SetStyle(new NotificationCompat.BigTextStyle().BigText(notification.Content))
                     .SetContentTitle(notification.Header)
@@ -287,7 +287,7 @@ namespace MALClient.Android.BackgroundTasks
                 }
 
                
-                notificationManager.Notify("MALClient", notification.Id.GetHashCode(), notificationBuilder.Build());
+                notificationManager.Notify("MAL+", notification.Id.GetHashCode(), notificationBuilder.Build());
                 await Task.Delay(500);
                 _toastSemaphore.Release();
             }

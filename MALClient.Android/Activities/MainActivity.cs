@@ -37,7 +37,7 @@ using Fragment = Android.Support.V4.App.Fragment;
 namespace MALClient.Android.Activities
 {
     [Activity(
-        Label = "MALClient",
+        Label = "MAL+",
         ScreenOrientation = ScreenOrientation.Portrait, ResizeableActivity = true,
         Icon = "@mipmap/ic_launcher",
         RoundIcon = "@mipmap/ic_launcher_round",

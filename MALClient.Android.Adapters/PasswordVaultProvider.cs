@@ -24,7 +24,7 @@ namespace MALClient.Android.Adapters
             //var credential = vault.FindAllByResource("MALClient").FirstOrDefault();
             //credential.RetrievePassword();
             //return new VaultCredential(credential.Resource, credential.UserName, credential.Password);
-            var credential = new VaultCredential("MALClient",
+            var credential = new VaultCredential("MALPlus",
                 ResourceLocator.ApplicationDataService["Username"] as string,
                 ResourceLocator.ApplicationDataService["Passwd"] as string);
             return string.IsNullOrEmpty(credential.Password) || string.IsNullOrEmpty(credential.UserName) ? null : credential;
