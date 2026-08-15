@@ -1,14 +1,12 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using FFImageLoading.Views;
 using MALClient.Android.Listeners;
-using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 
 namespace MALClient.Android.UserControls
@@ -24,7 +22,7 @@ namespace MALClient.Android.UserControls
         {
         }
 
-        public AnimeGridItem(Context context, bool allowSwipeInGivenContext, Action<AnimeItemViewModel> onItemClickAction, bool displayTimeTillAir = false) : base(context)
+        public AnimeGridItem(Context context, Action<AnimeItemViewModel> onItemClickAction = null) : base(context)
         {
             _onItemClickAction = onItemClickAction;
         }

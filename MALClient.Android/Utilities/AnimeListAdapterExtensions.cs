@@ -16,7 +16,7 @@ namespace MALClient.Android
     {
         public static void InjectAnimeListAdapter(this AbsListView listView, Context context,
             IList<AnimeItemViewModel> items,
-            AnimeListDisplayModes mode, Action<AnimeItemViewModel> onClick = null, bool allowGridItemSwipe = true, bool displayGridTimeTillAir = false)
+            AnimeListDisplayModes mode, Action<AnimeItemViewModel> onClick = null)
         {
             switch (mode)
             {
@@ -41,7 +41,7 @@ namespace MALClient.Android
                         {
                             ((AnimeGridItem) view).BindModel(model, true);
                         },
-                        i => new AnimeGridItem(context, allowGridItemSwipe, onClick, displayGridTimeTillAir)
+                        i => new AnimeGridItem(context, onClick)
                     );
                     break;
                 case AnimeListDisplayModes.IndefiniteCompactList:
@@ -67,7 +67,7 @@ namespace MALClient.Android
 
         public static void InjectAnimeListAdapterWithFooter(this AbsListView listView, Context context,
             IList<AnimeItemViewModel> items,
-            AnimeListDisplayModes mode, View footer, Action<AnimeItemViewModel> onClick = null, bool allowGridItemSwipe = true, bool skipBugFix = false)
+            AnimeListDisplayModes mode, View footer, Action<AnimeItemViewModel> onClick = null, bool skipBugFix = false)
         {
             switch (mode)
             {
@@ -92,7 +92,7 @@ namespace MALClient.Android
                         {
                             ((AnimeGridItem) view).BindModel(model, true);
                         },
-                        i => new AnimeGridItem(context, allowGridItemSwipe, onClick)
+                        i => new AnimeGridItem(context, onClick)
                         ,null, footer, skipBugFix);
                     break;
                 case AnimeListDisplayModes.IndefiniteCompactList:
@@ -134,7 +134,7 @@ namespace MALClient.Android
                 case AnimeListDisplayModes.IndefiniteGrid:
                     listView.SetAdapter(items.GetAdapter((i, model, arg3) =>
                         {
-                            var view = new AnimeGridItem(context, false, onClick);
+                            var view = new AnimeGridItem(context, onClick);
                             view.BindModel(model, false);
                             return view;
                         })

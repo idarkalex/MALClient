@@ -57,7 +57,7 @@ namespace MALClient.Android.Fragments.CalendarFragments
             view.FindViewById<TextView>(Resource.Id.CalendarPageSummaryTabContentHeader).Text = tuple.Item1;
             var grid = view.FindViewById<HeightAdjustingGridView>(Resource.Id.CalendarPageSummaryTabContentList);
             grid.AlwaysAdjust = true;
-            grid.InjectAnimeListAdapter(Context,tuple.Item2,AnimeListDisplayModes.IndefiniteGrid,OnItemClick,false,true);
+            grid.InjectAnimeListAdapter(Context,tuple.Item2,AnimeListDisplayModes.IndefiniteGrid,OnItemClick);
             _gridViewColumnHelper.RegisterGrid(grid);
 
             return view;

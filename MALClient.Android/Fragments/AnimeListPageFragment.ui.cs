@@ -259,7 +259,7 @@ namespace MALClient.Android.Fragments
                         var footerParam = _loadMoreFooter.LayoutParameters;
                         footerParam.Height = ViewGroup.LayoutParams.WrapContent;
 
-                        AnimeListPageGridView.InjectAnimeListAdapterWithFooter(Context, ViewModel.AnimeGridItems, AnimeListDisplayModes.IndefiniteGrid, _loadMoreFooter, AnimeListPageGridViewOnItemClick, true, _prevArgs != null);
+                        AnimeListPageGridView.InjectAnimeListAdapterWithFooter(Context, ViewModel.AnimeGridItems, AnimeListDisplayModes.IndefiniteGrid, _loadMoreFooter, AnimeListPageGridViewOnItemClick);
                         _gridViewColumnHelper = new GridViewColumnHelper(AnimeListPageGridView, null, Settings.SqueezeOneMoreGridItem ? 3 : 2, 3);
                         //if row is not full we have to make this footer item bigger in order to avoid cutting of last row of items
 

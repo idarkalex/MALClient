@@ -409,7 +409,7 @@ namespace MALClient.Android.Fragments
             foreach (var item in data)
             {
                 var model = new AnimeItemAbstraction(item, isAnime).ViewModel;
-                var view = new AnimeGridItem(Activity, false, null);
+                var view = new AnimeGridItem(Activity);
                 view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
                 {
                     TopMargin = verticalMargin,
@@ -428,7 +428,7 @@ namespace MALClient.Android.Fragments
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
             {
-                var view = new AnimeGridItem(Activity, false, null, true);
+                var view = new AnimeGridItem(Activity);
                 view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
                 {
                     TopMargin = verticalMargin,
@@ -449,7 +449,7 @@ namespace MALClient.Android.Fragments
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
             {
-                var view = new AnimeGridItem(Activity, false, null);
+                var view = new AnimeGridItem(Activity);
                 view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
                 {
                     TopMargin = verticalMargin,
@@ -468,7 +468,7 @@ namespace MALClient.Android.Fragments
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
             {
-                var view = new AnimeGridItem(Activity, false, null);
+                var view = new AnimeGridItem(Activity);
                 view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
                 {
                     TopMargin = verticalMargin,
