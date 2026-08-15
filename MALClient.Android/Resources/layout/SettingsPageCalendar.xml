@@ -62,6 +62,18 @@
                 android:text="Make Sunday first day of the week" android:layout_height="wrap_content" />
         <Switch android:id="@+id/SettingsPageCalendarMiscRemoveEmptyDaysSwitch" android:layout_width="match_parent"
                 android:text="Remove empty days" android:layout_height="wrap_content" android:layout_marginTop="5dp" />
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:layout_marginTop="10dp"
+          android:gravity="center_vertical">
+          <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                    android:text="Max items on the calendar" android:textColor="?BrushText" />
+          <EditText android:id="@+id/SettingsPageCalendarMiscMaxItemsEditText" android:layout_width="70dp"
+                    android:layout_height="wrap_content" android:inputType="number" android:gravity="center"
+                    android:selectAllOnFocus="true" />
+        </LinearLayout>
         <!--<Switch android:id="@+id/SettingsPageCalendarMiscExactAiringTimeSwitch" android:layout_width="match_parent"
                 android:text="Always show exact airing time (double download)" android:layout_height="wrap_content"
                 android:layout_marginTop="15dp" />-->

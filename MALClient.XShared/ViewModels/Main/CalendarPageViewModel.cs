@@ -172,19 +172,20 @@ namespace MALClient.XShared.ViewModels.Main
                      abstraction.MyStatus == AnimeStatus.PlanToWatch) ||
                     (Settings.CalendarIncludeWatching && abstraction.MyStatus == AnimeStatus.Watching))).ToList();
             
-            //Limit items to 40 at most
-            if (abstractions.Count() > 40)
+            //Limit items to at most the configured amount
+            var maxItems = Math.Max(1, Settings.CalendarMaxItems);
+            if (abstractions.Count() > maxItems)
             {
                 var watchingCount = abstractions.Count(abstraction => abstraction.MyStatus == AnimeStatus.Watching);
                 //with currently watched ones having most priority
-                if (watchingCount > 40)
-                    abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching).Take(40).ToList();
+                if (watchingCount > maxItems)
+                    abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching).Take(maxItems).ToList();
                 else
                 {
-                    //take all watching and add ptw to make at most 40 entries
+                    //take all watching and add ptw to make at most maxItems entries
                     abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching)
                         .Concat(abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.PlanToWatch)
-                            .Take(40 - watchingCount)).ToList();
+                            .Take(maxItems - watchingCount)).ToList();
                 }
             }
 

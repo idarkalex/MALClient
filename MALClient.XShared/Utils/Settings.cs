@@ -569,6 +569,12 @@ namespace MALClient.XShared.Utils
             set => ApplicationDataService[nameof(CalendarPullExactAiringTime)] = value;
         }
 
+        public static int CalendarMaxItems
+        {
+            get => (int)(ApplicationDataService[nameof(CalendarMaxItems)] ?? 40);
+            set => ApplicationDataService[nameof(CalendarMaxItems)] = value;
+        }
+
         #endregion Calendar
 
         #region Articles

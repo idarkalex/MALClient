@@ -59,6 +59,26 @@ namespace MALClient.Android.Fragments.SettingsFragments
             //Bindings.Add(
             //    this.SetBinding(() => ViewModel.CalendarPullExactAiringTime,
             //        () => SettingsPageCalendarMiscExactAiringTimeSwitch.Checked, BindingMode.TwoWay));
+            SettingsPageCalendarMiscMaxItemsEditText.Text = Settings.CalendarMaxItems.ToString();
+            SettingsPageCalendarMiscMaxItemsEditText.EditorAction += (sender, args) =>
+            {
+                int value;
+                if (int.TryParse(SettingsPageCalendarMiscMaxItemsEditText.Text, out value) && value > 0)
+                    Settings.CalendarMaxItems = value;
+                else
+                    SettingsPageCalendarMiscMaxItemsEditText.Text = Settings.CalendarMaxItems.ToString();
+            };
+            SettingsPageCalendarMiscMaxItemsEditText.FocusChange += (sender, args) =>
+            {
+                if (!args.HasFocus)
+                {
+                    int value;
+                    if (int.TryParse(SettingsPageCalendarMiscMaxItemsEditText.Text, out value) && value > 0)
+                        Settings.CalendarMaxItems = value;
+                    else
+                        SettingsPageCalendarMiscMaxItemsEditText.Text = Settings.CalendarMaxItems.ToString();
+                }
+            };
             
         }
 
