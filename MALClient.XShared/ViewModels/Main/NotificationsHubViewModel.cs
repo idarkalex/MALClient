@@ -60,16 +60,12 @@ namespace MALClient.XShared.ViewModels.Main
         public ICommand MarkAllAsReadCommand => _markAllAsReadCommand ?? (_markAllAsReadCommand = new RelayCommand(
                                                     async () =>
                                                     {
-                                                        if (await MalNotificationsQuery.MarkNotifiactionsAsRead(Notifications))
+                                                        if (await MalNotificationsQuery.MarkNotifiactionsAsRead(AllNotifications))
                                                         {
-                                                            foreach (var type in Notifications.Select(notification => notification.Type).Distinct())
-                                                            {
-                                                                NotificationGroups.First(
-                                                                        model => model.NotificationType == type)
-                                                                    .NotificationsCount = 0;
-                                                            }
+                                                            foreach (var group in NotificationGroups)
+                                                                group.NotificationsCount = 0;
+                                                            AllNotifications.Clear();
                                                             Notifications.Clear();
-
                                                         }
                                                         else
                                                         {

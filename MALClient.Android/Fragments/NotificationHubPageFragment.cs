@@ -160,6 +160,12 @@ namespace MALClient.Android.Fragments
 
             items.Insert(0,showAllItem);
 
+            var markAllItem = HamburgerUtilities.GetBaseSecondaryItem();
+            markAllItem.WithName("Mark all as read");
+            markAllItem.WithIdentifier((int)MalNotificationsTypes.Payment + 1000);
+
+            items.Insert(0, markAllItem);
+
             if (activeItem == null)
                 activeItem = showAllItem;
 
@@ -174,7 +180,11 @@ namespace MALClient.Android.Fragments
                 Resource.Drawable.icon_filter);
             _rightDrawer.OnDrawerItemClickListener = new HamburgerItemClickListener((view, i, arg3) =>
             {
-                if (arg3.Identifier != 3)
+                if (arg3.Identifier == markAllItem.Identifier)
+                {
+                    ViewModel.MarkAllAsReadCommand.Execute(null);
+                }
+                else if (arg3.Identifier != 3)
                     ViewModel.CurrentNotificationType = (MalNotificationsTypes) arg3.Identifier;
                 else
                     ViewModel.CurrentNotificationType = MalNotificationsTypes.Generic;
