@@ -77,19 +77,9 @@ namespace MALClient.Android.Fragments
             DiscoverPageRefresh.Refreshing = false;
         }
 
-        private void ClearSections()
-        {
-            DiscoverWatchingRow.RemoveAllViews();
-            DiscoverReadingRow.RemoveAllViews();
-            DiscoverSeasonalRow.RemoveAllViews();
-            DiscoverTopAnimeRow.RemoveAllViews();
-            DiscoverTopMangaRow.RemoveAllViews();
-            DiscoverAdaptedRow.RemoveAllViews();
-            DiscoverNewsRow.RemoveAllViews();
-        }
-
         private async Task LoadSections()
         {
+            DiscoverPageLoadingSpinner.Visibility = ViewStates.Visible;
             try
             {
                 await Task.WhenAll(
@@ -105,6 +95,18 @@ namespace MALClient.Android.Fragments
             {
                 // individual sections handle their own failures
             }
+            DiscoverPageLoadingSpinner.Visibility = ViewStates.Gone;
+        }
+
+        private void ClearSections()
+        {
+            DiscoverWatchingRow.RemoveAllViews();
+            DiscoverReadingRow.RemoveAllViews();
+            DiscoverSeasonalRow.RemoveAllViews();
+            DiscoverTopAnimeRow.RemoveAllViews();
+            DiscoverTopMangaRow.RemoveAllViews();
+            DiscoverAdaptedRow.RemoveAllViews();
+            DiscoverNewsRow.RemoveAllViews();
         }
 
         private async Task LoadWatchingAsync()
@@ -487,6 +489,7 @@ namespace MALClient.Android.Fragments
 
         private ScrollView _discoverPageScroll;
         private ScrollableSwipeToRefreshLayout _discoverPageRefresh;
+        private ProgressBar _discoverPageLoadingSpinner;
         private TextView _discoverWatchingSeeAll;
         private TextView _discoverReadingSeeAll;
         private TextView _discoverSeasonalSeeAll;
@@ -511,6 +514,7 @@ namespace MALClient.Android.Fragments
 
         public ScrollView DiscoverPageScroll => _discoverPageScroll ?? (_discoverPageScroll = FindViewById<ScrollView>(Resource.Id.DiscoverPageScroll));
         public ScrollableSwipeToRefreshLayout DiscoverPageRefresh => _discoverPageRefresh ?? (_discoverPageRefresh = FindViewById<ScrollableSwipeToRefreshLayout>(Resource.Id.DiscoverPageRefresh));
+        public ProgressBar DiscoverPageLoadingSpinner => _discoverPageLoadingSpinner ?? (_discoverPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.DiscoverPageLoadingSpinner));
         public TextView DiscoverWatchingSeeAll => _discoverWatchingSeeAll ?? (_discoverWatchingSeeAll = FindViewById<TextView>(Resource.Id.DiscoverWatchingSeeAll));
         public TextView DiscoverReadingSeeAll => _discoverReadingSeeAll ?? (_discoverReadingSeeAll = FindViewById<TextView>(Resource.Id.DiscoverReadingSeeAll));
         public TextView DiscoverSeasonalSeeAll => _discoverSeasonalSeeAll ?? (_discoverSeasonalSeeAll = FindViewById<TextView>(Resource.Id.DiscoverSeasonalSeeAll));
