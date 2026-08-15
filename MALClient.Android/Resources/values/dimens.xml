@@ -1,17 +1,53 @@
 ﻿<resources>
-  <!-- Default screen margins, per the Android Design guidelines. -->
+  <!-- Base margins -->
   <dimen name="activity_horizontal_margin">16dp</dimen>
   <dimen name="activity_vertical_margin">16dp</dimen>
+
+  <!-- AppBar -->
   <dimen name="AppBarHeight">50sp</dimen>
   <dimen name="AppBarBtnWidth">50sp</dimen>
   <dimen name="AppBarBtnHeight">50sp</dimen>
-  <dimen name="TextFlyoutItemHeight">30dp</dimen>
-  <dimen name="TextFlyoutItemWidth">100dp</dimen>
-  <dimen name="TextFlyoutItemWideWidth">150dp</dimen>
+
+  <!-- Grid card dimensions -->
+  <dimen name="GridCardWidth">130dp</dimen>
+  <dimen name="GridCardHeight">195dp</dimen>
+  <dimen name="GridCardSpacing">4dp</dimen>
+  <dimen name="GridCardMargin">2dp</dimen>
+  <dimen name="GridCardCornerRadius">4dp</dimen>
+
+  <!-- Image sizes -->
   <dimen name="ShowImageWidthSmall">110dp</dimen>
   <dimen name="ShowImageHeightSmall">140dp</dimen>
   <dimen name="ShowImageWidthMedium">130dp</dimen>
   <dimen name="ShowImageHeightMedium">175dp</dimen>
+
+  <!-- Text sizes -->
+  <dimen name="FontSizeTiny">10sp</dimen>
+  <dimen name="FontSizeSmall">11sp</dimen>
+  <dimen name="FontSizeNormal">13sp</dimen>
+  <dimen name="FontSizeSemiNormal">14sp</dimen>
+  <dimen name="FontSizeMedium">16sp</dimen>
+  <dimen name="FontSizeLarge">18sp</dimen>
+  <dimen name="FontSizeHuge">24sp</dimen>
+
+  <!-- Spacing -->
+  <dimen name="SpacingTiny">2dp</dimen>
+  <dimen name="SpacingSmall">4dp</dimen>
+  <dimen name="SpacingNormal">8dp</dimen>
+  <dimen name="SpacingMedium">12dp</dimen>
+  <dimen name="SpacingLarge">16dp</dimen>
+  <dimen name="SpacingHuge">24dp</dimen>
+
+  <!-- Title container -->
+  <dimen name="TitleOverlayPaddingHorizontal">6dp</dimen>
+  <dimen name="TitleOverlayPaddingVertical">4dp</dimen>
+  <dimen name="TitleMaxLines">2</dimen>
+  <dimen name="TitleTextSize">12sp</dimen>
+
+  <!-- UI components -->
+  <dimen name="TextFlyoutItemHeight">30dp</dimen>
+  <dimen name="TextFlyoutItemWidth">100dp</dimen>
+  <dimen name="TextFlyoutItemWideWidth">150dp</dimen>
   <dimen name="IncrementDecrementButtonWidth">30dp</dimen>
   <dimen name="HamburgerMenuItemSpacing">10dp</dimen>
   <dimen name="ProgressRingSize">50dp</dimen>

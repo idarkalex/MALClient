@@ -93,7 +93,7 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
                 case Resource.Id.ProfilePageFavouritesTabAnimeToggleButton:
                     if (ViewModel.FavAnime?.Any() ?? false)
                         ProfilePageFavouritesTabGridView.InjectAnimeListAdapter(Context, ViewModel.FavAnime,
-                            AnimeListDisplayModes.IndefiniteGrid, OnItemClickAction,false);
+                            AnimeListDisplayModes.IndefiniteGrid, OnItemClickAction);
 
                     ProfilePageFavouritesTabAnimeToggleButton.Checked = true;
                     ProfilePageFavouritesTabMangaToggleButton.Checked =
@@ -103,7 +103,7 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
                 case Resource.Id.ProfilePageFavouritesTabMangaToggleButton:
                     if (ViewModel.FavManga?.Any() ?? false)
                         ProfilePageFavouritesTabGridView.InjectAnimeListAdapter(Context, ViewModel.FavManga,
-                            AnimeListDisplayModes.IndefiniteGrid, OnItemClickAction,false);
+                            AnimeListDisplayModes.IndefiniteGrid, OnItemClickAction);
 
                     ProfilePageFavouritesTabMangaToggleButton.Checked = true;
                     ProfilePageFavouritesTabAnimeToggleButton.Checked =
