@@ -166,22 +166,17 @@ namespace MALClient.Android.UserControls
                 switch (ViewModel.Priority)
                 {
                     case AnimePriority.Low:
-                        if (Settings.ShowLowPriorities)
-                        {
-                            AnimeGridItemLowerSection.BackgroundTintList =
-                                ColorStateList.ValueOf(ResourceExtension.LowPriorityColour);
-                        }
-                        else
-                        {
-                            AnimeGridItemLowerSection.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
-                        }
+                        AnimeGridItemUpperSection.BackgroundTintList =
+                            Settings.ShowLowPriorities
+                                ? ColorStateList.ValueOf(ResourceExtension.LowPriorityColour)
+                                : ColorStateList.ValueOf(Color.Transparent);
                         break;
                     case AnimePriority.Medium:
-                        AnimeGridItemLowerSection.BackgroundTintList =
+                        AnimeGridItemUpperSection.BackgroundTintList =
                             ColorStateList.ValueOf(ResourceExtension.MediumPriorityColour);
                         break;
                     case AnimePriority.High:
-                        AnimeGridItemLowerSection.BackgroundTintList =
+                        AnimeGridItemUpperSection.BackgroundTintList =
                             ColorStateList.ValueOf(ResourceExtension.HighPriorityColour);
                         break;
                     default:
@@ -191,7 +186,7 @@ namespace MALClient.Android.UserControls
             }
             else
             {
-                AnimeGridItemLowerSection.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
+                AnimeGridItemUpperSection.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
             }
         }
 
@@ -324,8 +319,9 @@ namespace MALClient.Android.UserControls
         protected override void RootContainerInit()
         {
             RootContainer.SetOnClickListener(new OnClickListener(view => ContainerOnClick()));
-            AnimeGridItemMoreButton.SetOnClickListener(new OnClickListener(view => MoreButtonOnClick()));
-            //RootContainer.SetOnLongClickListener(new OnLongClickListener(view => MoreButtonOnClick()));
+            // Original: AnimeGridItemMoreButton.SetOnClickListener(new OnClickListener(view => MoreButtonOnClick()));
+            // Menu is now triggered via long-press on the entire card:
+            RootContainer.SetOnLongClickListener(new OnLongClickListener(view => { MoreButtonOnClick(); return true; }));
 
             AnimeGridItemTagsButton.SetOnClickListener(new OnClickListener(OnTagsButtonClick));
 
@@ -360,8 +356,8 @@ namespace MALClient.Android.UserControls
 
             if (Settings.MakeGridItemsSmaller)
             {
-                AnimeGridItemUpperSection.LayoutParameters.Height = DimensionsHelper.DpToPx(174);
-                AnimeGridItemLowerSection.LayoutParameters.Height = DimensionsHelper.DpToPx(44);
+                AnimeGridItemUpperSection.LayoutParameters.Height = DimensionsHelper.DpToPx(210);
+                // Removed: AnimeGridItemLowerSection no longer exists
 
                 AnimeGridItemTagsButton.LayoutParameters.Height =
                     AnimeGridItemTagsButton.LayoutParameters.Width = DimensionsHelper.DpToPx(30);
@@ -379,9 +375,9 @@ namespace MALClient.Android.UserControls
                 AnimeGridItemTopLeftInfoSub.SetTextSize(ComplexUnitType.Sp, 11);
                 AnimeGridItemType.SetTextSize(ComplexUnitType.Sp, 11);
 
-                AnimeGridItemTitle.SetTextSize(ComplexUnitType.Sp, 13);
-                AnimeGridItemMoreButton.ScaleX = AnimeGridItemMoreButton.ScaleY = .85f;
-                AnimeGridItemFavouriteIndicator.ScaleX = AnimeGridItemMoreButton.ScaleY = .85f;
+                AnimeGridItemTitle.SetTextSize(ComplexUnitType.Sp, 11);
+                // Removed: AnimeGridItemMoreButton.Scale no longer exists
+                AnimeGridItemFavouriteIndicator.ScaleX = AnimeGridItemFavouriteIndicator.ScaleY = .85f;
                 AnimeGridItemTagIcon.ScaleX = AnimeGridItemTagIcon.ScaleY = .85f;
             }
 
@@ -421,7 +417,7 @@ namespace MALClient.Android.UserControls
 
         private void MoreButtonOnClick()
         {
-            _menu = AnimeItemFlyoutBuilder.BuildForAnimeItem(Context, AnimeGridItemMoreButton,
+            _menu = AnimeItemFlyoutBuilder.BuildForAnimeItem(Context, AnimeGridItemTitleOverlay,
                 ViewModel,
                 MenuOnMenuItemClick);
             _menu.Show();
@@ -547,8 +543,8 @@ namespace MALClient.Android.UserControls
         private FrameLayout _animeGridItemAddToListButton;
         private RelativeLayout _animeGridItemUpperSection;
         private TextView _animeGridItemTitle;
-        private ImageButton _animeGridItemMoreButton;
-        private LinearLayout _animeGridItemLowerSection;
+        private LinearLayout _animeGridItemTitleOverlay;
+        // Removed: _animeGridItemMoreButton and _animeGridItemLowerSection no longer exist
 
         public ImageView SurfaceAddIcon => _surfaceAddIcon ?? (_surfaceAddIcon = FindViewById<ImageView>(Resource.Id.SurfaceAddIcon));
         public FrameLayout AnimeGridItemBackSurfaceAdd => _animeGridItemBackSurfaceAdd ?? (_animeGridItemBackSurfaceAdd = FindViewById<FrameLayout>(Resource.Id.AnimeGridItemBackSurfaceAdd));
@@ -572,8 +568,8 @@ namespace MALClient.Android.UserControls
         public FrameLayout AnimeGridItemAddToListButton => _animeGridItemAddToListButton ?? (_animeGridItemAddToListButton = FindViewById<FrameLayout>(Resource.Id.AnimeGridItemAddToListButton));
         public RelativeLayout AnimeGridItemUpperSection => _animeGridItemUpperSection ?? (_animeGridItemUpperSection = FindViewById<RelativeLayout>(Resource.Id.AnimeGridItemUpperSection));
         public TextView AnimeGridItemTitle => _animeGridItemTitle ?? (_animeGridItemTitle = FindViewById<TextView>(Resource.Id.AnimeGridItemTitle));
-        public ImageButton AnimeGridItemMoreButton => _animeGridItemMoreButton ?? (_animeGridItemMoreButton = FindViewById<ImageButton>(Resource.Id.AnimeGridItemMoreButton));
-        public LinearLayout AnimeGridItemLowerSection => _animeGridItemLowerSection ?? (_animeGridItemLowerSection = FindViewById<LinearLayout>(Resource.Id.AnimeGridItemLowerSection));
+        public LinearLayout AnimeGridItemTitleOverlay => _animeGridItemTitleOverlay ?? (_animeGridItemTitleOverlay = FindViewById<LinearLayout>(Resource.Id.AnimeGridItemTitleOverlay));
+        // Removed: AnimeGridItemMoreButton and AnimeGridItemLowerSection no longer exist
 
         #endregion
     }

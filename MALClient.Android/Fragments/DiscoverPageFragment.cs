@@ -403,7 +403,7 @@ namespace MALClient.Android.Fragments
 
         private void PopulateAnimeRow(LinearLayout row, IEnumerable<SeasonalAnimeData> data, bool isAnime)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 190 : 200);
+            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
             var verticalMargin = DimensionsHelper.DpToPx(2);
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
@@ -423,7 +423,7 @@ namespace MALClient.Android.Fragments
 
         private void PopulateWatchingRow(IList<AnimeItemAbstraction> data)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 190 : 200);
+            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
             var verticalMargin = DimensionsHelper.DpToPx(2);
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
@@ -444,7 +444,7 @@ namespace MALClient.Android.Fragments
 
         private void PopulateReadingRow(IList<AnimeItemAbstraction> data)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 190 : 200);
+            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
             var verticalMargin = DimensionsHelper.DpToPx(2);
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
@@ -463,7 +463,7 @@ namespace MALClient.Android.Fragments
 
         private void PopulateCompletedRow(IList<AnimeItemAbstraction> data)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 190 : 200);
+            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
             var verticalMargin = DimensionsHelper.DpToPx(2);
             var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
