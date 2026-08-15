@@ -501,6 +501,13 @@ namespace MALClient.Android.Activities
             if(!_allowHamburgerNavigation)
                 return;
 
+            if (page == PageIndex.PageDiscover && ViewModel.CurrentMainPage == PageIndex.PageDiscover)
+            {
+                (_lastFragment as DiscoverPageFragment)?.ScrollToTop();
+                _drawer.CloseDrawer();
+                return;
+            }
+
             SetActiveButton(XShared.Utils.Utilities.GetButtonForPage(page));
             ViewModelLocator.GeneralMain.Navigate(page, GetAppropriateArgsForPage(page));
             _drawer.CloseDrawer();
