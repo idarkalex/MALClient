@@ -25,6 +25,7 @@ namespace MALClient.XShared.ViewModels.Main
         private bool _directQueryInputVisibility;
         private bool _isFirstVisitGridVisible = true;
         private bool _queryHandler;
+        private int _queryGeneration;
         public SearchPageNavigationArgs PrevArgs;
         public string PrevQuery;
 
@@ -104,7 +105,7 @@ namespace MALClient.XShared.ViewModels.Main
 
         public async void SubmitQuery(string query)
         {
-            query = query.PadRight(3, ' ');
+            var generation = ++_queryGeneration;
 
             if (string.IsNullOrEmpty(query) || query == PrevQuery || query.Length < 2)
             {
@@ -127,6 +128,8 @@ namespace MALClient.XShared.ViewModels.Main
                     Task.Run(
                         async () =>
                             data = await new AnimeSearchQuery(Utilities.CleanAnimeTitle(query)).GetSearchResults());
+                if (generation != _queryGeneration)
+                    return;
                 try
                 {
                     foreach (var item in data)
@@ -159,6 +162,9 @@ namespace MALClient.XShared.ViewModels.Main
                     //will display empty notice
                 }
             }
+
+            if (generation != _queryGeneration)
+                return;
 
             ViewModelLocator.GeneralMain.PopulateSearchFilters(_filters);
             PopulateItems();
