@@ -274,7 +274,7 @@
         <LinearLayout
             android:id="@+id/AnimeGridItemTitleOverlay"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
@@ -288,11 +288,11 @@
           <TextView
               android:id="@+id/AnimeGridItemTitle"
               android:layout_width="match_parent"
-              android:layout_height="wrap_content"
+              android:layout_height="match_parent"
               android:ellipsize="end"
-              android:maxLines="3"
+              android:maxLines="2"
               android:textColor="#ffffff"
-              android:textSize="13sp" />
+              android:textSize="12sp" />
         </LinearLayout>
 
       </RelativeLayout>

@@ -12,7 +12,7 @@
         android:layout_height="match_parent" android:padding="5dp">
       <TextView
           android:layout_width="wrap_content" android:id="@+id/MessagingPageItemSender"
-          android:layout_height="wrap_content" android:text="MALCLientTestAcc" android:ellipsize="end" android:maxLines="2" android:textColor="?BrushText"/>
+          android:layout_height="wrap_content" android:text="MALPlusTestAcc" android:ellipsize="end" android:maxLines="2" android:textColor="?BrushText"/>
       <ImageView android:layout_alignParentBottom="true" android:id="@+id/MessagingPageItemStateSymbol"
           android:layout_width="20dp"
           android:layout_height="20dp" android:src="@drawable/icon_message"/>
