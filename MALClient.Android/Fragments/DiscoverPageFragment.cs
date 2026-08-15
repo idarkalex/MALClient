@@ -29,6 +29,7 @@ namespace MALClient.Android.Fragments
 {
     public class DiscoverPageFragment : MalFragmentBase
     {
+        private static readonly TimeZoneInfo JstTimeZone = TimeZoneInfo.CreateCustomTimeZone("JST", TimeSpan.FromHours(9), "JST", "JST");
         private bool _dataLoaded;
 
         public DiscoverPageFragment()
@@ -389,7 +390,9 @@ namespace MALClient.Android.Fragments
                     BottomMargin = verticalMargin,
                     RightMargin = horizontalMargin
                 };
-                view.BindModel(item.ViewModel, false);
+                var viewModel = item.ViewModel;
+                viewModel.TimeTillNextAirCache = viewModel.GetTimeTillNextAir(JstTimeZone);
+                view.BindModel(viewModel, false);
                 DiscoverWatchingRow.AddView(view);
             }
         }
