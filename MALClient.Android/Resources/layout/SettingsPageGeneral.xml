@@ -46,6 +46,14 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="Manga list" />
+
+        <RadioButton
+            android:id="@+id/SettingsPageGeneralRadioDiscover"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Discover" />
       </RadioGroup>
     </LinearLayout>
 

@@ -205,8 +205,7 @@ namespace MALClient.XShared.ViewModels.Main
             }
             ViewModelLocator.GeneralMain.HideOffContentCommand.Execute(null);
             await DataCache.ClearApiRelatedCache();
-            ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList);
-            ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.AnimeList);
+            NavigateToStartPage();
 
             Authenticating = false;
         }
@@ -265,8 +264,7 @@ namespace MALClient.XShared.ViewModels.Main
                     ViewModelLocator.AnimeList.ListSource = Credentials.UserName;
                     ViewModelLocator.GeneralMain.HideOffContentCommand.Execute(null);
                     await DataCache.ClearApiRelatedCache();
-                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList);
-                    ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.AnimeList);
+                    NavigateToStartPage();
 
                     Authenticating = false;
                 }
@@ -292,6 +290,25 @@ namespace MALClient.XShared.ViewModels.Main
         {
             Authenticating = false;
             ResourceLocator.MessageDialogProvider.ShowMessageDialog("Unable to authorize, try again.", "Authorization failed.");
+        }
+
+        private void NavigateToStartPage()
+        {
+            switch (Settings.DefaultMenuTab)
+            {
+                case "manga":
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageMangaList);
+                    ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.MangaList);
+                    break;
+                case "discover":
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageDiscover);
+                    ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.Discover);
+                    break;
+                default:
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList);
+                    ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.AnimeList);
+                    break;
+            }
         }
     }
 

@@ -39,10 +39,11 @@ namespace MALClient.Android.Fragments.SettingsFragments
         {
             SettingsPageGeneralStartPageRadioGroup.Check(Settings.DefaultMenuTab == "anime"
                 ? SettingsPageGeneralRadioAnimeList.Id
-                : SettingsPageGeneralRadioMangaList.Id);
+                : Settings.DefaultMenuTab == "manga" ? SettingsPageGeneralRadioMangaList.Id : SettingsPageGeneralRadioDiscover.Id);
             SettingsPageGeneralStartPageRadioGroup.SetOnCheckedChangeListener(new OnCheckedListener(i =>
             {
-                Settings.DefaultMenuTab = i == SettingsPageGeneralRadioAnimeList.Id ? "anime" : "manga";
+                Settings.DefaultMenuTab = i == SettingsPageGeneralRadioAnimeList.Id ? "anime"
+                    : i == SettingsPageGeneralRadioMangaList.Id ? "manga" : "discover";
             }));
             //
             SettingsPageGeneralThemeRadioGroup.Check(Settings.SelectedTheme == 1

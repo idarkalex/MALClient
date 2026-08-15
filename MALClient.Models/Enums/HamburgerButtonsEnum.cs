@@ -26,6 +26,7 @@
         PopularVideos,
         Feeds,
         Notifications,
-        Clubs
+        Clubs,
+        Discover
     }
 }

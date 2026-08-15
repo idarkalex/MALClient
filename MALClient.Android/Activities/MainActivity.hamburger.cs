@@ -77,6 +77,8 @@ namespace MALClient.Android.Activities
                     return new ProfilePageNavigationArgs { TargetUser = Credentials.UserName };
                 case PageIndex.PageWallpapers:
                     return new WallpaperPageNavigationArgs();
+                case PageIndex.PageDiscover:
+                    return null;
                 default:
                     return null;
             }
@@ -95,6 +97,11 @@ namespace MALClient.Android.Activities
             animeButton.WithName("Anime list");
             animeButton.WithIdentifier((int)PageIndex.PageAnimeList);
             animeButton.WithIcon(Resource.Drawable.icon_list);
+
+            var discoverButton = GetBasePrimaryItem();
+            discoverButton.WithName("Discover");
+            discoverButton.WithIdentifier((int)PageIndex.PageDiscover);
+            discoverButton.WithIcon(Resource.Drawable.icon_home);
 
 
             var searchButton = GetBasePrimaryItem();
@@ -202,6 +209,7 @@ namespace MALClient.Android.Activities
 
                 builder.WithDrawerItems(new List<IDrawerItem>()
                 {
+                    discoverButton,
                     animeButton,
                     seasonalButton,
                     topAnimeButton,
@@ -229,6 +237,7 @@ namespace MALClient.Android.Activities
             {
                 builder.WithDrawerItems(new List<IDrawerItem>()
                 {
+                    discoverButton,
                     animeButton,
                     seasonalButton,
                     topAnimeButton,
@@ -370,6 +379,9 @@ namespace MALClient.Android.Activities
             {
                 case HamburgerButtons.AnimeList:
                     id = (long) PageIndex.PageAnimeList;
+                    break;
+                case HamburgerButtons.Discover:
+                    id = (long) PageIndex.PageDiscover;
                     break;
                 case HamburgerButtons.AnimeSearch:
                     id = (long) PageIndex.PageSearch;

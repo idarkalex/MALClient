@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?BrushDeepBackground"
+    android:fillViewport="true">
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:paddingTop="4dp"
+      android:paddingBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverSeasonalHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@string/font_family_light"
+          android:text="Seasonal"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverSeasonalSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverSeasonalRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="12dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverTopAnimeHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@string/font_family_light"
+          android:text="Top anime"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverTopAnimeSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverTopAnimeRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="12dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverTopMangaHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@string/font_family_light"
+          android:text="Top manga"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverTopMangaSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverTopMangaRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="12dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverAdaptedHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@string/font_family_light"
+          android:text="Adapted to anime"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverAdaptedSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverAdaptedRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="12dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverNewsHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@string/font_family_light"
+          android:text="News"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverNewsSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverNewsRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+  </LinearLayout>
+</ScrollView>

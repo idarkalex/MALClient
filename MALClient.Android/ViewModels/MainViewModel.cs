@@ -248,6 +248,13 @@ namespace MALClient.Android.ViewModels
                     RefreshButtonVisibility = false;
                     MainNavigationRequested?.Invoke(new ArticlesPageFragment(args as MalArticlesPageNavigationArgs));
                     break;
+                case PageIndex.PageDiscover:
+                    HideSearchStuff();
+                    CurrentStatus = "Discover";
+                    RefreshButtonVisibility = false;
+                    RefreshDataCommand = new RelayCommand(() => { /* not used */ });
+                    MainNavigationRequested?.Invoke(new DiscoverPageFragment());
+                    break;
                 case PageIndex.PageMessanging:
                     HideSearchStuff();
                     CurrentStatus =
@@ -415,7 +422,9 @@ namespace MALClient.Android.ViewModels
             if (Credentials.Authenticated)
             {
                 if (hasArgumentsWithSync)
-                    Navigate(Settings.DefaultMenuTab == "anime" ? PageIndex.PageAnimeList : PageIndex.PageMangaList);
+                    Navigate(Settings.DefaultMenuTab == "anime"
+                        ? PageIndex.PageAnimeList
+                        : Settings.DefaultMenuTab == "manga" ? PageIndex.PageMangaList : PageIndex.PageDiscover);
                 //entry point whatnot
                 else if (InitDetailsFull != null)
                 {
