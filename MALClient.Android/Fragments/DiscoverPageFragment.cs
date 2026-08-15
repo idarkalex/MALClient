@@ -63,9 +63,16 @@ namespace MALClient.Android.Fragments
                 NavigateTo(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted(MangaAdaptedType.AiringNow))));
             DiscoverNewsSeeAll.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PageNews, MalArticlesPageNavigationArgs.News)));
+            DiscoverLoginButton.SetOnClickListener(new OnClickListener(v =>
+                NavigateTo(PageIndex.PageLogIn, null)));
             DiscoverSeasonalHeader.Text = $"Seasonal - {GetCurrentSeason().Name}";
             DiscoverPageRefresh.ScrollingView = DiscoverPageScroll;
             DiscoverPageRefresh.Refresh += DiscoverPageRefreshOnRefresh;
+            if (!Credentials.Authenticated)
+            {
+                DiscoverLoginPrompt.Visibility = ViewStates.Visible;
+                DiscoverLoginButton.Visibility = ViewStates.Visible;
+            }
             LoadSections();
         }
 
@@ -580,6 +587,8 @@ namespace MALClient.Android.Fragments
         private ScrollView _discoverPageScroll;
         private ScrollableSwipeToRefreshLayout _discoverPageRefresh;
         private ProgressBar _discoverPageLoadingSpinner;
+        private TextView _discoverLoginPrompt;
+        private TextView _discoverLoginButton;
         private TextView _discoverWatchingSeeAll;
         private TextView _discoverReadingSeeAll;
         private TextView _discoverCompletedSeeAll;
@@ -608,6 +617,8 @@ namespace MALClient.Android.Fragments
         public ScrollView DiscoverPageScroll => _discoverPageScroll ?? (_discoverPageScroll = FindViewById<ScrollView>(Resource.Id.DiscoverPageScroll));
         public ScrollableSwipeToRefreshLayout DiscoverPageRefresh => _discoverPageRefresh ?? (_discoverPageRefresh = FindViewById<ScrollableSwipeToRefreshLayout>(Resource.Id.DiscoverPageRefresh));
         public ProgressBar DiscoverPageLoadingSpinner => _discoverPageLoadingSpinner ?? (_discoverPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.DiscoverPageLoadingSpinner));
+        public TextView DiscoverLoginPrompt => _discoverLoginPrompt ?? (_discoverLoginPrompt = FindViewById<TextView>(Resource.Id.DiscoverLoginPrompt));
+        public TextView DiscoverLoginButton => _discoverLoginButton ?? (_discoverLoginButton = FindViewById<TextView>(Resource.Id.DiscoverLoginButton));
         public TextView DiscoverWatchingSeeAll => _discoverWatchingSeeAll ?? (_discoverWatchingSeeAll = FindViewById<TextView>(Resource.Id.DiscoverWatchingSeeAll));
         public TextView DiscoverReadingSeeAll => _discoverReadingSeeAll ?? (_discoverReadingSeeAll = FindViewById<TextView>(Resource.Id.DiscoverReadingSeeAll));
         public TextView DiscoverCompletedSeeAll => _discoverCompletedSeeAll ?? (_discoverCompletedSeeAll = FindViewById<TextView>(Resource.Id.DiscoverCompletedSeeAll));
