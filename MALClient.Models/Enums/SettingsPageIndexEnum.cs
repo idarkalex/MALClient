@@ -15,7 +15,6 @@
         Ads,
         Feeds,
         Info,
-        Discord,
         Daki
     }
 }

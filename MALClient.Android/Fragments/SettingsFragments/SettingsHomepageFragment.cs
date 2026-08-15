@@ -110,7 +110,6 @@ namespace MALClient.Android.Fragments.SettingsFragments
                 SettingsSymbolsEnum.SwitchApps => Resource.Drawable.icon_ads,
                 SettingsSymbolsEnum.ContactInfo => Resource.Drawable.icon_feeds,
                 SettingsSymbolsEnum.Lightbulb => Resource.Drawable.icon_bulb,
-                SettingsSymbolsEnum.Discord => Resource.Drawable.icon_discord,
                 SettingsSymbolsEnum.Rocket => _random.NextDouble() > .5 ? Resource.Drawable.octo : Resource.Drawable.octo,
                 _ => throw new ArgumentOutOfRangeException(nameof(symbol), symbol, null)
             };

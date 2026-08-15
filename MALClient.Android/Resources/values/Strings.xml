@@ -719,8 +719,6 @@
     <string name="fa_icon_turkish_lira" translatable="false">&#xf195;</string>
     <string name="fa_icon_tv" translatable="false">&#xf26c;</string>
     <string name="fa_icon_twitch" translatable="false">&#xf1e8;</string>
-    <string name="fa_icon_twitter" translatable="false">&#xf099;</string>
-    <string name="fa_icon_twitter_square" translatable="false">&#xf081;</string>
     <string name="fa_icon_umbrella" translatable="false">&#xf0e9;</string>
     <string name="fa_icon_underline" translatable="false">&#xf0cd;</string>
     <string name="fa_icon_undo" translatable="false">&#xf0e2;</string>
