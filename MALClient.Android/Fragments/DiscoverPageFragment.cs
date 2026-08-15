@@ -521,6 +521,11 @@ namespace MALClient.Android.Fragments
             ViewModelLocator.GeneralMain.Navigate(page, args);
         }
 
+        public void ScrollToTop()
+        {
+            DiscoverPageScroll.FullScroll(Android.Views.FocusSearchDirection.Up);
+        }
+
         private static AnimeSeason GetCurrentSeason()
         {
             var now = DateTime.UtcNow;

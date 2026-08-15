@@ -34,6 +34,7 @@ using Java.Lang;
 using MALClient.Adapters;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Flyouts;
+using MALClient.Android.Fragments;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Models.Enums;
@@ -228,7 +229,11 @@ namespace MALClient.Android.Activities
             //
             MainPageStatusContainer.SetOnClickListener(new OnClickListener(view =>
             {
-                if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList)
+                if (ViewModel.CurrentMainPage == PageIndex.PageDiscover)
+                {
+                    (_lastFragment as DiscoverPageFragment)?.ScrollToTop();
+                }
+                else if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList)
                 {
                     var workMode = ViewModelLocator.AnimeList.WorkMode;
                     if (workMode == AnimeListWorkModes.SeasonalAnime)
