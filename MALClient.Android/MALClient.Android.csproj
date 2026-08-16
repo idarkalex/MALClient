@@ -214,6 +214,7 @@
     <Compile Include="Fragments\SettingsFragments\SettingsCalendarFragment.ui.cs" />
     <Compile Include="Fragments\SettingsFragments\SettingsFeedsFragment.cs" />
     <Compile Include="Fragments\SettingsFragments\SettingsFeedsFragment.ui.cs" />
+    <Compile Include="Fragments\SettingsFragments\SettingsFragmentBase.cs" />
     <Compile Include="Fragments\SettingsFragments\SettingsGeneralFragment.cs" />
     <Compile Include="Fragments\SettingsFragments\SettingsGeneralFragment.ui.cs" />
     <Compile Include="Fragments\SettingsFragments\SettingsHomepageFragment.cs" />

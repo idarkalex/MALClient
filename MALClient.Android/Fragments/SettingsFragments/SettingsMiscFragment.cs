@@ -15,15 +15,8 @@ using MALClient.Android.ViewModels;
 
 namespace MALClient.Android.Fragments.SettingsFragments
 {
-    public class SettingsMiscFragment : MalFragmentBase
+    public class SettingsMiscFragment : SettingsFragmentBase
     {
-        private SettingsViewModel ViewModel;
-
-        protected override void Init(Bundle savedInstanceState)
-        {
-            ViewModel = AndroidViewModelLocator.Settings;
-        }
-
         protected override void InitBindings()
         {
             Bindings.Add(

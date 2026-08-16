@@ -22,9 +22,8 @@ using MALClient.XShared.ViewModels;
 
 namespace MALClient.Android.Fragments.SettingsFragments
 {
-    public class SettingsAdsFragment : MalFragmentBase, AdapterView.IOnItemSelectedListener
+    public class SettingsAdsFragment : SettingsFragmentBase, AdapterView.IOnItemSelectedListener
     {          
-        private SettingsViewModel ViewModel;
         private bool _settingAds;
         private bool _initialized;
         private bool _skipFirstEvent = true;
@@ -32,11 +31,6 @@ namespace MALClient.Android.Fragments.SettingsFragments
         public SettingsAdsFragment()
         {
 
-        }
-
-        protected override void Init(Bundle savedInstanceState)
-        {
-            ViewModel = AndroidViewModelLocator.Settings;
         }
 
         protected override void InitBindings()

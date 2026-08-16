@@ -21,15 +21,9 @@ using MALClient.XShared.ViewModels;
 
 namespace MALClient.Android.Fragments.SettingsFragments
 {
-    public class SettingsHomepageFragment : MalFragmentBase
+    public class SettingsHomepageFragment : SettingsFragmentBase
     {
-        private SettingsViewModel ViewModel;
         private Random _random = new Random();
-
-        protected override void Init(Bundle savedInstanceState)
-        {
-            ViewModel = AndroidViewModelLocator.Settings;
-        }
 
         protected override void InitBindings()
         {

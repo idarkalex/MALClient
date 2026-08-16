@@ -26,15 +26,8 @@ using Enum = System.Enum;
 
 namespace MALClient.Android.Fragments.SettingsFragments
 {
-    public partial class SettingsGeneralFragment : MalFragmentBase
+    public partial class SettingsGeneralFragment : SettingsFragmentBase
     {
-        private SettingsViewModel ViewModel;
-
-        protected override void Init(Bundle savedInstanceState)
-        {
-            ViewModel = AndroidViewModelLocator.Settings;
-        }
-
         protected override void InitBindings()
         {
             SettingsPageGeneralStartPageRadioGroup.Check(Settings.DefaultMenuTab == "anime"

@@ -22,15 +22,8 @@ using MALClient.XShared.ViewModels;
 
 namespace MALClient.Android.Fragments.SettingsFragments
 {
-    public partial class SettingsCalendarFragment : MalFragmentBase
+    public partial class SettingsCalendarFragment : SettingsFragmentBase
     {
-        private SettingsViewModel ViewModel;
-
-        protected override void Init(Bundle savedInstanceState)
-        {
-            ViewModel = AndroidViewModelLocator.Settings;
-        }
-
         protected override void InitBindings()
         {
             

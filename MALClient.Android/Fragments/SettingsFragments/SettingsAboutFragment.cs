@@ -21,15 +21,8 @@ using Exception = System.Exception;
 
 namespace MALClient.Android.Fragments.SettingsFragments
 {
-    public class SettingsAboutFragment : MalFragmentBase
+    public class SettingsAboutFragment : SettingsFragmentBase
     {
-        private SettingsViewModel ViewModel;
-
-        protected override void Init(Bundle savedInstanceState)
-        {
-            ViewModel = AndroidViewModelLocator.Settings;
-        }
-
         protected override void InitBindings()
         {
             AboutPageViewSourceButton.SetOnClickListener(

@@ -10,7 +10,7 @@ using MALClient.XShared.ViewModels;
 
 namespace MALClient.Android.Fragments.SettingsFragments
 {
-    public class SettingsPageFragment : MalFragmentBase
+    public class SettingsPageFragment : SettingsFragmentBase
     {
         private readonly SettingsPageIndex? _page;
 
@@ -24,12 +24,11 @@ namespace MALClient.Android.Fragments.SettingsFragments
             _page = page;
         }
 
-        private SettingsViewModel ViewModel;
         private bool _navigated;
 
         protected override void Init(Bundle savedInstanceState)
         {
-            ViewModel = AndroidViewModelLocator.Settings;
+            base.Init(savedInstanceState);
             ViewModel.NavigationRequest += ViewModelOnNavigationRequest;
             ViewModelLocator.NavMgr.DeregisterBackNav();
             ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
