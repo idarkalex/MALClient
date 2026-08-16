@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Android.Runtime;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.ApiResponses;
@@ -29,42 +25,6 @@ namespace MALClient.XShared.Comm
             Debug.WriteLine($"Getting library for {mode}@{source}.");
             _mode = mode;
             _source = source;
-            var type = _mode == AnimeListWorkModes.Anime ? "anime" : "manga";
-            switch (CurrentApiType)
-            {
-                case ApiType.Mal:
-                    Request =
-                        WebRequest.Create(
-                            Uri.EscapeUriString(
-                                $"https://myanimelist.net/malappinfo.php?u={source}&status=all&type={type}"));
-                    Request.ContentType = "application/x-www-form-urlencoded";
-                    Request.Method = "GET";
-                    break;
-                case ApiType.Hummingbird:
-                    switch (mode)
-                    {
-                        case AnimeListWorkModes.Anime:
-                            Request =
-                                WebRequest.Create(
-                                    Uri.EscapeUriString($"https://hummingbird.me/api/v1/users/{source}/library"));
-                            Request.ContentType = "application/x-www-form-urlencoded";
-                            Request.Method = "GET";
-                            break;
-                        case AnimeListWorkModes.Manga:
-                            Request =
-                                WebRequest.Create(
-                                    Uri.EscapeUriString($"https://hummingbird.me/manga_library_entries?user_id={source}"));
-                            Request.ContentType = "application/x-www-form-urlencoded";
-                            Request.Method = "GET";
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
-                    }
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
 
         public async Task<List<ILibraryData>> GetLibrary(bool force = false, bool forceOtherUser = false)
