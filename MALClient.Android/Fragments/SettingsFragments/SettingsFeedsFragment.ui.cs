@@ -20,14 +20,14 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private TextView _settingsPageFeedsElderEntriesTextView;
         private SeekBar _settingsPageFeedsElderEntriesSlider;
 
-        public Switch SettingsPageFeedsAddPinnedProfilesSwitch => _settingsPageFeedsAddPinnedProfilesSwitch ?? (_settingsPageFeedsAddPinnedProfilesSwitch = FindViewById<Switch>(Resource.Id.SettingsPageFeedsAddPinnedProfilesSwitch));
+        public Switch SettingsPageFeedsAddPinnedProfilesSwitch => GetView(ref _settingsPageFeedsAddPinnedProfilesSwitch, Resource.Id.SettingsPageFeedsAddPinnedProfilesSwitch);
 
-        public TextView SettingsPageFeedsMaximumEntriesTextView => _settingsPageFeedsMaximumEntriesTextView ?? (_settingsPageFeedsMaximumEntriesTextView = FindViewById<TextView>(Resource.Id.SettingsPageFeedsMaximumEntriesTextView));
+        public TextView SettingsPageFeedsMaximumEntriesTextView => GetView(ref _settingsPageFeedsMaximumEntriesTextView, Resource.Id.SettingsPageFeedsMaximumEntriesTextView);
 
-        public SeekBar SettingsPageFeedsMaximumEntriesSlider => _settingsPageFeedsMaximumEntriesSlider ?? (_settingsPageFeedsMaximumEntriesSlider = FindViewById<SeekBar>(Resource.Id.SettingsPageFeedsMaximumEntriesSlider));
+        public SeekBar SettingsPageFeedsMaximumEntriesSlider => GetView(ref _settingsPageFeedsMaximumEntriesSlider, Resource.Id.SettingsPageFeedsMaximumEntriesSlider);
 
-        public TextView SettingsPageFeedsElderEntriesTextView => _settingsPageFeedsElderEntriesTextView ?? (_settingsPageFeedsElderEntriesTextView = FindViewById<TextView>(Resource.Id.SettingsPageFeedsElderEntriesTextView));
+        public TextView SettingsPageFeedsElderEntriesTextView => GetView(ref _settingsPageFeedsElderEntriesTextView, Resource.Id.SettingsPageFeedsElderEntriesTextView);
 
-        public SeekBar SettingsPageFeedsElderEntriesSlider => _settingsPageFeedsElderEntriesSlider ?? (_settingsPageFeedsElderEntriesSlider = FindViewById<SeekBar>(Resource.Id.SettingsPageFeedsElderEntriesSlider));
+        public SeekBar SettingsPageFeedsElderEntriesSlider => GetView(ref _settingsPageFeedsElderEntriesSlider, Resource.Id.SettingsPageFeedsElderEntriesSlider);
     }
 }

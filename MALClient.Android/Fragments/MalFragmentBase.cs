@@ -44,6 +44,8 @@ namespace MALClient.Android.Fragments
 
         protected T FindViewById<T>(int id) where T : View => RootView.FindViewById<T>(id);
 
+        protected T GetView<T>(ref T field, int id) where T : View => field ?? (field = FindViewById<T>(id));
+
         public override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);

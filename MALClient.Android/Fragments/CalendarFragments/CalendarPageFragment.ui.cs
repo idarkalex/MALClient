@@ -14,15 +14,15 @@ namespace MALClient.Android.Fragments.CalendarFragments
         private ProgressBar _calendarPageProgressBar;
         private LinearLayout _calendarPageProgressBarGrid;
 
-        public UserControls.PagerSlidingTabStrip CalendarPageTabStrip => _calendarPageTabStrip ?? (_calendarPageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.CalendarPageTabStrip));
+        public UserControls.PagerSlidingTabStrip CalendarPageTabStrip => GetView(ref _calendarPageTabStrip, Resource.Id.CalendarPageTabStrip);
 
-        public ViewPager CalendarPageViewPager => _calendarPageViewPager ?? (_calendarPageViewPager = FindViewById<ViewPager>(Resource.Id.CalendarPageViewPager));
+        public ViewPager CalendarPageViewPager => GetView(ref _calendarPageViewPager, Resource.Id.CalendarPageViewPager);
 
-        public LinearLayout CalendarPageContentGrid => _calendarPageContentGrid ?? (_calendarPageContentGrid = FindViewById<LinearLayout>(Resource.Id.CalendarPageContentGrid));
+        public LinearLayout CalendarPageContentGrid => GetView(ref _calendarPageContentGrid, Resource.Id.CalendarPageContentGrid);
 
-        public ProgressBar CalendarPageProgressBar => _calendarPageProgressBar ?? (_calendarPageProgressBar = FindViewById<ProgressBar>(Resource.Id.CalendarPageProgressBar));
+        public ProgressBar CalendarPageProgressBar => GetView(ref _calendarPageProgressBar, Resource.Id.CalendarPageProgressBar);
 
-        public LinearLayout CalendarPageProgressBarGrid => _calendarPageProgressBarGrid ?? (_calendarPageProgressBarGrid = FindViewById<LinearLayout>(Resource.Id.CalendarPageProgressBarGrid));
+        public LinearLayout CalendarPageProgressBarGrid => GetView(ref _calendarPageProgressBarGrid, Resource.Id.CalendarPageProgressBarGrid);
 
 
 

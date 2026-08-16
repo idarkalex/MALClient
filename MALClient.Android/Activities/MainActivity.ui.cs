@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -75,6 +75,8 @@ namespace MALClient.Android.Activities
     )]
     public partial class MainActivity
     {
+        protected T GetView<T>(ref T field, int id) where T : View => field ?? (field = FindViewById<T>(id));
+
         private DroppyMenuPopup _upperFilterMenu;
         private SimpleCursorAdapter _searchSuggestionAdapter;
         private View _searchFrame;
@@ -651,21 +653,21 @@ namespace MALClient.Android.Activities
         private RelativeLayout _mainPageVideoViewContainer;
         private LinearLayout _mainPageRoot;
 
-        public ImageButton MainPageHamburgerButton => _mainPageHamburgerButton ?? (_mainPageHamburgerButton = FindViewById<ImageButton>(Resource.Id.MainPageHamburgerButton));
-        public TextView MainPageCurrentStatus => _mainPageCurrentStatus ?? (_mainPageCurrentStatus = FindViewById<TextView>(Resource.Id.MainPageCurrentStatus));
-        public TextView MainPageCurrentSatusSubtitle => _mainPageCurrentSatusSubtitle ?? (_mainPageCurrentSatusSubtitle = FindViewById<TextView>(Resource.Id.MainPageCurrentSatusSubtitle));
-        public LinearLayout MainPageStatusContainer => _mainPageStatusContainer ?? (_mainPageStatusContainer = FindViewById<LinearLayout>(Resource.Id.MainPageStatusContainer));
-        public SearchView MainPageSearchView => _mainPageSearchView ?? (_mainPageSearchView = FindViewById<SearchView>(Resource.Id.MainPageSearchView));
-        public ImageButton MainPageRefreshButton => _mainPageRefreshButton ?? (_mainPageRefreshButton = FindViewById<ImageButton>(Resource.Id.MainPageRefreshButton));
-        public LinearLayout MainUpperNavBar => _mainUpperNavBar ?? (_mainUpperNavBar = FindViewById<LinearLayout>(Resource.Id.MainUpperNavBar));
-        public FrameLayout MainContentFrame => _mainContentFrame ?? (_mainContentFrame = FindViewById<FrameLayout>(Resource.Id.MainContentFrame));
-        public AdView MainPageAdView => _mainPageAdView ?? (_mainPageAdView = FindViewById<AdView>(Resource.Id.MainPageAdView));
-        public FloatingActionButton ShareFloatingActionButton => _shareFloatingActionButton ?? (_shareFloatingActionButton = FindViewById<FloatingActionButton>(Resource.Id.ShareFloatingActionButton));
-        public VideoView MainPageVideoView => _mainPageVideoView ?? (_mainPageVideoView = FindViewById<VideoView>(Resource.Id.MainPageVideoView));
-        public ImageButton MainPageCopyVideoLinkButton => _mainPageCopyVideoLinkButton ?? (_mainPageCopyVideoLinkButton = FindViewById<ImageButton>(Resource.Id.MainPageCopyVideoLinkButton));
-        public ImageButton MainPageCloseVideoButton => _mainPageCloseVideoButton ?? (_mainPageCloseVideoButton = FindViewById<ImageButton>(Resource.Id.MainPageCloseVideoButton));
-        public RelativeLayout MainPageVideoViewContainer => _mainPageVideoViewContainer ?? (_mainPageVideoViewContainer = FindViewById<RelativeLayout>(Resource.Id.MainPageVideoViewContainer));
-        public LinearLayout MainPageRoot => _mainPageRoot ?? (_mainPageRoot = FindViewById<LinearLayout>(Resource.Id.MainPageRoot));
+        public ImageButton MainPageHamburgerButton => GetView(ref _mainPageHamburgerButton, Resource.Id.MainPageHamburgerButton);
+        public TextView MainPageCurrentStatus => GetView(ref _mainPageCurrentStatus, Resource.Id.MainPageCurrentStatus);
+        public TextView MainPageCurrentSatusSubtitle => GetView(ref _mainPageCurrentSatusSubtitle, Resource.Id.MainPageCurrentSatusSubtitle);
+        public LinearLayout MainPageStatusContainer => GetView(ref _mainPageStatusContainer, Resource.Id.MainPageStatusContainer);
+        public SearchView MainPageSearchView => GetView(ref _mainPageSearchView, Resource.Id.MainPageSearchView);
+        public ImageButton MainPageRefreshButton => GetView(ref _mainPageRefreshButton, Resource.Id.MainPageRefreshButton);
+        public LinearLayout MainUpperNavBar => GetView(ref _mainUpperNavBar, Resource.Id.MainUpperNavBar);
+        public FrameLayout MainContentFrame => GetView(ref _mainContentFrame, Resource.Id.MainContentFrame);
+        public AdView MainPageAdView => GetView(ref _mainPageAdView, Resource.Id.MainPageAdView);
+        public FloatingActionButton ShareFloatingActionButton => GetView(ref _shareFloatingActionButton, Resource.Id.ShareFloatingActionButton);
+        public VideoView MainPageVideoView => GetView(ref _mainPageVideoView, Resource.Id.MainPageVideoView);
+        public ImageButton MainPageCopyVideoLinkButton => GetView(ref _mainPageCopyVideoLinkButton, Resource.Id.MainPageCopyVideoLinkButton);
+        public ImageButton MainPageCloseVideoButton => GetView(ref _mainPageCloseVideoButton, Resource.Id.MainPageCloseVideoButton);
+        public RelativeLayout MainPageVideoViewContainer => GetView(ref _mainPageVideoViewContainer, Resource.Id.MainPageVideoViewContainer);
+        public LinearLayout MainPageRoot => GetView(ref _mainPageRoot, Resource.Id.MainPageRoot);
 
         #endregion
 

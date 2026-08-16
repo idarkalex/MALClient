@@ -19,12 +19,12 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private LinearLayout _notificationsTypesCheckBoxGroup;
         private Spinner _settingsPageNotificationsFrequencySpinner;
         
-        public Switch SettingsPageNotificationsEnable => _settingsPageNotificationsEnable ?? (_settingsPageNotificationsEnable = FindViewById<Switch>(Resource.Id.SettingsPageNotificationsEnable));
+        public Switch SettingsPageNotificationsEnable => GetView(ref _settingsPageNotificationsEnable, Resource.Id.SettingsPageNotificationsEnable);
 
-        public Switch SettingsPageNotificationsCheckInRuntime => _settingsPageNotificationsCheckInRuntime ?? (_settingsPageNotificationsCheckInRuntime = FindViewById<Switch>(Resource.Id.SettingsPageNotificationsCheckInRuntime));
+        public Switch SettingsPageNotificationsCheckInRuntime => GetView(ref _settingsPageNotificationsCheckInRuntime, Resource.Id.SettingsPageNotificationsCheckInRuntime);
 
-        public LinearLayout NotificationsTypesCheckBoxGroup => _notificationsTypesCheckBoxGroup ?? (_notificationsTypesCheckBoxGroup = FindViewById<LinearLayout>(Resource.Id.NotificationsTypesCheckBoxGroup));
+        public LinearLayout NotificationsTypesCheckBoxGroup => GetView(ref _notificationsTypesCheckBoxGroup, Resource.Id.NotificationsTypesCheckBoxGroup);
 
-        public Spinner SettingsPageNotificationsFrequencySpinner => _settingsPageNotificationsFrequencySpinner ?? (_settingsPageNotificationsFrequencySpinner = FindViewById<Spinner>(Resource.Id.SettingsPageNotificationsFrequencySpinner));
+        public Spinner SettingsPageNotificationsFrequencySpinner => GetView(ref _settingsPageNotificationsFrequencySpinner, Resource.Id.SettingsPageNotificationsFrequencySpinner);
     }
 }

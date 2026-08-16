@@ -43,45 +43,45 @@ namespace MALClient.Android.Fragments
         private HeightAdjustingViewPager _animeDetailsPagePivot;
         private RelativeLayout _animeDetailsPageLoadingOverlay;
 
-        public ImageViewAsync AnimeDetailsPageShowCoverImage => _animeDetailsPageShowCoverImage ?? (_animeDetailsPageShowCoverImage = FindViewById<ImageViewAsync>(Resource.Id.AnimeDetailsPageShowCoverImage));
+        public ImageViewAsync AnimeDetailsPageShowCoverImage => GetView(ref _animeDetailsPageShowCoverImage, Resource.Id.AnimeDetailsPageShowCoverImage);
 
-        public FrameLayout ImageContainer => _imageContainer ?? (_imageContainer = FindViewById<FrameLayout>(Resource.Id.ImageContainer));
+        public FrameLayout ImageContainer => GetView(ref _imageContainer, Resource.Id.ImageContainer);
 
-        public TextView AnimeDetailsPageWatchedLabel => _animeDetailsPageWatchedLabel ?? (_animeDetailsPageWatchedLabel = FindViewById<TextView>(Resource.Id.AnimeDetailsPageWatchedLabel));
+        public TextView AnimeDetailsPageWatchedLabel => GetView(ref _animeDetailsPageWatchedLabel, Resource.Id.AnimeDetailsPageWatchedLabel);
 
-        public TextView AnimeDetailsPageReadVolumesLabel => _animeDetailsPageReadVolumesLabel ?? (_animeDetailsPageReadVolumesLabel = FindViewById<TextView>(Resource.Id.AnimeDetailsPageReadVolumesLabel));
+        public TextView AnimeDetailsPageReadVolumesLabel => GetView(ref _animeDetailsPageReadVolumesLabel, Resource.Id.AnimeDetailsPageReadVolumesLabel);
 
-        public Button AnimeDetailsPageScoreButton => _animeDetailsPageScoreButton ?? (_animeDetailsPageScoreButton = FindViewById<Button>(Resource.Id.AnimeDetailsPageScoreButton));
+        public Button AnimeDetailsPageScoreButton => GetView(ref _animeDetailsPageScoreButton, Resource.Id.AnimeDetailsPageScoreButton);
 
-        public Button AnimeDetailsPageStatusButton => _animeDetailsPageStatusButton ?? (_animeDetailsPageStatusButton = FindViewById<Button>(Resource.Id.AnimeDetailsPageStatusButton));
+        public Button AnimeDetailsPageStatusButton => GetView(ref _animeDetailsPageStatusButton, Resource.Id.AnimeDetailsPageStatusButton);
 
-        public Button AnimeDetailsPageWatchedButton => _animeDetailsPageWatchedButton ?? (_animeDetailsPageWatchedButton = FindViewById<Button>(Resource.Id.AnimeDetailsPageWatchedButton));
+        public Button AnimeDetailsPageWatchedButton => GetView(ref _animeDetailsPageWatchedButton, Resource.Id.AnimeDetailsPageWatchedButton);
 
-        public Button AnimeDetailsPageReadVolumesButton => _animeDetailsPageReadVolumesButton ?? (_animeDetailsPageReadVolumesButton = FindViewById<Button>(Resource.Id.AnimeDetailsPageReadVolumesButton));
+        public Button AnimeDetailsPageReadVolumesButton => GetView(ref _animeDetailsPageReadVolumesButton, Resource.Id.AnimeDetailsPageReadVolumesButton);
 
-        public LinearLayout AnimeDetailsPageUpdateSection => _animeDetailsPageUpdateSection ?? (_animeDetailsPageUpdateSection = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageUpdateSection));
+        public LinearLayout AnimeDetailsPageUpdateSection => GetView(ref _animeDetailsPageUpdateSection, Resource.Id.AnimeDetailsPageUpdateSection);
 
-        public FrameLayout AnimeDetailsPageIncrementButton => _animeDetailsPageIncrementButton ?? (_animeDetailsPageIncrementButton = FindViewById<FrameLayout>(Resource.Id.AnimeDetailsPageIncrementButton));
+        public FrameLayout AnimeDetailsPageIncrementButton => GetView(ref _animeDetailsPageIncrementButton, Resource.Id.AnimeDetailsPageIncrementButton);
 
-        public FrameLayout AnimeDetailsPageDecrementButton => _animeDetailsPageDecrementButton ?? (_animeDetailsPageDecrementButton = FindViewById<FrameLayout>(Resource.Id.AnimeDetailsPageDecrementButton));
+        public FrameLayout AnimeDetailsPageDecrementButton => GetView(ref _animeDetailsPageDecrementButton, Resource.Id.AnimeDetailsPageDecrementButton);
 
-        public RelativeLayout AnimeDetailsPageIncDecSection => _animeDetailsPageIncDecSection ?? (_animeDetailsPageIncDecSection = FindViewById<RelativeLayout>(Resource.Id.AnimeDetailsPageIncDecSection));
+        public RelativeLayout AnimeDetailsPageIncDecSection => GetView(ref _animeDetailsPageIncDecSection, Resource.Id.AnimeDetailsPageIncDecSection);
 
-        public FrameLayout AnimeDetailsPageAddButton => _animeDetailsPageAddButton ?? (_animeDetailsPageAddButton = FindViewById<FrameLayout>(Resource.Id.AnimeDetailsPageAddButton));
+        public FrameLayout AnimeDetailsPageAddButton => GetView(ref _animeDetailsPageAddButton, Resource.Id.AnimeDetailsPageAddButton);
 
-        public LinearLayout AnimeDetailsPageAddSection => _animeDetailsPageAddSection ?? (_animeDetailsPageAddSection = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageAddSection));
+        public LinearLayout AnimeDetailsPageAddSection => GetView(ref _animeDetailsPageAddSection, Resource.Id.AnimeDetailsPageAddSection);
 
-        public ProgressBar AnimeDetailsPageLoadingUpdateSpinner => _animeDetailsPageLoadingUpdateSpinner ?? (_animeDetailsPageLoadingUpdateSpinner = FindViewById<ProgressBar>(Resource.Id.AnimeDetailsPageLoadingUpdateSpinner));
+        public ProgressBar AnimeDetailsPageLoadingUpdateSpinner => GetView(ref _animeDetailsPageLoadingUpdateSpinner, Resource.Id.AnimeDetailsPageLoadingUpdateSpinner);
 
-        public ImageButton AnimeDetailsPageFavouriteButton => _animeDetailsPageFavouriteButton ?? (_animeDetailsPageFavouriteButton = FindViewById<ImageButton>(Resource.Id.AnimeDetailsPageFavouriteButton));
+        public ImageButton AnimeDetailsPageFavouriteButton => GetView(ref _animeDetailsPageFavouriteButton, Resource.Id.AnimeDetailsPageFavouriteButton);
 
-        public ImageButton AnimeDetailsPageMoreButton => _animeDetailsPageMoreButton ?? (_animeDetailsPageMoreButton = FindViewById<ImageButton>(Resource.Id.AnimeDetailsPageMoreButton));
+        public ImageButton AnimeDetailsPageMoreButton => GetView(ref _animeDetailsPageMoreButton, Resource.Id.AnimeDetailsPageMoreButton);
 
-        public UserControls.PagerSlidingTabStrip AnimeDetailsPageTabStrip => _animeDetailsPageTabStrip ?? (_animeDetailsPageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.AnimeDetailsPageTabStrip));
+        public UserControls.PagerSlidingTabStrip AnimeDetailsPageTabStrip => GetView(ref _animeDetailsPageTabStrip, Resource.Id.AnimeDetailsPageTabStrip);
 
-        public HeightAdjustingViewPager AnimeDetailsPagePivot => _animeDetailsPagePivot ?? (_animeDetailsPagePivot = FindViewById<HeightAdjustingViewPager>(Resource.Id.AnimeDetailsPagePivot));
+        public HeightAdjustingViewPager AnimeDetailsPagePivot => GetView(ref _animeDetailsPagePivot, Resource.Id.AnimeDetailsPagePivot);
 
-        public RelativeLayout AnimeDetailsPageLoadingOverlay => _animeDetailsPageLoadingOverlay ?? (_animeDetailsPageLoadingOverlay = FindViewById<RelativeLayout>(Resource.Id.AnimeDetailsPageLoadingOverlay));
+        public RelativeLayout AnimeDetailsPageLoadingOverlay => GetView(ref _animeDetailsPageLoadingOverlay, Resource.Id.AnimeDetailsPageLoadingOverlay);
 
         #endregion
 

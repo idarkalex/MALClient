@@ -24,22 +24,22 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private EditText _settingsPageCalendarMiscMaxItemsEditText;
         //private Switch _settingsPageCalendarMiscExactAiringTimeSwitch;
 
-        public CheckBox SettingsPageCalendarBuildOptionsWatchingCheckBox => _settingsPageCalendarBuildOptionsWatchingCheckBox ?? (_settingsPageCalendarBuildOptionsWatchingCheckBox = FindViewById<CheckBox>(Resource.Id.SettingsPageCalendarBuildOptionsWatchingCheckBox));
+        public CheckBox SettingsPageCalendarBuildOptionsWatchingCheckBox => GetView(ref _settingsPageCalendarBuildOptionsWatchingCheckBox, Resource.Id.SettingsPageCalendarBuildOptionsWatchingCheckBox);
 
-        public CheckBox SettingsPageCalendarBuildOptionsPlanToWatchCheckBox => _settingsPageCalendarBuildOptionsPlanToWatchCheckBox ?? (_settingsPageCalendarBuildOptionsPlanToWatchCheckBox = FindViewById<CheckBox>(Resource.Id.SettingsPageCalendarBuildOptionsPlanToWatchCheckBox));
+        public CheckBox SettingsPageCalendarBuildOptionsPlanToWatchCheckBox => GetView(ref _settingsPageCalendarBuildOptionsPlanToWatchCheckBox, Resource.Id.SettingsPageCalendarBuildOptionsPlanToWatchCheckBox);
 
-        public RadioButton SettingsPageCalendarStartPageRadioSummary => _settingsPageCalendarStartPageRadioSummary ?? (_settingsPageCalendarStartPageRadioSummary = FindViewById<RadioButton>(Resource.Id.SettingsPageCalendarStartPageRadioSummary));
+        public RadioButton SettingsPageCalendarStartPageRadioSummary => GetView(ref _settingsPageCalendarStartPageRadioSummary, Resource.Id.SettingsPageCalendarStartPageRadioSummary);
 
-        public RadioButton SettingsPageCalendarStartPageRadioToday => _settingsPageCalendarStartPageRadioToday ?? (_settingsPageCalendarStartPageRadioToday = FindViewById<RadioButton>(Resource.Id.SettingsPageCalendarStartPageRadioToday));
+        public RadioButton SettingsPageCalendarStartPageRadioToday => GetView(ref _settingsPageCalendarStartPageRadioToday, Resource.Id.SettingsPageCalendarStartPageRadioToday);
 
-        public RadioGroup SettingsPageCalendarStartPageRadioGroup => _settingsPageCalendarStartPageRadioGroup ?? (_settingsPageCalendarStartPageRadioGroup = FindViewById<RadioGroup>(Resource.Id.SettingsPageCalendarStartPageRadioGroup));
+        public RadioGroup SettingsPageCalendarStartPageRadioGroup => GetView(ref _settingsPageCalendarStartPageRadioGroup, Resource.Id.SettingsPageCalendarStartPageRadioGroup);
 
-        public Switch SettingsPageCalendarMiscFirstDaySwitch => _settingsPageCalendarMiscFirstDaySwitch ?? (_settingsPageCalendarMiscFirstDaySwitch = FindViewById<Switch>(Resource.Id.SettingsPageCalendarMiscFirstDaySwitch));
+        public Switch SettingsPageCalendarMiscFirstDaySwitch => GetView(ref _settingsPageCalendarMiscFirstDaySwitch, Resource.Id.SettingsPageCalendarMiscFirstDaySwitch);
 
-        public Switch SettingsPageCalendarMiscRemoveEmptyDaysSwitch => _settingsPageCalendarMiscRemoveEmptyDaysSwitch ?? (_settingsPageCalendarMiscRemoveEmptyDaysSwitch = FindViewById<Switch>(Resource.Id.SettingsPageCalendarMiscRemoveEmptyDaysSwitch));
+        public Switch SettingsPageCalendarMiscRemoveEmptyDaysSwitch => GetView(ref _settingsPageCalendarMiscRemoveEmptyDaysSwitch, Resource.Id.SettingsPageCalendarMiscRemoveEmptyDaysSwitch);
 
-        public EditText SettingsPageCalendarMiscMaxItemsEditText => _settingsPageCalendarMiscMaxItemsEditText ?? (_settingsPageCalendarMiscMaxItemsEditText = FindViewById<EditText>(Resource.Id.SettingsPageCalendarMiscMaxItemsEditText));
+        public EditText SettingsPageCalendarMiscMaxItemsEditText => GetView(ref _settingsPageCalendarMiscMaxItemsEditText, Resource.Id.SettingsPageCalendarMiscMaxItemsEditText);
 
-        //public Switch SettingsPageCalendarMiscExactAiringTimeSwitch => _settingsPageCalendarMiscExactAiringTimeSwitch ?? (_settingsPageCalendarMiscExactAiringTimeSwitch = FindViewById<Switch>(Resource.Id.SettingsPageCalendarMiscExactAiringTimeSwitch));
+        //public Switch SettingsPageCalendarMiscExactAiringTimeSwitch => GetView(ref _settingsPageCalendarMiscExactAiringTimeSwitch, Resource.Id.SettingsPageCalendarMiscExactAiringTimeSwitch);
     }
 }

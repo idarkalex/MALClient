@@ -385,25 +385,25 @@ namespace MALClient.Android.Fragments
         private TextView _animeListPageEmptyNotice;
         private FloatingActionButton _animeListPageActionButton;
 
-        public GridView AnimeListPageGridView => _animeListPageGridView ?? (_animeListPageGridView = FindViewById<GridView>(Resource.Id.AnimeListPageGridView));
+        public GridView AnimeListPageGridView => GetView(ref _animeListPageGridView, Resource.Id.AnimeListPageGridView);
 
-        public ListView AnimeListPageListView => _animeListPageListView ?? (_animeListPageListView = FindViewById<ListView>(Resource.Id.AnimeListPageListView));
+        public ListView AnimeListPageListView => GetView(ref _animeListPageListView, Resource.Id.AnimeListPageListView);
 
-        public ListView AnimeListPageCompactListView => _animeListPageCompactListView ?? (_animeListPageCompactListView = FindViewById<ListView>(Resource.Id.AnimeListPageCompactListView));
+        public ListView AnimeListPageCompactListView => GetView(ref _animeListPageCompactListView, Resource.Id.AnimeListPageCompactListView);
 
-        public ImageButton AnimeListPageDisplayMenu => _animeListPageDisplayMenu ?? (_animeListPageDisplayMenu = FindViewById<ImageButton>(Resource.Id.AnimeListPageDisplayMenu));
+        public ImageButton AnimeListPageDisplayMenu => GetView(ref _animeListPageDisplayMenu, Resource.Id.AnimeListPageDisplayMenu);
 
-        public ImageButton AnimeListPageSeasonMenu => _animeListPageSeasonMenu ?? (_animeListPageSeasonMenu = FindViewById<ImageButton>(Resource.Id.AnimeListPageSeasonMenu));
+        public ImageButton AnimeListPageSeasonMenu => GetView(ref _animeListPageSeasonMenu, Resource.Id.AnimeListPageSeasonMenu);
 
-        public ImageButton AnimeListPageFilterMenu => _animeListPageFilterMenu ?? (_animeListPageFilterMenu = FindViewById<ImageButton>(Resource.Id.AnimeListPageFilterMenu));
+        public ImageButton AnimeListPageFilterMenu => GetView(ref _animeListPageFilterMenu, Resource.Id.AnimeListPageFilterMenu);
 
-        public ImageButton AnimeListPageSortMenu => _animeListPageSortMenu ?? (_animeListPageSortMenu = FindViewById<ImageButton>(Resource.Id.AnimeListPageSortMenu));
+        public ImageButton AnimeListPageSortMenu => GetView(ref _animeListPageSortMenu, Resource.Id.AnimeListPageSortMenu);
 
-        public RelativeLayout AnimeListPageLoadingSpinner => _animeListPageLoadingSpinner ?? (_animeListPageLoadingSpinner = FindViewById<RelativeLayout>(Resource.Id.AnimeListPageLoadingSpinner));
+        public RelativeLayout AnimeListPageLoadingSpinner => GetView(ref _animeListPageLoadingSpinner, Resource.Id.AnimeListPageLoadingSpinner);
 
-        public TextView AnimeListPageEmptyNotice => _animeListPageEmptyNotice ?? (_animeListPageEmptyNotice = FindViewById<TextView>(Resource.Id.AnimeListPageEmptyNotice));
+        public TextView AnimeListPageEmptyNotice => GetView(ref _animeListPageEmptyNotice, Resource.Id.AnimeListPageEmptyNotice);
 
-        public FloatingActionButton AnimeListPageActionButton => _animeListPageActionButton ?? (_animeListPageActionButton = FindViewById<FloatingActionButton>(Resource.Id.AnimeListPageActionButton));
+        public FloatingActionButton AnimeListPageActionButton => GetView(ref _animeListPageActionButton, Resource.Id.AnimeListPageActionButton);
 
         #endregion Views
     }
