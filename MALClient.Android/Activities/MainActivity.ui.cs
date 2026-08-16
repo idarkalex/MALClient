@@ -351,7 +351,8 @@ namespace MALClient.Android.Activities
                         MainPageHamburgerButton.Visibility = ViewStates.Gone;
             _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
-            MainPageBottomNav.SetOnClickListener(new OnClickListener(view => OnBottomNavigationItemSelected(MainPageBottomNav.SelectedItemId)));
+            _lastBottomNavSelectedItemId = MainPageBottomNav.SelectedItemId;
+            StartBottomNavPolling();
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
@@ -544,6 +545,35 @@ namespace MALClient.Android.Activities
             SetActiveButton(XShared.Utils.Utilities.GetButtonForPage(page));
             ViewModelLocator.GeneralMain.Navigate(page, GetAppropriateArgsForPage(page));
         }
+
+        private int _lastBottomNavSelectedItemId = -1;
+
+        private void StartBottomNavPolling()
+        {
+            _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
+        }
+
+        private Handler _bottomNavHandler = new Handler();
+        private Runnable _bottomNavRunnable = new Runnable(() =>
+        {
+            try
+            {
+                var currentSelected = MainPageBottomNav.SelectedItemId;
+                if (_lastBottomNavSelectedItemId != -1 && currentSelected != _lastBottomNavSelectedItemId)
+                {
+                    _lastBottomNavSelectedItemId = currentSelected;
+                    OnBottomNavigationItemSelected(currentSelected);
+                }
+                else
+                {
+                    _lastBottomNavSelectedItemId = currentSelected;
+                }
+            }
+            finally
+            {
+                _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
+            }
+        });
 
 
 
