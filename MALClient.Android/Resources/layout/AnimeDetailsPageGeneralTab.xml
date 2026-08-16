@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:text="Episodes"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
-                android:fontFamily="@string/font_family_medium"
+                android:fontFamily="@font/inter"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
           </FrameLayout>
@@ -76,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:text="Score"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
@@ -91,7 +91,7 @@
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:layout_gravity="center"
-                  android:fontFamily="@string/font_family_medium"
+                  android:fontFamily="@font/inter"
                   android:paddingEnd="5dp"
                   android:textColor="?BrushText"
                   android:textSize="@dimen/FontSizeNormal"
@@ -118,7 +118,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:fontFamily="@string/font_family_light"
+                    android:fontFamily="@font/inter"
                     android:text="Hidden"
                     android:textColor="?BrushText"
                     android:textSize="@dimen/FontSizeNormal"
@@ -148,7 +148,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:text="Start"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
@@ -158,7 +158,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
-                android:fontFamily="@string/font_family_medium"
+                android:fontFamily="@font/inter"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
           </FrameLayout>
@@ -192,7 +192,7 @@
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:layout_gravity="center_vertical"
-                  android:fontFamily="@string/font_family_light"
+                  android:fontFamily="@font/inter"
                   android:text="My start"
                   android:textColor="?BrushText"
                   android:textSize="@dimen/FontSizeNormal" />
@@ -239,7 +239,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:text="Type"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
@@ -249,7 +249,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
-                android:fontFamily="@string/font_family_medium"
+                android:fontFamily="@font/inter"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
           </FrameLayout>
@@ -274,7 +274,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:text="Status"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
@@ -284,7 +284,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
-                android:fontFamily="@string/font_family_medium"
+                android:fontFamily="@font/inter"
                 android:gravity="center"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
@@ -310,7 +310,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:text="End"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
@@ -320,7 +320,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
-                android:fontFamily="@string/font_family_medium"
+                android:fontFamily="@font/inter"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeNormal" />
           </FrameLayout>
@@ -354,7 +354,7 @@
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:layout_gravity="center_vertical"
-                  android:fontFamily="@string/font_family_light"
+                  android:fontFamily="@font/inter"
                   android:text="My end"
                   android:textColor="?BrushText"
                   android:textSize="@dimen/FontSizeNormal" />
@@ -390,7 +390,7 @@
         android:id="@+id/AnimeDetailsPageGeneralTabFragmentSynopsis"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:text=""
@@ -398,3 +398,4 @@
         android:textSize="@dimen/FontSizeNormal" />
   </LinearLayout>
 </MALClient.Android.UserControls.OrientationDependentScrollView>
+

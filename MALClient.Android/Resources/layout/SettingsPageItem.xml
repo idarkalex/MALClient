@@ -19,7 +19,7 @@
                 android:layout_height="wrap_content" android:text="General" />
       <TextView android:id="@+id/SettingsPageItemSubtitle" android:layout_marginTop="1dp"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="?BrushSettingsSubtitle" android:fontFamily="@string/font_family_light"
+                android:textColor="?BrushSettingsSubtitle" android:fontFamily="@font/inter"
                 android:text="Default filters, theme etc..." />
     </LinearLayout>
   </RelativeLayout>

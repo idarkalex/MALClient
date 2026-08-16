@@ -10,7 +10,7 @@
       <TextView android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:id="@+id/StatusDialogItemTextView"
                 android:textColor="?BrushText"
                 android:textSize="18sp" />

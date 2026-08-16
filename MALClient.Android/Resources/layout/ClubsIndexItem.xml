@@ -46,7 +46,7 @@
         <View style="@style/Divider" android:layout_margin="5dp"/>
         <TextView
           android:layout_width="wrap_content" android:id="@+id/Description" android:textSize="@dimen/FontSizeSemiNormal" tools:text="This club is very awesome and now I'mtrying this thing to ellipsize itself because testing hahah!" android:maxLines="3" android:ellipsize="end"
-          android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:textColor="?BrushText"/>
+          android:layout_height="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText"/>
       </LinearLayout>
       <LinearLayout
         android:layout_width="match_parent" android:layout_gravity="bottom" android:orientation="horizontal"
@@ -58,10 +58,10 @@
                         android:layout_width="wrap_content" android:layout_gravity="start|bottom" android:background="@drawable/border_accent_underline"
                         android:layout_height="wrap_content" android:orientation="vertical" android:padding="2dp" android:gravity="center_horizontal">
             <TextView android:id="@+id/LastCommentDate"
-                      android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="@dimen/FontSizeSemiNormal" android:gravity="center"
+                      android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="@dimen/FontSizeSemiNormal" android:gravity="center"
                       android:layout_height="wrap_content" tools:text="Aug 3, 5:22 PM"/>
             <TextView
-              android:layout_width="wrap_content" android:text="Last comment" android:textSize="@dimen/FontSizeTiny" android:fontFamily="@string/font_family_light" android:textColor="?BrushText"
+              android:layout_width="wrap_content" android:text="Last comment" android:textSize="@dimen/FontSizeTiny" android:fontFamily="@font/inter" android:textColor="?BrushText"
               android:layout_height="wrap_content" />
           </LinearLayout>
         </FrameLayout>
@@ -72,10 +72,10 @@
                         android:layout_width="wrap_content" android:layout_gravity="end|bottom" android:background="@drawable/border_accent_underline"
                         android:layout_height="wrap_content" android:orientation="vertical" android:padding="2dp" android:gravity="center_horizontal">
             <TextView android:id="@+id/LastPostDate"
-                      android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="@dimen/FontSizeSemiNormal" android:gravity="center"
+                      android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="@dimen/FontSizeSemiNormal" android:gravity="center"
                       android:layout_height="wrap_content" tools:text="Aug 3, 5:22 PM"/>
             <TextView
-              android:layout_width="wrap_content" android:text="Last post" android:textSize="@dimen/FontSizeTiny" android:fontFamily="@string/font_family_light" android:textColor="?BrushText"
+              android:layout_width="wrap_content" android:text="Last post" android:textSize="@dimen/FontSizeTiny" android:fontFamily="@font/inter" android:textColor="?BrushText"
               android:layout_height="wrap_content" />
           </LinearLayout>
         </FrameLayout>
@@ -89,10 +89,10 @@
         android:layout_width="wrap_content" android:layout_gravity="center"
         android:layout_height="wrap_content" android:orientation="vertical" android:padding="2dp" android:gravity="center_horizontal">
         <TextView android:id="@+id/Members"
-                  android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="@dimen/FontSizeHuge"
+                  android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="@dimen/FontSizeHuge"
                   android:layout_height="wrap_content" tools:text="44"/>
         <TextView android:background="@drawable/border_accent_underline"
-                  android:layout_width="wrap_content" android:text="Members" android:textSize="@dimen/FontSizeSmall" android:fontFamily="@string/font_family_light" android:textColor="?BrushText"
+                  android:layout_width="wrap_content" android:text="Members" android:textSize="@dimen/FontSizeSmall" android:fontFamily="@font/inter" android:textColor="?BrushText"
                   android:layout_height="wrap_content" />
         <Button android:layout_marginTop="15dp" style="@style/AccentButtonStyle" tools:text="Request" android:textSize="@dimen/FontSizeSemiNormal"
                 android:layout_width="wrap_content" android:background="@drawable/inc_dec_btn_backgroud"

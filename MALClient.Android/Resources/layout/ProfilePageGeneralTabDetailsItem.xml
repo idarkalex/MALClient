@@ -5,7 +5,7 @@
               android:layout_height="wrap_content" android:padding="5dp">
   <TextView
     android:layout_width="wrap_content" android:text="fgd" android:textColor="?BrushText"
-    android:fontFamily="@string/font_family_light" android:minWidth="100dp"
+    android:fontFamily="@font/inter" android:minWidth="100dp"
     android:layout_height="wrap_content" android:id="@+id/ProfilePageGeneralTabDetailsItemLeft" />
   <TextView
     android:layout_width="0dp" android:layout_marginStart="20dp" android:layout_weight="1" android:gravity="end" android:maxLines="2" android:ellipsize="end" android:text="dgfdg"

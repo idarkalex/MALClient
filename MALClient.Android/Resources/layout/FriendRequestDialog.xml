@@ -17,11 +17,11 @@
       <TextView
         android:layout_width="0dp" android:layout_weight="1" android:layout_gravity="center_vertical"
         android:layout_height="wrap_content" android:gravity="center" android:textSize="@dimen/FontSizeHuge"
-        android:fontFamily="@string/font_family_light" android:text="Send Friend Request" android:textColor="?BrushText" />
+        android:fontFamily="@font/inter" android:text="Send Friend Request" android:textColor="?BrushText" />
     </LinearLayout>
 
     <EditText android:layout_margin="12dp" android:id="@+id/TextBox"
-              android:layout_width="match_parent" android:fontFamily="@string/font_family_light" android:hint="Message (optional)"
+              android:layout_width="match_parent" android:fontFamily="@font/inter" android:hint="Message (optional)"
               android:layout_height="wrap_content" />
     <Button android:id="@+id/SubmitButton"
             android:layout_width="wrap_content" android:layout_marginEnd="8dp"

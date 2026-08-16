@@ -34,7 +34,7 @@
         <TextView
           android:layout_width="wrap_content" android:layout_gravity="start" android:layout_margin="5dp"
           android:layout_height="wrap_content" android:textColor="?AccentColourDark" android:text="Title"
-          android:textSize="@dimen/FontSizeHuge" android:fontFamily="@string/font_family_light" />
+          android:textSize="@dimen/FontSizeHuge" android:fontFamily="@font/inter" />
         <EditText
           android:layout_width="match_parent" android:hint="Post title..."
           android:layout_height="wrap_content" android:maxLines="4" android:id="@+id/ForumNewTopicPageTitleTextBox"/>
@@ -42,7 +42,7 @@
         <TextView
           android:layout_width="wrap_content" android:layout_gravity="start" android:layout_margin="5dp"
           android:layout_height="wrap_content" android:textColor="?AccentColourDark" android:text="Post mesage"
-          android:textSize="@dimen/FontSizeHuge" android:fontFamily="@string/font_family_light" />
+          android:textSize="@dimen/FontSizeHuge" android:fontFamily="@font/inter" />
 
         <MALClient.Android.UserControls.BBCodeEditor
           android:layout_width="match_parent" android:id="@+id/ForumNewTopicPageEditor"
@@ -56,7 +56,7 @@
         <TextView
           android:layout_width="wrap_content" android:layout_gravity="start" android:layout_margin="5dp"
           android:layout_height="wrap_content" android:textColor="?AccentColourDark" android:text="Preview"
-          android:textSize="@dimen/FontSizeHuge" android:fontFamily="@string/font_family_light" />
+          android:textSize="@dimen/FontSizeHuge" android:fontFamily="@font/inter" />
 
         <WebView  android:paddingStart="5dp" android:paddingEnd="10dp" android:paddingBottom="10dp"
                   android:layout_width="match_parent" android:id="@+id/ForumNewTopicPagePreview"

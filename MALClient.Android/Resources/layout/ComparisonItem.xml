@@ -38,7 +38,7 @@
           android:layout_height="match_parent" android:layout_gravity="center" android:paddingStart="8dp" android:paddingEnd="8dp">
           <TextView android:layout_gravity="center_vertical"
                     android:layout_width="wrap_content" android:textColor="#fff" android:textSize="@dimen/FontSizeMedium"
-                    android:layout_height="wrap_content" android:fontFamily="@string/font_family_medium" tools:text="C - C" android:id="@+id/ComparisonItemStatus"/>
+                    android:layout_height="wrap_content" android:fontFamily="@font/inter" tools:text="C - C" android:id="@+id/ComparisonItemStatus"/>
         </FrameLayout>
 
       </LinearLayout>
@@ -51,10 +51,10 @@
                       android:layout_width="0dp" android:layout_weight="1" android:gravity="center_horizontal" android:layout_marginStart="8dp" android:layout_marginEnd="8dp"
                       android:layout_height="wrap_content" android:orientation="vertical" android:paddingBottom="2dp">
           <TextView
-            android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="26sp"
+            android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="26sp"
             android:layout_height="wrap_content" tools:text="8" android:id="@+id/ComparisonItemOnlyOtherScore" />
           <TextView
-            android:layout_width="wrap_content" android:text="Score" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="@dimen/FontSizeSemiNormal"
+            android:layout_width="wrap_content" android:text="Score" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="@dimen/FontSizeSemiNormal"
             android:layout_height="wrap_content" />
         </LinearLayout>
 
@@ -62,10 +62,10 @@
                       android:layout_width="0dp" android:layout_weight="1" android:gravity="center_horizontal" android:paddingBottom="2dp"
                       android:layout_height="wrap_content" android:orientation="vertical">
           <TextView
-            android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="26sp"
+            android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="26sp"
             android:layout_height="wrap_content" tools:text="14/25" android:id="@+id/ComparisonItemOnlyOtherWatched" />
           <TextView
-            android:layout_width="wrap_content" android:text="Watched"  android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="@dimen/FontSizeSemiNormal"
+            android:layout_width="wrap_content" android:text="Watched"  android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="@dimen/FontSizeSemiNormal"
             android:layout_height="wrap_content" />
         </LinearLayout>
 
@@ -95,18 +95,18 @@
             android:layout_width="match_parent" android:gravity="center_vertical"
             android:layout_height="wrap_content" android:orientation="horizontal">
             <TextView android:gravity="center_horizontal"
-                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="20sp"
+                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="20sp"
                       android:layout_height="wrap_content" tools:text="10" android:id="@+id/ComparisonItemOnBothMyScore" />
             <TextView android:gravity="center_horizontal"
-                      android:layout_width="0dp" android:layout_weight="1.4" tools:textColor="@android:color/holo_red_dark" android:fontFamily="@string/font_family_light" android:textSize="26sp"
+                      android:layout_width="0dp" android:layout_weight="1.4" tools:textColor="@android:color/holo_red_dark" android:fontFamily="@font/inter" android:textSize="26sp"
                       android:layout_height="wrap_content" tools:text="-8" android:id="@+id/ComparisonItemOnBothScoreDiff" />
             <TextView android:gravity="center_horizontal"
-                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="20sp"
+                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="20sp"
                       android:layout_height="wrap_content" tools:text="2" android:id="@+id/ComparisonItemOnBothOtherScore" />
           </LinearLayout>
 
           <TextView
-            android:layout_width="wrap_content" android:text="Score" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="@dimen/FontSizeSemiNormal"
+            android:layout_width="wrap_content" android:text="Score" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="@dimen/FontSizeSemiNormal"
             android:layout_height="wrap_content" />
         </LinearLayout>
 
@@ -117,17 +117,17 @@
             android:layout_width="match_parent" android:gravity="center_vertical"
             android:layout_height="wrap_content" android:orientation="horizontal">
             <TextView android:gravity="center_horizontal"
-                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="20sp"
+                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="20sp"
                       android:layout_height="wrap_content" tools:text="15" android:id="@+id/ComparisonItemOnBothMyWatched" />
             <TextView android:gravity="center_horizontal"
-                      android:layout_width="0dp" android:layout_weight="1.4" tools:textColor="@color/LimeAccentColourDark" android:fontFamily="@string/font_family_light" android:textSize="26sp"
+                      android:layout_width="0dp" android:layout_weight="1.4" tools:textColor="@color/LimeAccentColourDark" android:fontFamily="@font/inter" android:textSize="26sp"
                       android:layout_height="wrap_content" tools:text="+8" android:id="@+id/ComparisonItemOnBothWatchedDiff" />
             <TextView android:gravity="center_horizontal"
-                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="20sp"
+                      android:layout_width="0dp" android:layout_weight="1" android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="20sp"
                       android:layout_height="wrap_content" tools:text="23" android:id="@+id/ComparisonItemOnBothOtherWatched" />
           </LinearLayout>
           <TextView
-            android:layout_width="wrap_content" android:text="Watched"  android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:textSize="@dimen/FontSizeSemiNormal"
+            android:layout_width="wrap_content" android:text="Watched"  android:textColor="?BrushText" android:fontFamily="@font/inter" android:textSize="@dimen/FontSizeSemiNormal"
             android:layout_height="wrap_content" />
         </LinearLayout>
 
@@ -145,10 +145,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:orientation="vertical">
             <TextView android:id="@+id/ComparisonItemOnMyMyScore"
-                      android:layout_width="wrap_content" android:fontFamily="@string/font_family_light" android:textColor="?BrushText" tools:text="8"
+                      android:layout_width="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText" tools:text="8"
                       android:layout_height="wrap_content" android:textSize="@dimen/FontSizeBig"/>
             <TextView
-              android:layout_width="wrap_content" android:fontFamily="@string/font_family_light" android:textColor="?BrushText" android:text="Score"
+              android:layout_width="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText" android:text="Score"
               android:layout_height="wrap_content" android:textSize="@dimen/FontSizeSemiNormal"/>
           </LinearLayout>
 
@@ -156,10 +156,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:orientation="vertical">
             <TextView android:id="@+id/ComparisonItemOnMyMyWatched"
-                      android:layout_width="wrap_content" android:fontFamily="@string/font_family_light" android:textColor="?BrushText" tools:text="24/24"
+                      android:layout_width="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText" tools:text="24/24"
                       android:layout_height="wrap_content" android:textSize="@dimen/FontSizeBig"/>
             <TextView
-              android:layout_width="wrap_content" android:fontFamily="@string/font_family_light" android:textColor="?BrushText" android:text="Watched"
+              android:layout_width="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText" android:text="Watched"
               android:layout_height="wrap_content" android:textSize="@dimen/FontSizeSemiNormal"/>
           </LinearLayout>
         </LinearLayout>
@@ -173,7 +173,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:src="@drawable/icon_remove_user"/>
           <TextView android:id="@+id/ComparisonItemNotOnListDescription" android:gravity="center_horizontal"
-                    android:layout_width="wrap_content" android:textSize="@dimen/FontSizeSmall" android:fontFamily="@string/font_family_light"
+                    android:layout_width="wrap_content" android:textSize="@dimen/FontSizeSmall" android:fontFamily="@font/inter"
                     android:layout_height="wrap_content" tools:text="OtherDrutol doesn't have this show on list..." android:textColor="?BrushNoSearchResults"/>
         </LinearLayout>
 
@@ -182,3 +182,4 @@
     </FrameLayout>
   </LinearLayout>
 </FrameLayout>
+

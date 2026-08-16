@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/DiscoverPageRefresh"
@@ -37,7 +37,7 @@
         android:paddingRight="16dp"
         android:paddingTop="16dp"
         android:gravity="center_horizontal"
-        android:text="Inicia sesión para ver tus listas de anime y manga"
+        android:text="Inicia sesiÃ³n para ver tus listas de anime y manga"
         android:textColor="?BrushText"
         android:textSize="@dimen/FontSizeMedium"
         android:visibility="gone" />
@@ -52,7 +52,7 @@
         android:background="?android:selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:text="Iniciar sesión"
+        android:text="Iniciar sesiÃ³n"
         android:textColor="?AccentColour"
         android:textSize="@dimen/FontSizeBig"
         android:visibility="gone" />
@@ -70,7 +70,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="Sigo viendo"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -112,7 +112,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="Leyendo"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -154,7 +154,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="Terminados"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -196,7 +196,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="Seasonal"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -238,7 +238,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="Top anime"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -280,7 +280,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="Top manga"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -322,7 +322,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="Adapted to anime"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -364,7 +364,7 @@
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:text="News"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
@@ -396,3 +396,4 @@
   </LinearLayout>
   </ScrollView>
 </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
+

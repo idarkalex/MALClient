@@ -23,7 +23,7 @@
 
       <TextView android:id="@+id/ForumBordPagePostItemReplies"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light" android:text="5" android:layout_marginStart="15dp" android:layout_marginEnd="15dp"/>
+                android:layout_height="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter" android:text="5" android:layout_marginStart="15dp" android:layout_marginEnd="15dp"/>
       <FrameLayout
         android:layout_width="125dp"
         android:layout_height="wrap_content">
@@ -35,7 +35,7 @@
                     android:layout_height="wrap_content" android:text="Drutol"/>
           <TextView android:id="@+id/ForumBordPagePostItemLastPostDate"
                     android:layout_width="wrap_content" android:textColor="?BrushText" android:gravity="center_horizontal"
-                    android:layout_height="wrap_content" android:text="Feb 26, 4:11PM" android:fontFamily="@string/font_family_light"/>
+                    android:layout_height="wrap_content" android:text="Feb 26, 4:11PM" android:fontFamily="@font/inter"/>
         </LinearLayout>
       </FrameLayout>
 

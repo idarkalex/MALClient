@@ -62,7 +62,7 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:alpha=".8"
-              android:fontFamily="@string/font_family_light"
+              android:fontFamily="@font/inter"
               android:textColor="?BrushText"
               android:textSize="@dimen/FontSizeSemiNormal"
               tools:text="Some test string" />
@@ -75,7 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:background="@drawable/border_accent_underline"
-            android:fontFamily="@string/font_family_light"
+            android:fontFamily="@font/inter"
             android:textColor="?BrushText"
             tools:text="Novel" />
       </LinearLayout>
@@ -85,3 +85,4 @@
 
 
 </LinearLayout>
+

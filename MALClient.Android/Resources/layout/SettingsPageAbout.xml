@@ -12,7 +12,7 @@
 
     <TextView
       android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="Welcome to MAL+!"
-      android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" />
+      android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@font/inter" />
 
     <TextView android:lineSpacingExtra="2dp"
               android:layout_width="wrap_content" android:text="Hi! Thanks for checking out this app ^^ MAL+ is an enhanced, open-source MyAnimeList client. It grew out of MALClient (around since March 2016) and adds its own twist: top manga categories, adapted-to-anime tracking and more." android:layout_marginTop="10dp"
@@ -43,7 +43,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center_horizontal"
-      android:fontFamily="@string/font_family_light"
+      android:fontFamily="@font/inter"
       android:text="Changelog" android:layout_marginTop="20dp"
       android:textColor="?AccentColour"
       android:textSize="@dimen/FontSizeHuge" />
@@ -69,7 +69,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center_horizontal"
-      android:fontFamily="@string/font_family_light"
+      android:fontFamily="@font/inter"
       android:text="Credits" android:layout_marginTop="10dp"
       android:textColor="?AccentColour"
       android:textSize="@dimen/FontSizeHuge" />
@@ -129,7 +129,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center_horizontal"
-      android:fontFamily="@string/font_family_light"
+      android:fontFamily="@font/inter"
       android:text="Tech note" android:layout_marginTop="20dp"
       android:textColor="?AccentColour"
       android:textSize="@dimen/FontSizeHuge" />

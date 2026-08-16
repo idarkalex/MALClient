@@ -26,7 +26,7 @@
       </HorizontalScrollView>
       <TextView android:id="@+id/ForumsMAinPagePinnedBoardEmptyNotice"
                 android:layout_width="wrap_content" android:textColor="?BrushNoSearchResults" android:text="Pinned boards go here..." android:layout_gravity="center"
-                android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"/>
+                android:layout_height="wrap_content" android:fontFamily="@font/inter"/>
     </FrameLayout>
 
     <FrameLayout

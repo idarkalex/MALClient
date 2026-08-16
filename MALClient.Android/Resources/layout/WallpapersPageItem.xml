@@ -14,15 +14,15 @@
                                          android:layout_width="match_parent"  android:maxHeight="450dp"
                                          android:layout_height="wrap_content" android:adjustViewBounds="true"/>
     <TextView android:id="@+id/WallpapersPageItemSubreddit"
-              android:layout_width="wrap_content" android:text="/r/Pixiv" android:textColor="#fff" android:padding="5dp" android:fontFamily="@string/font_family_light"
+              android:layout_width="wrap_content" android:text="/r/Pixiv" android:textColor="#fff" android:padding="5dp" android:fontFamily="@font/inter"
               android:layout_height="wrap_content" android:background="@color/BrushOpaqueTextView"/>
 
     <TextView android:id="@+id/WallpapersPageItemResolution"
-              android:layout_width="wrap_content" android:text="600x600" android:textColor="#fff" android:padding="5dp" android:fontFamily="@string/font_family_light"
+              android:layout_width="wrap_content" android:text="600x600" android:textColor="#fff" android:padding="5dp" android:fontFamily="@font/inter"
               android:layout_height="wrap_content" android:layout_gravity="bottom" android:background="@color/BrushOpaqueTextView"/>
 
     <TextView android:id="@+id/WallpapersPageItemDate"
-              android:layout_width="wrap_content" android:text="Yesterday 1:55" android:textColor="#fff" android:padding="5dp" android:fontFamily="@string/font_family_light"
+              android:layout_width="wrap_content" android:text="Yesterday 1:55" android:textColor="#fff" android:padding="5dp" android:fontFamily="@font/inter"
               android:layout_height="wrap_content" android:layout_gravity="bottom|end" android:background="@color/BrushOpaqueTextView"/>
 
   </FrameLayout>
@@ -35,6 +35,6 @@
               android:layout_height="wrap_content" android:text="[Ordiginal] Shelter" android:textColor="?BrushText"/>
     <TextView android:id="@+id/WallpapersPageItemUpvotes"
               android:layout_width="wrap_content" android:text="55" android:textSize="@dimen/FontSizeBig" android:textColor="?AccentColour"
-              android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"/>
+              android:layout_height="wrap_content" android:fontFamily="@font/inter"/>
   </LinearLayout>
 </LinearLayout>

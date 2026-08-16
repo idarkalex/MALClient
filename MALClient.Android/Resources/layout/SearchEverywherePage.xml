@@ -18,7 +18,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center"
-      android:fontFamily="@string/font_family_light"
+      android:fontFamily="@font/inter"
       android:text="We have come up empty..."
       android:textColor="?BrushNoSearchResults"
       android:visibility="gone"
@@ -65,3 +65,4 @@
   </LinearLayout>
 
 </FrameLayout>
+

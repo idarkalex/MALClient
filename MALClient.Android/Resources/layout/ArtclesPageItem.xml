@@ -16,14 +16,14 @@
                                            android:layout_height="130dp" android:scaleType="centerCrop" />
       <TextView android:id="@+id/ArticlesPageItemAuthor" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:text="by Someguy83"
-                android:fontFamily="@string/font_family_light" android:textColor="?BrushText"
+                android:fontFamily="@font/inter" android:textColor="?BrushText"
                 android:layout_marginTop="5dp" />
       <TextView android:id="@+id/ArticlesPageItemViews" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:text="5,123 views" android:textColor="?BrushText"
                 android:layout_marginTop="3dp" />
       <TextView android:id="@+id/ArticlesPageItemTags" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:text="Quoutes, Cold hearted, Love, Plot Twist"
-                android:textColor="?AccentColour" android:fontFamily="@string/font_family_light"
+                android:textColor="?AccentColour" android:fontFamily="@font/inter"
                 android:textStyle="italic" android:textSize="@dimen/FontSizeSemiNormal" android:maxLines="2"
                 android:ellipsize="end" android:layout_marginTop="2dp" />
     </LinearLayout>
@@ -34,12 +34,12 @@
                 android:layout_height="wrap_content"
                 android:text="What does &quot;Sugoi&quot; Mean? Really What could it mean it's an old mystery of the new gods..."
                 android:maxLines="2" android:ellipsize="end" android:textSize="@dimen/FontSizeBig"
-                android:fontFamily="@string/font_family_light" android:textStyle="bold" android:textColor="?BrushText" />
+                android:fontFamily="@font/inter" android:textStyle="bold" android:textColor="?BrushText" />
       <View android:layout_marginStart="5dp" android:layout_marginEnd="5dp" style="@style/Divider"
             android:layout_marginTop="5dp" />
       <TextView android:id="@+id/ArticlesPageItemHighlight" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:layout_marginTop="5dp"
-                android:fontFamily="@string/font_family_light" android:maxLines="9" android:ellipsize="end"
+                android:fontFamily="@font/inter" android:maxLines="9" android:ellipsize="end"
                 android:textColor="?BrushText" />
     </LinearLayout>
   </RelativeLayout>

@@ -426,7 +426,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:alpha=".6"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="Due to MAL's limitations I can't obtain all English titles at once. As a workaround they will be saved (if available) upon loading anime details. You can also long press floating action button on anime list to show option to load details for all listed shows. Titles will be changed after list refresh."
         android:textSize="@dimen/FontSizeSmall" />
 
@@ -610,7 +610,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:alpha=".6"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="Helpful when there's just a little tad of missing space to present new item without making other ones thinner."
         android:textSize="@dimen/FontSizeSmall" />
 
@@ -1270,7 +1270,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="5dp"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:gravity="center_horizontal"
           android:text="Depending on your timezone or level of pulled data's inaccuracy in general, you can adjust global offset for anime air days."
           android:textColor="?BrushText" />
@@ -1319,10 +1319,11 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="5dp"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:gravity="center_horizontal"
           android:text="Adjust times of airing notifications relative to broadcast time provided by MAL. These notifications assume that show is airing on a weekly basis."
           android:textColor="?BrushText" />
     </LinearLayout>
   </LinearLayout>
 </ScrollView>
+

@@ -43,7 +43,7 @@
               android:id="@+id/AnimeCompactItemGlobalScore"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:fontFamily="@string/font_family_light"
+              android:fontFamily="@font/inter"
               tools:text="7.95"
               android:textColor="?BrushText" />
 
@@ -51,7 +51,7 @@
               android:id="@+id/AnimeCompactItemType"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:fontFamily="@string/font_family_light"
+              android:fontFamily="@font/inter"
               tools:text="OVA"
               android:textColor="?BrushText" />
         </LinearLayout>
@@ -185,7 +185,7 @@
               android:layout_width="wrap_content"
               android:layout_height="match_parent"
               android:background="@drawable/button_underline_background_style"
-              android:fontFamily="@string/font_family_light"
+              android:fontFamily="@font/inter"
               android:minWidth="90dp"
               android:paddingLeft="5dp"
               android:paddingEnd="5dp"
@@ -198,3 +198,4 @@
   </FrameLayout>
 
 </FrameLayout>
+

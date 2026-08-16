@@ -35,7 +35,7 @@
       android:layout_marginTop="2dp"
       android:textSize="18dp"
       android:textStyle="italic"
-      android:fontFamily="@string/font_family_light"
+      android:fontFamily="@font/inter"
       android:text="(fdsfdsfdsfsdfs)"
       android:textColor="?BrushText"
       android:ellipsize="end"

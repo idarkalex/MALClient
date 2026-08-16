@@ -19,7 +19,7 @@
       android:indeterminate="true" android:layout_gravity="center" />
     <TextView android:gravity="center" android:visibility="gone"
               android:layout_width="wrap_content" android:id="@+id/EmptyNotice"
-              android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" 
+              android:layout_height="wrap_content" android:fontFamily="@font/inter" 
               android:text="Nothing to show here..." android:layout_gravity="center" 
               android:textColor="?AccentColour"/>
   </FrameLayout>

@@ -5,11 +5,11 @@
               xmlns:tools="http://schemas.android.com/tools" android:gravity="top">
 
   <TextView
-    android:layout_width="wrap_content" android:id="@+id/Header" android:textColor="?BrushNoSearchResults" android:fontFamily="@string/font_family_light"
+    android:layout_width="wrap_content" android:id="@+id/Header" android:textColor="?BrushNoSearchResults" android:fontFamily="@font/inter"
     android:layout_height="wrap_content" tools:text="Creator" android:textSize="@dimen/FontSizeSemiNormal" android:layout_gravity="top"/>
   <TextView
     android:layout_width="wrap_content" android:textSize="@dimen/FontSizeNormal" android:id="@+id/Text"
-    android:layout_marginStart="5dp" android:textColor="?BrushText"  android:fontFamily="@string/font_family_light"
+    android:layout_marginStart="5dp" android:textColor="?BrushText"  android:fontFamily="@font/inter"
     android:layout_height="wrap_content" tools:text="Somebody"/>
 
 </LinearLayout>

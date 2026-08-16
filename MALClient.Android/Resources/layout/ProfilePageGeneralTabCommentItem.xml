@@ -38,7 +38,7 @@
       android:layout_height="match_parent" android:layout_weight="1">
       <TextView
         android:layout_width="wrap_content" android:id="@+id/ProfilePageGeneralTabCommentItemDate"
-        android:layout_height="wrap_content" android:text="Jan 45" android:fontFamily="@string/font_family_light"
+        android:layout_height="wrap_content" android:text="Jan 45" android:fontFamily="@font/inter"
         android:textColor="?BrushNoSearchResults" android:layout_gravity="end" android:layout_margin="3dp" />
       <TextView
         android:layout_width="wrap_content" android:id="@+id/ProfilePageGeneralTabCommentItemContent"

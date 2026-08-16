@@ -150,7 +150,7 @@
               android:layout_height="wrap_content"
               android:layout_marginStart="5dp"
               android:layout_marginTop="1dp"
-              android:fontFamily="@string/font_family_light"
+              android:fontFamily="@font/inter"
               tools:text="Sun"
               android:textColor="@color/LightBrushNoSearchResults"
               android:textStyle="italic" />
@@ -179,7 +179,7 @@
                 android:layout_gravity="bottom"
                 android:layout_marginRight="5dp"
                 android:layout_marginBottom="1dp"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 tools:text="Tv"
                 android:textColor="?BrushText"
                 android:textSize="@dimen/FontSizeSmall"
@@ -192,7 +192,7 @@
                 android:layout_marginTop="10dp"
                 android:background="@drawable/button_underline_background_style"
                 android:elevation="0dp"
-                android:fontFamily="@string/font_family_light"
+                android:fontFamily="@font/inter"
                 android:minWidth="40dp"
                 android:paddingStart="3dp"
                 android:paddingEnd="3dp"
@@ -263,3 +263,4 @@
     </LinearLayout>
   </FrameLayout>
 </FrameLayout>
+

@@ -22,7 +22,7 @@
       android:layout_width="0dp" android:layout_weight="1"
       android:layout_height="wrap_content" android:orientation="vertical">
       <TextView
-        android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light"
+        android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter"
         android:layout_height="wrap_content" android:text="Add new tag:"/>
       <AutoCompleteTextView android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:id="@+id/AnimeTagsDialogEditBox" android:maxLines="3"/>

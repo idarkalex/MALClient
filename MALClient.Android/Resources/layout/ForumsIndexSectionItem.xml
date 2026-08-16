@@ -5,7 +5,7 @@
     android:layout_height="match_parent" android:background="?BrushDeepBackground">
   <TextView android:id="@+id/ForumsIndexSectionItemListHeader"
       android:layout_width="wrap_content" android:layout_marginTop="10dp" android:layout_gravity="center_horizontal"
-      android:layout_height="wrap_content" android:text="MyAnimeList" android:textSize="@dimen/FontSizeHuge" android:fontFamily="@string/font_family_light" android:textColor="?AccentColour" />
+      android:layout_height="wrap_content" android:text="MyAnimeList" android:textSize="@dimen/FontSizeHuge" android:fontFamily="@font/inter" android:textColor="?AccentColour" />
   <LinearLayout
       android:layout_width="match_parent" android:id="@+id/ForumsIndexSectionItemList"
       android:layout_height="wrap_content" android:orientation="vertical"/>

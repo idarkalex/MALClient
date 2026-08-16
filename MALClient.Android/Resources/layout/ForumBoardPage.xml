@@ -16,7 +16,7 @@
                   android:layout_height="wrap_content" android:textColor="?BrushText"/>
         <TextView android:id="@+id/ForumBoardPageTitle"
                   android:layout_width="wrap_content"
-                  android:layout_height="wrap_content" android:text="Some random board" android:maxLines="1" android:ellipsize="end" android:textSize="@dimen/FontSizeHuge" android:fontFamily="@string/font_family_medium" android:textColor="?BrushText"/>
+                  android:layout_height="wrap_content" android:text="Some random board" android:maxLines="1" android:ellipsize="end" android:textSize="@dimen/FontSizeHuge" android:fontFamily="@font/inter" android:textColor="?BrushText"/>
       </LinearLayout>
 
       <LinearLayout
@@ -53,7 +53,7 @@
     </LinearLayout>
     <TextView android:gravity="center" android:visibility="visible"
               android:layout_width="wrap_content" android:id="@+id/ForumBoardPageEmptyNotice"
-              android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:text="We have come up empty..." android:layout_gravity="center" android:textColor="?AccentColour"/>
+              android:layout_height="wrap_content" android:fontFamily="@font/inter" android:text="We have come up empty..." android:layout_gravity="center" android:textColor="?AccentColour"/>
     <android.support.design.widget.FloatingActionButton android:id="@+id/ForumBoardPageActionButton"
                                                         android:layout_width="wrap_content" app:backgroundTint="?AccentColourContrast" android:layout_gravity="end|bottom" android:layout_margin="16dp"
                                                         android:layout_height="wrap_content" android:src="@drawable/icon_add" android:clickable="true" android:focusable="true" android:tint="#fff"

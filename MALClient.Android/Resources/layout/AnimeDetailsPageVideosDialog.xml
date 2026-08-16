@@ -26,7 +26,7 @@
         android:dividerHeight="10dp" />
       <TextView android:layout_gravity="center" android:visibility="gone" android:layout_margin="15dp"
                 android:layout_width="wrap_content" android:id="@+id/AnimeDetailsPageVideosDialogEmptyNotice"
-                android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"
+                android:layout_height="wrap_content" android:fontFamily="@font/inter"
                 android:text="We have come up empty..." android:textColor="?AccentColour" />
       <ProgressBar android:id="@+id/AnimeDetailsPageVideosDialogProgressBar"
                    android:layout_width="wrap_content" android:layout_margin="15dp"

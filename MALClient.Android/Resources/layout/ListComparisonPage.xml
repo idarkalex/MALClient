@@ -21,18 +21,18 @@
             android:layout_height="40dp" />
           <TextView android:layout_marginTop="3dp" android:maxWidth="100dp" android:maxLines="1" android:ellipsize="end"
                     android:layout_width="wrap_content" android:textSize="@dimen/FontSizeMedium"
-                    android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"
+                    android:layout_height="wrap_content" android:fontFamily="@font/inter"
                     tools:text="Drutol" android:textColor="?BrushText" android:id="@+id/MyName"/>
         </LinearLayout>
         <LinearLayout android:layout_marginStart="15dp"
                       android:layout_width="wrap_content" android:orientation="vertical"
                       android:layout_height="wrap_content" android:gravity="center_horizontal">
           <TextView
-            android:layout_width="wrap_content" android:textSize="@dimen/FontSizeBig" android:fontFamily="@string/font_family_light"
+            android:layout_width="wrap_content" android:textSize="@dimen/FontSizeBig" android:fontFamily="@font/inter"
             android:layout_height="wrap_content" tools:text="7.69" android:textColor="?BrushText" android:id="@+id/MyMean"/>
           <TextView android:layout_marginTop="3dp" android:maxWidth="100dp" android:maxLines="1" android:ellipsize="end"
                     android:layout_width="wrap_content" android:textSize="@dimen/FontSizeNormal"
-                    android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"
+                    android:layout_height="wrap_content" android:fontFamily="@font/inter"
                     android:text="Mean score" android:textColor="?BrushText"/>
         </LinearLayout>
       </LinearLayout>
@@ -45,11 +45,11 @@
                       android:layout_width="wrap_content" android:orientation="vertical" android:layout_marginEnd="15dp"
                       android:layout_height="wrap_content" android:gravity="center_horizontal">
           <TextView
-            android:layout_width="wrap_content" android:textSize="@dimen/FontSizeBig" android:fontFamily="@string/font_family_light" android:id="@+id/OtherMean"
+            android:layout_width="wrap_content" android:textSize="@dimen/FontSizeBig" android:fontFamily="@font/inter" android:id="@+id/OtherMean"
             android:layout_height="wrap_content" tools:text="7.69" android:textColor="?BrushText"/>
           <TextView android:layout_marginTop="3dp" android:maxWidth="100dp" android:maxLines="1" android:ellipsize="end"
                     android:layout_width="wrap_content" android:textSize="@dimen/FontSizeNormal"
-                    android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"
+                    android:layout_height="wrap_content" android:fontFamily="@font/inter"
                     android:text="Mean score" android:textColor="?BrushText"/>
         </LinearLayout>
         <LinearLayout
@@ -60,7 +60,7 @@
             android:layout_height="40dp"/>
           <TextView android:layout_marginTop="3dp" android:maxWidth="100dp" android:maxLines="1" android:ellipsize="end"
                     android:layout_width="wrap_content" android:textSize="@dimen/FontSizeMedium"
-                    android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"
+                    android:layout_height="wrap_content" android:fontFamily="@font/inter"
                     tools:text="OtherDrutol" android:textColor="?BrushText" android:id="@+id/OtherName"/>
         </LinearLayout>
       </LinearLayout>
@@ -78,7 +78,7 @@
                  android:indeterminate="true" android:layout_gravity="center" />
     <TextView android:gravity="center" android:visibility="visible"
               android:layout_width="wrap_content" android:id="@+id/ComparisonEmptyNotice"
-              android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:text="We have come up empty..." android:layout_gravity="center" android:textColor="?AccentColour"/>
+              android:layout_height="wrap_content" android:fontFamily="@font/inter" android:text="We have come up empty..." android:layout_gravity="center" android:textColor="?AccentColour"/>
     <android.support.design.widget.FloatingActionButton android:id="@+id/ComparisonPageActionButton"
                                                         android:layout_width="wrap_content" app:backgroundTint="?AccentColourContrast" android:layout_gravity="end|bottom" android:layout_margin="16dp"
                                                         android:layout_height="wrap_content" android:src="@drawable/icon_more" android:clickable="true" android:focusable="true"

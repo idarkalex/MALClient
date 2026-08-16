@@ -27,7 +27,7 @@
           android:layout_width="wrap_content" tools:text="Drutol"  android:textSize="@dimen/FontSizeBig" android:textColor="?BrushText" android:background="@drawable/border_accent_underline"
           android:layout_height="wrap_content" />
       <TextView android:layout_marginTop="10dp" android:id="@+id/Message"
-          android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@string/font_family_light"
+          android:layout_width="wrap_content" android:textColor="?BrushText" android:fontFamily="@font/inter"
           android:layout_height="wrap_content" tools:text="Friends since 3rd March 2017" android:textStyle="italic"/>
       <LinearLayout android:layout_marginTop="10dp"
           android:layout_width="wrap_content"

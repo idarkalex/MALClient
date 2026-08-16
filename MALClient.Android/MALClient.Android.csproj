@@ -784,6 +784,21 @@
     <AndroidResource Include="Resources\drawable\headerv2.png" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\font\inter_regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\font\inter_medium.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\font\inter_semibold.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\font\inter_bold.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\font\inter.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <AndroidResource Include="Resources\drawable-hdpi\co_ad_banner.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1301,3 +1316,4 @@
     </Target>
   -->
 </Project>
+

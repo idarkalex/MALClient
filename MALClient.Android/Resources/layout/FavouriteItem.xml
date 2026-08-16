@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content" android:maxLines="1" android:textColor="?BrushText" tools:text="Kurumizawa McDowel"/>
       <TextView android:id="@+id/FavouriteItemRole"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:maxLines="1" android:textColor="?BrushText" tools:text="Main" android:fontFamily="@string/font_family_light"/>
+                android:layout_height="wrap_content" android:maxLines="1" android:textColor="?BrushText" tools:text="Main" android:fontFamily="@font/inter"/>
     </LinearLayout>
   </LinearLayout>
 </FrameLayout>

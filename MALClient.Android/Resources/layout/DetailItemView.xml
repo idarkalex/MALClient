@@ -15,7 +15,7 @@
                 android:textColor="?BrushText" android:text="Adventure" />
       <TextView android:layout_margin="5dp" android:layout_weight="15" android:ellipsize="end" android:maxLines="2"
                 android:id="@+id/DetailItemContentTextView" android:layout_width="0dp" android:textAlignment="center"
-                android:gravity="center" android:fontFamily="@string/font_family_light" android:layout_gravity="center_vertical"
+                android:gravity="center" android:fontFamily="@font/inter" android:layout_gravity="center_vertical"
                 android:layout_height="wrap_content" android:textSize="@dimen/FontSizeNormal"
                 android:textColor="?BrushText" android:text="" />
     </LinearLayout>

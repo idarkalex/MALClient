@@ -25,7 +25,7 @@
 
       <TextView android:gravity="center" android:visibility="gone"
                 android:layout_width="wrap_content" android:id="@+id/CommentsEmptyNotice" android:text="No comments found..."
-                android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:layout_gravity="center_horizontal" android:textColor="?BrushNoSearchResults"/>
+                android:layout_height="wrap_content" android:fontFamily="@font/inter" android:layout_gravity="center_horizontal" android:textColor="?BrushNoSearchResults"/>
       <ListView
         android:layout_width="match_parent"  android:dividerPadding="5dp"
         android:id="@+id/CommentsList"
@@ -41,3 +41,4 @@
   </FrameLayout>
 
 </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
+

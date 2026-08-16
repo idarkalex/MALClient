@@ -80,7 +80,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="Partnered ads!"
         android:textColor="?AccentColour"
         android:textSize="@dimen/FontSizeHuge" />
@@ -108,3 +108,4 @@
   </LinearLayout>
 
 </ScrollView>
+

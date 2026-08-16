@@ -12,7 +12,7 @@
 
   <TextView android:layout_centerInParent="true" android:visibility="gone"
             android:layout_width="wrap_content" android:id="@+id/AnimeSearchPageEmptyNotice" v=""
-            android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:text="We have come up empty..."  android:textColor="?BrushNoSearchResults"/>
+            android:layout_height="wrap_content" android:fontFamily="@font/inter" android:text="We have come up empty..."  android:textColor="?BrushNoSearchResults"/>
 
   <LinearLayout
     android:layout_width="wrap_content" android:layout_centerInParent="true" android:id="@+id/AnimeSearchPageFirstSearchSection"

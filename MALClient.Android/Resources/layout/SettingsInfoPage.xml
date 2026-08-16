@@ -12,7 +12,7 @@
 
     <TextView
         android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="Hidden features!"
-        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" />
+        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@font/inter" />
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="Well, I know that explaining UI is as bad as explaining a joke but I'll do this anyway ^^" android:layout_marginTop="10dp"
@@ -20,7 +20,7 @@
 
     <TextView android:layout_marginTop="30dp"
         android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="1. Swipe to increase/decrease watched episodes."
-        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" android:gravity="center" />
+        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@font/inter" android:gravity="center" />
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="You can swipe on grid items to increase/decrease episodes just like this:" android:layout_marginTop="10dp"
@@ -33,7 +33,7 @@
 
     <TextView android:layout_marginTop="30dp"
         android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="2. Hold action button in anime list for more options."
-        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" android:gravity="center" />
+        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@font/inter" android:gravity="center" />
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="There's just too much of them... so i threw them here:" android:layout_marginTop="10dp"
@@ -46,7 +46,7 @@
 
     <TextView android:layout_marginTop="30dp"
         android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="3. You can search for tags and types."
-        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" android:gravity="center" />
+        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@font/inter" android:gravity="center" />
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="Just type in &quot;movie&quot; or desired tag for example. You will even get hints! Additionally typing &quot;ep(&lt; or &gt; or =)&lt;number&gt;&quot; will result in filtering shows that have given amount of episodes. You can do the same with &quot;score&quot;!" android:layout_marginTop="10dp"
@@ -58,7 +58,7 @@
 
     <TextView android:layout_marginTop="30dp"
         android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="4. Tap on status bar for quicker filtering."
-        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" android:gravity="center" />
+        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@font/inter" android:gravity="center" />
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="Aside from action button there's one more way to filter your way through:" android:layout_marginTop="10dp"
@@ -71,7 +71,7 @@
 
     <TextView android:layout_marginTop="30dp"
         android:layout_width="wrap_content" android:layout_gravity="center_horizontal" android:textSize="@dimen/FontSizeHuge" android:text="5. Hold profile button to see pinned profiles."
-        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@string/font_family_light" android:gravity="center" />
+        android:layout_height="wrap_content" android:textColor="?AccentColour" android:fontFamily="@font/inter" android:gravity="center" />
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="You can pin them on their profile pages, pinning them will allow to navigate there quickly and optionally they can be added to Friends Feeds." android:layout_marginTop="10dp"
@@ -84,7 +84,7 @@
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="There are probably other things that I didn't think about, let me know about your &quot;why in the hell did he put it here!?&quot; moments ^^." android:layout_marginTop="30dp"
-        android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:textColor="?BrushText"/>
+        android:layout_height="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText"/>
     
     <FFImageLoading.Views.ImageViewAsync android:elevation="4dp"
         android:layout_width="wrap_content" android:maxHeight="200dp" android:layout_gravity="center_horizontal" android:layout_marginTop="20dp"
@@ -92,7 +92,7 @@
 
     <TextView android:lineSpacingExtra="2dp"
         android:layout_width="wrap_content" android:text="Also... did you hear about AoKana? The girl above is chibi Asuka, isn't she cute? The Visual Novel is the best thing around, highly recommended :D (AoKana Zwei when...)" android:layout_marginTop="30dp"
-        android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:textColor="?BrushText"/>
+        android:layout_height="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText"/>
 
 
   </LinearLayout>

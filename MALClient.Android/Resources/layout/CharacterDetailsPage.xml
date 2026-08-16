@@ -84,7 +84,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_margin="10dp"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="Voice Actors"
         android:textColor="?AccentColour"
         android:textSize="@dimen/FontSizeHuge" />
@@ -102,7 +102,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="No data..."
         android:textColor="?BrushNoSearchResults" />
 
@@ -111,7 +111,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_margin="10dp"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="Animeography"
         android:textColor="?AccentColour"
         android:textSize="@dimen/FontSizeHuge" />
@@ -130,7 +130,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="No data..."
         android:textColor="?BrushNoSearchResults" />
 
@@ -139,7 +139,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_margin="10dp"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="Mangaography"
         android:textColor="?AccentColour"
         android:textSize="@dimen/FontSizeHuge" />
@@ -157,7 +157,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:text="No data..."
         android:textColor="?BrushNoSearchResults" />
     </LinearLayout>

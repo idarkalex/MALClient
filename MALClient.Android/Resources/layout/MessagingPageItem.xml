@@ -27,7 +27,7 @@
             android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="wrap_content" android:text="The messages are crashing" android:textSize="@dimen/FontSizeMedium" android:textColor="?AccentColourDark" />
         <TextView android:id="@+id/MessagingPageItemDate"
-            android:layout_width="wrap_content" android:text="Feb 26, 2017" android:textColor="?BrushNoSearchResults" android:fontFamily="@string/font_family_light" android:textStyle="italic"
+            android:layout_width="wrap_content" android:text="Feb 26, 2017" android:textColor="?BrushNoSearchResults" android:fontFamily="@font/inter" android:textStyle="italic"
             android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_marginStart="5dp"/>
       </LinearLayout>
       <View style="@style/Divider" android:layout_margin="5dp"/>

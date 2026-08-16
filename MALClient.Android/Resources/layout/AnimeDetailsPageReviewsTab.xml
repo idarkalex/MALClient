@@ -4,7 +4,7 @@
             android:layout_height="match_parent" android:id="@+id/AnimeDetailsPageReviewsTabsList" />
   <TextView android:visibility="gone"
             android:layout_width="wrap_content" android:id="@+id/AnimeDetailsPageReviewsTabEmptyNotice"
-            android:layout_height="wrap_content" android:fontFamily="@string/font_family_light" android:text="No reviews available..." android:layout_gravity="center" android:textColor="?AccentColour"/>
+            android:layout_height="wrap_content" android:fontFamily="@font/inter" android:text="No reviews available..." android:layout_gravity="center" android:textColor="?AccentColour"/>
   <FrameLayout android:id="@+id/AnimeDetailsPageReviewsTabLoadingOverlay" android:layout_width="match_parent"
                android:layout_height="match_parent" android:background="?BrushLoading">
     <ProgressBar android:layout_width="wrap_content" android:indeterminateTint="?AccentColour"

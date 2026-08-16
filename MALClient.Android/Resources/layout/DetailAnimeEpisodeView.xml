@@ -59,7 +59,7 @@
           android:layout_marginBottom="5dp"
           android:layout_weight="16"
           android:ellipsize="end"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:gravity="center"
           android:maxLines="2"
           android:textAlignment="center"
@@ -87,7 +87,7 @@
         android:layout_marginTop="-5dp"
         android:layout_gravity="start"
         android:layout_marginStart="5dp"
-        android:fontFamily="@string/font_family_light"
+        android:fontFamily="@font/inter"
         android:gravity="center"
         android:textColor="?AccentColourDark"
         android:textStyle="italic"
@@ -95,3 +95,4 @@
         tools:text="Filler, Recap" />
   </LinearLayout>
 </FrameLayout>
+

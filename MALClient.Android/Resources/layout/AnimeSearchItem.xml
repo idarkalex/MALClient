@@ -99,7 +99,7 @@
             android:layout_marginStart="5dp"
             android:layout_marginTop="5dp"
             android:ellipsize="end"
-            android:fontFamily="@string/font_family_light"
+            android:fontFamily="@font/inter"
             android:lines="4"
             android:maxLines="5"
             android:text="Desc."
@@ -170,3 +170,4 @@
     </LinearLayout>
   </LinearLayout>
 </FrameLayout>
+

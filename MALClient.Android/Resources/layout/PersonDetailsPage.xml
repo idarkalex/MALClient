@@ -127,7 +127,7 @@
         <!--<TextView android:text="Staff details"-->
         <!--android:layout_width="wrap_content" android:textColor="?BrushText"-->
         <!--android:textSize="@dimen/FontSizeBig" android:id="@+id/HeaderTextView"-->
-        <!--android:layout_height="wrap_content" android:fontFamily="@string/font_family_light"-->
+        <!--android:layout_height="wrap_content" android:fontFamily="@font/inter"-->
         <!--android:layout_gravity="center_vertical" />-->
 
         <!--</FrameLayout>-->
@@ -162,3 +162,4 @@
   </RelativeLayout>
 
 </FrameLayout>
+

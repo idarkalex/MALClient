@@ -38,7 +38,7 @@
               android:text="Building calendar, please wait..."
               android:layout_gravity="center"
               android:textColor="?BrushText"
-              android:fontFamily="@string/font_family_light"
+              android:fontFamily="@font/inter"
               android:textSize="@dimen/FontSizeMedium" />
   </LinearLayout>
 </RelativeLayout>

@@ -270,7 +270,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:fontFamily="@string/font_family_light"
+            android:fontFamily="@font/inter"
             android:gravity="center"
             android:text="Nothing to show here..."
             android:textColor="?BrushNoSearchResults"
@@ -354,7 +354,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_horizontal"
-          android:fontFamily="@string/font_family_light"
+          android:fontFamily="@font/inter"
           android:gravity="center"
           android:text="No comments found..."
           android:textColor="?BrushNoSearchResults"
@@ -386,3 +386,4 @@
       app:backgroundTint="?AccentColourContrast"
       app:fabSize="normal" />
 </RelativeLayout>
+
