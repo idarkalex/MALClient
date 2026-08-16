@@ -295,6 +295,7 @@
                   android:textSize="14sp" />
             </LinearLayout>
           </LinearLayout>
+        </RelativeLayout>
       </FrameLayout>
 
       <MALClient.Android.UserControls.PagerSlidingTabStrip
