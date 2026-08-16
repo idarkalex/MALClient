@@ -4,6 +4,6 @@
     <color android:color="#0d0d0d"/>
   </item>
   <item>
-    <bitmap android:src="@drawable/headerv2" android:gravity="center"/>
+    <bitmap android:src="@drawable/splash" android:gravity="center" android:tileMode="disabled" />
   </item>
 </layer-list>
