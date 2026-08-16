@@ -24,7 +24,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="320dp"
+            android:layout_height="360dp"
             android:elevation="2dp">
 
           <FrameLayout
@@ -44,16 +44,18 @@
                 android:background="@drawable/hero_gradient_overlay" />
           </FrameLayout>
 
-          <!-- Stats section -->
+          <!-- Floating Stats section with quick actions -->
           <LinearLayout
               android:id="@+id/AnimeDetailsPageUpdateSection"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:layout_alignParentBottom="true"
+              android:layout_margin="16dp"
               android:background="@drawable/electric_midnight_glass_panel"
               android:orientation="horizontal"
               android:padding="16dp">
 
+            <!-- Score column -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -82,6 +84,7 @@
                   android:textStyle="bold" />
             </LinearLayout>
 
+            <!-- Status column -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -111,6 +114,7 @@
                   android:textSize="14sp" />
             </LinearLayout>
 
+            <!-- Watched/Episodes column -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -144,6 +148,7 @@
                   android:visibility="gone" />
             </LinearLayout>
 
+            <!-- Episode controls (inc/dec) -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -188,50 +193,6 @@
                   android:textAllCaps="false"
                   android:textColor="?BrushText"
                   android:visibility="gone" />
-            </LinearLayout>
-
-              <!-- Quick Actions: Add to List, Favorite -->
-            <LinearLayout
-                android:id="@+id/AnimeDetailsPageAddSection"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentBottom="true"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-              <FrameLayout
-                  android:id="@+id/AnimeDetailsPageAddButton"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:clickable="true"
-                  android:focusable="true"
-                  android:gravity="center">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/electric_midnight_glass_button"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:padding="8dp">
-
-                  <ImageView
-                      android:layout_width="18dp"
-                      android:layout_height="18dp"
-                      android:src="@drawable/icon_add"
-                      android:tint="?BrushText" />
-
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:layout_marginStart="6dp"
-                      android:fontFamily="@font/inter"
-                      android:text="Add to my list"
-                      android:textColor="?BrushText"
-                      android:textSize="14sp" />
-                </LinearLayout>
-              </FrameLayout>
             </LinearLayout>
           </LinearLayout>
 
@@ -290,8 +251,8 @@
           <LinearLayout
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:layout_alignParentEnd="true"
               android:layout_alignParentBottom="true"
+              android:layout_alignParentEnd="true"
               android:orientation="horizontal"
               android:padding="12dp">
 
@@ -326,13 +287,103 @@
                 android:src="@drawable/icon_more_vertical"
                 android:tint="?BrushText" />
           </LinearLayout>
+
+          <!-- Add to my list button -->
+          <LinearLayout
+              android:id="@+id/AnimeDetailsPageAddSection"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_alignParentBottom="true"
+              android:layout_alignParentEnd="true"
+              android:layout_gravity="bottom"
+              android:layout_margin="16dp"
+              android:gravity="center"
+              android:orientation="horizontal"
+              android:padding="12dp"
+              android:visibility="gone">
+
+            <FrameLayout
+                android:id="@+id/AnimeDetailsPageAddButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/electric_midnight_glass_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:padding="8dp">
+
+              <LinearLayout
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:gravity="center"
+                  android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/icon_add"
+                    android:tint="?BrushText" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:fontFamily="@font/inter"
+                    android:text="Add to my list"
+                    android:textColor="?BrushText"
+                    android:textSize="14sp" />
+              </LinearLayout>
+            </FrameLayout>
+          </LinearLayout>
         </RelativeLayout>
       </FrameLayout>
+
+      <!-- Quick Actions (Add to List, Favorite) - floating below hero -->
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="-24dp"
+          android:layout_marginStart="16dp"
+          android:layout_marginEnd="16dp"
+          android:layout_marginBottom="8dp"
+          android:background="@drawable/electric_midnight_glass_panel"
+          android:orientation="horizontal"
+          android:padding="12dp">
+
+        <Button
+            android:id="@+id/AnimeDetailsPageQuickAddToListButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/electric_midnight_glass_button"
+            android:fontFamily="@font/inter"
+            android:padding="10dp"
+            android:text="Add to List"
+            android:textAllCaps="false"
+            android:textColor="?BrushText"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/AnimeDetailsPageQuickFavoriteButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/electric_midnight_glass_button"
+            android:fontFamily="@font/inter"
+            android:padding="10dp"
+            android:text="Favorite"
+            android:textAllCaps="false"
+            android:textColor="?BrushText"
+            android:textSize="14sp" />
+      </LinearLayout>
 
       <MALClient.Android.UserControls.PagerSlidingTabStrip
           android:id="@+id/AnimeDetailsPageTabStrip"
           android:layout_width="match_parent"
           android:layout_height="40dp"
+          android:layout_marginStart="16dp"
+          android:layout_marginEnd="16dp"
           android:background="@drawable/electric_midnight_glass_panel"
           android:textColorPrimary="?AccentColour"
           android:textColorSecondary="?BrushTextAccentContrast" />

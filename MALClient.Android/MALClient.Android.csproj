@@ -788,6 +788,8 @@
     <AndroidResource Include="Resources\drawable\hero_gradient_overlay.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_panel.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_button.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_primary_button.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_badge.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\font\inter_regular.ttf" />
