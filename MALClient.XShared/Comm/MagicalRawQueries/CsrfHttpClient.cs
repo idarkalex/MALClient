@@ -13,36 +13,12 @@ namespace MALClient.XShared.Comm.MagicalRawQueries
     /// </summary>
     public class CsrfHttpClient : HttpClient
     {
-        private bool _loggedIn;
-
         public CsrfHttpClient(HttpClientHandler handler) : base(handler)
         {
             Handler = handler;
         }
 
         public string Token { get; set; }
-//#if ANDROID
-//        public string MalSessionIdCookie { get; set; } //logged in
-//        public string MalLogSessionIdCookie { get; set; } //basic
-
-//        public bool LoggedIn
-//        {
-//            get { return _loggedIn; }
-//            set
-//            {
-//                _loggedIn = value;
-//                if (value)
-//                {
-
-//                    DefaultRequestHeaders.Remove("Cookie");
-//                    DefaultRequestHeaders.Add("Cookie",
-//                        $"{MalSessionIdCookie}; {MalLogSessionIdCookie}; is_logged_in=1; ");
-//                }
-
-
-//            }
-//        }
-//#endif
         public bool Disabled { get; set; }
 
         public HttpClientHandler Handler { get; }
