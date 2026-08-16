@@ -1,22 +1,21 @@
 using System;
-using Android.Support.Design.Widget;
 using Android.Views;
+using Com.Google.Android.Material.BottomNavigation;
 
 namespace MALClient.Android.Listeners
 {
     public class BottomNavigationItemSelectedListener : Java.Lang.Object, BottomNavigationView.IOnNavigationItemSelectedListener
     {
-        private readonly Action<IMenuItem> _action;
+        private readonly Func<IMenuItem, bool> _action;
 
-        public BottomNavigationItemSelectedListener(Action<IMenuItem> action)
+        public BottomNavigationItemSelectedListener(Func<IMenuItem, bool> action)
         {
             _action = action;
         }
 
         public bool OnNavigationItemSelected(IMenuItem item)
         {
-            _action?.Invoke(item);
-            return true;
+            return _action?.Invoke(item) ?? true;
         }
     }
 }

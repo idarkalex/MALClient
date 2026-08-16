@@ -15,6 +15,7 @@ using Android.Provider;
 using Android.Runtime;
 using Android.Support.Design.Widget;
 using Android.Support.V4.View;
+using Com.Google.Android.Material.BottomNavigation;
 using Android.Support.V4.Widget;
 using Android.Support.V7.Widget;
 using Android.Views;
@@ -351,7 +352,7 @@ namespace MALClient.Android.Activities
             MainPageHamburgerButton.Visibility = ViewStates.Gone;
             _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
-            MainPageBottomNav.SetOnNavigationItemSelectedListener(new BottomNavigationItemSelectedListener(item => { OnBottomNavigationItemSelected(item); }));
+            MainPageBottomNav.SetOnNavigationItemSelectedListener(new BottomNavigationItemSelectedListener(OnBottomNavigationItemSelected));
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
