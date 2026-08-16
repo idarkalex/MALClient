@@ -27,17 +27,22 @@
             android:layout_height="240dp"
             android:elevation="2dp">
 
-          <FFImageLoading.Views.ImageViewAsync
-              android:id="@+id/AnimeDetailsPageShowCoverImage"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:scaleType="centerCrop" />
-
-          <View
+          <FrameLayout
               android:id="@+id/ImageContainer"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/hero_gradient_overlay" />
+              android:layout_height="match_parent">
+
+            <FFImageLoading.Views.ImageViewAsync
+                android:id="@+id/AnimeDetailsPageShowCoverImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/hero_gradient_overlay" />
+          </FrameLayout>
 
           <!-- Stats section -->
           <LinearLayout
