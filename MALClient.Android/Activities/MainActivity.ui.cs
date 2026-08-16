@@ -547,33 +547,34 @@ namespace MALClient.Android.Activities
         }
 
         private int _lastBottomNavSelectedItemId = -1;
+        private Handler _bottomNavHandler;
+        private Runnable _bottomNavRunnable;
 
         private void StartBottomNavPolling()
         {
+            _bottomNavHandler = new Handler();
+            _bottomNavRunnable = new Runnable(() =>
+            {
+                try
+                {
+                    var currentSelected = MainPageBottomNav.SelectedItemId;
+                    if (_lastBottomNavSelectedItemId != -1 && currentSelected != _lastBottomNavSelectedItemId)
+                    {
+                        _lastBottomNavSelectedItemId = currentSelected;
+                        OnBottomNavigationItemSelected(currentSelected);
+                    }
+                    else
+                    {
+                        _lastBottomNavSelectedItemId = currentSelected;
+                    }
+                }
+                finally
+                {
+                    _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
+                }
+            });
             _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
         }
-
-        private Handler _bottomNavHandler = new Handler();
-        private Runnable _bottomNavRunnable = new Runnable(() =>
-        {
-            try
-            {
-                var currentSelected = MainPageBottomNav.SelectedItemId;
-                if (_lastBottomNavSelectedItemId != -1 && currentSelected != _lastBottomNavSelectedItemId)
-                {
-                    _lastBottomNavSelectedItemId = currentSelected;
-                    OnBottomNavigationItemSelected(currentSelected);
-                }
-                else
-                {
-                    _lastBottomNavSelectedItemId = currentSelected;
-                }
-            }
-            finally
-            {
-                _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
-            }
-        });
 
 
 
