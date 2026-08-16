@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using MALClient.Models.Enums;
 using MALClient.Models.Models;
 using MALClient.Models.Models.ApiResponses;
 using MALClient.Models.Models.Favourites;
