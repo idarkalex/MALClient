@@ -14,7 +14,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?BrushDetailsUpperBackground"
         android:orientation="vertical">
 
       <FrameLayout
@@ -40,6 +39,7 @@
               android:layout_height="match_parent"
               android:background="@drawable/hero_gradient_overlay" />
 
+          <!-- Stats section -->
           <LinearLayout
               android:id="@+id/AnimeDetailsPageUpdateSection"
               android:layout_width="match_parent"
@@ -48,6 +48,7 @@
               android:background="@drawable/electric_midnight_glass_panel"
               android:orientation="horizontal"
               android:padding="16dp">
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -184,59 +185,103 @@
                   android:visibility="gone" />
             </LinearLayout>
 
-            <!-- Inc Dec section -->
-            <RelativeLayout
-                android:id="@+id/AnimeDetailsPageIncDecSection"
+              <!-- Quick Actions: Add to List, Favorite -->
+            <LinearLayout
+                android:id="@+id/AnimeDetailsPageAddSection"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_vertical">
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="auto"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
-              <LinearLayout
+              <FrameLayout
+                  android:id="@+id/AnimeDetailsPageAddButton"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:layout_alignParentEnd="true"
-                  android:orientation="vertical"
-                  android:padding="10dp">
+                  android:clickable="true"
+                  android:focusable="true"
+                  android:gravity="center">
 
-                <FrameLayout
-                    android:id="@+id/AnimeDetailsPageIncrementButton"
-                    android:layout_width="@dimen/IncrementDecrementButtonWidth"
-                    android:layout_height="@dimen/IncrementDecrementButtonWidth"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:selectableItemBackground">
-
-                  <ImageView
-                      android:layout_width="match_parent"
-                      android:layout_height="match_parent"
-                      android:layout_gravity="center"
-                      android:background="@drawable/electric_midnight_glass_button"
-                      android:padding="8dp"
-                      android:src="@drawable/icon_add"
-                      android:tint="?BrushText" />
-                </FrameLayout>
-
-                <FrameLayout
-                    android:id="@+id/AnimeDetailsPageDecrementButton"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:selectableItemBackground">
+                    android:background="@drawable/electric_midnight_glass_button"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
 
                   <ImageView
-                      android:layout_width="@dimen/IncrementDecrementButtonWidth"
-                      android:layout_height="@dimen/IncrementDecrementButtonWidth"
-                      android:background="@drawable/electric_midnight_glass_button"
-                      android:padding="8dp"
-                      android:src="@drawable/icon_minus"
+                      android:layout_width="18dp"
+                      android:layout_height="18dp"
+                      android:src="@drawable/icon_add"
                       android:tint="?BrushText" />
-                </FrameLayout>
-              </LinearLayout>
-            </RelativeLayout>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginStart="6dp"
+                      android:fontFamily="@font/inter"
+                      android:text="Add to my list"
+                      android:textColor="?BrushText"
+                      android:textSize="14sp" />
+                </LinearLayout>
+              </FrameLayout>
+            </LinearLayout>
           </LinearLayout>
-          <!--Fav More section-->
+
+          <!-- Inc Dec section -->
+          <RelativeLayout
+              android:id="@+id/AnimeDetailsPageIncDecSection"
+              android:layout_width="wrap_content"
+              android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+              <FrameLayout
+                  android:id="@+id/AnimeDetailsPageIncrementButton"
+                  android:layout_width="@dimen/IncrementDecrementButtonWidth"
+                  android:layout_height="@dimen/IncrementDecrementButtonWidth"
+                  android:clickable="true"
+                  android:focusable="true"
+                  android:foreground="?android:selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="@drawable/electric_midnight_glass_button"
+                    android:padding="8dp"
+                    android:src="@drawable/icon_add"
+                    android:tint="?BrushText" />
+              </FrameLayout>
+
+              <FrameLayout
+                  android:id="@+id/AnimeDetailsPageDecrementButton"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="10dp"
+                  android:clickable="true"
+                  android:focusable="true"
+                  android:foreground="?android:selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="@dimen/IncrementDecrementButtonWidth"
+                    android:layout_height="@dimen/IncrementDecrementButtonWidth"
+                    android:background="@drawable/electric_midnight_glass_button"
+                    android:padding="8dp"
+                    android:src="@drawable/icon_minus"
+                    android:tint="?BrushText" />
+              </FrameLayout>
+            </LinearLayout>
+          </RelativeLayout>
+
+          <!-- Favourite and More buttons -->
           <LinearLayout
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
@@ -275,25 +320,6 @@
                 android:padding="8dp"
                 android:src="@drawable/icon_more_vertical"
                 android:tint="?BrushText" />
-
-            <LinearLayout
-                android:id="@+id/AnimeDetailsPageAddSection"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_margin="16dp"
-                android:orientation="horizontal"
-                android:padding="8dp"
-                android:visibility="gone">
-
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:fontFamily="@font/inter"
-                  android:text="Add to my list"
-                  android:textColor="?BrushText"
-                  android:textSize="14sp" />
-            </LinearLayout>
           </LinearLayout>
         </RelativeLayout>
       </FrameLayout>
@@ -330,4 +356,3 @@
         android:indeterminateTintMode="src_in" />
   </RelativeLayout>
 </RelativeLayout>
-
