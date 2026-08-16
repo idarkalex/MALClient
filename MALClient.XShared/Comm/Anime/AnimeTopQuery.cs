@@ -49,10 +49,8 @@ namespace MALClient.XShared.Comm.Anime
         public AnimeTopQuery(TopAnimeType topType,int page = 0)
         {
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString($"https://myanimelist.net/{GetEndpoint(topType,page)}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
             _page = page;
             _type = topType;
             _isManga = false;
@@ -61,10 +59,8 @@ namespace MALClient.XShared.Comm.Anime
         public AnimeTopQuery(MangaTopType topType, int page = 0)
         {
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString($"https://myanimelist.net/{GetMangaEndpoint(topType, page)}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
             _page = page;
             _mangaType = topType;
             _isManga = true;

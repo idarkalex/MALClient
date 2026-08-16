@@ -22,12 +22,10 @@ namespace MALClient.XShared.Comm.Articles
         {
             _mode = mode;
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString(mode == ArticlePageWorkMode.Articles
                         ? "https://myanimelist.net/featured"
                         : "https://myanimelist.net/news"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public async Task<List<MalNewsUnitModel>> GetArticlesIndex(bool force = false)

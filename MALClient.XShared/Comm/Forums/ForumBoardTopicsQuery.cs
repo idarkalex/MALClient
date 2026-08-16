@@ -34,9 +34,7 @@ namespace MALClient.XShared.Comm.Forums
         public ForumBoardTopicsQuery(ForumBoards board,int page)
         {
             Request =
-                WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/forum/{GetEndpoint(board)}&show={page*50}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString($"https://myanimelist.net/forum/{GetEndpoint(board)}&show={page*50}"));
             _board = board;
             _page = page;
         }
@@ -49,9 +47,7 @@ namespace MALClient.XShared.Comm.Forums
         public ForumBoardTopicsQuery(int animeId,int page,bool anime)
         {
             Request =
-                WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/forum/?{(anime ? "anime" : "manga")}id={animeId}&show={page*50}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString($"https://myanimelist.net/forum/?{(anime ? "anime" : "manga")}id={animeId}&show={page*50}"));
             _animeId = animeId;
             _page = page;
         }
@@ -59,9 +55,7 @@ namespace MALClient.XShared.Comm.Forums
         public ForumBoardTopicsQuery(string clubId,int page)
         {
             Request =
-                WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/forum/?clubid={clubId}&show={page*50}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString($"https://myanimelist.net/forum/?clubid={clubId}&show={page*50}"));
             _clubId = clubId;
             _page = page;
         }

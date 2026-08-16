@@ -113,11 +113,9 @@ namespace MALClient.XShared.Comm.Anime
             _page = page;
             _source = source;
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString(
                         $"https://www.reddit.com/r/{subreddit}/hot.json?limit={_itemsToPull}&count={page*_itemsToPull}{(string.IsNullOrEmpty(after) ? "" : $"&after={after}")}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         private async Task<List<AnimeWallpaperData>> GetWallpapers()

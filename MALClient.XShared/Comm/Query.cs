@@ -14,7 +14,7 @@ namespace MALClient.XShared.Comm
     public abstract class Query
     {
 
-        protected WebRequest Request;
+        protected Uri Request;
         private bool _retry = true;
         public static ApiType CurrentApiType { get; set; } = Settings.SelectedApiType;
 
@@ -38,8 +38,8 @@ namespace MALClient.XShared.Comm
             var responseString = "";
             try
             {
-                var res = await _client.GetAsync(Request.RequestUri);
-                if (res.StatusCode == HttpStatusCode.Forbidden && !Request.RequestUri.ToString()
+                var res = await _client.GetAsync(Request);
+                if (res.StatusCode == HttpStatusCode.Forbidden && !Request.ToString()
                         .Contains("https://myanimelist.net/rss.php?type=rw&u=")) //workaround because I don't want to disturb the spaghetti gods sleeping around
                 {
                     HandleMalBuggines();

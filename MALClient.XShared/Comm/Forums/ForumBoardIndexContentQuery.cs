@@ -14,9 +14,7 @@ namespace MALClient.XShared.Comm.Forums
         public ForumBoardIndexContentQuery()
         {
             Request =
-                WebRequest.Create(Uri.EscapeUriString("https://myanimelist.net/forum/"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString("https://myanimelist.net/forum/"));
         }
 
         public async Task<ForumIndexContent> GetPeekPosts()

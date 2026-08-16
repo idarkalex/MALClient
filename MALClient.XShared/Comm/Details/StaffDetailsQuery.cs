@@ -20,10 +20,8 @@ namespace MALClient.XShared.Comm.Details
         {
             _id = id;
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString($"https://myanimelist.net/people/{id}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public async Task<StaffDetailsData> GetStaffDetails(bool force)

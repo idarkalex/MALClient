@@ -15,11 +15,9 @@ namespace MALClient.XShared.Comm.MalSpecific
         public PopularVideosQuery()
         {
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString(
                         "https://myanimelist.net/watch/promotion"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public async Task<List<AnimeVideoData>> GetVideos()

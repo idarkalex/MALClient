@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -31,17 +31,13 @@ namespace MALClient.XShared.Comm.Profile
             {
                 case ApiType.Mal:
                     Request =
-                        WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/profile/{userName}"));
-                    Request.ContentType = "application/x-www-form-urlencoded";
-                    Request.Method = "GET";
+                        new Uri(Uri.EscapeUriString($"https://myanimelist.net/profile/{userName}"));
                     break;
                 case ApiType.Hummingbird:
                     Request =
-                        WebRequest.Create(
+                        new Uri(
                             Uri.EscapeUriString(
                                 $"https://hummingbird.me/api/v1/users/{Credentials.UserName}{(feed ? "/feed" : "")}"));
-                    Request.ContentType = "application/x-www-form-urlencoded";
-                    Request.Method = "GET";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

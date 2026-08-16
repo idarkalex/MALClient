@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -24,9 +24,7 @@ namespace MALClient.XShared.Comm.Anime
 
         public AnimeAdaptedToAnimeQuery(MangaAdaptedType type)
         {
-            Request = WebRequest.Create(Uri.EscapeUriString(GetEndpoint(type)));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+            Request = new Uri(Uri.EscapeUriString(GetEndpoint(type)));
             _type = type;
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,11 +23,9 @@ namespace MALClient.XShared.Comm.MalSpecific
             public FeedQuery(string username)
             {
                 Request =
-                    WebRequest.Create(
+                    new Uri(
                         Uri.EscapeUriString(
                             $"https://myanimelist.net/rss.php?type=rw&u={username}"));
-                Request.ContentType = "application/x-www-form-urlencoded";
-                Request.Method = "GET";
             }
         }
 

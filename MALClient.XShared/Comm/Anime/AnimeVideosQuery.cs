@@ -18,11 +18,9 @@ namespace MALClient.XShared.Comm.Anime
         {
             _id = id;
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString(
                         $"https://myanimelist.net/anime/{id}/whatever/video"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public async Task<List<AnimeVideoData>> GetVideos(bool force)

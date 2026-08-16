@@ -20,9 +20,7 @@ namespace MALClient.XShared.Comm.Anime
             _id = id;
             _anime = anime;
             Request =
-                WebRequest.Create(new Uri($"https://myanimelist.net/{(anime ? "anime" : "manga")}/{id}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri($"https://myanimelist.net/{(anime ? "anime" : "manga")}/{id}");
         }
 
         private async Task<string> GetTitle()

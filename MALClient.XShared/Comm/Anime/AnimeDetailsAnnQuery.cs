@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using MALClient.Models.Models.Anime;
@@ -17,10 +16,8 @@ namespace MALClient.XShared.Comm.Anime
         {
             title = title.Replace('+', ' ');
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString($"http://cdn.animenewsnetwork.com/encyclopedia/api.xml?title=~{title}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
             _id = id;
             _rootTitle = rootTitle;
         }

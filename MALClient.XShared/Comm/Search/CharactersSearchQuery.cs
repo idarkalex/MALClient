@@ -15,10 +15,8 @@ namespace MALClient.XShared.Comm.Search
         public CharactersSearchQuery(string query)
         {
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString($"https://myanimelist.net/character.php?q={query}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public async Task<List<AnimeCharacter>> GetSearchResults()

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MALClient.Models.Models.MalSpecific;
@@ -17,9 +16,7 @@ namespace MALClient.XShared.Comm.Articles
             _type = type;
             _title = title;
             Request =
-                WebRequest.Create(Uri.EscapeUriString(url));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString(url));
         }
 
         public async Task<string> GetArticleHtml()

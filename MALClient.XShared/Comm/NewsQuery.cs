@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 
 namespace MALClient.XShared.Comm
 {
@@ -8,10 +7,8 @@ namespace MALClient.XShared.Comm
         public NewsQuery()
         {
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString("https://raw.githubusercontent.com/Mordonus/MALClient/master/NEWS.json"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
     }
 }

@@ -16,9 +16,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             _anime = anime;
             Request =
-                WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/recommendations.php?s=recentrecs&t={(anime ? "anime" : "manga")}"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString($"https://myanimelist.net/recommendations.php?s=recentrecs&t={(anime ? "anime" : "manga")}"));
         }
 
         public async Task<List<RecommendationData>> GetRecomendationsData()

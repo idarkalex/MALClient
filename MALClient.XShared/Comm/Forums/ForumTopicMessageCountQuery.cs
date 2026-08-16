@@ -14,9 +14,7 @@ namespace MALClient.XShared.Comm.Forums
         public ForumTopicMessageCountQuery(string id)
         {
             Request =
-                WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/forum/?topicid={id}&goto=lastpost"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString($"https://myanimelist.net/forum/?topicid={id}&goto=lastpost"));
         }
 
         public async Task<int?> GetMessageCount(bool failIfLastMessageIsMine)

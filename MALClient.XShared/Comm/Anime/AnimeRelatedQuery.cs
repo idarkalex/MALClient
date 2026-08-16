@@ -20,9 +20,7 @@ namespace MALClient.XShared.Comm.Anime
         public AnimeRelatedQuery(int id, bool anime = true)
         {
             Request =
-                WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/{(anime ? "anime" : "manga")}/{id}/"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+                new Uri(Uri.EscapeUriString($"https://myanimelist.net/{(anime ? "anime" : "manga")}/{id}/"));
             _animeId = id;
             _animeMode = anime;
         }

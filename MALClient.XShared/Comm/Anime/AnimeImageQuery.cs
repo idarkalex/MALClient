@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,10 +128,8 @@ namespace MALClient.XShared.Comm.Anime
         private async Task<string> FetchImageUrl()
         {
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString($"https://myanimelist.net/{(_anime ? "anime" : "manga")}/{_id}/what/pics"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
 
             var raw = await GetRequestResponse();
             var doc = new HtmlDocument();

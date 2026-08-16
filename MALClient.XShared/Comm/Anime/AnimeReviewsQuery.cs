@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -22,10 +22,8 @@ namespace MALClient.XShared.Comm.Anime
         public AnimeReviewsQuery(int id, bool anime = true)
         {
             Request =
-                WebRequest.Create(
+                new Uri(
                     Uri.EscapeUriString($"https://myanimelist.net/{(anime ? "anime" : "manga")}/{id}/whatever/reviews"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
             _targetId = id;
             _anime = anime;
         }
@@ -81,7 +79,7 @@ namespace MALClient.XShared.Comm.Anime
                 if (string.IsNullOrEmpty(parsed.MoreReviewsUrl))
                     break;
 
-                url = new Uri(new Uri("https://myanimelist.net/"), parsed.MoreReviewsUrl).AbsoluteUri;
+                url = new Uri("https://myanimelist.net/"), parsed.MoreReviewsUrl).AbsoluteUri;
             }
 
             return output;
