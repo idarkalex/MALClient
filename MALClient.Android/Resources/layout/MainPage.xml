@@ -118,7 +118,7 @@
          app:menu="@menu/bottom_nav_menu"
          app:itemIconTint="@drawable/bottom_nav_item_color"
          app:itemTextColor="@drawable/bottom_nav_item_color"
-         app:labelVisibilityMode="all" />
+         app:labelVisibilityMode="labeled" />
 
     </LinearLayout>
 
