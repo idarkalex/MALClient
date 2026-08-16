@@ -348,6 +348,9 @@ namespace MALClient.Android.Activities
             BuildDrawer();
             _drawer.OnDrawerItemClickListener = new HamburgerItemClickListener(OnHamburgerItemClick);
 
+            MainPageHamburgerButton.Visibility = ViewStates.Gone;
+            _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
+
             MainPageBottomNav.SetOnNavigationItemSelectedListener(new BottomNavigationItemSelectedListener(OnBottomNavigationItemSelected));
 
             MainPageCloseVideoButton.SetZ(0);

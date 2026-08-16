@@ -119,9 +119,6 @@ namespace MALClient.Android.Activities
                 DroppyMenuPopup.ResetOverrideRequested +=
                     (sender, eventArgs) => ViewModelLocator.NavMgr.ResetOneTimeOverride();
 
-                FindViewById<LinearLayout>(Resource.Id.MainUpperNavBar).FindViewById<ImageButton>(Resource.Id.MainPageHamburgerButton).Visibility = ViewStates.Gone;
-                FindViewById<Android.Support.V4.Widget.DrawerLayout>(Resource.Id.MainDrawerLayout)?.SetDrawerLockMode(Android.Support.V4.Widget.DrawerLayout.LockModeLockedClosed);
-
                 _addedNavHandlers = true;
             }
 
