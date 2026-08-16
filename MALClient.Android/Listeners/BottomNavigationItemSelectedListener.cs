@@ -1,10 +1,10 @@
 using System;
-using Android.Runtime;
 using Android.Views;
+using Com.Google.Android.Material.BottomNavigation;
 
 namespace MALClient.Android.Listeners
 {
-    public class BottomNavigationItemSelectedListener : Java.Lang.Object, global::Android.Support.Design.Widget.BottomNavigationView.IOnNavigationItemSelectedListener
+    public class BottomNavigationItemSelectedListener : Java.Lang.Object, BottomNavigationView.IOnNavigationItemSelectedListener
     {
         private readonly Func<IMenuItem, bool> _action;
 
@@ -13,7 +13,6 @@ namespace MALClient.Android.Listeners
             _action = action;
         }
 
-        [Register("onNavigationItemSelected", "(Landroid/view/MenuItem;)Z", "GetOnNavigationItemSelected_Landroid_view_MenuItem_Handler")]
         public bool OnNavigationItemSelected(IMenuItem item)
         {
             return _action?.Invoke(item) ?? true;
