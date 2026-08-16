@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Android;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -13,6 +7,7 @@ using Android.Support.V7.App;
 using Android.Views;
 using Com.Orhanobut.Dialogplus;
 using Com.Shehabic.Droppy;
+using Com.Google.Android.Material.BottomNavigation;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Ioc;
 using MALClient.Android.DIalogs;
@@ -118,6 +113,10 @@ namespace MALClient.Android.Activities
                     (sender, action) => ViewModelLocator.NavMgr.RegisterOneTimeMainOverride(new RelayCommand(action));
                 DroppyMenuPopup.ResetOverrideRequested +=
                     (sender, eventArgs) => ViewModelLocator.NavMgr.ResetOneTimeOverride();
+
+                // Hide hamburger drawer initially (bottom nav replaces navigation)
+                FindViewById<LinearLayout>(Resource.Id.MainUpperNavBar).FindViewById<ImageButton>(Resource.Id.MainPageHamburgerButton).Visibility = ViewStates.Gone;
+                FindViewById<DrawerLayout>(Resource.Id.MainDrawerLayout)?.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
                 _addedNavHandlers = true;
             }

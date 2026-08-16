@@ -14,6 +14,7 @@ using Android.OS;
 using Android.Provider;
 using Android.Runtime;
 using Android.Support.Design.Widget;
+using Com.Google.Android.Material.BottomNavigation;
 using Android.Support.V4.View;
 using Android.Support.V4.Widget;
 using Android.Support.V7.Widget;
@@ -345,8 +346,10 @@ namespace MALClient.Android.Activities
                     .Share(ResourceLocator.ShareManager.GenerateMessage());
             }));
             ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
-            BuildDrawer();     
+            BuildDrawer();
             _drawer.OnDrawerItemClickListener = new HamburgerItemClickListener(OnHamburgerItemClick);
+
+            MainPageBottomNav.SetOnNavigationItemSelectedListener(new BottomNavigationItemSelectedListener(OnBottomNavigationItemSelected));
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
@@ -515,6 +518,32 @@ namespace MALClient.Android.Activities
             _drawer.CloseDrawer();
         }
 
+        private bool OnBottomNavigationItemSelected(IMenuItem menuItem)
+        {
+            PageIndex page;
+            switch (menuItem.ItemId)
+            {
+                case Resource.Id.bottom_nav_discover:
+                    page = PageIndex.PageDiscover;
+                    break;
+                case Resource.Id.bottom_nav_anime:
+                    page = PageIndex.PageAnimeList;
+                    break;
+                case Resource.Id.bottom_nav_manga:
+                    page = PageIndex.PageMangaList;
+                    break;
+                case Resource.Id.bottom_nav_more:
+                    page = PageIndex.PageSettings;
+                    break;
+                default:
+                    return false;
+            }
+
+            SetActiveButton(XShared.Utils.Utilities.GetButtonForPage(page));
+            ViewModelLocator.GeneralMain.Navigate(page, GetAppropriateArgsForPage(page));
+            return true;
+        }
+
 
 
         private void MainPageHamburgerButtonOnClick(object sender, EventArgs eventArgs)
@@ -652,6 +681,7 @@ namespace MALClient.Android.Activities
         private ImageButton _mainPageCloseVideoButton;
         private RelativeLayout _mainPageVideoViewContainer;
         private LinearLayout _mainPageRoot;
+        private BottomNavigationView _mainPageBottomNav;
 
         public ImageButton MainPageHamburgerButton => GetView(ref _mainPageHamburgerButton, Resource.Id.MainPageHamburgerButton);
         public TextView MainPageCurrentStatus => GetView(ref _mainPageCurrentStatus, Resource.Id.MainPageCurrentStatus);
@@ -668,6 +698,8 @@ namespace MALClient.Android.Activities
         public ImageButton MainPageCloseVideoButton => GetView(ref _mainPageCloseVideoButton, Resource.Id.MainPageCloseVideoButton);
         public RelativeLayout MainPageVideoViewContainer => GetView(ref _mainPageVideoViewContainer, Resource.Id.MainPageVideoViewContainer);
         public LinearLayout MainPageRoot => GetView(ref _mainPageRoot, Resource.Id.MainPageRoot);
+
+        public BottomNavigationView MainPageBottomNav => GetView(ref _mainPageBottomNav, Resource.Id.MainPageBottomNav);
 
         #endregion
 
