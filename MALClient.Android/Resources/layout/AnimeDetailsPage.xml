@@ -190,8 +190,8 @@
                 android:id="@+id/AnimeDetailsPageAddSection"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="auto"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
                 android:orientation="horizontal"
                 android:visibility="gone">
 
