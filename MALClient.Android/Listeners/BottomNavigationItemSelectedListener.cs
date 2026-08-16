@@ -1,6 +1,6 @@
 using System;
+using Android.Support.Design.Widget;
 using Android.Views;
-using Com.Google.Android.Material.BottomNavigation;
 using Java.Lang;
 
 namespace MALClient.Android.Listeners
