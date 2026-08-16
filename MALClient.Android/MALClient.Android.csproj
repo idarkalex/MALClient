@@ -241,6 +241,7 @@
     <Compile Include="Listeners\OnLongClickListener.cs" />
     <Compile Include="Listeners\OnPageChangedListener.cs" />
     <Compile Include="Listeners\OnPreparedListener.cs" />
+    <Compile Include="Listeners\BottomNavigationItemSelectedListener.cs" />
     <Compile Include="Listeners\OnScrollListener.cs" />
     <Compile Include="Listeners\OnTextEnterListener.cs" />
     <Compile Include="Listeners\OnTouchListener.cs" />
@@ -1306,6 +1307,8 @@
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\octo.png" />
     <AndroidResource Include="Resources\drawable\icon_report.xml" />
+    <AndroidResource Include="Resources\drawable\bottom_nav_item_color.xml" />
+    <AndroidResource Include="Resources\menu\bottom_nav_menu.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
