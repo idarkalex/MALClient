@@ -51,14 +51,14 @@ namespace MALClient.XShared.Utils
                 .Replace("AccentColourLight", AccentColourLight)
                 .Replace("AccentColourDark", AccentColourDark)
                 .Replace("BodyBackgroundThemeColor",
-                    Settings.SelectedTheme == 1 ? "#2d2d2d" : "#e6e6e6")
+                    Settings.SelectedTheme == 1 ? "#051522" : "#e6e6e6")
                 .Replace("BodyForegroundThemeColor",
                     Settings.SelectedTheme == 1 ? "white" : "black")
                 .Replace(
                     "HorizontalSeparatorColor",
-                    Settings.SelectedTheme == 1 ? "#0d0d0d" : "#b3b3b3")
+                    Settings.SelectedTheme == 1 ? "#424656" : "#b3b3b3")
                 .Replace("BodyBackgroundThemeDarkerColor",
-                    Settings.SelectedTheme == 1 ? "#212121" : "#dadada")
+                    Settings.SelectedTheme == 1 ? "#0d1d2a" : "#dadada")
                 .Replace("ShadowDefinition", ShadowsDefinition);
 
             bodyCss = bodyCss.Replace("AccentColourBase", AccentColour).

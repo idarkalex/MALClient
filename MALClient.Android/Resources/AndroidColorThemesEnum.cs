@@ -29,13 +29,8 @@ namespace MALClient.Android.Resources
     {
         public static AndroidColorThemes CurrentTheme
         {
-            get
-            {
-                return
-                    (AndroidColorThemes)
-                    (ResourceLocator.ApplicationDataService[nameof(AndroidColorThemes)] ?? AndroidColorThemes.Blue);
-            }
-            set { ResourceLocator.ApplicationDataService[nameof(AndroidColorThemes)] = (int) value; }
+            get { return AndroidColorThemes.Blue; }
+            set { }
         }
     }
 }

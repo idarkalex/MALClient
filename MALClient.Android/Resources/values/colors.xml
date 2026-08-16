@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <color name="ic_launcher_background">#0d0d0d</color>
+  <color name="ic_launcher_background">#051522</color>
 
   <color name="LightBrushText">#000000</color>
   <color name="LightBrushTextInverted">#ffffff</color>
@@ -35,36 +35,36 @@
   <color name="LightBrushForumPinnedBoard">#bffafafa</color>
 
 
-  <color name="DarkBrushText">#ffffff </color>
-  <color name="DarkBrushTextInverted">#000000 </color>
-  <color name="DarkBrushDeepBackground">#0d0d0d </color>
-  <color name="DarkBrushAppBars">#151515</color>
-  <color name="DarkBrushAppBarUpper">#151515</color>
-  <color name="DarkBrushAppBarText">#ffffff</color>
-  <color name="DarkBrushPivotHeaderBackground">#202020</color>
-  <color name="DarkBrushHamburgerBackground">#1a1a1a</color>
-  <color name="DarkBrushAnimeItemBackground">#2a2c2a</color>
-  <color name="DarkBrushHamburgerInnerBackground">#000000</color>
-  <color name="DarkBrushAnimeItemInnerBackground">#212121</color>
-  <color name="DarkBrushLoading">#bd2a2c2a</color>
-  <color name="DarkBrushLoadingNonTransparent">#7f2a2c2a</color>
-  <color name="DarkBrushLoadingNonOpaque">#0a0a0a</color>
-  <color name="DarkBrushRowAlternate1">#AA2a2c2a</color>
-  <color name="DarkBrushRowAlternate2">#111111</color>
-  <color name="DarkBrushDetailsGeneralBorder">#151515</color>
-  <color name="DarkBrushDetailsRelatedBackground">#1E1E1E</color>
-  <color name="DarkBrushDetailsBackground">#0d0d0d</color>
-  <color name="DarkBrushDetailsUpperBackground">#1a1a1a</color>
-  <color name="DarkBrushDetailsMoreButton">#404040</color>
-  <color name="DarkBrushPivotInnerHeaderBarBackground">#252525</color>
-  <color name="DarkBrushNewsBackground">#bd2f2f2f</color>
-  <color name="DarkBrushPinTileDialogOverlay">#bd2a2c2a</color>
-  <color name="DarkBrushPinTileDialogBackground">#303030</color>
-  <color name="DarkBrushSettingsSubtitle">#d3d3d3 </color>
+  <color name="DarkBrushText">#d4e4f7</color>
+  <color name="DarkBrushTextInverted">#000D1A</color>
+  <color name="DarkBrushDeepBackground">#000D1A</color>
+  <color name="DarkBrushAppBars">#051522</color>
+  <color name="DarkBrushAppBarUpper">#051522</color>
+  <color name="DarkBrushAppBarText">#d4e4f7</color>
+  <color name="DarkBrushPivotHeaderBackground">#11212f</color>
+  <color name="DarkBrushHamburgerBackground">#0d1d2a</color>
+  <color name="DarkBrushAnimeItemBackground">#11212f</color>
+  <color name="DarkBrushHamburgerInnerBackground">#010f1c</color>
+  <color name="DarkBrushAnimeItemInnerBackground">#1c2b39</color>
+  <color name="DarkBrushLoading">#bd11212f</color>
+  <color name="DarkBrushLoadingNonTransparent">#7f11212f</color>
+  <color name="DarkBrushLoadingNonOpaque">#0d1d2a</color>
+  <color name="DarkBrushRowAlternate1">#AA11212f</color>
+  <color name="DarkBrushRowAlternate2">#1c2b39</color>
+  <color name="DarkBrushDetailsGeneralBorder">#424656</color>
+  <color name="DarkBrushDetailsRelatedBackground">#0d1d2a</color>
+  <color name="DarkBrushDetailsBackground">#000D1A</color>
+  <color name="DarkBrushDetailsUpperBackground">#051522</color>
+  <color name="DarkBrushDetailsMoreButton">#273645</color>
+  <color name="DarkBrushPivotInnerHeaderBarBackground">#1c2b39</color>
+  <color name="DarkBrushNewsBackground">#bd11212f</color>
+  <color name="DarkBrushPinTileDialogOverlay">#bd000D1A</color>
+  <color name="DarkBrushPinTileDialogBackground">#1c2b39</color>
+  <color name="DarkBrushSettingsSubtitle">#c2c6d8</color>
   <color name="DarkBrushFavouriteStarBackground">#bd000000</color>
-  <color name="DarkBrushNoSearchResults">#B9B9B9</color>
+  <color name="DarkBrushNoSearchResults">#8c90a1</color>
   <color name="DarkBrushMediaElementShadow">#e5000000</color>
-  <color name="DarkBrushForumPinnedBoard">#7f151515</color>
+  <color name="DarkBrushForumPinnedBoard">#7f051522</color>
   <!-- Orange accent -->
   <color name="OrangeDarkBrushMessageBubbleMine">#7d340e</color>
   <color name="OrangeDarkBrushMessageBubbleOther">#6a2d0d</color>
@@ -96,11 +96,11 @@
   <color name="BlueLightBrushMessageBubbleMine">#99c1e0</color>
   <color name="BlueLightBrushMessageBubbleOther">#7fb1d8</color>
 
-  <color name="BlueAccentColour">#0063b1</color>
-  <color name="BlueAccentColourDark">#0c4674</color>
-  <color name="BlueAccentColourLight">#1474c0</color>
-  <color name="BlueOpaqueAccentColour">#7f0063b1</color>
-  <color name="BlueAccentColourContrast">#fbb000</color>
+  <color name="BlueAccentColour">#0066FF</color>
+  <color name="BlueAccentColourDark">#0054d6</color>
+  <color name="BlueAccentColourLight">#4d94ff</color>
+  <color name="BlueOpaqueAccentColour">#7f0066FF</color>
+  <color name="BlueAccentColourContrast">#ffffff</color>
 
   <!-- Lime accent -->
   <color name="LimeDarkBrushMessageBubbleMine">#5f7c1a</color>
