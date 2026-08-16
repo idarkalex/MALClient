@@ -268,10 +268,10 @@ namespace MALClient.Android.Fragments.SearchFragments
         private LinearLayout _firstSearchSection;
         private ProgressBar _loadingSpinner;
 
-        public RecyclerView SearchRecyclerView => _searchRecyclerView ?? (_searchRecyclerView = FindViewById<RecyclerView>(Resource.Id.SearchRecyclerView));
-        public TextView EmptyNotice => _emptyNotice ?? (_emptyNotice = FindViewById<TextView>(Resource.Id.EmptyNotice));
-        public LinearLayout FirstSearchSection => _firstSearchSection ?? (_firstSearchSection = FindViewById<LinearLayout>(Resource.Id.FirstSearchSection));
-        public ProgressBar LoadingSpinner => _loadingSpinner ?? (_loadingSpinner = FindViewById<ProgressBar>(Resource.Id.LoadingSpinner));
+        public RecyclerView SearchRecyclerView => GetView(ref _searchRecyclerView, Resource.Id.SearchRecyclerView);
+        public TextView EmptyNotice => GetView(ref _emptyNotice, Resource.Id.EmptyNotice);
+        public LinearLayout FirstSearchSection => GetView(ref _firstSearchSection, Resource.Id.FirstSearchSection);
+        public ProgressBar LoadingSpinner => GetView(ref _loadingSpinner, Resource.Id.LoadingSpinner);
 
         #endregion
 

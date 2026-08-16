@@ -185,15 +185,15 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
         private ToggleButton _profilePageFavouritesTabCharactersToggleButton;
         private ToggleButton _profilePageFavouritesTabPeopleToggleButton;
 
-        public GridView ProfilePageFavouritesTabGridView => _profilePageFavouritesTabGridView ?? (_profilePageFavouritesTabGridView = FindViewById<GridView>(Resource.Id.ProfilePageFavouritesTabGridView));
+        public GridView ProfilePageFavouritesTabGridView => GetView(ref _profilePageFavouritesTabGridView, Resource.Id.ProfilePageFavouritesTabGridView);
 
-        public ToggleButton ProfilePageFavouritesTabAnimeToggleButton => _profilePageFavouritesTabAnimeToggleButton ?? (_profilePageFavouritesTabAnimeToggleButton = FindViewById<ToggleButton>(Resource.Id.ProfilePageFavouritesTabAnimeToggleButton));
+        public ToggleButton ProfilePageFavouritesTabAnimeToggleButton => GetView(ref _profilePageFavouritesTabAnimeToggleButton, Resource.Id.ProfilePageFavouritesTabAnimeToggleButton);
 
-        public ToggleButton ProfilePageFavouritesTabMangaToggleButton => _profilePageFavouritesTabMangaToggleButton ?? (_profilePageFavouritesTabMangaToggleButton = FindViewById<ToggleButton>(Resource.Id.ProfilePageFavouritesTabMangaToggleButton));
+        public ToggleButton ProfilePageFavouritesTabMangaToggleButton => GetView(ref _profilePageFavouritesTabMangaToggleButton, Resource.Id.ProfilePageFavouritesTabMangaToggleButton);
 
-        public ToggleButton ProfilePageFavouritesTabCharactersToggleButton => _profilePageFavouritesTabCharactersToggleButton ?? (_profilePageFavouritesTabCharactersToggleButton = FindViewById<ToggleButton>(Resource.Id.ProfilePageFavouritesTabCharactersToggleButton));
+        public ToggleButton ProfilePageFavouritesTabCharactersToggleButton => GetView(ref _profilePageFavouritesTabCharactersToggleButton, Resource.Id.ProfilePageFavouritesTabCharactersToggleButton);
 
-        public ToggleButton ProfilePageFavouritesTabPeopleToggleButton => _profilePageFavouritesTabPeopleToggleButton ?? (_profilePageFavouritesTabPeopleToggleButton = FindViewById<ToggleButton>(Resource.Id.ProfilePageFavouritesTabPeopleToggleButton));
+        public ToggleButton ProfilePageFavouritesTabPeopleToggleButton => GetView(ref _profilePageFavouritesTabPeopleToggleButton, Resource.Id.ProfilePageFavouritesTabPeopleToggleButton);
 
 
         #endregion

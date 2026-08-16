@@ -81,11 +81,11 @@ namespace MALClient.Android.Fragments.Clubs
         private ViewPager _pivot;
         private ProgressBar _loadingSpinner;
 
-        public UserControls.PagerSlidingTabStrip TabStrip => _tabStrip ?? (_tabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.TabStrip));
+        public UserControls.PagerSlidingTabStrip TabStrip => GetView(ref _tabStrip, Resource.Id.TabStrip);
 
-        public ViewPager Pivot => _pivot ?? (_pivot = FindViewById<ViewPager>(Resource.Id.Pivot));
+        public ViewPager Pivot => GetView(ref _pivot, Resource.Id.Pivot);
 
-        public ProgressBar LoadingSpinner => _loadingSpinner ?? (_loadingSpinner = FindViewById<ProgressBar>(Resource.Id.LoadingSpinner));
+        public ProgressBar LoadingSpinner => GetView(ref _loadingSpinner, Resource.Id.LoadingSpinner);
 
         #endregion
     }

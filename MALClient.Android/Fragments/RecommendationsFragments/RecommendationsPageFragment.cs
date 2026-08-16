@@ -118,13 +118,13 @@ namespace MALClient.Android.Fragments.RecommendationsFragments
         private RelativeLayout _recommendationsPageLoading;
 
 
-        public ImageButton RecommendationsPageTypeChangeButton => _recommendationsPageTypeChangeButton ?? (_recommendationsPageTypeChangeButton = FindViewById<ImageButton>(Resource.Id.RecommendationsPageTypeChangeButton));
+        public ImageButton RecommendationsPageTypeChangeButton => GetView(ref _recommendationsPageTypeChangeButton, Resource.Id.RecommendationsPageTypeChangeButton);
 
-        public UserControls.PagerSlidingTabStrip RecommendationsPageTabStrip => _recommendationsPageTabStrip ?? (_recommendationsPageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.RecommendationsPageTabStrip));
+        public UserControls.PagerSlidingTabStrip RecommendationsPageTabStrip => GetView(ref _recommendationsPageTabStrip, Resource.Id.RecommendationsPageTabStrip);
 
-        public ViewPager RecommendationsPagePivot => _recommendationsPagePivot ?? (_recommendationsPagePivot = FindViewById<ViewPager>(Resource.Id.RecommendationsPagePivot));
+        public ViewPager RecommendationsPagePivot => GetView(ref _recommendationsPagePivot, Resource.Id.RecommendationsPagePivot);
 
-        public RelativeLayout RecommendationsPageLoading => _recommendationsPageLoading ?? (_recommendationsPageLoading = FindViewById<RelativeLayout>(Resource.Id.RecommendationsPageLoading));
+        public RelativeLayout RecommendationsPageLoading => GetView(ref _recommendationsPageLoading, Resource.Id.RecommendationsPageLoading);
 
 
 

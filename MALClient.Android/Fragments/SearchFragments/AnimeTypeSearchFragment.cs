@@ -72,7 +72,7 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         private GridView _animeTypeSearchPageList;
 
-        public GridView AnimeTypeSearchPageList => _animeTypeSearchPageList ?? (_animeTypeSearchPageList = FindViewById<GridView>(Resource.Id.AnimeTypeSearchPageList));
+        public GridView AnimeTypeSearchPageList => GetView(ref _animeTypeSearchPageList, Resource.Id.AnimeTypeSearchPageList);
  
         #endregion
 

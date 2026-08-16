@@ -113,9 +113,9 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private CheckBox _settingsPageAdsEnableAdsSwitch;
         private Spinner _settingsPageAdsMinutesDailySpinner;
 
-        public CheckBox SettingsPageAdsEnableAdsSwitch => _settingsPageAdsEnableAdsSwitch ?? (_settingsPageAdsEnableAdsSwitch = FindViewById<CheckBox>(Resource.Id.SettingsPageAdsEnableAdsSwitch));
+        public CheckBox SettingsPageAdsEnableAdsSwitch => GetView(ref _settingsPageAdsEnableAdsSwitch, Resource.Id.SettingsPageAdsEnableAdsSwitch);
 
-        public Spinner SettingsPageAdsMinutesDailySpinner => _settingsPageAdsMinutesDailySpinner ?? (_settingsPageAdsMinutesDailySpinner = FindViewById<Spinner>(Resource.Id.SettingsPageAdsMinutesDailySpinner));
+        public Spinner SettingsPageAdsMinutesDailySpinner => GetView(ref _settingsPageAdsMinutesDailySpinner, Resource.Id.SettingsPageAdsMinutesDailySpinner);
 
 
         #endregion

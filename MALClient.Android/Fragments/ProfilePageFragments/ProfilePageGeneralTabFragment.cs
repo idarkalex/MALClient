@@ -468,31 +468,31 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
         private ScrollView _profilePageGeneralTabScrollingContainer;
         private FloatingActionButton _profilePageGeneralTabActionButton;
 
-        public ImageView ProfilePageGeneralTabImagePlaceholder => _profilePageGeneralTabImagePlaceholder ?? (_profilePageGeneralTabImagePlaceholder = FindViewById<ImageView>(Resource.Id.ProfilePageGeneralTabImagePlaceholder));
-        public ImageViewAsync ProfilePageGeneralTabAnimeUserImg => _profilePageGeneralTabAnimeUserImg ?? (_profilePageGeneralTabAnimeUserImg = FindViewById<ImageViewAsync>(Resource.Id.ProfilePageGeneralTabAnimeUserImg));
-        public FloatingActionButton AboutButton => _aboutButton ?? (_aboutButton = FindViewById<FloatingActionButton>(Resource.Id.AboutButton));
-        public LinearLayout ProfilePageGeneralTabDetailsList => _profilePageGeneralTabDetailsList ?? (_profilePageGeneralTabDetailsList = FindViewById<LinearLayout>(Resource.Id.ProfilePageGeneralTabDetailsList));
-        public Button ProfilePageGeneralTabAnimeListButton => _profilePageGeneralTabAnimeListButton ?? (_profilePageGeneralTabAnimeListButton = FindViewById<Button>(Resource.Id.ProfilePageGeneralTabAnimeListButton));
-        public ImageButton ProfilePageGeneralTabCompareList => _profilePageGeneralTabCompareList ?? (_profilePageGeneralTabCompareList = FindViewById<ImageButton>(Resource.Id.ProfilePageGeneralTabCompareList));
-        public Button ProfilePageGeneralTabMangaListButton => _profilePageGeneralTabMangaListButton ?? (_profilePageGeneralTabMangaListButton = FindViewById<Button>(Resource.Id.ProfilePageGeneralTabMangaListButton));
-        public Button ProfilePageGeneralTabHistoryButton => _profilePageGeneralTabHistoryButton ?? (_profilePageGeneralTabHistoryButton = FindViewById<Button>(Resource.Id.ProfilePageGeneralTabHistoryButton));
-        public ImageView PinButtonIcon => _pinButtonIcon ?? (_pinButtonIcon = FindViewById<ImageView>(Resource.Id.PinButtonIcon));
-        public FrameLayout PinButton => _pinButton ?? (_pinButton = FindViewById<FrameLayout>(Resource.Id.PinButton));
-        public FrameLayout ShareButton => _shareButton ?? (_shareButton = FindViewById<FrameLayout>(Resource.Id.ShareButton));
-        public ImageButton ProfilePageGeneralTabSendRequestButton => _profilePageGeneralTabSendRequestButton ?? (_profilePageGeneralTabSendRequestButton = FindViewById<ImageButton>(Resource.Id.ProfilePageGeneralTabSendRequestButton));
-        public ImageButton ProfilePageGeneralTabRemoveFriendButton => _profilePageGeneralTabRemoveFriendButton ?? (_profilePageGeneralTabRemoveFriendButton = FindViewById<ImageButton>(Resource.Id.ProfilePageGeneralTabRemoveFriendButton));
-        public ImageButton ProfilePageGeneralTabMoreFriendsButton => _profilePageGeneralTabMoreFriendsButton ?? (_profilePageGeneralTabMoreFriendsButton = FindViewById<ImageButton>(Resource.Id.ProfilePageGeneralTabMoreFriendsButton));
-        public ExpandableGridView ProfilePageGeneralTabFriendsGrid => _profilePageGeneralTabFriendsGrid ?? (_profilePageGeneralTabFriendsGrid = FindViewById<ExpandableGridView>(Resource.Id.ProfilePageGeneralTabFriendsGrid));
-        public TextView ProfilePageGeneralTabFriendsEmptyNotice => _profilePageGeneralTabFriendsEmptyNotice ?? (_profilePageGeneralTabFriendsEmptyNotice = FindViewById<TextView>(Resource.Id.ProfilePageGeneralTabFriendsEmptyNotice));
-        public ProgressBar AnimeDetailsPageLoadingUpdateSpinner => _animeDetailsPageLoadingUpdateSpinner ?? (_animeDetailsPageLoadingUpdateSpinner = FindViewById<ProgressBar>(Resource.Id.AnimeDetailsPageLoadingUpdateSpinner));
-        public ImageButton ReloadButton => _reloadButton ?? (_reloadButton = FindViewById<ImageButton>(Resource.Id.ReloadButton));
-        public EditText ProfilePageGeneralTabCommentInput => _profilePageGeneralTabCommentInput ?? (_profilePageGeneralTabCommentInput = FindViewById<EditText>(Resource.Id.ProfilePageGeneralTabCommentInput));
-        public Button ProfilePageGeneralTabSendCommentButton => _profilePageGeneralTabSendCommentButton ?? (_profilePageGeneralTabSendCommentButton = FindViewById<Button>(Resource.Id.ProfilePageGeneralTabSendCommentButton));
-        public LinearLayout ProfilePageGeneralTabCommentSection => _profilePageGeneralTabCommentSection ?? (_profilePageGeneralTabCommentSection = FindViewById<LinearLayout>(Resource.Id.ProfilePageGeneralTabCommentSection));
-        public TextView ProfilePageGeneralTabCommentsEmptyNotice => _profilePageGeneralTabCommentsEmptyNotice ?? (_profilePageGeneralTabCommentsEmptyNotice = FindViewById<TextView>(Resource.Id.ProfilePageGeneralTabCommentsEmptyNotice));
-        public ListView ProfilePageGeneralTabCommentsList => _profilePageGeneralTabCommentsList ?? (_profilePageGeneralTabCommentsList = FindViewById<ListView>(Resource.Id.ProfilePageGeneralTabCommentsList));
-        public ScrollView ProfilePageGeneralTabScrollingContainer => _profilePageGeneralTabScrollingContainer ?? (_profilePageGeneralTabScrollingContainer = FindViewById<ScrollView>(Resource.Id.ProfilePageGeneralTabScrollingContainer));
-        public FloatingActionButton ProfilePageGeneralTabActionButton => _profilePageGeneralTabActionButton ?? (_profilePageGeneralTabActionButton = FindViewById<FloatingActionButton>(Resource.Id.ProfilePageGeneralTabActionButton));
+        public ImageView ProfilePageGeneralTabImagePlaceholder => GetView(ref _profilePageGeneralTabImagePlaceholder, Resource.Id.ProfilePageGeneralTabImagePlaceholder);
+        public ImageViewAsync ProfilePageGeneralTabAnimeUserImg => GetView(ref _profilePageGeneralTabAnimeUserImg, Resource.Id.ProfilePageGeneralTabAnimeUserImg);
+        public FloatingActionButton AboutButton => GetView(ref _aboutButton, Resource.Id.AboutButton);
+        public LinearLayout ProfilePageGeneralTabDetailsList => GetView(ref _profilePageGeneralTabDetailsList, Resource.Id.ProfilePageGeneralTabDetailsList);
+        public Button ProfilePageGeneralTabAnimeListButton => GetView(ref _profilePageGeneralTabAnimeListButton, Resource.Id.ProfilePageGeneralTabAnimeListButton);
+        public ImageButton ProfilePageGeneralTabCompareList => GetView(ref _profilePageGeneralTabCompareList, Resource.Id.ProfilePageGeneralTabCompareList);
+        public Button ProfilePageGeneralTabMangaListButton => GetView(ref _profilePageGeneralTabMangaListButton, Resource.Id.ProfilePageGeneralTabMangaListButton);
+        public Button ProfilePageGeneralTabHistoryButton => GetView(ref _profilePageGeneralTabHistoryButton, Resource.Id.ProfilePageGeneralTabHistoryButton);
+        public ImageView PinButtonIcon => GetView(ref _pinButtonIcon, Resource.Id.PinButtonIcon);
+        public FrameLayout PinButton => GetView(ref _pinButton, Resource.Id.PinButton);
+        public FrameLayout ShareButton => GetView(ref _shareButton, Resource.Id.ShareButton);
+        public ImageButton ProfilePageGeneralTabSendRequestButton => GetView(ref _profilePageGeneralTabSendRequestButton, Resource.Id.ProfilePageGeneralTabSendRequestButton);
+        public ImageButton ProfilePageGeneralTabRemoveFriendButton => GetView(ref _profilePageGeneralTabRemoveFriendButton, Resource.Id.ProfilePageGeneralTabRemoveFriendButton);
+        public ImageButton ProfilePageGeneralTabMoreFriendsButton => GetView(ref _profilePageGeneralTabMoreFriendsButton, Resource.Id.ProfilePageGeneralTabMoreFriendsButton);
+        public ExpandableGridView ProfilePageGeneralTabFriendsGrid => GetView(ref _profilePageGeneralTabFriendsGrid, Resource.Id.ProfilePageGeneralTabFriendsGrid);
+        public TextView ProfilePageGeneralTabFriendsEmptyNotice => GetView(ref _profilePageGeneralTabFriendsEmptyNotice, Resource.Id.ProfilePageGeneralTabFriendsEmptyNotice);
+        public ProgressBar AnimeDetailsPageLoadingUpdateSpinner => GetView(ref _animeDetailsPageLoadingUpdateSpinner, Resource.Id.AnimeDetailsPageLoadingUpdateSpinner);
+        public ImageButton ReloadButton => GetView(ref _reloadButton, Resource.Id.ReloadButton);
+        public EditText ProfilePageGeneralTabCommentInput => GetView(ref _profilePageGeneralTabCommentInput, Resource.Id.ProfilePageGeneralTabCommentInput);
+        public Button ProfilePageGeneralTabSendCommentButton => GetView(ref _profilePageGeneralTabSendCommentButton, Resource.Id.ProfilePageGeneralTabSendCommentButton);
+        public LinearLayout ProfilePageGeneralTabCommentSection => GetView(ref _profilePageGeneralTabCommentSection, Resource.Id.ProfilePageGeneralTabCommentSection);
+        public TextView ProfilePageGeneralTabCommentsEmptyNotice => GetView(ref _profilePageGeneralTabCommentsEmptyNotice, Resource.Id.ProfilePageGeneralTabCommentsEmptyNotice);
+        public ListView ProfilePageGeneralTabCommentsList => GetView(ref _profilePageGeneralTabCommentsList, Resource.Id.ProfilePageGeneralTabCommentsList);
+        public ScrollView ProfilePageGeneralTabScrollingContainer => GetView(ref _profilePageGeneralTabScrollingContainer, Resource.Id.ProfilePageGeneralTabScrollingContainer);
+        public FloatingActionButton ProfilePageGeneralTabActionButton => GetView(ref _profilePageGeneralTabActionButton, Resource.Id.ProfilePageGeneralTabActionButton);
 
         #endregion
 

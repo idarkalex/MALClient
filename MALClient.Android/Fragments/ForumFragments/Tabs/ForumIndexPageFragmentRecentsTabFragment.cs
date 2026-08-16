@@ -109,9 +109,9 @@ namespace MALClient.Android.Fragments.ForumFragments.Tabs
         private ListView _forumIndexPageRecentsTabListView;
         private ProgressBar _forumIndexPageRecentsTabLoadingSpinner;
 
-        public ListView ForumIndexPageRecentsTabListView => _forumIndexPageRecentsTabListView ?? (_forumIndexPageRecentsTabListView = FindViewById<ListView>(Resource.Id.ForumIndexPageRecentsTabListView));
+        public ListView ForumIndexPageRecentsTabListView => GetView(ref _forumIndexPageRecentsTabListView, Resource.Id.ForumIndexPageRecentsTabListView);
 
-        public ProgressBar ForumIndexPageRecentsTabLoadingSpinner => _forumIndexPageRecentsTabLoadingSpinner ?? (_forumIndexPageRecentsTabLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.ForumIndexPageRecentsTabLoadingSpinner));
+        public ProgressBar ForumIndexPageRecentsTabLoadingSpinner => GetView(ref _forumIndexPageRecentsTabLoadingSpinner, Resource.Id.ForumIndexPageRecentsTabLoadingSpinner);
 
         #endregion
     }

@@ -275,87 +275,87 @@ namespace MALClient.Android.Fragments.RecommendationsFragments
         private LinearLayout _recommendationItemDetailsContainer;
         private RelativeLayout _recommendationItemLoading;
 
-        public ProgressBar RecommendationItemDepImagePlaceholder => _recommendationItemDepImagePlaceholder ?? (_recommendationItemDepImagePlaceholder = FindViewById<ProgressBar>(Resource.Id.RecommendationItemDepImagePlaceholder));
+        public ProgressBar RecommendationItemDepImagePlaceholder => GetView(ref _recommendationItemDepImagePlaceholder, Resource.Id.RecommendationItemDepImagePlaceholder);
 
-        public ImageViewAsync RecommendationItemDepImage => _recommendationItemDepImage ?? (_recommendationItemDepImage = FindViewById<ImageViewAsync>(Resource.Id.RecommendationItemDepImage));
+        public ImageViewAsync RecommendationItemDepImage => GetView(ref _recommendationItemDepImage, Resource.Id.RecommendationItemDepImage);
 
-        public FrameLayout RecommendationItemDepImageButton => _recommendationItemDepImageButton ?? (_recommendationItemDepImageButton = FindViewById<FrameLayout>(Resource.Id.RecommendationItemDepImageButton));
+        public FrameLayout RecommendationItemDepImageButton => GetView(ref _recommendationItemDepImageButton, Resource.Id.RecommendationItemDepImageButton);
 
-        public TextView RecommendationItemDepTitle => _recommendationItemDepTitle ?? (_recommendationItemDepTitle = FindViewById<TextView>(Resource.Id.RecommendationItemDepTitle));
+        public TextView RecommendationItemDepTitle => GetView(ref _recommendationItemDepTitle, Resource.Id.RecommendationItemDepTitle);
 
-        public ProgressBar RecommendationItemRecImagePlaceholder => _recommendationItemRecImagePlaceholder ?? (_recommendationItemRecImagePlaceholder = FindViewById<ProgressBar>(Resource.Id.RecommendationItemRecImagePlaceholder));
+        public ProgressBar RecommendationItemRecImagePlaceholder => GetView(ref _recommendationItemRecImagePlaceholder, Resource.Id.RecommendationItemRecImagePlaceholder);
 
-        public ImageViewAsync RecommendationItemRecImage => _recommendationItemRecImage ?? (_recommendationItemRecImage = FindViewById<ImageViewAsync>(Resource.Id.RecommendationItemRecImage));
+        public ImageViewAsync RecommendationItemRecImage => GetView(ref _recommendationItemRecImage, Resource.Id.RecommendationItemRecImage);
 
-        public FrameLayout RecommendationItemRecImageButton => _recommendationItemRecImageButton ?? (_recommendationItemRecImageButton = FindViewById<FrameLayout>(Resource.Id.RecommendationItemRecImageButton));
+        public FrameLayout RecommendationItemRecImageButton => GetView(ref _recommendationItemRecImageButton, Resource.Id.RecommendationItemRecImageButton);
 
-        public TextView RecommendationItemRecTitle => _recommendationItemRecTitle ?? (_recommendationItemRecTitle = FindViewById<TextView>(Resource.Id.RecommendationItemRecTitle));
+        public TextView RecommendationItemRecTitle => GetView(ref _recommendationItemRecTitle, Resource.Id.RecommendationItemRecTitle);
 
-        public TextView RecommendationItemDescription => _recommendationItemDescription ?? (_recommendationItemDescription = FindViewById<TextView>(Resource.Id.RecommendationItemDescription));
+        public TextView RecommendationItemDescription => GetView(ref _recommendationItemDescription, Resource.Id.RecommendationItemDescription);
 
-        public TextView RecommendationItemDetailItemType1 => _recommendationItemDetailItemType1 ?? (_recommendationItemDetailItemType1 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemType1));
+        public TextView RecommendationItemDetailItemType1 => GetView(ref _recommendationItemDetailItemType1, Resource.Id.RecommendationItemDetailItemType1);
 
-        public TextView RecommendationItemDetailItemDepValue1 => _recommendationItemDetailItemDepValue1 ?? (_recommendationItemDetailItemDepValue1 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemDepValue1));
+        public TextView RecommendationItemDetailItemDepValue1 => GetView(ref _recommendationItemDetailItemDepValue1, Resource.Id.RecommendationItemDetailItemDepValue1);
 
-        public TextView RecommendationItemDetailItemMyDepValue1 => _recommendationItemDetailItemMyDepValue1 ?? (_recommendationItemDetailItemMyDepValue1 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyDepValue1));
+        public TextView RecommendationItemDetailItemMyDepValue1 => GetView(ref _recommendationItemDetailItemMyDepValue1, Resource.Id.RecommendationItemDetailItemMyDepValue1);
 
-        public TextView RecommendationItemDetailItemRecValue1 => _recommendationItemDetailItemRecValue1 ?? (_recommendationItemDetailItemRecValue1 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemRecValue1));
+        public TextView RecommendationItemDetailItemRecValue1 => GetView(ref _recommendationItemDetailItemRecValue1, Resource.Id.RecommendationItemDetailItemRecValue1);
 
-        public TextView RecommendationItemDetailItemMyRecValue1 => _recommendationItemDetailItemMyRecValue1 ?? (_recommendationItemDetailItemMyRecValue1 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyRecValue1));
+        public TextView RecommendationItemDetailItemMyRecValue1 => GetView(ref _recommendationItemDetailItemMyRecValue1, Resource.Id.RecommendationItemDetailItemMyRecValue1);
 
-        public TextView RecommendationItemDetailItemType2 => _recommendationItemDetailItemType2 ?? (_recommendationItemDetailItemType2 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemType2));
+        public TextView RecommendationItemDetailItemType2 => GetView(ref _recommendationItemDetailItemType2, Resource.Id.RecommendationItemDetailItemType2);
 
-        public TextView RecommendationItemDetailItemDepValue2 => _recommendationItemDetailItemDepValue2 ?? (_recommendationItemDetailItemDepValue2 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemDepValue2));
+        public TextView RecommendationItemDetailItemDepValue2 => GetView(ref _recommendationItemDetailItemDepValue2, Resource.Id.RecommendationItemDetailItemDepValue2);
 
-        public TextView RecommendationItemDetailItemMyDepValue2 => _recommendationItemDetailItemMyDepValue2 ?? (_recommendationItemDetailItemMyDepValue2 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyDepValue2));
+        public TextView RecommendationItemDetailItemMyDepValue2 => GetView(ref _recommendationItemDetailItemMyDepValue2, Resource.Id.RecommendationItemDetailItemMyDepValue2);
 
-        public TextView RecommendationItemDetailItemRecValue2 => _recommendationItemDetailItemRecValue2 ?? (_recommendationItemDetailItemRecValue2 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemRecValue2));
+        public TextView RecommendationItemDetailItemRecValue2 => GetView(ref _recommendationItemDetailItemRecValue2, Resource.Id.RecommendationItemDetailItemRecValue2);
 
-        public TextView RecommendationItemDetailItemMyRecValue2 => _recommendationItemDetailItemMyRecValue2 ?? (_recommendationItemDetailItemMyRecValue2 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyRecValue2));
+        public TextView RecommendationItemDetailItemMyRecValue2 => GetView(ref _recommendationItemDetailItemMyRecValue2, Resource.Id.RecommendationItemDetailItemMyRecValue2);
 
-        public TextView RecommendationItemDetailItemType3 => _recommendationItemDetailItemType3 ?? (_recommendationItemDetailItemType3 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemType3));
+        public TextView RecommendationItemDetailItemType3 => GetView(ref _recommendationItemDetailItemType3, Resource.Id.RecommendationItemDetailItemType3);
 
-        public TextView RecommendationItemDetailItemDepValue3 => _recommendationItemDetailItemDepValue3 ?? (_recommendationItemDetailItemDepValue3 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemDepValue3));
+        public TextView RecommendationItemDetailItemDepValue3 => GetView(ref _recommendationItemDetailItemDepValue3, Resource.Id.RecommendationItemDetailItemDepValue3);
 
-        public TextView RecommendationItemDetailItemMyDepValue3 => _recommendationItemDetailItemMyDepValue3 ?? (_recommendationItemDetailItemMyDepValue3 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyDepValue3));
+        public TextView RecommendationItemDetailItemMyDepValue3 => GetView(ref _recommendationItemDetailItemMyDepValue3, Resource.Id.RecommendationItemDetailItemMyDepValue3);
 
-        public TextView RecommendationItemDetailItemRecValue3 => _recommendationItemDetailItemRecValue3 ?? (_recommendationItemDetailItemRecValue3 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemRecValue3));
+        public TextView RecommendationItemDetailItemRecValue3 => GetView(ref _recommendationItemDetailItemRecValue3, Resource.Id.RecommendationItemDetailItemRecValue3);
 
-        public TextView RecommendationItemDetailItemMyRecValue3 => _recommendationItemDetailItemMyRecValue3 ?? (_recommendationItemDetailItemMyRecValue3 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyRecValue3));
+        public TextView RecommendationItemDetailItemMyRecValue3 => GetView(ref _recommendationItemDetailItemMyRecValue3, Resource.Id.RecommendationItemDetailItemMyRecValue3);
 
-        public TextView RecommendationItemDetailItemType4 => _recommendationItemDetailItemType4 ?? (_recommendationItemDetailItemType4 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemType4));
+        public TextView RecommendationItemDetailItemType4 => GetView(ref _recommendationItemDetailItemType4, Resource.Id.RecommendationItemDetailItemType4);
 
-        public TextView RecommendationItemDetailItemDepValue4 => _recommendationItemDetailItemDepValue4 ?? (_recommendationItemDetailItemDepValue4 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemDepValue4));
+        public TextView RecommendationItemDetailItemDepValue4 => GetView(ref _recommendationItemDetailItemDepValue4, Resource.Id.RecommendationItemDetailItemDepValue4);
 
-        public TextView RecommendationItemDetailItemMyDepValue4 => _recommendationItemDetailItemMyDepValue4 ?? (_recommendationItemDetailItemMyDepValue4 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyDepValue4));
+        public TextView RecommendationItemDetailItemMyDepValue4 => GetView(ref _recommendationItemDetailItemMyDepValue4, Resource.Id.RecommendationItemDetailItemMyDepValue4);
 
-        public TextView RecommendationItemDetailItemRecValue4 => _recommendationItemDetailItemRecValue4 ?? (_recommendationItemDetailItemRecValue4 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemRecValue4));
+        public TextView RecommendationItemDetailItemRecValue4 => GetView(ref _recommendationItemDetailItemRecValue4, Resource.Id.RecommendationItemDetailItemRecValue4);
 
-        public TextView RecommendationItemDetailItemMyRecValue4 => _recommendationItemDetailItemMyRecValue4 ?? (_recommendationItemDetailItemMyRecValue4 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyRecValue4));
+        public TextView RecommendationItemDetailItemMyRecValue4 => GetView(ref _recommendationItemDetailItemMyRecValue4, Resource.Id.RecommendationItemDetailItemMyRecValue4);
 
-        public TextView RecommendationItemDetailItemType5 => _recommendationItemDetailItemType5 ?? (_recommendationItemDetailItemType5 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemType5));
+        public TextView RecommendationItemDetailItemType5 => GetView(ref _recommendationItemDetailItemType5, Resource.Id.RecommendationItemDetailItemType5);
 
-        public TextView RecommendationItemDetailItemDepValue5 => _recommendationItemDetailItemDepValue5 ?? (_recommendationItemDetailItemDepValue5 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemDepValue5));
+        public TextView RecommendationItemDetailItemDepValue5 => GetView(ref _recommendationItemDetailItemDepValue5, Resource.Id.RecommendationItemDetailItemDepValue5);
 
-        public TextView RecommendationItemDetailItemMyDepValue5 => _recommendationItemDetailItemMyDepValue5 ?? (_recommendationItemDetailItemMyDepValue5 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyDepValue5));
+        public TextView RecommendationItemDetailItemMyDepValue5 => GetView(ref _recommendationItemDetailItemMyDepValue5, Resource.Id.RecommendationItemDetailItemMyDepValue5);
 
-        public TextView RecommendationItemDetailItemRecValue5 => _recommendationItemDetailItemRecValue5 ?? (_recommendationItemDetailItemRecValue5 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemRecValue5));
+        public TextView RecommendationItemDetailItemRecValue5 => GetView(ref _recommendationItemDetailItemRecValue5, Resource.Id.RecommendationItemDetailItemRecValue5);
 
-        public TextView RecommendationItemDetailItemMyRecValue5 => _recommendationItemDetailItemMyRecValue5 ?? (_recommendationItemDetailItemMyRecValue5 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyRecValue5));
+        public TextView RecommendationItemDetailItemMyRecValue5 => GetView(ref _recommendationItemDetailItemMyRecValue5, Resource.Id.RecommendationItemDetailItemMyRecValue5);
 
-        public TextView RecommendationItemDetailItemType6 => _recommendationItemDetailItemType6 ?? (_recommendationItemDetailItemType6 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemType6));
+        public TextView RecommendationItemDetailItemType6 => GetView(ref _recommendationItemDetailItemType6, Resource.Id.RecommendationItemDetailItemType6);
 
-        public TextView RecommendationItemDetailItemDepValue6 => _recommendationItemDetailItemDepValue6 ?? (_recommendationItemDetailItemDepValue6 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemDepValue6));
+        public TextView RecommendationItemDetailItemDepValue6 => GetView(ref _recommendationItemDetailItemDepValue6, Resource.Id.RecommendationItemDetailItemDepValue6);
 
-        public TextView RecommendationItemDetailItemMyDepValue6 => _recommendationItemDetailItemMyDepValue6 ?? (_recommendationItemDetailItemMyDepValue6 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyDepValue6));
+        public TextView RecommendationItemDetailItemMyDepValue6 => GetView(ref _recommendationItemDetailItemMyDepValue6, Resource.Id.RecommendationItemDetailItemMyDepValue6);
 
-        public TextView RecommendationItemDetailItemRecValue6 => _recommendationItemDetailItemRecValue6 ?? (_recommendationItemDetailItemRecValue6 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemRecValue6));
+        public TextView RecommendationItemDetailItemRecValue6 => GetView(ref _recommendationItemDetailItemRecValue6, Resource.Id.RecommendationItemDetailItemRecValue6);
 
-        public TextView RecommendationItemDetailItemMyRecValue6 => _recommendationItemDetailItemMyRecValue6 ?? (_recommendationItemDetailItemMyRecValue6 = FindViewById<TextView>(Resource.Id.RecommendationItemDetailItemMyRecValue6));
+        public TextView RecommendationItemDetailItemMyRecValue6 => GetView(ref _recommendationItemDetailItemMyRecValue6, Resource.Id.RecommendationItemDetailItemMyRecValue6);
 
-        public LinearLayout RecommendationItemDetailsContainer => _recommendationItemDetailsContainer ?? (_recommendationItemDetailsContainer = FindViewById<LinearLayout>(Resource.Id.RecommendationItemDetailsContainer));
+        public LinearLayout RecommendationItemDetailsContainer => GetView(ref _recommendationItemDetailsContainer, Resource.Id.RecommendationItemDetailsContainer);
 
-        public RelativeLayout RecommendationItemLoading => _recommendationItemLoading ?? (_recommendationItemLoading = FindViewById<RelativeLayout>(Resource.Id.RecommendationItemLoading));
+        public RelativeLayout RecommendationItemLoading => GetView(ref _recommendationItemLoading, Resource.Id.RecommendationItemLoading);
 
         #endregion
     }

@@ -193,13 +193,13 @@ namespace MALClient.Android.Fragments.Clubs
         private ToggleButton _relatedAnimeToggle;
         private ToggleButton _relatedMangaToggle;
 
-        public GridView GridView => _gridView ?? (_gridView = FindViewById<GridView>(Resource.Id.GridView));
+        public GridView GridView => GetView(ref _gridView, Resource.Id.GridView);
 
-        public ToggleButton MembersToggle => _membersToggle ?? (_membersToggle = FindViewById<ToggleButton>(Resource.Id.MembersToggle));
+        public ToggleButton MembersToggle => GetView(ref _membersToggle, Resource.Id.MembersToggle);
 
-        public ToggleButton RelatedAnimeToggle => _relatedAnimeToggle ?? (_relatedAnimeToggle = FindViewById<ToggleButton>(Resource.Id.RelatedAnimeToggle));
+        public ToggleButton RelatedAnimeToggle => GetView(ref _relatedAnimeToggle, Resource.Id.RelatedAnimeToggle);
 
-        public ToggleButton RelatedMangaToggle => _relatedMangaToggle ?? (_relatedMangaToggle = FindViewById<ToggleButton>(Resource.Id.RelatedMangaToggle));
+        public ToggleButton RelatedMangaToggle => GetView(ref _relatedMangaToggle, Resource.Id.RelatedMangaToggle);
 
         #endregion
     }

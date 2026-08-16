@@ -157,19 +157,19 @@ namespace MALClient.Android.Fragments.MessagingFragments
         private FrameLayout _messagingDetailsPageSendButton;
         private ProgressBar _messagingDetailsPageSendingSpinner;
 
-        public ListView MessagingDetailsPageList => _messagingDetailsPageList ?? (_messagingDetailsPageList = FindViewById<ListView>(Resource.Id.MessagingDetailsPageList));
+        public ListView MessagingDetailsPageList => GetView(ref _messagingDetailsPageList, Resource.Id.MessagingDetailsPageList);
 
-        public ProgressBar MessagingDetailsPageLoadingSpinner => _messagingDetailsPageLoadingSpinner ?? (_messagingDetailsPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.MessagingDetailsPageLoadingSpinner));
+        public ProgressBar MessagingDetailsPageLoadingSpinner => GetView(ref _messagingDetailsPageLoadingSpinner, Resource.Id.MessagingDetailsPageLoadingSpinner);
 
-        public EditText MessagingDetailsPageTargetTextBox => _messagingDetailsPageTargetTextBox ?? (_messagingDetailsPageTargetTextBox = FindViewById<EditText>(Resource.Id.MessagingDetailsPageTargetTextBox));
+        public EditText MessagingDetailsPageTargetTextBox => GetView(ref _messagingDetailsPageTargetTextBox, Resource.Id.MessagingDetailsPageTargetTextBox);
 
-        public EditText MessagingDetailsPageSubjectTextBox => _messagingDetailsPageSubjectTextBox ?? (_messagingDetailsPageSubjectTextBox = FindViewById<EditText>(Resource.Id.MessagingDetailsPageSubjectTextBox));
+        public EditText MessagingDetailsPageSubjectTextBox => GetView(ref _messagingDetailsPageSubjectTextBox, Resource.Id.MessagingDetailsPageSubjectTextBox);
 
-        public EditText MessagingDetailsPageMessageTextBox => _messagingDetailsPageMessageTextBox ?? (_messagingDetailsPageMessageTextBox = FindViewById<EditText>(Resource.Id.MessagingDetailsPageMessageTextBox));
+        public EditText MessagingDetailsPageMessageTextBox => GetView(ref _messagingDetailsPageMessageTextBox, Resource.Id.MessagingDetailsPageMessageTextBox);
 
-        public FrameLayout MessagingDetailsPageSendButton => _messagingDetailsPageSendButton ?? (_messagingDetailsPageSendButton = FindViewById<FrameLayout>(Resource.Id.MessagingDetailsPageSendButton));
+        public FrameLayout MessagingDetailsPageSendButton => GetView(ref _messagingDetailsPageSendButton, Resource.Id.MessagingDetailsPageSendButton);
 
-        public ProgressBar MessagingDetailsPageSendingSpinner => _messagingDetailsPageSendingSpinner ?? (_messagingDetailsPageSendingSpinner = FindViewById<ProgressBar>(Resource.Id.MessagingDetailsPageSendingSpinner));
+        public ProgressBar MessagingDetailsPageSendingSpinner => GetView(ref _messagingDetailsPageSendingSpinner, Resource.Id.MessagingDetailsPageSendingSpinner);
 
         #endregion
     }

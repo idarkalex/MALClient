@@ -276,23 +276,23 @@ namespace MALClient.Android.Fragments.ForumFragments
         private FloatingActionButton _forumBoardPageActionButton;
         private ProgressBar _forumBoardPageLoadingSpinner;
 
-        public TextView ForumBoardPageIcon => _forumBoardPageIcon ?? (_forumBoardPageIcon = FindViewById<TextView>(Resource.Id.ForumBoardPageIcon));
+        public TextView ForumBoardPageIcon => GetView(ref _forumBoardPageIcon, Resource.Id.ForumBoardPageIcon);
 
-        public TextView ForumBoardPageTitle => _forumBoardPageTitle ?? (_forumBoardPageTitle = FindViewById<TextView>(Resource.Id.ForumBoardPageTitle));
+        public TextView ForumBoardPageTitle => GetView(ref _forumBoardPageTitle, Resource.Id.ForumBoardPageTitle);
 
-        public Button ForumBoardPageSearchButton => _forumBoardPageSearchButton ?? (_forumBoardPageSearchButton = FindViewById<Button>(Resource.Id.ForumBoardPageSearchButton));
+        public Button ForumBoardPageSearchButton => GetView(ref _forumBoardPageSearchButton, Resource.Id.ForumBoardPageSearchButton);
 
-        public FrameLayout ForumBoardPageGotoPageButton => _forumBoardPageGotoPageButton ?? (_forumBoardPageGotoPageButton = FindViewById<FrameLayout>(Resource.Id.ForumBoardPageGotoPageButton));
+        public FrameLayout ForumBoardPageGotoPageButton => GetView(ref _forumBoardPageGotoPageButton, Resource.Id.ForumBoardPageGotoPageButton);
 
-        public LinearLayout ForumBoardPagePageList => _forumBoardPagePageList ?? (_forumBoardPagePageList = FindViewById<LinearLayout>(Resource.Id.ForumBoardPagePageList));
+        public LinearLayout ForumBoardPagePageList => GetView(ref _forumBoardPagePageList, Resource.Id.ForumBoardPagePageList);
 
-        public ListView ForumBoardPagePostsList => _forumBoardPagePostsList ?? (_forumBoardPagePostsList = FindViewById<ListView>(Resource.Id.ForumBoardPagePostsList));
+        public ListView ForumBoardPagePostsList => GetView(ref _forumBoardPagePostsList, Resource.Id.ForumBoardPagePostsList);
 
-        public TextView ForumBoardPageEmptyNotice => _forumBoardPageEmptyNotice ?? (_forumBoardPageEmptyNotice = FindViewById<TextView>(Resource.Id.ForumBoardPageEmptyNotice));
+        public TextView ForumBoardPageEmptyNotice => GetView(ref _forumBoardPageEmptyNotice, Resource.Id.ForumBoardPageEmptyNotice);
 
-        public FloatingActionButton ForumBoardPageActionButton => _forumBoardPageActionButton ?? (_forumBoardPageActionButton = FindViewById<FloatingActionButton>(Resource.Id.ForumBoardPageActionButton));
+        public FloatingActionButton ForumBoardPageActionButton => GetView(ref _forumBoardPageActionButton, Resource.Id.ForumBoardPageActionButton);
 
-        public ProgressBar ForumBoardPageLoadingSpinner => _forumBoardPageLoadingSpinner ?? (_forumBoardPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.ForumBoardPageLoadingSpinner));
+        public ProgressBar ForumBoardPageLoadingSpinner => GetView(ref _forumBoardPageLoadingSpinner, Resource.Id.ForumBoardPageLoadingSpinner);
 
 
 

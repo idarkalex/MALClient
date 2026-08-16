@@ -170,13 +170,13 @@ namespace MALClient.Android.Fragments.Clubs
         private TextView _emptyNotice;
 
 
-        public SearchView SearchView => _searchView ?? (_searchView = FindViewById<SearchView>(Resource.Id.SearchView));
+        public SearchView SearchView => GetView(ref _searchView, Resource.Id.SearchView);
 
-        public ListView List => _list ?? (_list = FindViewById<ListView>(Resource.Id.List));
+        public ListView List => GetView(ref _list, Resource.Id.List);
 
-        public FloatingActionButton ActionButton => _actionButton ?? (_actionButton = FindViewById<FloatingActionButton>(Resource.Id.ActionButton));
+        public FloatingActionButton ActionButton => GetView(ref _actionButton, Resource.Id.ActionButton);
 
-        public TextView EmptyNotice => _emptyNotice ?? (_emptyNotice = FindViewById<TextView>(Resource.Id.EmptyNotice));
+        public TextView EmptyNotice => GetView(ref _emptyNotice, Resource.Id.EmptyNotice);
 
         #endregion
 

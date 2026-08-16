@@ -48,9 +48,9 @@ namespace MALClient.Android.Fragments.ForumFragments
         private UserControls.PagerSlidingTabStrip _forumIndexPageTabStrip;
         private ViewPager _forumIndexPagePivot;
 
-        public UserControls.PagerSlidingTabStrip ForumIndexPageTabStrip => _forumIndexPageTabStrip ?? (_forumIndexPageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.ForumIndexPageTabStrip));
+        public UserControls.PagerSlidingTabStrip ForumIndexPageTabStrip => GetView(ref _forumIndexPageTabStrip, Resource.Id.ForumIndexPageTabStrip);
 
-        public ViewPager ForumIndexPagePivot => _forumIndexPagePivot ?? (_forumIndexPagePivot = FindViewById<ViewPager>(Resource.Id.ForumIndexPagePivot));
+        public ViewPager ForumIndexPagePivot => GetView(ref _forumIndexPagePivot, Resource.Id.ForumIndexPagePivot);
 
         #endregion
     }

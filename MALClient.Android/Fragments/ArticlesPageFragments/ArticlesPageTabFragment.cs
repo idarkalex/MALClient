@@ -100,7 +100,7 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
 
         private ListView _articlesPageTabItemList;
 
-        public ListView ArticlesPageTabItemList => _articlesPageTabItemList ?? (_articlesPageTabItemList = FindViewById<ListView>(Resource.Id.ArticlesPageTabItemList));
+        public ListView ArticlesPageTabItemList => GetView(ref _articlesPageTabItemList, Resource.Id.ArticlesPageTabItemList);
 
 
 

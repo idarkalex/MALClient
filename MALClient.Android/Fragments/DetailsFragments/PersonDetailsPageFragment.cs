@@ -84,21 +84,21 @@ namespace MALClient.Android.Fragments.DetailsFragments
         private ViewPager _personDetailsPagePivot;
         private RelativeLayout _personDetailsPageLoadingSpinner;
 
-        public ImageView PersonDetailsPageNoImgNotice => _personDetailsPageNoImgNotice ?? (_personDetailsPageNoImgNotice = FindViewById<ImageView>(Resource.Id.PersonDetailsPageNoImgNotice));
+        public ImageView PersonDetailsPageNoImgNotice => GetView(ref _personDetailsPageNoImgNotice, Resource.Id.PersonDetailsPageNoImgNotice);
 
-        public ImageViewAsync PersonDetailsPageImage => _personDetailsPageImage ?? (_personDetailsPageImage = FindViewById<ImageViewAsync>(Resource.Id.PersonDetailsPageImage));
+        public ImageViewAsync PersonDetailsPageImage => GetView(ref _personDetailsPageImage, Resource.Id.PersonDetailsPageImage);
 
-        public FavouriteButton PersonDetailsPageFavButton => _personDetailsPageFavButton ?? (_personDetailsPageFavButton = FindViewById<FavouriteButton>(Resource.Id.PersonDetailsPageFavButton));
+        public FavouriteButton PersonDetailsPageFavButton => GetView(ref _personDetailsPageFavButton, Resource.Id.PersonDetailsPageFavButton);
 
-        public ImageButton PersonDetailsPageLinkButton => _personDetailsPageLinkButton ?? (_personDetailsPageLinkButton = FindViewById<ImageButton>(Resource.Id.PersonDetailsPageLinkButton));
+        public ImageButton PersonDetailsPageLinkButton => GetView(ref _personDetailsPageLinkButton, Resource.Id.PersonDetailsPageLinkButton);
 
-        public TextView PersonDetailsPageDescription => _personDetailsPageDescription ?? (_personDetailsPageDescription = FindViewById<TextView>(Resource.Id.PersonDetailsPageDescription));
+        public TextView PersonDetailsPageDescription => GetView(ref _personDetailsPageDescription, Resource.Id.PersonDetailsPageDescription);
 
-        public UserControls.PagerSlidingTabStrip PersonDetailsPageTabStrip => _personDetailsPageTabStrip ?? (_personDetailsPageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.PersonDetailsPageTabStrip));
+        public UserControls.PagerSlidingTabStrip PersonDetailsPageTabStrip => GetView(ref _personDetailsPageTabStrip, Resource.Id.PersonDetailsPageTabStrip);
 
-        public ViewPager PersonDetailsPagePivot => _personDetailsPagePivot ?? (_personDetailsPagePivot = FindViewById<ViewPager>(Resource.Id.PersonDetailsPagePivot));
+        public ViewPager PersonDetailsPagePivot => GetView(ref _personDetailsPagePivot, Resource.Id.PersonDetailsPagePivot);
 
-        public RelativeLayout PersonDetailsPageLoadingSpinner => _personDetailsPageLoadingSpinner ?? (_personDetailsPageLoadingSpinner = FindViewById<RelativeLayout>(Resource.Id.PersonDetailsPageLoadingSpinner));
+        public RelativeLayout PersonDetailsPageLoadingSpinner => GetView(ref _personDetailsPageLoadingSpinner, Resource.Id.PersonDetailsPageLoadingSpinner);
 
 
         #endregion

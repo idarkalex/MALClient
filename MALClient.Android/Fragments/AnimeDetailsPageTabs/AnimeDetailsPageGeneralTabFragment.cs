@@ -170,19 +170,19 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private FrameLayout _animeDetailsPageGeneralTabFragmentMyEndButton;
         private TextView _animeDetailsPageGeneralTabFragmentSynopsis;
 
-        public TextView AnimeDetailsPageGeneralTabFragmentEpisodesLabel => _animeDetailsPageGeneralTabFragmentEpisodesLabel ?? (_animeDetailsPageGeneralTabFragmentEpisodesLabel = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodesLabel));
-        public TextView AnimeDetailsPageGeneralTabFragmentEpisodes => _animeDetailsPageGeneralTabFragmentEpisodes ?? (_animeDetailsPageGeneralTabFragmentEpisodes = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodes));
-        public TextView AnimeDetailsPageGeneralTabFragmentScore => _animeDetailsPageGeneralTabFragmentScore ?? (_animeDetailsPageGeneralTabFragmentScore = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentScore));
-        public LinearLayout AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel => _animeDetailsPageGeneralTabFragmentScoreHiddenLabel ?? (_animeDetailsPageGeneralTabFragmentScoreHiddenLabel = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel));
-        public TextView AnimeDetailsPageGeneralTabFragmentStart => _animeDetailsPageGeneralTabFragmentStart ?? (_animeDetailsPageGeneralTabFragmentStart = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentStart));
-        public TextView AnimeDetailsPageGeneralTabFragmentMyStart => _animeDetailsPageGeneralTabFragmentMyStart ?? (_animeDetailsPageGeneralTabFragmentMyStart = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentMyStart));
-        public FrameLayout AnimeDetailsPageGeneralTabFragmentMyStartButton => _animeDetailsPageGeneralTabFragmentMyStartButton ?? (_animeDetailsPageGeneralTabFragmentMyStartButton = FindViewById<FrameLayout>(Resource.Id.AnimeDetailsPageGeneralTabFragmentMyStartButton));
-        public TextView AnimeDetailsPageGeneralTabFragmentType => _animeDetailsPageGeneralTabFragmentType ?? (_animeDetailsPageGeneralTabFragmentType = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentType));
-        public TextView AnimeDetailsPageGeneralTabFragmentStatus => _animeDetailsPageGeneralTabFragmentStatus ?? (_animeDetailsPageGeneralTabFragmentStatus = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentStatus));
-        public TextView AnimeDetailsPageGeneralTabFragmentEnd => _animeDetailsPageGeneralTabFragmentEnd ?? (_animeDetailsPageGeneralTabFragmentEnd = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentEnd));
-        public TextView AnimeDetailsPageGeneralTabFragmentMyEnd => _animeDetailsPageGeneralTabFragmentMyEnd ?? (_animeDetailsPageGeneralTabFragmentMyEnd = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentMyEnd));
-        public FrameLayout AnimeDetailsPageGeneralTabFragmentMyEndButton => _animeDetailsPageGeneralTabFragmentMyEndButton ?? (_animeDetailsPageGeneralTabFragmentMyEndButton = FindViewById<FrameLayout>(Resource.Id.AnimeDetailsPageGeneralTabFragmentMyEndButton));
-        public TextView AnimeDetailsPageGeneralTabFragmentSynopsis => _animeDetailsPageGeneralTabFragmentSynopsis ?? (_animeDetailsPageGeneralTabFragmentSynopsis = FindViewById<TextView>(Resource.Id.AnimeDetailsPageGeneralTabFragmentSynopsis));
+        public TextView AnimeDetailsPageGeneralTabFragmentEpisodesLabel => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodesLabel, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodesLabel);
+        public TextView AnimeDetailsPageGeneralTabFragmentEpisodes => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodes, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodes);
+        public TextView AnimeDetailsPageGeneralTabFragmentScore => GetView(ref _animeDetailsPageGeneralTabFragmentScore, Resource.Id.AnimeDetailsPageGeneralTabFragmentScore);
+        public LinearLayout AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel => GetView(ref _animeDetailsPageGeneralTabFragmentScoreHiddenLabel, Resource.Id.AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel);
+        public TextView AnimeDetailsPageGeneralTabFragmentStart => GetView(ref _animeDetailsPageGeneralTabFragmentStart, Resource.Id.AnimeDetailsPageGeneralTabFragmentStart);
+        public TextView AnimeDetailsPageGeneralTabFragmentMyStart => GetView(ref _animeDetailsPageGeneralTabFragmentMyStart, Resource.Id.AnimeDetailsPageGeneralTabFragmentMyStart);
+        public FrameLayout AnimeDetailsPageGeneralTabFragmentMyStartButton => GetView(ref _animeDetailsPageGeneralTabFragmentMyStartButton, Resource.Id.AnimeDetailsPageGeneralTabFragmentMyStartButton);
+        public TextView AnimeDetailsPageGeneralTabFragmentType => GetView(ref _animeDetailsPageGeneralTabFragmentType, Resource.Id.AnimeDetailsPageGeneralTabFragmentType);
+        public TextView AnimeDetailsPageGeneralTabFragmentStatus => GetView(ref _animeDetailsPageGeneralTabFragmentStatus, Resource.Id.AnimeDetailsPageGeneralTabFragmentStatus);
+        public TextView AnimeDetailsPageGeneralTabFragmentEnd => GetView(ref _animeDetailsPageGeneralTabFragmentEnd, Resource.Id.AnimeDetailsPageGeneralTabFragmentEnd);
+        public TextView AnimeDetailsPageGeneralTabFragmentMyEnd => GetView(ref _animeDetailsPageGeneralTabFragmentMyEnd, Resource.Id.AnimeDetailsPageGeneralTabFragmentMyEnd);
+        public FrameLayout AnimeDetailsPageGeneralTabFragmentMyEndButton => GetView(ref _animeDetailsPageGeneralTabFragmentMyEndButton, Resource.Id.AnimeDetailsPageGeneralTabFragmentMyEndButton);
+        public TextView AnimeDetailsPageGeneralTabFragmentSynopsis => GetView(ref _animeDetailsPageGeneralTabFragmentSynopsis, Resource.Id.AnimeDetailsPageGeneralTabFragmentSynopsis);
 
         #endregion
     }

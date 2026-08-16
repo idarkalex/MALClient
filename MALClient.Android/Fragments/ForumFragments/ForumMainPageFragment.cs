@@ -176,15 +176,15 @@ namespace MALClient.Android.Fragments.ForumFragments
         private FrameLayout _forumsMainPageMoreButton;
         private FrameLayout _forumsContentFrame;
 
-        public FrameLayout ForumsMainPagePinnedPostsButton => _forumsMainPagePinnedPostsButton ?? (_forumsMainPagePinnedPostsButton = FindViewById<FrameLayout>(Resource.Id.ForumsMainPagePinnedPostsButton));
+        public FrameLayout ForumsMainPagePinnedPostsButton => GetView(ref _forumsMainPagePinnedPostsButton, Resource.Id.ForumsMainPagePinnedPostsButton);
 
-        public LinearLayout ForumsMainPagePinnedBoardsList => _forumsMainPagePinnedBoardsList ?? (_forumsMainPagePinnedBoardsList = FindViewById<LinearLayout>(Resource.Id.ForumsMainPagePinnedBoardsList));
+        public LinearLayout ForumsMainPagePinnedBoardsList => GetView(ref _forumsMainPagePinnedBoardsList, Resource.Id.ForumsMainPagePinnedBoardsList);
 
-        public TextView ForumsMAinPagePinnedBoardEmptyNotice => _forumsMAinPagePinnedBoardEmptyNotice ?? (_forumsMAinPagePinnedBoardEmptyNotice = FindViewById<TextView>(Resource.Id.ForumsMAinPagePinnedBoardEmptyNotice));
+        public TextView ForumsMAinPagePinnedBoardEmptyNotice => GetView(ref _forumsMAinPagePinnedBoardEmptyNotice, Resource.Id.ForumsMAinPagePinnedBoardEmptyNotice);
 
-        public FrameLayout ForumsMainPageMoreButton => _forumsMainPageMoreButton ?? (_forumsMainPageMoreButton = FindViewById<FrameLayout>(Resource.Id.ForumsMainPageMoreButton));
+        public FrameLayout ForumsMainPageMoreButton => GetView(ref _forumsMainPageMoreButton, Resource.Id.ForumsMainPageMoreButton);
 
-        public FrameLayout ForumsContentFrame => _forumsContentFrame ?? (_forumsContentFrame = FindViewById<FrameLayout>(Resource.Id.ForumsContentFrame));
+        public FrameLayout ForumsContentFrame => GetView(ref _forumsContentFrame, Resource.Id.ForumsContentFrame);
 
 
 

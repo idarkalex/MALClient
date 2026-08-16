@@ -186,11 +186,11 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private TextView _animeDetailsPageReviewsTabEmptyNotice;
         private FrameLayout _animeDetailsPageReviewsTabLoadingOverlay;
 
-        public ListView AnimeDetailsPageReviewsTabsList => _animeDetailsPageReviewsTabsList ?? (_animeDetailsPageReviewsTabsList = FindViewById<ListView>(Resource.Id.AnimeDetailsPageReviewsTabsList));
+        public ListView AnimeDetailsPageReviewsTabsList => GetView(ref _animeDetailsPageReviewsTabsList, Resource.Id.AnimeDetailsPageReviewsTabsList);
 
-        public TextView AnimeDetailsPageReviewsTabEmptyNotice => _animeDetailsPageReviewsTabEmptyNotice ?? (_animeDetailsPageReviewsTabEmptyNotice = FindViewById<TextView>(Resource.Id.AnimeDetailsPageReviewsTabEmptyNotice));
+        public TextView AnimeDetailsPageReviewsTabEmptyNotice => GetView(ref _animeDetailsPageReviewsTabEmptyNotice, Resource.Id.AnimeDetailsPageReviewsTabEmptyNotice);
 
-        public FrameLayout AnimeDetailsPageReviewsTabLoadingOverlay => _animeDetailsPageReviewsTabLoadingOverlay ?? (_animeDetailsPageReviewsTabLoadingOverlay = FindViewById<FrameLayout>(Resource.Id.AnimeDetailsPageReviewsTabLoadingOverlay));
+        public FrameLayout AnimeDetailsPageReviewsTabLoadingOverlay => GetView(ref _animeDetailsPageReviewsTabLoadingOverlay, Resource.Id.AnimeDetailsPageReviewsTabLoadingOverlay);
 
 
         #endregion

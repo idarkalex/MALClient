@@ -253,17 +253,17 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private RelativeLayout _animeDetailsPageDetailsTabLoadingOverlay;
 
 
-        public LinearLayout AnimeDetailsPageDetailsTabLeftGenresList => _animeDetailsPageDetailsTabLeftGenresList ?? (_animeDetailsPageDetailsTabLeftGenresList = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageDetailsTabLeftGenresList));
-        public LinearLayout AnimeDetailsPageDetailsTabRightGenresList => _animeDetailsPageDetailsTabRightGenresList ?? (_animeDetailsPageDetailsTabRightGenresList = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageDetailsTabRightGenresList));
-        public LinearLayout AnimeDetailsPageDetailsTabInformationList => _animeDetailsPageDetailsTabInformationList ?? (_animeDetailsPageDetailsTabInformationList = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageDetailsTabInformationList));
-        public LinearLayout AnimeDetailsPageDetailsTabStatsList => _animeDetailsPageDetailsTabStatsList ?? (_animeDetailsPageDetailsTabStatsList = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageDetailsTabStatsList));
-        public TextView AnimeDetailsPageDetailsTabOPsListLabel => _animeDetailsPageDetailsTabOPsListLabel ?? (_animeDetailsPageDetailsTabOPsListLabel = FindViewById<TextView>(Resource.Id.AnimeDetailsPageDetailsTabOPsListLabel));
-        public LinearLayout AnimeDetailsPageDetailsTabOPsList => _animeDetailsPageDetailsTabOPsList ?? (_animeDetailsPageDetailsTabOPsList = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageDetailsTabOPsList));
-        public TextView AnimeDetailsPageDetailsTabEDsListLabel => _animeDetailsPageDetailsTabEDsListLabel ?? (_animeDetailsPageDetailsTabEDsListLabel = FindViewById<TextView>(Resource.Id.AnimeDetailsPageDetailsTabEDsListLabel));
-        public LinearLayout AnimeDetailsPageDetailsTabEDsList => _animeDetailsPageDetailsTabEDsList ?? (_animeDetailsPageDetailsTabEDsList = FindViewById<LinearLayout>(Resource.Id.AnimeDetailsPageDetailsTabEDsList));
-        public TextView EpisodesLabel => _episodesLabel ?? (_episodesLabel = FindViewById<TextView>(Resource.Id.EpisodesLabel));
-        public ListView EpisodesList => _episodesList ?? (_episodesList = FindViewById<ListView>(Resource.Id.EpisodesList));
-        public RelativeLayout AnimeDetailsPageDetailsTabLoadingOverlay => _animeDetailsPageDetailsTabLoadingOverlay ?? (_animeDetailsPageDetailsTabLoadingOverlay = FindViewById<RelativeLayout>(Resource.Id.AnimeDetailsPageDetailsTabLoadingOverlay));
+        public LinearLayout AnimeDetailsPageDetailsTabLeftGenresList => GetView(ref _animeDetailsPageDetailsTabLeftGenresList, Resource.Id.AnimeDetailsPageDetailsTabLeftGenresList);
+        public LinearLayout AnimeDetailsPageDetailsTabRightGenresList => GetView(ref _animeDetailsPageDetailsTabRightGenresList, Resource.Id.AnimeDetailsPageDetailsTabRightGenresList);
+        public LinearLayout AnimeDetailsPageDetailsTabInformationList => GetView(ref _animeDetailsPageDetailsTabInformationList, Resource.Id.AnimeDetailsPageDetailsTabInformationList);
+        public LinearLayout AnimeDetailsPageDetailsTabStatsList => GetView(ref _animeDetailsPageDetailsTabStatsList, Resource.Id.AnimeDetailsPageDetailsTabStatsList);
+        public TextView AnimeDetailsPageDetailsTabOPsListLabel => GetView(ref _animeDetailsPageDetailsTabOPsListLabel, Resource.Id.AnimeDetailsPageDetailsTabOPsListLabel);
+        public LinearLayout AnimeDetailsPageDetailsTabOPsList => GetView(ref _animeDetailsPageDetailsTabOPsList, Resource.Id.AnimeDetailsPageDetailsTabOPsList);
+        public TextView AnimeDetailsPageDetailsTabEDsListLabel => GetView(ref _animeDetailsPageDetailsTabEDsListLabel, Resource.Id.AnimeDetailsPageDetailsTabEDsListLabel);
+        public LinearLayout AnimeDetailsPageDetailsTabEDsList => GetView(ref _animeDetailsPageDetailsTabEDsList, Resource.Id.AnimeDetailsPageDetailsTabEDsList);
+        public TextView EpisodesLabel => GetView(ref _episodesLabel, Resource.Id.EpisodesLabel);
+        public ListView EpisodesList => GetView(ref _episodesList, Resource.Id.EpisodesList);
+        public RelativeLayout AnimeDetailsPageDetailsTabLoadingOverlay => GetView(ref _animeDetailsPageDetailsTabLoadingOverlay, Resource.Id.AnimeDetailsPageDetailsTabLoadingOverlay);
 
         #endregion
     }

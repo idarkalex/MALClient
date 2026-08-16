@@ -72,13 +72,13 @@ namespace MALClient.Android.Fragments.HistoryFragments
         private ProgressBar _historyPageLoadingSpinner;
         private TextView _historyPageEmptyNotice;
 
-        public UserControls.PagerSlidingTabStrip HistoryPageTabStrip => _historyPageTabStrip ?? (_historyPageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.HistoryPageTabStrip));
+        public UserControls.PagerSlidingTabStrip HistoryPageTabStrip => GetView(ref _historyPageTabStrip, Resource.Id.HistoryPageTabStrip);
 
-        public ViewPager HistoryPagePivot => _historyPagePivot ?? (_historyPagePivot = FindViewById<ViewPager>(Resource.Id.HistoryPagePivot));
+        public ViewPager HistoryPagePivot => GetView(ref _historyPagePivot, Resource.Id.HistoryPagePivot);
 
-        public ProgressBar HistoryPageLoadingSpinner => _historyPageLoadingSpinner ?? (_historyPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.HistoryPageLoadingSpinner));
+        public ProgressBar HistoryPageLoadingSpinner => GetView(ref _historyPageLoadingSpinner, Resource.Id.HistoryPageLoadingSpinner);
 
-        public TextView HistoryPageEmptyNotice => _historyPageEmptyNotice ?? (_historyPageEmptyNotice = FindViewById<TextView>(Resource.Id.HistoryPageEmptyNotice));
+        public TextView HistoryPageEmptyNotice => GetView(ref _historyPageEmptyNotice, Resource.Id.HistoryPageEmptyNotice);
 
         #endregion
     }

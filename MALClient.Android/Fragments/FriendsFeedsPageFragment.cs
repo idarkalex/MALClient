@@ -157,9 +157,9 @@ namespace MALClient.Android.Fragments
         private GridView _friendsFeedsPageGridView;
         private ProgressBar _friendsFeedsPageLoadingSpinner;
 
-        public GridView FriendsFeedsPageGridView => _friendsFeedsPageGridView ?? (_friendsFeedsPageGridView = FindViewById<GridView>(Resource.Id.FriendsFeedsPageGridView));
+        public GridView FriendsFeedsPageGridView => GetView(ref _friendsFeedsPageGridView, Resource.Id.FriendsFeedsPageGridView);
 
-        public ProgressBar FriendsFeedsPageLoadingSpinner => _friendsFeedsPageLoadingSpinner ?? (_friendsFeedsPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.FriendsFeedsPageLoadingSpinner));
+        public ProgressBar FriendsFeedsPageLoadingSpinner => GetView(ref _friendsFeedsPageLoadingSpinner, Resource.Id.FriendsFeedsPageLoadingSpinner);
 
         #endregion
     }

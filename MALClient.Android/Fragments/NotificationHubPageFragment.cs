@@ -214,13 +214,13 @@ namespace MALClient.Android.Fragments
         private FloatingActionButton _notificationHubPageActionButton;
         private TextView _aNotificationHubPageTabEmptyNotice;
 
-        public ListView NotificationHubPageList => _notificationHubPageList ?? (_notificationHubPageList = FindViewById<ListView>(Resource.Id.NotificationHubPageList));
+        public ListView NotificationHubPageList => GetView(ref _notificationHubPageList, Resource.Id.NotificationHubPageList);
 
-        public ProgressBar NotificationHubPageLoadingSpinner => _notificationHubPageLoadingSpinner ?? (_notificationHubPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.NotificationHubPageLoadingSpinner));
+        public ProgressBar NotificationHubPageLoadingSpinner => GetView(ref _notificationHubPageLoadingSpinner, Resource.Id.NotificationHubPageLoadingSpinner);
 
-        public FloatingActionButton NotificationHubPageActionButton => _notificationHubPageActionButton ?? (_notificationHubPageActionButton = FindViewById<FloatingActionButton>(Resource.Id.NotificationHubPageActionButton));
+        public FloatingActionButton NotificationHubPageActionButton => GetView(ref _notificationHubPageActionButton, Resource.Id.NotificationHubPageActionButton);
 
-        public TextView ANotificationHubPageTabEmptyNotice => _aNotificationHubPageTabEmptyNotice ?? (_aNotificationHubPageTabEmptyNotice = FindViewById<TextView>(Resource.Id.ANotificationHubPageTabEmptyNotice));
+        public TextView ANotificationHubPageTabEmptyNotice => GetView(ref _aNotificationHubPageTabEmptyNotice, Resource.Id.ANotificationHubPageTabEmptyNotice);
 
 
         #endregion

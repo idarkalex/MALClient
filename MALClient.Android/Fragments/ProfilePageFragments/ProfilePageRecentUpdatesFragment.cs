@@ -77,13 +77,13 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
         private RelativeLayout _profilePageRecentUpdatesTabMangaListEmptyNotice;
         private LinearLayout _profilePageRecentUpdatesTabMangaList;
 
-        public LinearLayout ProfilePageRecentUpdatesTabAnimeList => _profilePageRecentUpdatesTabAnimeList ?? (_profilePageRecentUpdatesTabAnimeList = FindViewById<LinearLayout>(Resource.Id.ProfilePageRecentUpdatesTabAnimeList));
+        public LinearLayout ProfilePageRecentUpdatesTabAnimeList => GetView(ref _profilePageRecentUpdatesTabAnimeList, Resource.Id.ProfilePageRecentUpdatesTabAnimeList);
 
-        public RelativeLayout ProfilePageRecentUpdatesTabAnimeListEmptyNotice => _profilePageRecentUpdatesTabAnimeListEmptyNotice ?? (_profilePageRecentUpdatesTabAnimeListEmptyNotice = FindViewById<RelativeLayout>(Resource.Id.ProfilePageRecentUpdatesTabAnimeListEmptyNotice));
+        public RelativeLayout ProfilePageRecentUpdatesTabAnimeListEmptyNotice => GetView(ref _profilePageRecentUpdatesTabAnimeListEmptyNotice, Resource.Id.ProfilePageRecentUpdatesTabAnimeListEmptyNotice);
 
-        public RelativeLayout ProfilePageRecentUpdatesTabMangaListEmptyNotice => _profilePageRecentUpdatesTabMangaListEmptyNotice ?? (_profilePageRecentUpdatesTabMangaListEmptyNotice = FindViewById<RelativeLayout>(Resource.Id.ProfilePageRecentUpdatesTabMangaListEmptyNotice));
+        public RelativeLayout ProfilePageRecentUpdatesTabMangaListEmptyNotice => GetView(ref _profilePageRecentUpdatesTabMangaListEmptyNotice, Resource.Id.ProfilePageRecentUpdatesTabMangaListEmptyNotice);
 
-        public LinearLayout ProfilePageRecentUpdatesTabMangaList => _profilePageRecentUpdatesTabMangaList ?? (_profilePageRecentUpdatesTabMangaList = FindViewById<LinearLayout>(Resource.Id.ProfilePageRecentUpdatesTabMangaList));
+        public LinearLayout ProfilePageRecentUpdatesTabMangaList => GetView(ref _profilePageRecentUpdatesTabMangaList, Resource.Id.ProfilePageRecentUpdatesTabMangaList);
 
 
         #endregion

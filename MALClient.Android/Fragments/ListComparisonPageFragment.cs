@@ -322,25 +322,25 @@ namespace MALClient.Android.Fragments
         private TextView _comparisonEmptyNotice;
         private FloatingActionButton _comparisonPageActionButton;
 
-        public ImageViewAsync MyImage => _myImage ?? (_myImage = FindViewById<ImageViewAsync>(Resource.Id.MyImage));
+        public ImageViewAsync MyImage => GetView(ref _myImage, Resource.Id.MyImage);
 
-        public TextView MyName => _myName ?? (_myName = FindViewById<TextView>(Resource.Id.MyName));
+        public TextView MyName => GetView(ref _myName, Resource.Id.MyName);
 
-        public TextView MyMean => _myMean ?? (_myMean = FindViewById<TextView>(Resource.Id.MyMean));
+        public TextView MyMean => GetView(ref _myMean, Resource.Id.MyMean);
 
-        public TextView OtherMean => _otherMean ?? (_otherMean = FindViewById<TextView>(Resource.Id.OtherMean));
+        public TextView OtherMean => GetView(ref _otherMean, Resource.Id.OtherMean);
 
-        public ImageViewAsync OtherImage => _otherImage ?? (_otherImage = FindViewById<ImageViewAsync>(Resource.Id.OtherImage));
+        public ImageViewAsync OtherImage => GetView(ref _otherImage, Resource.Id.OtherImage);
 
-        public TextView OtherName => _otherName ?? (_otherName = FindViewById<TextView>(Resource.Id.OtherName));
+        public TextView OtherName => GetView(ref _otherName, Resource.Id.OtherName);
 
-        public ListView ComparisonListView => _comparisonListView ?? (_comparisonListView = FindViewById<ListView>(Resource.Id.ComparisonListView));
+        public ListView ComparisonListView => GetView(ref _comparisonListView, Resource.Id.ComparisonListView);
 
-        public ProgressBar ComparisonLoadingSpinner => _comparisonLoadingSpinner ?? (_comparisonLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.ComparisonLoadingSpinner));
+        public ProgressBar ComparisonLoadingSpinner => GetView(ref _comparisonLoadingSpinner, Resource.Id.ComparisonLoadingSpinner);
 
-        public TextView ComparisonEmptyNotice => _comparisonEmptyNotice ?? (_comparisonEmptyNotice = FindViewById<TextView>(Resource.Id.ComparisonEmptyNotice));
+        public TextView ComparisonEmptyNotice => GetView(ref _comparisonEmptyNotice, Resource.Id.ComparisonEmptyNotice);
 
-        public FloatingActionButton ComparisonPageActionButton => _comparisonPageActionButton ?? (_comparisonPageActionButton = FindViewById<FloatingActionButton>(Resource.Id.ComparisonPageActionButton));
+        public FloatingActionButton ComparisonPageActionButton => GetView(ref _comparisonPageActionButton, Resource.Id.ComparisonPageActionButton);
 
 
 

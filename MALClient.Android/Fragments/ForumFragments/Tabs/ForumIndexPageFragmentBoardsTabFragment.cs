@@ -58,7 +58,7 @@ namespace MALClient.Android.Fragments.ForumFragments.Tabs
 
         private ListView _forumIndexPageBoardsTabListView;
 
-        public ListView ForumIndexPageBoardsTabListView => _forumIndexPageBoardsTabListView ?? (_forumIndexPageBoardsTabListView = FindViewById<ListView>(Resource.Id.ForumIndexPageBoardsTabListView));
+        public ListView ForumIndexPageBoardsTabListView => GetView(ref _forumIndexPageBoardsTabListView, Resource.Id.ForumIndexPageBoardsTabListView);
 
         #endregion
     }

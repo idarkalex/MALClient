@@ -123,11 +123,11 @@ namespace MALClient.Android.Fragments.FriendsPageFragments
         private ProgressBar _loadingSpinner;
         private TextView _emptyNotice;
 
-        public ListView ListView => _listView ?? (_listView = FindViewById<ListView>(Resource.Id.ListView));
+        public ListView ListView => GetView(ref _listView, Resource.Id.ListView);
 
-        public ProgressBar LoadingSpinner => _loadingSpinner ?? (_loadingSpinner = FindViewById<ProgressBar>(Resource.Id.LoadingSpinner));
+        public ProgressBar LoadingSpinner => GetView(ref _loadingSpinner, Resource.Id.LoadingSpinner);
 
-        public TextView EmptyNotice => _emptyNotice ?? (_emptyNotice = FindViewById<TextView>(Resource.Id.EmptyNotice));
+        public TextView EmptyNotice => GetView(ref _emptyNotice, Resource.Id.EmptyNotice);
 
         #endregion
 

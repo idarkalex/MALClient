@@ -140,13 +140,13 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
         private WebView _articlesPageWebView;
         private ProgressBar _articlesPageLoadingSpinner;
 
-        public UserControls.PagerSlidingTabStrip ArticlesPageTabStrip => _articlesPageTabStrip ?? (_articlesPageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.ArticlesPageTabStrip));
+        public UserControls.PagerSlidingTabStrip ArticlesPageTabStrip => GetView(ref _articlesPageTabStrip, Resource.Id.ArticlesPageTabStrip);
 
-        public ViewPager ArticlesPagePivot => _articlesPagePivot ?? (_articlesPagePivot = FindViewById<ViewPager>(Resource.Id.ArticlesPagePivot));
+        public ViewPager ArticlesPagePivot => GetView(ref _articlesPagePivot, Resource.Id.ArticlesPagePivot);
 
-        public WebView ArticlesPageWebView => _articlesPageWebView ?? (_articlesPageWebView = FindViewById<WebView>(Resource.Id.ArticlesPageWebView));
+        public WebView ArticlesPageWebView => GetView(ref _articlesPageWebView, Resource.Id.ArticlesPageWebView);
 
-        public ProgressBar ArticlesPageLoadingSpinner => _articlesPageLoadingSpinner ?? (_articlesPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.ArticlesPageLoadingSpinner));
+        public ProgressBar ArticlesPageLoadingSpinner => GetView(ref _articlesPageLoadingSpinner, Resource.Id.ArticlesPageLoadingSpinner);
 
         #endregion
     }

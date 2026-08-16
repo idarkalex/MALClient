@@ -322,13 +322,13 @@ namespace MALClient.Android.Fragments
         private ProgressBar _wallpapersPageProgressSpinner;
 
 
-        public ListView WallpapersPageList => _wallpapersPageList ?? (_wallpapersPageList = FindViewById<ListView>(Resource.Id.WallpapersPageList));
+        public ListView WallpapersPageList => GetView(ref _wallpapersPageList, Resource.Id.WallpapersPageList);
 
-        public FloatingActionButton WallpapersPageActionButtonFilter => _wallpapersPageActionButtonFilter ?? (_wallpapersPageActionButtonFilter = FindViewById<FloatingActionButton>(Resource.Id.WallpapersPageActionButtonFilter));
+        public FloatingActionButton WallpapersPageActionButtonFilter => GetView(ref _wallpapersPageActionButtonFilter, Resource.Id.WallpapersPageActionButtonFilter);
 
-        public FloatingActionButton WallpapersPageActionButtonLoadMore => _wallpapersPageActionButtonLoadMore ?? (_wallpapersPageActionButtonLoadMore = FindViewById<FloatingActionButton>(Resource.Id.WallpapersPageActionButtonLoadMore));
+        public FloatingActionButton WallpapersPageActionButtonLoadMore => GetView(ref _wallpapersPageActionButtonLoadMore, Resource.Id.WallpapersPageActionButtonLoadMore);
 
-        public ProgressBar WallpapersPageProgressSpinner => _wallpapersPageProgressSpinner ?? (_wallpapersPageProgressSpinner = FindViewById<ProgressBar>(Resource.Id.WallpapersPageProgressSpinner));
+        public ProgressBar WallpapersPageProgressSpinner => GetView(ref _wallpapersPageProgressSpinner, Resource.Id.WallpapersPageProgressSpinner);
 
 
 

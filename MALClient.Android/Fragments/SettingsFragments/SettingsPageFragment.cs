@@ -119,7 +119,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         private FrameLayout _searchPageContentFrame;
 
-        public FrameLayout SearchPageContentFrame => _searchPageContentFrame ?? (_searchPageContentFrame = FindViewById<FrameLayout>(Resource.Id.SearchPageContentFrame));
+        public FrameLayout SearchPageContentFrame => GetView(ref _searchPageContentFrame, Resource.Id.SearchPageContentFrame);
 
 
         #endregion

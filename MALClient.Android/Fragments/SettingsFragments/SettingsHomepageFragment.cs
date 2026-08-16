@@ -115,7 +115,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         private LinearLayout _settingsPageHomepageList;
 
-        public LinearLayout SettingsPageHomepageList => _settingsPageHomepageList ?? (_settingsPageHomepageList = FindViewById<LinearLayout>(Resource.Id.SettingsPageHomepageList));
+        public LinearLayout SettingsPageHomepageList => GetView(ref _settingsPageHomepageList, Resource.Id.SettingsPageHomepageList);
 
         #endregion
     }

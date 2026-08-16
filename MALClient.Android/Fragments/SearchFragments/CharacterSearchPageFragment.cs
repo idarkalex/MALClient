@@ -94,9 +94,9 @@ namespace MALClient.Android.Fragments.SearchFragments
         private GridView _characterSearchPageList;
         private ProgressBar _characterSearchPageLoadingSpinner;
 
-        public GridView CharacterSearchPageList => _characterSearchPageList ?? (_characterSearchPageList = FindViewById<GridView>(Resource.Id.CharacterSearchPageList));
+        public GridView CharacterSearchPageList => GetView(ref _characterSearchPageList, Resource.Id.CharacterSearchPageList);
 
-        public ProgressBar CharacterSearchPageLoadingSpinner => _characterSearchPageLoadingSpinner ?? (_characterSearchPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.CharacterSearchPageLoadingSpinner));
+        public ProgressBar CharacterSearchPageLoadingSpinner => GetView(ref _characterSearchPageLoadingSpinner, Resource.Id.CharacterSearchPageLoadingSpinner);
 
 
 

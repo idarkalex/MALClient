@@ -205,31 +205,31 @@ namespace MALClient.Android.Fragments.DetailsFragments
         private TextView _characterDetailsPageMangaographyEmptyNotice;
         private RelativeLayout _characterDetailsPageLoadingSpinner;
 
-        public ImageView CharactersDetailsPageNoImgNotice => _charactersDetailsPageNoImgNotice ?? (_charactersDetailsPageNoImgNotice = FindViewById<ImageView>(Resource.Id.CharactersDetailsPageNoImgNotice));
+        public ImageView CharactersDetailsPageNoImgNotice => GetView(ref _charactersDetailsPageNoImgNotice, Resource.Id.CharactersDetailsPageNoImgNotice);
 
-        public ImageViewAsync CharacterDetailsPageImage => _characterDetailsPageImage ?? (_characterDetailsPageImage = FindViewById<ImageViewAsync>(Resource.Id.CharacterDetailsPageImage));
+        public ImageViewAsync CharacterDetailsPageImage => GetView(ref _characterDetailsPageImage, Resource.Id.CharacterDetailsPageImage);
 
-        public ImageButton CharacterDetailsPageLinkButton => _characterDetailsPageLinkButton ?? (_characterDetailsPageLinkButton = FindViewById<ImageButton>(Resource.Id.CharacterDetailsPageLinkButton));
+        public ImageButton CharacterDetailsPageLinkButton => GetView(ref _characterDetailsPageLinkButton, Resource.Id.CharacterDetailsPageLinkButton);
 
-        public FavouriteButton CharactersPageFavButton => _charactersPageFavButton ?? (_charactersPageFavButton = FindViewById<FavouriteButton>(Resource.Id.CharactersPageFavButton));
+        public FavouriteButton CharactersPageFavButton => GetView(ref _charactersPageFavButton, Resource.Id.CharactersPageFavButton);
 
-        public TextView CharacterDetailsPageDescription => _characterDetailsPageDescription ?? (_characterDetailsPageDescription = FindViewById<TextView>(Resource.Id.CharacterDetailsPageDescription));
+        public TextView CharacterDetailsPageDescription => GetView(ref _characterDetailsPageDescription, Resource.Id.CharacterDetailsPageDescription);
 
-        public Button CharacterDetailsPageSpoilerButton => _characterDetailsPageSpoilerButton ?? (_characterDetailsPageSpoilerButton = FindViewById<Button>(Resource.Id.CharacterDetailsPageSpoilerButton));
+        public Button CharacterDetailsPageSpoilerButton => GetView(ref _characterDetailsPageSpoilerButton, Resource.Id.CharacterDetailsPageSpoilerButton);
 
-        public HeightAdjustingGridView CharacterDetailsPageVoiceActorsGrid => _characterDetailsPageVoiceActorsGrid ?? (_characterDetailsPageVoiceActorsGrid = FindViewById<HeightAdjustingGridView>(Resource.Id.CharacterDetailsPageVoiceActorsGrid));
+        public HeightAdjustingGridView CharacterDetailsPageVoiceActorsGrid => GetView(ref _characterDetailsPageVoiceActorsGrid, Resource.Id.CharacterDetailsPageVoiceActorsGrid);
 
-        public TextView CharacterDetailsPageVoiceActorsEmptyNotice => _characterDetailsPageVoiceActorsEmptyNotice ?? (_characterDetailsPageVoiceActorsEmptyNotice = FindViewById<TextView>(Resource.Id.CharacterDetailsPageVoiceActorsEmptyNotice));
+        public TextView CharacterDetailsPageVoiceActorsEmptyNotice => GetView(ref _characterDetailsPageVoiceActorsEmptyNotice, Resource.Id.CharacterDetailsPageVoiceActorsEmptyNotice);
 
-        public HeightAdjustingGridView CharacterDetailsPageAnimeographyGrid => _characterDetailsPageAnimeographyGrid ?? (_characterDetailsPageAnimeographyGrid = FindViewById<HeightAdjustingGridView>(Resource.Id.CharacterDetailsPageAnimeographyGrid));
+        public HeightAdjustingGridView CharacterDetailsPageAnimeographyGrid => GetView(ref _characterDetailsPageAnimeographyGrid, Resource.Id.CharacterDetailsPageAnimeographyGrid);
 
-        public TextView CharacterDetailsPageAnimeographyEmptyNotice => _characterDetailsPageAnimeographyEmptyNotice ?? (_characterDetailsPageAnimeographyEmptyNotice = FindViewById<TextView>(Resource.Id.CharacterDetailsPageAnimeographyEmptyNotice));
+        public TextView CharacterDetailsPageAnimeographyEmptyNotice => GetView(ref _characterDetailsPageAnimeographyEmptyNotice, Resource.Id.CharacterDetailsPageAnimeographyEmptyNotice);
 
-        public HeightAdjustingGridView CharacterDetailsPageMangaographyGrid => _characterDetailsPageMangaographyGrid ?? (_characterDetailsPageMangaographyGrid = FindViewById<HeightAdjustingGridView>(Resource.Id.CharacterDetailsPageMangaographyGrid));
+        public HeightAdjustingGridView CharacterDetailsPageMangaographyGrid => GetView(ref _characterDetailsPageMangaographyGrid, Resource.Id.CharacterDetailsPageMangaographyGrid);
 
-        public TextView CharacterDetailsPageMangaographyEmptyNotice => _characterDetailsPageMangaographyEmptyNotice ?? (_characterDetailsPageMangaographyEmptyNotice = FindViewById<TextView>(Resource.Id.CharacterDetailsPageMangaographyEmptyNotice));
+        public TextView CharacterDetailsPageMangaographyEmptyNotice => GetView(ref _characterDetailsPageMangaographyEmptyNotice, Resource.Id.CharacterDetailsPageMangaographyEmptyNotice);
 
-        public RelativeLayout CharacterDetailsPageLoadingSpinner => _characterDetailsPageLoadingSpinner ?? (_characterDetailsPageLoadingSpinner = FindViewById<RelativeLayout>(Resource.Id.CharacterDetailsPageLoadingSpinner));
+        public RelativeLayout CharacterDetailsPageLoadingSpinner => GetView(ref _characterDetailsPageLoadingSpinner, Resource.Id.CharacterDetailsPageLoadingSpinner);
 
 
 

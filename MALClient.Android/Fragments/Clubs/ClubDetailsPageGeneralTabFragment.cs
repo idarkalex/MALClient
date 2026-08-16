@@ -157,19 +157,19 @@ namespace MALClient.Android.Fragments.Clubs
         private Button _buttonLeave;
         private WebView _webView;
 
-        public ImageViewAsync Image => _image ?? (_image = FindViewById<ImageViewAsync>(Resource.Id.Image));
+        public ImageViewAsync Image => GetView(ref _image, Resource.Id.Image);
 
-        public TextView Title => _title ?? (_title = FindViewById<TextView>(Resource.Id.Title));
+        public TextView Title => GetView(ref _title, Resource.Id.Title);
 
-        public LinearLayout StatsList => _statsList ?? (_statsList = FindViewById<LinearLayout>(Resource.Id.StatsList));
+        public LinearLayout StatsList => GetView(ref _statsList, Resource.Id.StatsList);
 
-        public LinearLayout OfficersList => _officersList ?? (_officersList = FindViewById<LinearLayout>(Resource.Id.OfficersList));
+        public LinearLayout OfficersList => GetView(ref _officersList, Resource.Id.OfficersList);
 
-        public Button ButtonForum => _buttonForum ?? (_buttonForum = FindViewById<Button>(Resource.Id.ButtonForum));
+        public Button ButtonForum => GetView(ref _buttonForum, Resource.Id.ButtonForum);
 
-        public Button ButtonLeave => _buttonLeave ?? (_buttonLeave = FindViewById<Button>(Resource.Id.ButtonLeave));
+        public Button ButtonLeave => GetView(ref _buttonLeave, Resource.Id.ButtonLeave);
 
-        public WebView WebView => _webView ?? (_webView = FindViewById<WebView>(Resource.Id.WebView));
+        public WebView WebView => GetView(ref _webView, Resource.Id.WebView);
 
         #endregion
     }

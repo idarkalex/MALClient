@@ -69,11 +69,11 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
         private UserControls.PagerSlidingTabStrip _profilePageTabStrip;
         private ViewPager _profilePagePivot;
 
-        public FrameLayout ProfilePageLoadingSpinner => _profilePageLoadingSpinner ?? (_profilePageLoadingSpinner = FindViewById<FrameLayout>(Resource.Id.ProfilePageLoadingSpinner));
+        public FrameLayout ProfilePageLoadingSpinner => GetView(ref _profilePageLoadingSpinner, Resource.Id.ProfilePageLoadingSpinner);
 
-        public UserControls.PagerSlidingTabStrip ProfilePageTabStrip => _profilePageTabStrip ?? (_profilePageTabStrip = FindViewById<UserControls.PagerSlidingTabStrip>(Resource.Id.ProfilePageTabStrip));
+        public UserControls.PagerSlidingTabStrip ProfilePageTabStrip => GetView(ref _profilePageTabStrip, Resource.Id.ProfilePageTabStrip);
 
-        public ViewPager ProfilePagePivot => _profilePagePivot ?? (_profilePagePivot = FindViewById<ViewPager>(Resource.Id.ProfilePagePivot));
+        public ViewPager ProfilePagePivot => GetView(ref _profilePagePivot, Resource.Id.ProfilePagePivot);
 
         #endregion
     }

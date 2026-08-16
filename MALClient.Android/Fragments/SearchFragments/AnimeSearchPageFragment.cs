@@ -193,10 +193,10 @@ namespace MALClient.Android.Fragments.SearchFragments
         private LinearLayout _animeSearchPageFirstSearchSection;
         private ProgressBar _animeSearchPageLoadingSpinner;
 
-        public RecyclerView SearchRecyclerView => _searchRecyclerView ?? (_searchRecyclerView = FindViewById<RecyclerView>(Resource.Id.SearchRecyclerView));
-        public TextView AnimeSearchPageEmptyNotice => _animeSearchPageEmptyNotice ?? (_animeSearchPageEmptyNotice = FindViewById<TextView>(Resource.Id.AnimeSearchPageEmptyNotice));
-        public LinearLayout AnimeSearchPageFirstSearchSection => _animeSearchPageFirstSearchSection ?? (_animeSearchPageFirstSearchSection = FindViewById<LinearLayout>(Resource.Id.AnimeSearchPageFirstSearchSection));
-        public ProgressBar AnimeSearchPageLoadingSpinner => _animeSearchPageLoadingSpinner ?? (_animeSearchPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.AnimeSearchPageLoadingSpinner));
+        public RecyclerView SearchRecyclerView => GetView(ref _searchRecyclerView, Resource.Id.SearchRecyclerView);
+        public TextView AnimeSearchPageEmptyNotice => GetView(ref _animeSearchPageEmptyNotice, Resource.Id.AnimeSearchPageEmptyNotice);
+        public LinearLayout AnimeSearchPageFirstSearchSection => GetView(ref _animeSearchPageFirstSearchSection, Resource.Id.AnimeSearchPageFirstSearchSection);
+        public ProgressBar AnimeSearchPageLoadingSpinner => GetView(ref _animeSearchPageLoadingSpinner, Resource.Id.AnimeSearchPageLoadingSpinner);
 
         #endregion
     }

@@ -139,11 +139,11 @@ namespace MALClient.Android.Fragments.DetailsFragments
         private TextView _animeDetailsPageCharactersTabEmptyNotice;
         private ProgressBar _animeDetailsPageCharactersTabLoadingSpinner;
 
-        public RecyclerView AnimeDetailsPageCharactersTabGridView => _animeDetailsPageCharactersTabGridView ?? (_animeDetailsPageCharactersTabGridView = FindViewById<RecyclerView>(Resource.Id.AnimeDetailsPageCharactersTabGridView));
+        public RecyclerView AnimeDetailsPageCharactersTabGridView => GetView(ref _animeDetailsPageCharactersTabGridView, Resource.Id.AnimeDetailsPageCharactersTabGridView);
 
-        public TextView AnimeDetailsPageCharactersTabEmptyNotice => _animeDetailsPageCharactersTabEmptyNotice ?? (_animeDetailsPageCharactersTabEmptyNotice = FindViewById<TextView>(Resource.Id.AnimeDetailsPageCharactersTabEmptyNotice));
+        public TextView AnimeDetailsPageCharactersTabEmptyNotice => GetView(ref _animeDetailsPageCharactersTabEmptyNotice, Resource.Id.AnimeDetailsPageCharactersTabEmptyNotice);
 
-        public ProgressBar AnimeDetailsPageCharactersTabLoadingSpinner => _animeDetailsPageCharactersTabLoadingSpinner ?? (_animeDetailsPageCharactersTabLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.AnimeDetailsPageCharactersTabLoadingSpinner));
+        public ProgressBar AnimeDetailsPageCharactersTabLoadingSpinner => GetView(ref _animeDetailsPageCharactersTabLoadingSpinner, Resource.Id.AnimeDetailsPageCharactersTabLoadingSpinner);
 
         #endregion
     }

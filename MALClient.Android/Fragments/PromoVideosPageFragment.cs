@@ -138,9 +138,9 @@ namespace MALClient.Android.Fragments
         private GridView _promoVideosPageGridView;
         private ProgressBar _promoVideosPageLoadingSpinner;
 
-        public GridView PromoVideosPageGridView => _promoVideosPageGridView ?? (_promoVideosPageGridView = FindViewById<GridView>(Resource.Id.PromoVideosPageGridView));
+        public GridView PromoVideosPageGridView => GetView(ref _promoVideosPageGridView, Resource.Id.PromoVideosPageGridView);
 
-        public ProgressBar PromoVideosPageLoadingSpinner => _promoVideosPageLoadingSpinner ?? (_promoVideosPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.PromoVideosPageLoadingSpinner));
+        public ProgressBar PromoVideosPageLoadingSpinner => GetView(ref _promoVideosPageLoadingSpinner, Resource.Id.PromoVideosPageLoadingSpinner);
 
         #endregion
     }

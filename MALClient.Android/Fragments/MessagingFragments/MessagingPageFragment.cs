@@ -201,11 +201,11 @@ namespace MALClient.Android.Fragments.MessagingFragments
         private FloatingActionButton _messagingPageActionButton;
         private ProgressBar _messagingPageProgressSpinner;
 
-        public ListView MessagingPageList => _messagingPageList ?? (_messagingPageList = FindViewById<ListView>(Resource.Id.MessagingPageList));
+        public ListView MessagingPageList => GetView(ref _messagingPageList, Resource.Id.MessagingPageList);
 
-        public FloatingActionButton MessagingPageActionButton => _messagingPageActionButton ?? (_messagingPageActionButton = FindViewById<FloatingActionButton>(Resource.Id.MessagingPageActionButton));
+        public FloatingActionButton MessagingPageActionButton => GetView(ref _messagingPageActionButton, Resource.Id.MessagingPageActionButton);
 
-        public ProgressBar MessagingPageProgressSpinner => _messagingPageProgressSpinner ?? (_messagingPageProgressSpinner = FindViewById<ProgressBar>(Resource.Id.MessagingPageProgressSpinner));
+        public ProgressBar MessagingPageProgressSpinner => GetView(ref _messagingPageProgressSpinner, Resource.Id.MessagingPageProgressSpinner);
 
 
         #endregion

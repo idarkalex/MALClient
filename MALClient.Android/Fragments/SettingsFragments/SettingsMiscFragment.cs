@@ -38,11 +38,11 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private Button _settingsPageMiscPageRateNowButton;
         private Switch _settingsPageMiscAskBeforeCrashReports;
 
-        public Switch SettingsPageMiscEnableReviewReminder => _settingsPageMiscEnableReviewReminder ?? (_settingsPageMiscEnableReviewReminder = FindViewById<Switch>(Resource.Id.SettingsPageMiscEnableReviewReminder));
+        public Switch SettingsPageMiscEnableReviewReminder => GetView(ref _settingsPageMiscEnableReviewReminder, Resource.Id.SettingsPageMiscEnableReviewReminder);
 
-        public Button SettingsPageMiscPageRateNowButton => _settingsPageMiscPageRateNowButton ?? (_settingsPageMiscPageRateNowButton = FindViewById<Button>(Resource.Id.SettingsPageMiscPageRateNowButton));
+        public Button SettingsPageMiscPageRateNowButton => GetView(ref _settingsPageMiscPageRateNowButton, Resource.Id.SettingsPageMiscPageRateNowButton);
 
-        public Switch SettingsPageMiscAskBeforeCrashReports => _settingsPageMiscAskBeforeCrashReports ?? (_settingsPageMiscAskBeforeCrashReports = FindViewById<Switch>(Resource.Id.SettingsPageMiscAskBeforeCrashReports));
+        public Switch SettingsPageMiscAskBeforeCrashReports => GetView(ref _settingsPageMiscAskBeforeCrashReports, Resource.Id.SettingsPageMiscAskBeforeCrashReports);
 
 
 

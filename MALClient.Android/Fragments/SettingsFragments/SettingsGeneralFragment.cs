@@ -203,21 +203,21 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
             //
             var filters = Enum.GetValues(typeof(AnimeStatus)).Cast<int>().Take(5).ToList();
-            SettingsPageGeneralMangaFilerSpinner.Adapter = filters.GetAdapter(GetMangaTemplateDelegate);
+            SettingsPageGeneralMangaFilerSpinner.Adapter = filters.GetAdapter((i, s, v) => GetStatusTemplateDelegate(i, s, v, true));
             SettingsPageGeneralMangaFilerSpinner.SetSelection(filters.IndexOf(Settings.DefaultMangaFilter));
             SettingsPageGeneralMangaFilerSpinner.ItemSelected += (sender, args) =>
             {
                 Settings.DefaultMangaFilter = (int)SettingsPageGeneralMangaFilerSpinner.SelectedView.Tag;
             };
 
-            SettingsPageGeneralAnimeFilterSpinner.Adapter = filters.GetAdapter(GetAnimeTemplateDelegate);
+            SettingsPageGeneralAnimeFilterSpinner.Adapter = filters.GetAdapter((i, s, v) => GetStatusTemplateDelegate(i, s, v, false));
             SettingsPageGeneralAnimeFilterSpinner.SetSelection(filters.IndexOf(Settings.DefaultAnimeFilter));
             SettingsPageGeneralAnimeFilterSpinner.ItemSelected += (sender, args) =>
             {
                 Settings.DefaultAnimeFilter = (int)SettingsPageGeneralAnimeFilterSpinner.SelectedView.Tag;
             };
 
-            SettingsPageGeneralDefaultAddedStatusSpinner.Adapter = filters.GetAdapter(GetAnimeTemplateDelegate);
+            SettingsPageGeneralDefaultAddedStatusSpinner.Adapter = filters.GetAdapter((i, s, v) => GetStatusTemplateDelegate(i, s, v, false));
             SettingsPageGeneralDefaultAddedStatusSpinner.SetSelection(
                 filters.IndexOf((int)Settings.DefaultStatusAfterAdding));
             SettingsPageGeneralDefaultAddedStatusSpinner.ItemSelected += (sender, args) =>
@@ -381,35 +381,17 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
         #region TemplateDelegates
 
-        private View GetMangaTemplateDelegate(int i, int animeStatus, View arg3)
+        private View GetStatusTemplateDelegate(int i, int animeStatus, View arg3, bool manga)
         {
             var view = arg3;
             if (view == null)
             {
-                view = AnimeListPageFlyoutBuilder.BuildBaseItem(Activity, XShared.Utils.Utilities.StatusToString(animeStatus, true),
+                view = AnimeListPageFlyoutBuilder.BuildBaseItem(Activity, XShared.Utils.Utilities.StatusToString(animeStatus, manga),
                     ResourceExtension.BrushAnimeItemInnerBackground, null, false);
             }
             else
             {
-                view.FindViewById<TextView>(AnimeListPageFlyoutBuilder.TextViewTag).Text = XShared.Utils.Utilities.StatusToString(animeStatus, true);
-            }
-
-            view.Tag = animeStatus;
-
-            return view;
-        }
-
-        private View GetAnimeTemplateDelegate(int i, int animeStatus, View arg3)
-        {
-            var view = arg3;
-            if (view == null)
-            {
-                view = AnimeListPageFlyoutBuilder.BuildBaseItem(Activity, XShared.Utils.Utilities.StatusToString(animeStatus),
-                    ResourceExtension.BrushAnimeItemInnerBackground, null, false);
-            }
-            else
-            {
-                view.FindViewById<TextView>(AnimeListPageFlyoutBuilder.TextViewTag).Text = XShared.Utils.Utilities.StatusToString(animeStatus);
+                view.FindViewById<TextView>(AnimeListPageFlyoutBuilder.TextViewTag).Text = XShared.Utils.Utilities.StatusToString(animeStatus, manga);
             }
 
             view.Tag = animeStatus;

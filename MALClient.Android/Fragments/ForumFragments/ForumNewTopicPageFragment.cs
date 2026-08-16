@@ -109,17 +109,17 @@ namespace MALClient.Android.Fragments.ForumFragments
         private WebView _forumNewTopicPagePreview;
         private LinearLayout _forumNewTopicPageInputSection;
 
-        public TextView ForumNewTopicPageTitle => _forumNewTopicPageTitle ?? (_forumNewTopicPageTitle = FindViewById<TextView>(Resource.Id.ForumNewTopicPageTitle));
+        public TextView ForumNewTopicPageTitle => GetView(ref _forumNewTopicPageTitle, Resource.Id.ForumNewTopicPageTitle);
 
-        public EditText ForumNewTopicPageTitleTextBox => _forumNewTopicPageTitleTextBox ?? (_forumNewTopicPageTitleTextBox = FindViewById<EditText>(Resource.Id.ForumNewTopicPageTitleTextBox));
+        public EditText ForumNewTopicPageTitleTextBox => GetView(ref _forumNewTopicPageTitleTextBox, Resource.Id.ForumNewTopicPageTitleTextBox);
 
-        public BBCodeEditor ForumNewTopicPageEditor => _forumNewTopicPageEditor ?? (_forumNewTopicPageEditor = FindViewById<BBCodeEditor>(Resource.Id.ForumNewTopicPageEditor));
+        public BBCodeEditor ForumNewTopicPageEditor => GetView(ref _forumNewTopicPageEditor, Resource.Id.ForumNewTopicPageEditor);
 
-        public Button ForumNewTopicPageAcceptButton => _forumNewTopicPageAcceptButton ?? (_forumNewTopicPageAcceptButton = FindViewById<Button>(Resource.Id.ForumNewTopicPageAcceptButton));
+        public Button ForumNewTopicPageAcceptButton => GetView(ref _forumNewTopicPageAcceptButton, Resource.Id.ForumNewTopicPageAcceptButton);
 
-        public WebView ForumNewTopicPagePreview => _forumNewTopicPagePreview ?? (_forumNewTopicPagePreview = FindViewById<WebView>(Resource.Id.ForumNewTopicPagePreview));
+        public WebView ForumNewTopicPagePreview => GetView(ref _forumNewTopicPagePreview, Resource.Id.ForumNewTopicPagePreview);
 
-        public LinearLayout ForumNewTopicPageInputSection => _forumNewTopicPageInputSection ?? (_forumNewTopicPageInputSection = FindViewById<LinearLayout>(Resource.Id.ForumNewTopicPageInputSection));
+        public LinearLayout ForumNewTopicPageInputSection => GetView(ref _forumNewTopicPageInputSection, Resource.Id.ForumNewTopicPageInputSection);
 
 
 

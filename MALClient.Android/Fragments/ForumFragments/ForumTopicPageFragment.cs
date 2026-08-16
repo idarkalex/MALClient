@@ -242,17 +242,17 @@ namespace MALClient.Android.Fragments.ForumFragments
         private ProgressBar _forumTopicPageLoadingSpinner;
         private FloatingActionButton _forumTopicPageActionButton;
 
-        public Button ForumTopicPageToggleWatchingButton => _forumTopicPageToggleWatchingButton ?? (_forumTopicPageToggleWatchingButton = FindViewById<Button>(Resource.Id.ForumTopicPageToggleWatchingButton));
+        public Button ForumTopicPageToggleWatchingButton => GetView(ref _forumTopicPageToggleWatchingButton, Resource.Id.ForumTopicPageToggleWatchingButton);
 
-        public ImageButton ForumTopicPageGotoPageButton => _forumTopicPageGotoPageButton ?? (_forumTopicPageGotoPageButton = FindViewById<ImageButton>(Resource.Id.ForumTopicPageGotoPageButton));
+        public ImageButton ForumTopicPageGotoPageButton => GetView(ref _forumTopicPageGotoPageButton, Resource.Id.ForumTopicPageGotoPageButton);
 
-        public LinearLayout ForumTopicPageList => _forumTopicPageList ?? (_forumTopicPageList = FindViewById<LinearLayout>(Resource.Id.ForumTopicPageList));
+        public LinearLayout ForumTopicPageList => GetView(ref _forumTopicPageList, Resource.Id.ForumTopicPageList);
 
-        public ListView ForumTopicPagePostsList => _forumTopicPagePostsList ?? (_forumTopicPagePostsList = FindViewById<ListView>(Resource.Id.ForumTopicPagePostsList));
+        public ListView ForumTopicPagePostsList => GetView(ref _forumTopicPagePostsList, Resource.Id.ForumTopicPagePostsList);
 
-        public ProgressBar ForumTopicPageLoadingSpinner => _forumTopicPageLoadingSpinner ?? (_forumTopicPageLoadingSpinner = FindViewById<ProgressBar>(Resource.Id.ForumTopicPageLoadingSpinner));
+        public ProgressBar ForumTopicPageLoadingSpinner => GetView(ref _forumTopicPageLoadingSpinner, Resource.Id.ForumTopicPageLoadingSpinner);
 
-        public FloatingActionButton ForumTopicPageActionButton => _forumTopicPageActionButton ?? (_forumTopicPageActionButton = FindViewById<FloatingActionButton>(Resource.Id.ForumTopicPageActionButton));
+        public FloatingActionButton ForumTopicPageActionButton => GetView(ref _forumTopicPageActionButton, Resource.Id.ForumTopicPageActionButton);
 
 
 

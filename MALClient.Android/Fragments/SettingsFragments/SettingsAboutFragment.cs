@@ -69,13 +69,13 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private Button _aboutPageChangelogButton;
         private Button _aboutPageCheckUpdatesButton;
 
-        public Button AboutPageViewSourceButton => _aboutPageViewSourceButton ?? (_aboutPageViewSourceButton = FindViewById<Button>(Resource.Id.AboutPageViewSourceButton));
+        public Button AboutPageViewSourceButton => GetView(ref _aboutPageViewSourceButton, Resource.Id.AboutPageViewSourceButton);
 
-        public Button AboutPageIssuesBoard => _aboutPageIssuesBoard ?? (_aboutPageIssuesBoard = FindViewById<Button>(Resource.Id.AboutPageIssuesBoard));
+        public Button AboutPageIssuesBoard => GetView(ref _aboutPageIssuesBoard, Resource.Id.AboutPageIssuesBoard);
 
-        public Button AboutPageChangelogButton => _aboutPageChangelogButton ?? (_aboutPageChangelogButton = FindViewById<Button>(Resource.Id.AboutPageChangelogButton));
+        public Button AboutPageChangelogButton => GetView(ref _aboutPageChangelogButton, Resource.Id.AboutPageChangelogButton);
 
-        public Button AboutPageCheckUpdatesButton => _aboutPageCheckUpdatesButton ?? (_aboutPageCheckUpdatesButton = FindViewById<Button>(Resource.Id.AboutPageCheckUpdatesButton));
+        public Button AboutPageCheckUpdatesButton => GetView(ref _aboutPageCheckUpdatesButton, Resource.Id.AboutPageCheckUpdatesButton);
 
         #endregion
     }

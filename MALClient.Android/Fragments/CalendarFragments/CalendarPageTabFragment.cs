@@ -60,7 +60,7 @@ namespace MALClient.Android.Fragments.CalendarFragments
 
         private GridView _calendarPageTabContentList;
 
-        public GridView CalendarPageTabContentList => _calendarPageTabContentList ?? (_calendarPageTabContentList = FindViewById<GridView>(Resource.Id.CalendarPageTabContentList));
+        public GridView CalendarPageTabContentList => GetView(ref _calendarPageTabContentList, Resource.Id.CalendarPageTabContentList);
 
         #endregion
     }

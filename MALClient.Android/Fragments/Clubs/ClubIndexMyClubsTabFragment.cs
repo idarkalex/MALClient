@@ -49,9 +49,9 @@ namespace MALClient.Android.Fragments.Clubs
         private ListView _list;
         private TextView _emptyNotice;
 
-        public ListView List => _list ?? (_list = FindViewById<ListView>(Resource.Id.List));
+        public ListView List => GetView(ref _list, Resource.Id.List);
 
-        public TextView EmptyNotice => _emptyNotice ?? (_emptyNotice = FindViewById<TextView>(Resource.Id.EmptyNotice));
+        public TextView EmptyNotice => GetView(ref _emptyNotice, Resource.Id.EmptyNotice);
 
         #endregion
     }

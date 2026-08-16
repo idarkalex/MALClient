@@ -155,15 +155,15 @@ namespace MALClient.Android.Fragments.Clubs
         private ListView _commentsList;
         private ProgressBar _loadingMoreBar;
 
-        public EditText CommentTextBox => _commentTextBox ?? (_commentTextBox = FindViewById<EditText>(Resource.Id.CommentTextBox));
+        public EditText CommentTextBox => GetView(ref _commentTextBox, Resource.Id.CommentTextBox);
 
-        public Button CommentButton => _commentButton ?? (_commentButton = FindViewById<Button>(Resource.Id.CommentButton));
+        public Button CommentButton => GetView(ref _commentButton, Resource.Id.CommentButton);
 
-        public TextView CommentsEmptyNotice => _commentsEmptyNotice ?? (_commentsEmptyNotice = FindViewById<TextView>(Resource.Id.CommentsEmptyNotice));
+        public TextView CommentsEmptyNotice => GetView(ref _commentsEmptyNotice, Resource.Id.CommentsEmptyNotice);
 
-        public ListView CommentsList => _commentsList ?? (_commentsList = FindViewById<ListView>(Resource.Id.CommentsList));
+        public ListView CommentsList => GetView(ref _commentsList, Resource.Id.CommentsList);
 
-        public ProgressBar LoadingMoreBar => _loadingMoreBar ?? (_loadingMoreBar = FindViewById<ProgressBar>(Resource.Id.LoadingMoreBar));
+        public ProgressBar LoadingMoreBar => GetView(ref _loadingMoreBar, Resource.Id.LoadingMoreBar);
 
         #endregion
     }

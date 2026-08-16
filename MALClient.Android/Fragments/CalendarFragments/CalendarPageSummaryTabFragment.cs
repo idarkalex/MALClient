@@ -80,7 +80,7 @@ namespace MALClient.Android.Fragments.CalendarFragments
 
         private ListView _calendarPageSummaryTabList;
 
-        public ListView CalendarPageSummaryTabList => _calendarPageSummaryTabList ?? (_calendarPageSummaryTabList = FindViewById<ListView>(Resource.Id.CalendarPageSummaryTabList));
+        public ListView CalendarPageSummaryTabList => GetView(ref _calendarPageSummaryTabList, Resource.Id.CalendarPageSummaryTabList);
 
         #endregion
     }
