@@ -79,7 +79,7 @@ namespace MALClient.XShared.Comm.Anime
                 if (string.IsNullOrEmpty(parsed.MoreReviewsUrl))
                     break;
 
-                url = new Uri("https://myanimelist.net/"), parsed.MoreReviewsUrl).AbsoluteUri;
+                url = new Uri(new Uri("https://myanimelist.net/"), parsed.MoreReviewsUrl).AbsoluteUri;
             }
 
             return output;
