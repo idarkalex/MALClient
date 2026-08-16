@@ -351,7 +351,7 @@ namespace MALClient.Android.Activities
                         MainPageHamburgerButton.Visibility = ViewStates.Gone;
             _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
-            MainPageBottomNav.ItemSelected += (sender, e) => OnBottomNavigationItemSelected(e.Item.ItemId);
+            MainPageBottomNav.SetOnClickListener(new OnClickListener(view => OnBottomNavigationItemSelected(MainPageBottomNav.SelectedItemId)));
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
