@@ -6,7 +6,6 @@
         Caching,
         Calendar,
         Articles,
-        News, //unused
         About,
         LogIn,
         Misc,

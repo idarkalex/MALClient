@@ -84,6 +84,37 @@ namespace MALClient.XShared.Utils
             }
         }
 
+        public static string StatusToApiParam(AnimeStatus status, bool manga = false)
+        {
+            switch (status)
+            {
+                case AnimeStatus.Watching:
+                    return manga ? "reading" : "watching";
+                case AnimeStatus.Completed:
+                    return "completed";
+                case AnimeStatus.OnHold:
+                    return "on_hold";
+                case AnimeStatus.Dropped:
+                    return "dropped";
+                case AnimeStatus.PlanToWatch:
+                    return manga ? "plan_to_read" : "plan_to_watch";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(status), status, null);
+            }
+        }
+
+        public static string FormatMalDate(string date)
+        {
+            if (date == null)
+                return null;
+
+            var month = date.Substring(5, 2);
+            var day = date.Substring(8, 2);
+            var year = date.Substring(0, 4);
+
+            return $"{year}-{month}-{day}";
+        }
+
         public static string DayToString(DayOfWeek day, bool ignoreOffset = false)
         {
             if (day < 0)

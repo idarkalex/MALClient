@@ -59,7 +59,7 @@ namespace MALClient.XShared.Comm.Manga
                 var client = await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync();
                 var data = new List<KeyValuePair<string, string>>
                 {
-                    new("status", ToApiParam(AnimeStatus.PlanToWatch)),
+                    new("status", Utilities.StatusToApiParam(AnimeStatus.PlanToWatch, true)),
                 };
 
                 if (Settings.SetStartDateOnListAdd)
@@ -80,19 +80,6 @@ namespace MALClient.XShared.Comm.Manga
             }
 
             return "";
-        }
-
-        private string ToApiParam(AnimeStatus itemMyStatus)
-        {
-            return itemMyStatus switch
-            {
-                AnimeStatus.Watching => "reading",
-                AnimeStatus.Completed => "completed",
-                AnimeStatus.OnHold => "on_hold",
-                AnimeStatus.Dropped => "dropped",
-                AnimeStatus.PlanToWatch => "plan_to_read",
-                _ => throw new ArgumentOutOfRangeException(nameof(itemMyStatus), itemMyStatus, null)
-            };
         }
     }
 }

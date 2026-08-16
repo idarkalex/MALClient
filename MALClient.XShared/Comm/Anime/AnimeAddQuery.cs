@@ -74,7 +74,7 @@ namespace MALClient.XShared.Comm.Anime
                 var client = await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync();
                 var data = new List<KeyValuePair<string, string>>
                 {
-                    new("status", ToApiParam(AnimeStatus.PlanToWatch)),
+                    new("status", Utilities.StatusToApiParam(AnimeStatus.PlanToWatch)),
                 };
 
                 if (Settings.SetStartDateOnListAdd)
@@ -94,19 +94,6 @@ namespace MALClient.XShared.Comm.Anime
             }
 
             return "";
-        }
-
-        private string ToApiParam(AnimeStatus itemMyStatus)
-        {
-            return itemMyStatus switch
-            {
-                AnimeStatus.Watching => "watching",
-                AnimeStatus.Completed => "completed",
-                AnimeStatus.OnHold => "on_hold",
-                AnimeStatus.Dropped => "dropped",
-                AnimeStatus.PlanToWatch => "plan_to_watch",
-                _ => throw new ArgumentOutOfRangeException(nameof(itemMyStatus), itemMyStatus, null)
-            };
         }
 
         private void AddAnimeHummingbird(string id)

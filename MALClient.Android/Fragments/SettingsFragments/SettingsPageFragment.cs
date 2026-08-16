@@ -50,8 +50,6 @@ namespace MALClient.Android.Fragments.SettingsFragments
                     break;
                 case SettingsPageIndex.Articles:
                     break;
-                case SettingsPageIndex.News:
-                    break;
                 case SettingsPageIndex.About:
                     fragment = new SettingsAboutFragment();
                     break;
