@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?BrushDetailsBackground"
+    android:background="?BrushDarkDetailsBackground"
     android:paddingTop="5dp">
 
   <LinearLayout
@@ -28,7 +28,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:background="?BrushRowAlternate1">
+            android:background="?BrushDarkRowAlternate1">
 
           <FrameLayout
               android:layout_width="match_parent"
@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate2">
+            android:background="?BrushDarkRowAlternate2">
 
           <FrameLayout
               android:layout_width="match_parent"
@@ -133,7 +133,7 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate1">
+            android:background="?BrushDarkRowAlternate1">
 
           <FrameLayout
               android:layout_width="match_parent"
@@ -177,7 +177,7 @@
           <FrameLayout
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="?BrushRowAlternate2">
+              android:background="?BrushDarkRowAlternate2">
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -212,7 +212,7 @@
       <View
           android:layout_width="2dp"
           android:layout_height="match_parent"
-          android:background="?BrushDetailsGeneralBorder" />
+          android:background="?BrushDarkDetailsGeneralBorder" />
 
       <LinearLayout
           android:layout_width="0dp"
@@ -224,7 +224,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:background="?BrushRowAlternate1">
+            android:background="?BrushDarkRowAlternate1">
 
           <FrameLayout
               android:layout_width="match_parent"
@@ -259,7 +259,7 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate2">
+            android:background="?BrushDarkRowAlternate2">
 
           <FrameLayout
               android:layout_width="match_parent"
@@ -295,7 +295,7 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate1">
+            android:background="?BrushDarkRowAlternate1">
 
           <FrameLayout
               android:layout_width="match_parent"
@@ -339,7 +339,7 @@
           <FrameLayout
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="?BrushRowAlternate2">
+              android:background="?BrushDarkRowAlternate2">
 
             <FrameLayout
                 android:layout_width="match_parent"

@@ -113,39 +113,18 @@ namespace MALClient.Android.UserControls.AnimeItems
             ViewModel.AnimeItemDisplayContext = ViewModelLocator.AnimeList.AnimeItemsDisplayContext;
 
             AnimeListItemTitle.Text = ViewModel.Title;
-
-            if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
-            {
-                AnimeListItemTopLeftInfo.Visibility = ViewStates.Gone;
-                AnimeListItemTitle.SetMargins(5, 0, 5, 0);
-            }
-            else
-            {
-                AnimeListItemTopLeftInfo.Visibility = ViewStates.Visible;
-                AnimeListItemTopLeftInfoMain.Text = ViewModel.TopLeftInfoBind;
-
-                if (ViewModel.AirDayBrush == true && ViewModel.AnimeItemDisplayContext != AnimeItemDisplayContext.Index)
-                {
-                    AnimeListItemTopLeftInfoMain.SetTextColor(new Color(110, 110, 110));
-                    AnimeListItemTitle.SetMargins(5, 0, 72, 0);
-                }
-                else
-                {
-                    AnimeListItemTopLeftInfoMain.SetTextColor(new Color(255, 255, 255));
-                    AnimeListItemTitle.SetMargins(5, 0, 47, 0);
-                }
-
-                if (!string.IsNullOrEmpty(ViewModel.AirDayTillBind))
-                {
-                    AnimeListItemTopLeftInfoSub.Text = ViewModel.AirDayTillBind;
-                    AnimeListItemTopLeftInfoSub.Visibility = ViewStates.Visible;
-                }
-                else
-                {
-                    AnimeListItemTopLeftInfoSub.Visibility = ViewStates.Gone;
-                }
-            }
-
+if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
+             {
+                 AnimeListItemTitle.SetMargins(5, 0, 5, 0);
+             }
+             else
+             {
+                 AnimeListItemTitle.SetMargins(5, 0, 47, 0);
+                 if (ViewModel.AirDayBrush == true && ViewModel.AnimeItemDisplayContext != AnimeItemDisplayContext.Index)
+                 {
+                     AnimeListItemTitle.SetMargins(5, 0, 72, 0);
+                 }
+             }
             if (string.IsNullOrEmpty(ViewModel.Type))
             {
                 AnimeListItemTypeTextView.Visibility = ViewStates.Gone;
@@ -362,37 +341,24 @@ namespace MALClient.Android.UserControls.AnimeItems
         private FrameLayout _animeListItemTagsButton;
         private FrameLayout _animeListItemAddToListButton;
         private View _priorityIndicator;
-        private ProgressBar _animeListItemUpdatingBar;
         private TextView _animeListItemTitle;
-        private TextView _animeListItemTopLeftInfoMain;
-        private TextView _animeListItemTopLeftInfoSub;
-        private LinearLayout _animeListItemTopLeftInfo;
+        private TextView _animeListItemAltTitle;
+        private TextView _animeListItemScoreText;
         private TextView _animeListItemTypeTextView;
-        private Button _animeListItemWatchedButton;
-        private LinearLayout _animeListItemBtmRightSectionTop;
+        private TextView _animeListItemEpisodeCountText;
         private Button _animeListItemStatusButton;
-        private Button _animeListItemScoreButton;
-        private LinearLayout _animeListItemStatusScoreSection;
+        private TextView _animeListItemScoreValueText;
         private ImageButton _animeListItemIncButton;
         private ImageButton _animeListItemDecButton;
         private LinearLayout _animeListItemIncDecSection;
 
-        public ProgressBar AnimeListItemImgPlaceholder => _animeListItemImgPlaceholder ?? (_animeListItemImgPlaceholder = FindViewById<ProgressBar>(Resource.Id.AnimeListItemImgPlaceholder));
-        public ImageView AnimeListItemImage => _animeListItemImage ?? (_animeListItemImage = FindViewById<ImageView>(Resource.Id.AnimeListItemImage));
-        public FrameLayout AnimeListItemTagsButton => _animeListItemTagsButton ?? (_animeListItemTagsButton = FindViewById<FrameLayout>(Resource.Id.AnimeListItemTagsButton));
-        public FrameLayout AnimeListItemAddToListButton => _animeListItemAddToListButton ?? (_animeListItemAddToListButton = FindViewById<FrameLayout>(Resource.Id.AnimeListItemAddToListButton));
-        public View PriorityIndicator => _priorityIndicator ?? (_priorityIndicator = FindViewById<View>(Resource.Id.PriorityIndicator));
-        public ProgressBar AnimeListItemUpdatingBar => _animeListItemUpdatingBar ?? (_animeListItemUpdatingBar = FindViewById<ProgressBar>(Resource.Id.AnimeListItemUpdatingBar));
         public TextView AnimeListItemTitle => _animeListItemTitle ?? (_animeListItemTitle = FindViewById<TextView>(Resource.Id.AnimeListItemTitle));
-        public TextView AnimeListItemTopLeftInfoMain => _animeListItemTopLeftInfoMain ?? (_animeListItemTopLeftInfoMain = FindViewById<TextView>(Resource.Id.AnimeListItemTopLeftInfoMain));
-        public TextView AnimeListItemTopLeftInfoSub => _animeListItemTopLeftInfoSub ?? (_animeListItemTopLeftInfoSub = FindViewById<TextView>(Resource.Id.AnimeListItemTopLeftInfoSub));
-        public LinearLayout AnimeListItemTopLeftInfo => _animeListItemTopLeftInfo ?? (_animeListItemTopLeftInfo = FindViewById<LinearLayout>(Resource.Id.AnimeListItemTopLeftInfo));
+        public TextView AnimeListItemAltTitle => _animeListItemAltTitle ?? (_animeListItemAltTitle = FindViewById<TextView>(Resource.Id.AnimeListItemAltTitle));
+        public TextView AnimeListItemScoreText => _animeListItemScoreText ?? (_animeListItemScoreText = FindViewById<TextView>(Resource.Id.AnimeListItemScoreText));
         public TextView AnimeListItemTypeTextView => _animeListItemTypeTextView ?? (_animeListItemTypeTextView = FindViewById<TextView>(Resource.Id.AnimeListItemTypeTextView));
-        public Button AnimeListItemWatchedButton => _animeListItemWatchedButton ?? (_animeListItemWatchedButton = FindViewById<Button>(Resource.Id.AnimeListItemWatchedButton));
-        public LinearLayout AnimeListItemBtmRightSectionTop => _animeListItemBtmRightSectionTop ?? (_animeListItemBtmRightSectionTop = FindViewById<LinearLayout>(Resource.Id.AnimeListItemBtmRightSectionTop));
+        public TextView AnimeListItemEpisodeCountText => _animeListItemEpisodeCountText ?? (_animeListItemEpisodeCountText = FindViewById<TextView>(Resource.Id.AnimeListItemEpisodeCountText));
         public Button AnimeListItemStatusButton => _animeListItemStatusButton ?? (_animeListItemStatusButton = FindViewById<Button>(Resource.Id.AnimeListItemStatusButton));
-        public Button AnimeListItemScoreButton => _animeListItemScoreButton ?? (_animeListItemScoreButton = FindViewById<Button>(Resource.Id.AnimeListItemScoreButton));
-        public LinearLayout AnimeListItemStatusScoreSection => _animeListItemStatusScoreSection ?? (_animeListItemStatusScoreSection = FindViewById<LinearLayout>(Resource.Id.AnimeListItemStatusScoreSection));
+        public TextView AnimeListItemScoreValueText => _animeListItemScoreValueText ?? (_animeListItemScoreValueText = FindViewById<TextView>(Resource.Id.AnimeListItemScoreValueText));
         public ImageButton AnimeListItemIncButton => _animeListItemIncButton ?? (_animeListItemIncButton = FindViewById<ImageButton>(Resource.Id.AnimeListItemIncButton));
         public ImageButton AnimeListItemDecButton => _animeListItemDecButton ?? (_animeListItemDecButton = FindViewById<ImageButton>(Resource.Id.AnimeListItemDecButton));
         public LinearLayout AnimeListItemIncDecSection => _animeListItemIncDecSection ?? (_animeListItemIncDecSection = FindViewById<LinearLayout>(Resource.Id.AnimeListItemIncDecSection));
