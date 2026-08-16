@@ -79,14 +79,14 @@ namespace MALClient.Android.UserControls.AnimeItems
 
             if (ViewModel.Auth)
             {
-                AnimeListItemWatchedButton.Clickable = true;
-                AnimeListItemWatchedButton.Focusable = true;
-                AnimeListItemWatchedButton.SetOnClickListener(new OnClickListener(view => ShowWatchedDialog()));
+                AnimeListItemEpisodeCountText.Clickable = true;
+                AnimeListItemEpisodeCountText.Focusable = true;
+                AnimeListItemEpisodeCountText.SetOnClickListener(new OnClickListener(view => ShowWatchedDialog()));
             }
             else
             {
-                AnimeListItemWatchedButton.Clickable = false;
-                AnimeListItemWatchedButton.Focusable = false;
+                AnimeListItemEpisodeCountText.Clickable = false;
+                AnimeListItemEpisodeCountText.Focusable = false;
             }
 
             ViewModel.AnimeItemDisplayContext = ViewModelLocator.AnimeList.AnimeItemsDisplayContext;
@@ -97,34 +97,30 @@ namespace MALClient.Android.UserControls.AnimeItems
         protected override void BindModelBasic()
         {
             AnimeListItemStatusButton.Text = ViewModel.MyStatusBind;
-            AnimeListItemWatchedButton.Text = ViewModel.MyEpisodesBind;
-            AnimeListItemScoreButton.Text = ViewModel.MyScoreBind;
+            AnimeListItemEpisodeCountText.Text = ViewModel.MyEpisodesBind;
+            AnimeListItemScoreValueText.Text = ViewModel.MyScoreBind;
             AnimeListItemIncButton.Visibility = ViewModel.IncrementEpsVisibility
                 ? ViewStates.Visible
                 : ViewStates.Gone;
             AnimeListItemDecButton.Visibility = ViewModel.DecrementEpsVisibility && !Settings.HideDecrementButtons
                 ? ViewStates.Visible
                 : ViewStates.Gone;
-            AnimeListItemUpdatingBar.Visibility = ViewModel.LoadingUpdate
-                ? ViewStates.Visible
-                : ViewStates.Gone;
-
             AnimeListItemAddToListButton.Visibility = ViewModel.AddToListVisibility ? ViewStates.Visible : ViewStates.Gone;
             ViewModel.AnimeItemDisplayContext = ViewModelLocator.AnimeList.AnimeItemsDisplayContext;
 
             AnimeListItemTitle.Text = ViewModel.Title;
-if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
-             {
-                 AnimeListItemTitle.SetMargins(5, 0, 5, 0);
-             }
-             else
-             {
-                 AnimeListItemTitle.SetMargins(5, 0, 47, 0);
-                 if (ViewModel.AirDayBrush == true && ViewModel.AnimeItemDisplayContext != AnimeItemDisplayContext.Index)
-                 {
-                     AnimeListItemTitle.SetMargins(5, 0, 72, 0);
-                 }
-             }
+            if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
+            {
+                AnimeListItemTitle.SetMargins(5, 0, 5, 0);
+            }
+            else
+            {
+                AnimeListItemTitle.SetMargins(5, 0, 47, 0);
+                if (ViewModel.AirDayBrush == true && ViewModel.AnimeItemDisplayContext != AnimeItemDisplayContext.Index)
+                {
+                    AnimeListItemTitle.SetMargins(5, 0, 72, 0);
+                }
+            }
             if (string.IsNullOrEmpty(ViewModel.Type))
             {
                 AnimeListItemTypeTextView.Visibility = ViewStates.Gone;
@@ -138,7 +134,9 @@ if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
             SetPriorityIndicator();
 
             AnimeListItemTagsButton.Visibility = ViewModel.TagsControlVisibility ? ViewStates.Visible : ViewStates.Invisible;
-            AnimeListItemStatusScoreSection.Visibility = ViewModel.UpdateButtonsVisibility ? ViewStates.Visible : ViewStates.Gone;
+            AnimeListItemStatusButton.Visibility = ViewModel.UpdateButtonsVisibility ? ViewStates.Visible : ViewStates.Gone;
+            AnimeListItemScoreValueText.Visibility = ViewModel.UpdateButtonsVisibility ? ViewStates.Visible : ViewStates.Gone;
+            AnimeListItemIncDecSection.Visibility = ViewModel.UpdateButtonsVisibility ? ViewStates.Visible : ViewStates.Gone;
         }
 
         private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
@@ -150,11 +148,11 @@ if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
                     break;
 
                 case nameof(ViewModel.MyEpisodesBind):
-                    AnimeListItemWatchedButton.Text = ViewModel.MyEpisodesBind;
+                    AnimeListItemEpisodeCountText.Text = ViewModel.MyEpisodesBind;
                     break;
 
                 case nameof(ViewModel.MyScoreBind):
-                    AnimeListItemScoreButton.Text = ViewModel.MyScoreBind;
+                    AnimeListItemScoreValueText.Text = ViewModel.MyScoreBind;
                     break;
 
                 case nameof(ViewModel.IncrementEpsVisibility):
@@ -165,12 +163,6 @@ if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
 
                 case nameof(ViewModel.DecrementEpsVisibility):
                     AnimeListItemDecButton.Visibility = ViewModel.DecrementEpsVisibility && !Settings.HideDecrementButtons
-                        ? ViewStates.Visible
-                        : ViewStates.Gone;
-                    break;
-
-                case nameof(ViewModel.LoadingUpdate):
-                    AnimeListItemUpdatingBar.Visibility = ViewModel.LoadingUpdate
                         ? ViewStates.Visible
                         : ViewStates.Gone;
                     break;
@@ -234,7 +226,7 @@ if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
             AnimeListItemTagsButton.SetOnClickListener(new OnClickListener(OnTagsButtonClick));
             AnimeListItemStatusButton.SetOnClickListener(
                 new OnClickListener(view => ShowStatusDialog()));
-            AnimeListItemScoreButton.SetOnClickListener(
+            AnimeListItemScoreValueText.SetOnClickListener(
                 new OnClickListener(view => ShowRatingDialog()));
 
             AnimeListItemIncButton.SetOnClickListener(
@@ -362,6 +354,11 @@ if (string.IsNullOrEmpty(ViewModel.TopLeftInfoBind))
         public ImageButton AnimeListItemIncButton => _animeListItemIncButton ?? (_animeListItemIncButton = FindViewById<ImageButton>(Resource.Id.AnimeListItemIncButton));
         public ImageButton AnimeListItemDecButton => _animeListItemDecButton ?? (_animeListItemDecButton = FindViewById<ImageButton>(Resource.Id.AnimeListItemDecButton));
         public LinearLayout AnimeListItemIncDecSection => _animeListItemIncDecSection ?? (_animeListItemIncDecSection = FindViewById<LinearLayout>(Resource.Id.AnimeListItemIncDecSection));
+        public ProgressBar AnimeListItemImgPlaceholder => _animeListItemImgPlaceholder ?? (_animeListItemImgPlaceholder = FindViewById<ProgressBar>(Resource.Id.AnimeListItemImgPlaceholder));
+        public ImageView AnimeListItemImage => _animeListItemImage ?? (_animeListItemImage = FindViewById<ImageView>(Resource.Id.AnimeListItemImage));
+        public FrameLayout AnimeListItemTagsButton => _animeListItemTagsButton ?? (_animeListItemTagsButton = FindViewById<FrameLayout>(Resource.Id.AnimeListItemTagsButton));
+        public FrameLayout AnimeListItemAddToListButton => _animeListItemAddToListButton ?? (_animeListItemAddToListButton = FindViewById<FrameLayout>(Resource.Id.AnimeListItemAddToListButton));
+        public View PriorityIndicator => _priorityIndicator ?? (_priorityIndicator = FindViewById<View>(Resource.Id.PriorityIndicator));
 
         #endregion
     }
