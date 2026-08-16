@@ -15,7 +15,9 @@ using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.CollectionAdapters;
+using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
+using MALClient.Android.Resources;
 using MALClient.XShared.ViewModels;
 
 namespace MALClient.Android
@@ -139,6 +141,22 @@ namespace MALClient.Android
                 GetTemplateDelegate = getTemplateDelegate,
                 Footer = footer,
             };
+        }
+
+        public static View BuildTimeSpinnerItem(Context context, int value, View convertView, string text)
+        {
+            var view = convertView;
+            if (view == null)
+            {
+                view = AnimeListPageFlyoutBuilder.BuildBaseItem(context, text,
+                    ResourceExtension.BrushAnimeItemInnerBackground, null, false, GravityFlags.Center);
+            }
+            else
+            {
+                view.FindViewById<TextView>(AnimeListPageFlyoutBuilder.TextViewTag).Text = text;
+            }
+            view.Tag = value;
+            return view;
         }
 
         public static bool IsKeyboardVisibile()

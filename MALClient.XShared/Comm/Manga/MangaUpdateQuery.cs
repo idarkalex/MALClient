@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MALClient.Adapters;
 using MALClient.Models.Models.Library;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
