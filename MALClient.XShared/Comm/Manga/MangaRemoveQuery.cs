@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace MALClient.XShared.Comm.Manga
 {
@@ -17,10 +13,6 @@ namespace MALClient.XShared.Comm.Manga
         {
             _id = id;
             MangaUpdateQuery.UpdatedSomething = true;
-            Request = WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/api/mangalist/delete/{id}.xml"));
-            Request.Credentials = Credentials.GetHttpCreditentials();
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
         }
 
         public override async Task<string> GetRequestResponse()
