@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
@@ -32,7 +31,6 @@ namespace MALClient.XShared.ViewModels.Forums
         }
 
         //page and IsActive
-#if ANDROID
         private List<Tuple<int, bool>> _availablePages;
         public List<Tuple<int, bool>> AvailablePages
         {
@@ -43,10 +41,6 @@ namespace MALClient.XShared.ViewModels.Forums
                 RaisePropertyChanged();
             }
         }
-
-#else
-            public ObservableCollection<Tuple<int,bool>> AvailablePages { get; } = new ObservableCollection<Tuple<int, bool>>();
-#endif
 
 
         private string _title;
@@ -239,18 +233,11 @@ namespace MALClient.XShared.ViewModels.Forums
                 _currentPage = value;
                 RaisePropertyChanged(() => CurrentPage);
 
-#if ANDROID
                 var list = new List<Tuple<int, bool>>();
                 var start = value <= 2 ? 1 : value - 2;
                 for (int i = start; i <= start + 4 && i <= _allPages + 1; i++)
                     list.Add(new Tuple<int, bool>(i, i == value + 1));
                 AvailablePages = list;
-#else
-                AvailablePages.Clear();
-                var start = value <= 2 ? 1 : value - 2;
-                for (int i = start; i <= start + 4 && i <= _allPages + 1; i++)
-                    AvailablePages.Add(new Tuple<int, bool>(i, i == value + 1));
-#endif
 
             }
         }

@@ -53,10 +53,8 @@ namespace MALClient.XShared.Comm
             {
                 ResourceLocator.ConnectionInfoProvider.HasInternetConnection = false;
 
-#if ANDROID
-                if(Credentials.Authenticated)
+                if (Credentials.Authenticated)
                     ResourceLocator.SnackbarProvider.ShowText(SnackbarMessageOnFail);
-#endif
             }
             ResourceLocator.ConnectionInfoProvider.HasInternetConnection = true;
             return responseString;

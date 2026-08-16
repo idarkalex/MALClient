@@ -143,9 +143,7 @@ namespace MALClient.XShared.ViewModels.Main
                 return;
             Authenticating = true;
             Credentials.Update(UserNameInput, PasswordInput, CurrentApiType);
-#if ANDROID
             Query.RefreshClientAuthHeader();
-#endif
             PasswordInput = string.Empty;
             RaisePropertyChanged(() => PasswordInput);
             try

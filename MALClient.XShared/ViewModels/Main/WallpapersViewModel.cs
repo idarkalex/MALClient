@@ -62,11 +62,7 @@ namespace MALClient.XShared.ViewModels.Main
                 ResourceLocator.DispatcherAdapter.Run(() =>
                 {
                     RaisePropertyChanged(() => IsGoBackwardsButtonEnabled);
-#if ANDROID
                     ViewModelLocator.GeneralMain.CurrentStatus = "Images";
-#else
-                ViewModelLocator.GeneralMain.CurrentStatus = $"Images - Page {CurrentPage + 1}";
-#endif 
                 });
 
 

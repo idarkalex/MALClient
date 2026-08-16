@@ -162,10 +162,8 @@ namespace MALClient.XShared.ViewModels.Clubs
         public ICommand SearchCommand => new RelayCommand( async () =>
         {
             _currentPage = 1;
-#if ANDROID
             Clubs.Clear();
             EmptyNoticeVisibility = false;
-#endif
             Loading = true;
             _lastQueryClubs = await MalClubQueries.GetClubs(QueryType, 0, SearchCategory, SearchQuery);
             Loading = false;

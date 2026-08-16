@@ -12,9 +12,7 @@ namespace MALClient.XShared.Utils
                 case PageIndex.PageAnimeDetails:
                 case PageIndex.PageSearch:
                 case PageIndex.PageProfile:
-#if ANDROID
                 case PageIndex.PagePopularVideos: //because
-#endif
                 case PageIndex.PageRecomendations:
                 case PageIndex.PageMangaSearch:
                 case PageIndex.PageHistory:

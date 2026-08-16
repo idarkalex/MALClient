@@ -79,9 +79,7 @@ namespace MALClient.XShared.Comm.Manga
                 }
                 catch (Exception e)
                 {
-#if ANDROID
-                ResourceLocator.SnackbarProvider.ShowText("Failed to send update to MAL.");
-#endif
+                    ResourceLocator.SnackbarProvider.ShowText("Failed to send update to MAL.");
                 }
 
                 if (string.IsNullOrEmpty(result) && !SuppressOfflineSync && Settings.EnableOfflineSync)
