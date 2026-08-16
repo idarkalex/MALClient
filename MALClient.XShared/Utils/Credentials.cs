@@ -51,11 +51,6 @@ namespace MALClient.XShared.Utils
             return new NetworkCredential(UserName, Password);
         }
 
-        internal static string GetHummingbirdCredentialChain()
-        {
-            return $"username={UserName}&password={Password}";
-        }
-
         public static void Update(string name, string passwd, ApiType type)
         {
             PasswordVault.Reset();

@@ -6,7 +6,6 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using MALClient.Models.Enums;
 using MALClient.Models.Models;
 using MALClient.Models.Models.ApiResponses;
 using MALClient.Models.Models.Favourites;
@@ -14,7 +13,6 @@ using MALClient.XShared.Comm.MagicalRawQueries;
 using MALClient.XShared.Utils;
 using MALClient.XShared.Utils.Managers;
 using MALClient.XShared.ViewModels;
-using Newtonsoft.Json;
 using AnimeCharacter = MALClient.Models.Models.Favourites.AnimeCharacter;
 
 namespace MALClient.XShared.Comm.Profile
@@ -23,25 +21,12 @@ namespace MALClient.XShared.Comm.Profile
     {
         private readonly string _userName;
 
-        public ProfileQuery(bool feed = false, string userName = "")
+        public ProfileQuery(string userName = "")
         {
             if (string.IsNullOrEmpty(userName))
                 userName = Credentials.UserName;
-            switch (CurrentApiType)
-            {
-                case ApiType.Mal:
-                    Request =
-                        new Uri(Uri.EscapeUriString($"https://myanimelist.net/profile/{userName}"));
-                    break;
-                case ApiType.Hummingbird:
-                    Request =
-                        new Uri(
-                            Uri.EscapeUriString(
-                                $"https://hummingbird.me/api/v1/users/{Credentials.UserName}{(feed ? "/feed" : "")}"));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            Request =
+                new Uri(Uri.EscapeUriString($"https://myanimelist.net/profile/{userName}"));
             _userName = userName;
         }
 
@@ -570,27 +555,6 @@ namespace MALClient.XShared.Comm.Profile
             }
         }
 
-        public async Task<string> GetHummingBirdAvatarUrl()
-        {
-            return "";
-            // var raw = await GetRequestResponse();
-            // return ((dynamic)JsonConvert.DeserializeObject(raw)).avatar.ToString();
-        }
-
-        public async Task<HumProfileData> GetHumProfileData(bool force = false)
-        {
-            var raw = await GetRequestResponse();
-            return JsonConvert.DeserializeObject<HumProfileData>(raw,
-                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-        }
-
-        public async Task<List<HumStoryObject>> GetHumFeedData(bool force = false)
-        {
-            var raw = await GetRequestResponse();
-            return JsonConvert.DeserializeObject<List<HumStoryObject>>(raw,
-                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-        }
-
         private static string GetString(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
 
@@ -619,7 +583,7 @@ namespace MALClient.XShared.Comm.Profile
     {
         public static async Task UpdateComments(this ProfileData data)
         {
-            data.Comments = await new ProfileQuery(false, data.User.Name).GetComments();
+            data.Comments = await new ProfileQuery(data.User.Name).GetComments();
         }
     }
 }

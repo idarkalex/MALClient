@@ -103,7 +103,7 @@ namespace MALClient.XShared.ViewModels.Main
                         Task.Run(
                             async () =>
                                 CurrentData =
-                                    await new ProfileQuery(false, args?.TargetUser ?? "").GetProfileData(force));
+                                    await new ProfileQuery(args?.TargetUser ?? "").GetProfileData(force));
                     _currUser = args.TargetUser ?? Credentials.UserName;
                 }
 

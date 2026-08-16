@@ -122,7 +122,6 @@ namespace MALClient.Android
         }
 
         public void Include(SearchPageViewModel vm) { var vm1 = new SearchPageViewModel(); }
-        public void Include(HummingbirdProfilePageViewModel vm) { var vm1 = new HummingbirdProfilePageViewModel(); }
         public void Include(CalendarPageViewModel vm) { var vm1 = new CalendarPageViewModel(null); }
         public void Include(MalArticlesViewModel vm) { var vm1 = new MalArticlesViewModel(); }
         public void Include(MalMessagingViewModel vm) { var vm1 = new MalMessagingViewModel(); }
