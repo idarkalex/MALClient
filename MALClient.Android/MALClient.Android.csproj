@@ -241,7 +241,6 @@
     <Compile Include="Listeners\OnLongClickListener.cs" />
     <Compile Include="Listeners\OnPageChangedListener.cs" />
     <Compile Include="Listeners\OnPreparedListener.cs" />
-    <Compile Include="Listeners\BottomNavigationItemSelectedListener.cs" />
     <Compile Include="Listeners\OnScrollListener.cs" />
     <Compile Include="Listeners\OnTextEnterListener.cs" />
     <Compile Include="Listeners\OnTouchListener.cs" />

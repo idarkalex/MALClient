@@ -110,7 +110,7 @@
         ads:adUnitId="@string/banner_ad_unit_id">
       </com.google.android.gms.ads.AdView>
 
-      <com.google.android.material.bottomnavigation.BottomNavigationView
+      <android.support.design.widget.BottomNavigationView
         android:id="@+id/MainPageBottomNav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -14,7 +14,6 @@ using Android.OS;
 using Android.Provider;
 using Android.Runtime;
 using Android.Support.Design.Widget;
-using Com.Google.Android.Material.BottomNavigation;
 using Android.Support.V4.View;
 using Android.Support.V4.Widget;
 using Android.Support.V7.Widget;
@@ -349,11 +348,10 @@ namespace MALClient.Android.Activities
             BuildDrawer();
             _drawer.OnDrawerItemClickListener = new HamburgerItemClickListener(OnHamburgerItemClick);
 
-            MainPageHamburgerButton.Visibility = ViewStates.Gone;
+                        MainPageHamburgerButton.Visibility = ViewStates.Gone;
             _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
-            MainPageBottomNav.SetOnNavigationItemSelectedListener(new BottomNavigationItemSelectedListener(OnBottomNavigationItemSelected));
-            MainPageBottomNav.ItemSelected += (s, e) => { OnBottomNavigationItemSelected(e.Item); };
+            MainPageBottomNav.SetOnClickListener(new OnClickListener(view => OnBottomNavigationItemSelected(MainPageBottomNav.SelectedItemId)));
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
@@ -522,10 +520,10 @@ namespace MALClient.Android.Activities
             _drawer.CloseDrawer();
         }
 
-        private bool OnBottomNavigationItemSelected(IMenuItem menuItem)
+        private void OnBottomNavigationItemSelected(int itemId)
         {
             PageIndex page;
-            switch (menuItem.ItemId)
+            switch (itemId)
             {
                 case Resource.Id.bottom_nav_discover:
                     page = PageIndex.PageDiscover;
@@ -540,12 +538,11 @@ namespace MALClient.Android.Activities
                     page = PageIndex.PageSettings;
                     break;
                 default:
-                    return false;
+                    return;
             }
 
             SetActiveButton(XShared.Utils.Utilities.GetButtonForPage(page));
             ViewModelLocator.GeneralMain.Navigate(page, GetAppropriateArgsForPage(page));
-            return true;
         }
 
 
@@ -685,7 +682,7 @@ namespace MALClient.Android.Activities
         private ImageButton _mainPageCloseVideoButton;
         private RelativeLayout _mainPageVideoViewContainer;
         private LinearLayout _mainPageRoot;
-        private Com.Google.Android.Material.BottomNavigation.BottomNavigationView _mainPageBottomNav;
+        private BottomNavigationView _mainPageBottomNav;
 
         public ImageButton MainPageHamburgerButton => GetView(ref _mainPageHamburgerButton, Resource.Id.MainPageHamburgerButton);
         public TextView MainPageCurrentStatus => GetView(ref _mainPageCurrentStatus, Resource.Id.MainPageCurrentStatus);
@@ -703,7 +700,7 @@ namespace MALClient.Android.Activities
         public RelativeLayout MainPageVideoViewContainer => GetView(ref _mainPageVideoViewContainer, Resource.Id.MainPageVideoViewContainer);
         public LinearLayout MainPageRoot => GetView(ref _mainPageRoot, Resource.Id.MainPageRoot);
 
-        public Com.Google.Android.Material.BottomNavigation.BottomNavigationView MainPageBottomNav => GetView(ref _mainPageBottomNav, Resource.Id.MainPageBottomNav);
+        public BottomNavigationView MainPageBottomNav => GetView(ref _mainPageBottomNav, Resource.Id.MainPageBottomNav);
 
         #endregion
 
