@@ -33,8 +33,10 @@ namespace MALClient.Android.Resources
                 BrushRowAlternate2 = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushRowAlternate2, null);
                 //
                 BrushText = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushText, null);
+                BrushTextSecondary = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushTextSecondary, null);
                 BrushSelectedDialogItem = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushSelectedDialogItem, null);
                 BrushTextRes = Resource.Color.DarkBrushText;
+                BrushTextSecondaryRes = Resource.Color.DarkBrushTextSecondary;
                 //
                 BrushAnimeItemBackgroundRes = Resource.Color.DarkBrushAnimeItemBackground;
                 BrushNoSearchResultsRes = Resource.Color.DarkBrushNoSearchResults;
@@ -56,8 +58,10 @@ namespace MALClient.Android.Resources
                 BrushRowAlternate2 = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushRowAlternate2, null);
                 //
                 BrushText = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushText, null);
+                BrushTextSecondary = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushTextSecondary, null);
                 BrushSelectedDialogItem = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushSelectedDialogItem, null);
                 BrushTextRes = Resource.Color.LightBrushText;
+                BrushTextSecondaryRes = Resource.Color.LightBrushTextSecondary;
                 //
                 BrushAnimeItemBackgroundRes = Resource.Color.LightBrushAnimeItemBackground;
                 BrushNoSearchResultsRes = Resource.Color.LightBrushNoSearchResults;
@@ -267,6 +271,7 @@ namespace MALClient.Android.Resources
 
 
         public static  int BrushText;
+        public static  int BrushTextSecondary;
         public static  int BrushSelectedDialogItem;
         public static int BrushNoSearchResults;
 
@@ -274,6 +279,7 @@ namespace MALClient.Android.Resources
             MainActivity.CurrentContext.Resources.GetString(Resource.String.font_family_light);
 
         public static int BrushTextRes;
+        public static int BrushTextSecondaryRes;
         public static readonly int? White = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, global::Android.Resource.Color.White, null);
         #endregion
 

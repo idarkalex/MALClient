@@ -2,8 +2,9 @@
 <resources>
   <color name="ic_launcher_background">#051522</color>
 
-  <color name="LightBrushText">#000000</color>
-  <color name="LightBrushTextInverted">#ffffff</color>
+      <color name="LightBrushText">#000000</color>
+      <color name="LightBrushTextSecondary">#666666</color>
+      <color name="LightBrushTextInverted">#ffffff</color>
   <color name="LightBrushDeepBackground">#E6E6E6</color>
   <color name="LightBrushAppBars">#d3d3d3</color>
   <color name="LightBrushAppBarText">#ffffff</color>
@@ -36,6 +37,7 @@
 
 
   <color name="DarkBrushText">#d4e4f7</color>
+  <color name="DarkBrushTextSecondary">#8c90a1</color>
   <color name="DarkBrushTextInverted">#000D1A</color>
   <color name="DarkBrushDeepBackground">#000D1A</color>
   <color name="DarkBrushAppBars">#051522</color>

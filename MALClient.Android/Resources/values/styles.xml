@@ -390,6 +390,7 @@
 
     <item name="android:colorEdgeEffect">#e6e6e6</item>
     <item name="BrushText">@color/DarkBrushText</item>
+    <item name="BrushTextSecondary">@color/DarkBrushTextSecondary</item>
     <item name="BrushTextInverted">@color/DarkBrushTextInverted </item>
     <item name="BrushTextAccentContrast">@color/DarkBrushSettingsSubtitle</item>
     <!-- Used by CurrentStatusSub -->
@@ -440,6 +441,7 @@
   <style name="Theme.MALPlus.Light" parent="Theme.AppCompat.Light.NoActionBar">
 
     <item name="BrushText">@color/LightBrushText</item>
+    <item name="BrushTextSecondary">@color/LightBrushTextSecondary</item>
     <item name="BrushTextInverted">@color/LightBrushTextInverted</item>
     <item name="BrushTextAccentContrast">@color/BrushTextAccentContrast</item>
     <!-- Used by CurrentStatusSub -->
