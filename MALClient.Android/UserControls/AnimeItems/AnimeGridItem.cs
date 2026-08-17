@@ -47,7 +47,7 @@ namespace MALClient.Android.UserControls
 
         protected override void BindModelFling()
         {
-            if (!AnimeGridItemImage.AnimeIntoIfLoaded(ViewModel.ImgUrl, new RoundedTransformation(8, 0)))
+            if (!AnimeGridItemImage.AnimeIntoIfLoaded(ViewModel.ImgUrl, new RoundedTransformation(8)))
             {
                 AnimeGridItemImage.Visibility = ViewStates.Invisible;
                 AnimeGridItemImgPlaceholder.Visibility = ViewStates.Visible;
@@ -62,7 +62,7 @@ namespace MALClient.Android.UserControls
         {
             if ((string)AnimeGridItemImage.Tag != ViewModel.ImgUrl)
             {
-                AnimeGridItemImage.AnimeInto(ViewModel.ImgUrl, AnimeGridItemImgPlaceholder, new RoundedTransformation(8, 0));
+                AnimeGridItemImage.AnimeInto(ViewModel.ImgUrl, AnimeGridItemImgPlaceholder, new RoundedTransformation(8));
             }
             else
             {
@@ -121,7 +121,7 @@ namespace MALClient.Android.UserControls
             switch (propertyChangedEventArgs.PropertyName)
             {
                 case nameof(ViewModel.ImgUrl):
-                    AnimeGridItemImage.AnimeInto(ViewModel.ImgUrl, AnimeGridItemImgPlaceholder, new RoundedTransformation(8, 0));
+                    AnimeGridItemImage.AnimeInto(ViewModel.ImgUrl, AnimeGridItemImgPlaceholder, new RoundedTransformation(8));
                     break;
                 case nameof(ViewModel.Title):
                     AnimeGridItemTitle.Text = ViewModel.Title;
