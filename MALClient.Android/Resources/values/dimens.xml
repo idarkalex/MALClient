@@ -13,7 +13,32 @@
   <dimen name="GridCardHeight">195dp</dimen>
   <dimen name="GridCardSpacing">4dp</dimen>
   <dimen name="GridCardMargin">2dp</dimen>
-  <dimen name="GridCardCornerRadius">4dp</dimen>
+  <dimen name="GridCardCornerRadius">8dp</dimen>
+
+  <!-- Electric Midnight spacing tokens (8px base unit) -->
+  <dimen name="EmSpacingUnit">8dp</dimen>
+  <dimen name="EmSpacingGutter">12dp</dimen>
+  <dimen name="EmSpacingGutterDesktop">16dp</dimen>
+  <dimen name="EmSpacingContainerGap">24dp</dimen>
+  <dimen name="EmSpacingMarginMobile">20dp</dimen>
+  <dimen name="EmSpacingMarginDesktop">40dp</dimen>
+
+  <!-- Electric Midnight typography scale -->
+  <dimen name="EmDisplayLg">48sp</dimen>
+  <dimen name="EmHeadlineLg">32sp</dimen>
+  <dimen name="EmHeadlineLgMobile">24sp</dimen>
+  <dimen name="EmTitleMd">18sp</dimen>
+  <dimen name="EmBodyLg">16sp</dimen>
+  <dimen name="EmBodyMd">14sp</dimen>
+  <dimen name="EmLabelSm">12sp</dimen>
+  <dimen name="EmLabelCaps">11sp</dimen>
+
+  <!-- Electric Midnight corner radii -->
+  <dimen name="EmRadiusSm">4dp</dimen>
+  <dimen name="EmRadiusDefault">8dp</dimen>
+  <dimen name="EmRadiusMd">12dp</dimen>
+  <dimen name="EmRadiusLg">16dp</dimen>
+  <dimen name="EmRadiusXl">24dp</dimen>
 
   <!-- Image sizes -->
   <dimen name="ShowImageWidthSmall">110dp</dimen>

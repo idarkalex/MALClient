@@ -3,46 +3,63 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?BrushDetailsBackground"
-    android:paddingTop="5dp">
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
 
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:orientation="vertical">
+      android:orientation="vertical"
+      android:paddingStart="12dp"
+      android:paddingEnd="12dp">
 
+    <!-- Bento grid: 2 columns -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:baselineAligned="false"
-        android:paddingStart="1dp"
-        android:paddingEnd="1dp"
-        android:weightSum="2">
+        android:layout_marginBottom="12dp">
 
+      <!-- Left column -->
       <LinearLayout
           android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:layout_marginEnd="2dp"
           android:layout_weight="1"
+          android:layout_marginEnd="4dp"
           android:orientation="vertical">
 
-        <FrameLayout
+        <!-- Episodes -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="?BrushRowAlternate1">
+            android:layout_height="wrap_content"
+            android:background="@drawable/electric_midnight_glass_panel"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
 
-          <FrameLayout
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="Episodes"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
+
+          <LinearLayout
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/border_accent_left"
-              android:gravity="center_vertical"
-              android:paddingStart="5dp"
-              android:paddingEnd="5dp">
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp"
+              android:orientation="horizontal"
+              android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/AnimeDetailsPageGeneralTabFragmentEpisodesLabel"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
                 android:fontFamily="@font/inter"
                 android:text="Episodes"
                 android:textColor="?BrushText"
@@ -52,350 +69,312 @@
                 android:id="@+id/AnimeDetailsPageGeneralTabFragmentEpisodes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
                 android:fontFamily="@font/inter"
                 android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
-          </FrameLayout>
-        </FrameLayout>
+                android:textSize="@dimen/FontSizeNormal"
+                android:textStyle="bold" />
+          </LinearLayout>
+        </LinearLayout>
 
-        <FrameLayout
+        <!-- Score -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate2">
+            android:layout_height="wrap_content"
+            android:background="@drawable/electric_midnight_glass_panel"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="Score"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
 
           <FrameLayout
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/border_accent_left"
-              android:gravity="center_vertical"
-              android:paddingStart="5dp">
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp">
 
             <TextView
+                android:id="@+id/AnimeDetailsPageGeneralTabFragmentScore"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
                 android:fontFamily="@font/inter"
-                android:text="Score"
                 android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
+                android:textSize="@dimen/EmTitleMd"
+                android:textStyle="bold"
+                tools:text="8.44" />
 
-            <FrameLayout
+            <LinearLayout
+                android:id="@+id/AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_vertical|end">
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?selectableItemBackground"
+                android:gravity="center_vertical"
+                android:visibility="gone">
 
-              <TextView
-                  android:id="@+id/AnimeDetailsPageGeneralTabFragmentScore"
+              <ImageView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:layout_gravity="center"
-                  android:fontFamily="@font/inter"
-                  android:paddingEnd="5dp"
-                  android:textColor="?BrushText"
-                  android:textSize="@dimen/FontSizeNormal"
-                  tools:text="8.44" />
+                  android:src="@drawable/icon_eye_outline" />
 
-              <LinearLayout
-                  android:id="@+id/AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel"
+              <TextView
                   android:layout_width="wrap_content"
-                  android:layout_height="match_parent"
-                  android:clickable="true"
-                  android:focusable="true"
-                  android:foreground="?selectableItemBackground"
-                  android:gravity="center"
-                  android:paddingStart="5dp"
-                  android:paddingEnd="5dp"
-                  android:visibility="gone">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/icon_eye_outline" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:fontFamily="@font/inter"
-                    android:text="Hidden"
-                    android:textColor="?BrushText"
-                    android:textSize="@dimen/FontSizeNormal"
-                    android:textStyle="italic" />
-              </LinearLayout>
-            </FrameLayout>
-
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="8dp"
+                  android:fontFamily="@font/inter"
+                  android:text="Hidden"
+                  android:textColor="?BrushTextSecondary"
+                  android:textSize="@dimen/FontSizeNormal"
+                  android:textStyle="italic" />
+            </LinearLayout>
           </FrameLayout>
-        </FrameLayout>
+        </LinearLayout>
 
-        <FrameLayout
+        <!-- Start date -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate1">
+            android:layout_height="wrap_content"
+            android:background="@drawable/electric_midnight_glass_panel"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
 
-          <FrameLayout
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_centerInParent="true"
-              android:background="@drawable/border_accent_left"
-              android:gravity="center_vertical"
-              android:paddingStart="5dp"
-              android:paddingEnd="5dp">
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="Start"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:fontFamily="@font/inter"
-                android:text="Start"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentStart"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/FontSizeNormal" />
+        </LinearLayout>
 
-            <TextView
-                android:id="@+id/AnimeDetailsPageGeneralTabFragmentStart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:fontFamily="@font/inter"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
-          </FrameLayout>
-        </FrameLayout>
-
+        <!-- My Start (clickable) -->
         <FrameLayout
             android:id="@+id/AnimeDetailsPageGeneralTabFragmentMyStartButton"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="2dp"
+            android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:selectableItemBackground"
-            android:longClickable="true">
+            android:longClickable="true"
+            android:layout_marginBottom="8dp">
 
-          <FrameLayout
+          <LinearLayout
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="?BrushRowAlternate2">
+              android:layout_height="wrap_content"
+              android:background="@drawable/electric_midnight_glass_panel"
+              android:orientation="vertical"
+              android:padding="12dp">
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:background="@drawable/border_accent_left"
-                android:gravity="center_vertical"
-                android:paddingStart="5dp"
-                android:paddingEnd="5dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter"
+                android:text="My start"
+                android:textAllCaps="true"
+                android:letterSpacing="0.08"
+                android:textColor="?BrushTextSecondary"
+                android:textSize="@dimen/EmLabelCaps" />
 
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_gravity="center_vertical"
-                  android:fontFamily="@font/inter"
-                  android:text="My start"
-                  android:textColor="?BrushText"
-                  android:textSize="@dimen/FontSizeNormal" />
-
-              <TextView
-                  android:id="@+id/AnimeDetailsPageGeneralTabFragmentMyStart"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_gravity="center_vertical|end"
-                  android:textColor="?AccentColourDark"
-                  android:textSize="@dimen/FontSizeNormal" />
-            </FrameLayout>
-          </FrameLayout>
+            <TextView
+                android:id="@+id/AnimeDetailsPageGeneralTabFragmentMyStart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/inter"
+                android:textColor="?AccentColour"
+                android:textSize="@dimen/FontSizeNormal" />
+          </LinearLayout>
         </FrameLayout>
       </LinearLayout>
 
-      <View
-          android:layout_width="2dp"
-          android:layout_height="match_parent"
-          android:background="?BrushDetailsGeneralBorder" />
-
+      <!-- Right column -->
       <LinearLayout
           android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:layout_marginStart="2dp"
           android:layout_weight="1"
+          android:layout_marginStart="4dp"
           android:orientation="vertical">
 
-        <FrameLayout
+        <!-- Type -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="?BrushRowAlternate1">
+            android:layout_height="wrap_content"
+            android:background="@drawable/electric_midnight_glass_panel"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
 
-          <FrameLayout
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_centerInParent="true"
-              android:background="@drawable/border_accent_right"
-              android:gravity="center_vertical"
-              android:paddingStart="5dp"
-              android:paddingEnd="5dp">
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="Type"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:fontFamily="@font/inter"
-                android:text="Type"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentType"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/FontSizeNormal"
+              android:textStyle="bold" />
+        </LinearLayout>
 
-            <TextView
-                android:id="@+id/AnimeDetailsPageGeneralTabFragmentType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:fontFamily="@font/inter"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
-          </FrameLayout>
-        </FrameLayout>
-
-        <FrameLayout
+        <!-- Status -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate2">
+            android:layout_height="wrap_content"
+            android:background="@drawable/electric_midnight_glass_panel"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
 
-          <FrameLayout
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_centerInParent="true"
-              android:background="@drawable/border_accent_right"
-              android:gravity="center_vertical"
-              android:paddingStart="5dp"
-              android:paddingEnd="5dp">
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="Status"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:fontFamily="@font/inter"
-                android:text="Status"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentStatus"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/FontSizeNormal"
+              android:textStyle="bold" />
+        </LinearLayout>
 
-            <TextView
-                android:id="@+id/AnimeDetailsPageGeneralTabFragmentStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:fontFamily="@font/inter"
-                android:gravity="center"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
-          </FrameLayout>
-        </FrameLayout>
-
-        <FrameLayout
+        <!-- End date -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="2dp"
-            android:background="?BrushRowAlternate1">
+            android:layout_height="wrap_content"
+            android:background="@drawable/electric_midnight_glass_panel"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
 
-          <FrameLayout
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_centerInParent="true"
-              android:background="@drawable/border_accent_right"
-              android:gravity="center_vertical"
-              android:paddingStart="5dp"
-              android:paddingEnd="5dp">
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="End"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:fontFamily="@font/inter"
-                android:text="End"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentEnd"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/FontSizeNormal" />
+        </LinearLayout>
 
-            <TextView
-                android:id="@+id/AnimeDetailsPageGeneralTabFragmentEnd"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:fontFamily="@font/inter"
-                android:textColor="?BrushText"
-                android:textSize="@dimen/FontSizeNormal" />
-          </FrameLayout>
-        </FrameLayout>
-
+        <!-- My End (clickable) -->
         <FrameLayout
             android:id="@+id/AnimeDetailsPageGeneralTabFragmentMyEndButton"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="2dp"
+            android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:selectableItemBackground"
-            android:longClickable="true">
+            android:longClickable="true"
+            android:layout_marginBottom="8dp">
 
-          <FrameLayout
+          <LinearLayout
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="?BrushRowAlternate2">
+              android:layout_height="wrap_content"
+              android:background="@drawable/electric_midnight_glass_panel"
+              android:orientation="vertical"
+              android:padding="12dp">
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:background="@drawable/border_accent_right"
-                android:gravity="center_vertical"
-                android:paddingStart="5dp"
-                android:paddingEnd="5dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter"
+                android:text="My end"
+                android:textAllCaps="true"
+                android:letterSpacing="0.08"
+                android:textColor="?BrushTextSecondary"
+                android:textSize="@dimen/EmLabelCaps" />
 
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_gravity="center_vertical"
-                  android:fontFamily="@font/inter"
-                  android:text="My end"
-                  android:textColor="?BrushText"
-                  android:textSize="@dimen/FontSizeNormal" />
-
-              <TextView
-                  android:id="@+id/AnimeDetailsPageGeneralTabFragmentMyEnd"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_gravity="center_vertical|end"
-                  android:textColor="?AccentColourDark"
-                  android:textSize="@dimen/FontSizeNormal" />
-            </FrameLayout>
-          </FrameLayout>
+            <TextView
+                android:id="@+id/AnimeDetailsPageGeneralTabFragmentMyEnd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/inter"
+                android:textColor="?AccentColour"
+                android:textSize="@dimen/FontSizeNormal" />
+          </LinearLayout>
         </FrameLayout>
       </LinearLayout>
     </LinearLayout>
 
-    <View
-        style="@style/Divider"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="5dp"
-        android:text="Synopsis"
-        android:textColor="?BrushText"
-        android:textSize="@dimen/FontSizeMedium" />
-
-    <TextView
-        android:id="@+id/AnimeDetailsPageGeneralTabFragmentSynopsis"
+    <!-- Synopsis glass panel with fade -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/inter"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:text=""
-        android:textColor="?BrushText"
-        android:textSize="@dimen/FontSizeNormal" />
+        android:background="@drawable/electric_midnight_glass_panel"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp">
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/inter"
+          android:text="Synopsis"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps" />
+
+      <TextView
+          android:id="@+id/AnimeDetailsPageGeneralTabFragmentSynopsis"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="6dp"
+          android:fontFamily="@font/inter"
+          android:lineSpacingMultiplier="1.4"
+          android:text=""
+          android:textColor="?BrushText"
+          android:textSize="@dimen/FontSizeNormal" />
+    </LinearLayout>
+
   </LinearLayout>
 </MALClient.Android.UserControls.OrientationDependentScrollView>
-

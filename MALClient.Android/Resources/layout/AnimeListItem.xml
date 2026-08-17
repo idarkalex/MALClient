@@ -95,7 +95,7 @@
               android:fontFamily="@font/inter"
               android:text="8.74"
               android:textColor="?AccentColour"
-              android:textSize="13sp"
+              android:textSize="@dimen/EmLabelSm"
               android:textStyle="bold" />
 
           <View
@@ -110,8 +110,10 @@
               android:layout_height="wrap_content"
               android:fontFamily="@font/inter"
               android:text="TV"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
               android:textColor="?BrushTextSecondary"
-              android:textSize="12sp"
+              android:textSize="@dimen/EmLabelCaps"
               tools:text="Tv" />
         </LinearLayout>
 
@@ -144,9 +146,10 @@
               android:paddingStart="8dp"
               android:paddingEnd="8dp"
               android:text="Watching"
-              android:textAllCaps="false"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
               android:textColor="?AccentColour"
-              android:textSize="11sp"
+              android:textSize="@dimen/EmLabelCaps"
               android:textStyle="bold"
               tools:text="Watching" />
 
@@ -163,8 +166,10 @@
               android:paddingStart="8dp"
               android:paddingEnd="8dp"
               android:text="8/10"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
               android:textColor="?AccentColour"
-              android:textSize="12sp"
+              android:textSize="@dimen/EmLabelCaps"
               android:textStyle="bold"
               tools:text="8/10" />
         </LinearLayout>
