@@ -80,19 +80,31 @@
     </LinearLayout>
 
     <!-- Anime Section -->
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:fontFamily="@font/inter"
-        android:letterSpacing="0.08"
-        android:paddingStart="12dp"
-        android:text="Anime"
-        android:textAllCaps="true"
-        android:textColor="?AccentColour"
-        android:textSize="@dimen/EmLabelCaps"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+      <View
+          android:layout_width="3dp"
+          android:layout_height="14dp"
+          android:background="?AccentColour" />
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/inter"
+          android:letterSpacing="0.08"
+          android:paddingStart="8dp"
+          android:text="Anime"
+          android:textAllCaps="true"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/MorePageAnimeList"
@@ -289,19 +301,31 @@
     </LinearLayout>
 
     <!-- Manga Section -->
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="24dp"
-        android:fontFamily="@font/inter"
-        android:letterSpacing="0.08"
-        android:paddingStart="12dp"
-        android:text="Manga"
-        android:textAllCaps="true"
-        android:textColor="?AccentColour"
-        android:textSize="@dimen/EmLabelCaps"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+      <View
+          android:layout_width="3dp"
+          android:layout_height="14dp"
+          android:background="?AccentColour" />
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/inter"
+          android:letterSpacing="0.08"
+          android:paddingStart="8dp"
+          android:text="Manga"
+          android:textAllCaps="true"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/MorePageMangaSection"
@@ -417,19 +441,31 @@
     </LinearLayout>
 
     <!-- Other Section -->
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="24dp"
-        android:fontFamily="@font/inter"
-        android:letterSpacing="0.08"
-        android:paddingStart="12dp"
-        android:text="Other"
-        android:textAllCaps="true"
-        android:textColor="?AccentColour"
-        android:textSize="@dimen/EmLabelCaps"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+      <View
+          android:layout_width="3dp"
+          android:layout_height="14dp"
+          android:background="?AccentColour" />
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/inter"
+          android:letterSpacing="0.08"
+          android:paddingStart="8dp"
+          android:text="Other"
+          android:textAllCaps="true"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

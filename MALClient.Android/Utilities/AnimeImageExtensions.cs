@@ -46,25 +46,25 @@ namespace MALClient.Android
             return originUrl;
         }
 
-        public static bool AnimeIntoIfLoaded(this ImageView image, string originUrl)
+        public static bool AnimeIntoIfLoaded(this ImageView image, string originUrl, ITransformation transformation = null)
         {
             var url = GetImgUrl(originUrl);
             if (LoadedImgs.Contains(url))
             {
-                LoadImage(image, originUrl, url, true, null);
+                LoadImage(image, originUrl, url, true, null, transformation);
                 return true;
             }
             return false;
         }
 
-        public static void AnimeInto(this ImageView image, string originUrl, View loader = null)
+        public static void AnimeInto(this ImageView image, string originUrl, View loader = null, ITransformation transformation = null)
         {
             var url = GetImgUrl(originUrl);
-            LoadImage(image, originUrl, url, LoadedImgs.Contains(url), loader);
+            LoadImage(image, originUrl, url, LoadedImgs.Contains(url), loader, transformation);
         }
 
         private static void LoadImage(ImageView image, string originUrl, string targetUrl,
-            bool? imgLoaded, View loader)
+            bool? imgLoaded, View loader, ITransformation transformation = null)
         {
             //if (TasksDictionary.TryGetValue(image, out var task))
             //{
@@ -80,6 +80,8 @@ namespace MALClient.Android
 
                 image.SetImageResource(global::Android.Resource.Color.Transparent);
                 var work = ImageService.Instance.LoadUrl(targetUrl).DownSampleInDip(0, 320);
+                if (transformation != null)
+                    work = work.Transform(transformation);
                 if (loader != null)
                     work.Finish(scheduledWork => loader.Visibility = ViewStates.Gone);
                 if (imgLoaded != true && !LoadedImgs.Contains(targetUrl))
@@ -110,14 +112,18 @@ namespace MALClient.Android
                         }
                         ResourceLocator.ConnectionInfoProvider.Init();
                         var img = (string)image.Tag;
-                        ImageService.Instance.LoadUrl(img)
-                            .FadeAnimation(false)
-                            .Into(image);
+                        var fallbackWork = ImageService.Instance.LoadUrl(img).FadeAnimation(false);
+                        if (transformation != null)
+                            fallbackWork = fallbackWork.Transform(transformation);
+                        fallbackWork.Into(image);
                         FailedImgs.Add(targetUrl);
                         LoadedImgs.Add(img);
                     });
                 }
-                work.FadeAnimation(false).Into(image);
+                if (transformation == null)
+                    work.FadeAnimation(false).Into(image);
+                else
+                    work.FadeAnimation(false).Transform(transformation).Into(image);
 
             }
             catch (Exception)

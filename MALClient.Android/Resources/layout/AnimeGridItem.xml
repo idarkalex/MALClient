@@ -27,6 +27,71 @@
       android:indeterminateTint="?BrushAnimeItemBackground"
       android:indeterminateTintMode="src_in" />
 
+  <!-- Overlay Badge in Top Right -->
+  <LinearLayout
+      android:id="@+id/AnimeGridItemBadgeContainer"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="top|end"
+      android:layout_margin="6dp"
+      android:background="@drawable/electric_midnight_badge"
+      android:orientation="horizontal"
+      android:paddingStart="8dp"
+      android:paddingEnd="8dp"
+      android:paddingTop="4dp"
+      android:paddingBottom="4dp"
+      android:gravity="center_vertical"
+      android:visibility="gone"
+      tools:visibility="visible">
+
+      <!-- Status indicator (e.g. W, C) -->
+      <TextView
+          android:id="@+id/AnimeGridItemStatus"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/inter"
+          android:textSize="11sp"
+          android:textStyle="bold"
+          android:textColor="?AccentColour"
+          android:textAllCaps="true"
+          android:layout_marginEnd="6dp"
+          tools:text="W" />
+
+      <!-- Divider line -->
+      <View
+          android:layout_width="1dp"
+          android:layout_height="12dp"
+          android:background="#33ffffff"
+          android:layout_marginEnd="6dp" />
+
+      <!-- Progress/Score stacked vertically -->
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="vertical"
+          android:gravity="center_horizontal">
+
+          <TextView
+              android:id="@+id/AnimeGridItemEpisodes"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:textSize="10sp"
+              android:textStyle="bold"
+              android:textColor="#ffffff"
+              tools:text="3/11" />
+
+          <TextView
+              android:id="@+id/AnimeGridItemScore"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:textSize="8sp"
+              android:textColor="?BrushTextSecondary"
+              tools:text="8.68" />
+      </LinearLayout>
+  </LinearLayout>
+
   <!-- Title at bottom with dark gradient background -->
   <TextView
       android:id="@+id/AnimeGridItemTitle"

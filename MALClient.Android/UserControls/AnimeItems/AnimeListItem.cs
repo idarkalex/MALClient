@@ -8,6 +8,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Com.Shehabic.Droppy;
+using FFImageLoading.Transformations;
 using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Helpers;
@@ -57,7 +58,7 @@ namespace MALClient.Android.UserControls.AnimeItems
 
         protected override void BindModelFling()
         {
-            if (!AnimeListItemImage.AnimeIntoIfLoaded(ViewModel.ImgUrl))
+            if (!AnimeListItemImage.AnimeIntoIfLoaded(ViewModel.ImgUrl, new RoundedCornersTransformation(8, 0)))
             {
                 AnimeListItemImage.Visibility = ViewStates.Invisible;
                 AnimeListItemImgPlaceholder.Visibility = ViewStates.Visible;
@@ -70,7 +71,7 @@ namespace MALClient.Android.UserControls.AnimeItems
         {
             if ((string)AnimeListItemImage.Tag != ViewModel.ImgUrl)
             {
-                AnimeListItemImage.AnimeInto(ViewModel.ImgUrl, AnimeListItemImgPlaceholder);
+                AnimeListItemImage.AnimeInto(ViewModel.ImgUrl, AnimeListItemImgPlaceholder, new RoundedCornersTransformation(8, 0));
             }
             else
             {
