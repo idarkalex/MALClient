@@ -70,5 +70,7 @@
         PageSearchEverywhere,
         [EnumUtilities.PageIndexEnumMember(OffPage = false)]
         PageDiscover,
+        [EnumUtilities.PageIndexEnumMember(OffPage = false)]
+        PageMore,
     }
 }

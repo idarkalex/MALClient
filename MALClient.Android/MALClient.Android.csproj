@@ -156,6 +156,7 @@
     <Compile Include="Fragments\AnimeListPageFragment.cs" />
     <Compile Include="Fragments\AnimeListPageFragment.ui.cs" />
     <Compile Include="Fragments\DiscoverPageFragment.cs" />
+    <Compile Include="Fragments\MorePageFragment.cs" />
     <Compile Include="Fragments\ArticlesPageFragments\ArticlesPageFragment.cs" />
     <Compile Include="Fragments\ArticlesPageFragments\ArticlesPageTabFragment.cs" />
     <Compile Include="Fragments\CalendarFragments\CalendarPageFragment.cs" />
@@ -899,6 +900,7 @@
   <ItemGroup>
     <AndroidResource Include="Resources\layout\AnimeListPage.xml" />
     <AndroidResource Include="Resources\layout\DiscoverPage.xml" />
+    <AndroidResource Include="Resources\layout\MorePage.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\AnimeListPageDrawerHeader.xml" />

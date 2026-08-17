@@ -334,6 +334,8 @@ namespace MALClient.XShared.Utils
                     return HamburgerButtons.Clubs;
                 case PageIndex.PageDiscover:
                     return HamburgerButtons.Discover;
+                case PageIndex.PageMore:
+                    return HamburgerButtons.Settings;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(page), page, null);
             }

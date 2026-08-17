@@ -256,6 +256,12 @@ namespace MALClient.Android.ViewModels
                     ViewModelLocator.GeneralHamburger.SetActiveButton(HamburgerButtons.Discover);
                     MainNavigationRequested?.Invoke(new DiscoverPageFragment());
                     break;
+                case PageIndex.PageMore:
+                    HideSearchStuff();
+                    CurrentStatus = "More";
+                    RefreshButtonVisibility = false;
+                    MainNavigationRequested?.Invoke(new MorePageFragment());
+                    break;
                 case PageIndex.PageMessanging:
                     HideSearchStuff();
                     CurrentStatus =

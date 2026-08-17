@@ -536,7 +536,7 @@ namespace MALClient.Android.Activities
                     page = PageIndex.PageMangaList;
                     break;
                 case Resource.Id.bottom_nav_more:
-                    page = PageIndex.PageSettings;
+                    page = PageIndex.PageMore;
                     break;
                 default:
                     return;

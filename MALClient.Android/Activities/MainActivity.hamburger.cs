@@ -79,6 +79,8 @@ namespace MALClient.Android.Activities
                     return new WallpaperPageNavigationArgs();
                 case PageIndex.PageDiscover:
                     return null;
+                case PageIndex.PageMore:
+                    return null;
                 default:
                     return null;
             }
