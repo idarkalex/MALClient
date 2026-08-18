@@ -160,6 +160,31 @@ namespace MALClient.Android.Fragments
                     AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
                 }));
 
+            Bindings.Add(this.SetBinding(() => ViewModel.Title)
+                .WhenSourceChanges(() =>
+                {
+                    AnimeDetailsPageTitle.Text = ViewModel.Title;
+                }));
+
+            Bindings.Add(this.SetBinding(() => ViewModel.AllEpisodes)
+                .WhenSourceChanges(() =>
+                {
+                    var type = ViewModel.AnimeMode ? "Anime" : "Manga";
+                    var eps = ViewModel.AnimeItemReference?.AllEpisodes ?? ViewModel.AllEpisodes;
+                    var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
+                    AnimeDetailsPageSubtitle.Text = $"{type} \u2022 {(eps == 0 ? "?" : eps.ToString())} {unit}";
+                }));
+
+            Bindings.Add(this.SetBinding(() => ViewModel.LoadingGlobal)
+                .WhenSourceChanges(() =>
+                {
+                    if (!ViewModel.LoadingGlobal && ViewModel.AnimeItemReference != null)
+                    {
+                        var score = ViewModel.AnimeItemReference.GlobalScore;
+                        AnimeDetailsPageScoreValue.Text = score == 0 ? "N/A" : score.ToString("N2");
+                    }
+                }));
+
             Bindings.Add(
                 this.SetBinding(() => ViewModel.LoadingUpdate,
                         () => AnimeDetailsPageLoadingUpdateSpinner.Visibility)
@@ -190,6 +215,17 @@ namespace MALClient.Android.Fragments
             //OneTime
 
             AnimeDetailsPageWatchedLabel.Text = ViewModel.WatchedEpsLabel;
+
+            AnimeDetailsPageTitle.Text = ViewModel.Title;
+            var eps = ViewModel.AnimeItemReference?.AllEpisodes ?? ViewModel.AllEpisodes;
+            var type = ViewModel.AnimeMode ? "Anime" : "Manga";
+            var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
+            AnimeDetailsPageSubtitle.Text = $"{type} \u2022 {(eps == 0 ? "?" : eps.ToString())} {unit}";
+            if (ViewModel.AnimeItemReference != null)
+            {
+                var score = ViewModel.AnimeItemReference.GlobalScore;
+                AnimeDetailsPageScoreValue.Text = score == 0 ? "N/A" : score.ToString("N2");
+            }
 
             if (Settings.HideDecrementButtons)
             {

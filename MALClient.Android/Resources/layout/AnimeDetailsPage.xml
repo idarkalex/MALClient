@@ -46,6 +46,44 @@
                 android:background="@drawable/hero_gradient_overlay" />
           </FrameLayout>
 
+          <!-- Title & Subtitle overlaid on hero poster -->
+          <LinearLayout
+              android:id="@+id/AnimeDetailsPageTitleSection"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_above="@id/AnimeDetailsPageUpdateSection"
+              android:layout_marginStart="20dp"
+              android:layout_marginEnd="20dp"
+              android:layout_marginBottom="8dp"
+              android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/AnimeDetailsPageTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter"
+                android:textColor="#ffffff"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:shadowColor="#80000000"
+                android:shadowDx="0"
+                android:shadowDy="2"
+                android:shadowRadius="4"
+                android:maxLines="2"
+                android:ellipsize="end"
+                tools:text="Oshi no Ko" />
+
+            <TextView
+                android:id="@+id/AnimeDetailsPageSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="@font/inter"
+                android:textColor="#ccffffff"
+                android:textSize="@dimen/EmLabelSm"
+                tools:text="TV • 11 Episodes" />
+          </LinearLayout>
+
           <!-- Floating Stats section with episode controls -->
           <LinearLayout
               android:id="@+id/AnimeDetailsPageUpdateSection"
@@ -86,7 +124,7 @@
                   android:layout_height="wrap_content"
                   android:layout_marginTop="2dp"
                   android:fontFamily="@font/inter"
-                  android:text="8.74"
+                  android:text=""
                   android:textColor="?BrushText"
                   android:textSize="18sp"
                   android:textStyle="bold" />
