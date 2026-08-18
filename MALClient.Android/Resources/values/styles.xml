@@ -8,7 +8,7 @@
   <style name="GridCardTitleStyle">
     <item name="android:ellipsize">end</item>
     <item name="android:maxLines">2</item>
-    <item name="android:background">#CC000000</item>
+    <item name="android:background">#CC000D1A</item>
     <item name="android:paddingLeft">@dimen/TitleOverlayPaddingHorizontal</item>
     <item name="android:paddingTop">@dimen/TitleOverlayPaddingVertical</item>
     <item name="android:paddingRight">@dimen/TitleOverlayPaddingHorizontal</item>

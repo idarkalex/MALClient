@@ -1332,6 +1332,7 @@
     <AndroidResource Include="Resources\drawable\electric_midnight_update_panel.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_circle_primary.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_circle_dark.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_progress_linear.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

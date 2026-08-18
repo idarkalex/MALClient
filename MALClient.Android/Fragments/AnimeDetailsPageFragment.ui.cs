@@ -24,6 +24,8 @@ namespace MALClient.Android.Fragments
 
         private ImageViewAsync _animeDetailsPageShowCoverImage;
         private FrameLayout _imageContainer;
+        private ImageViewAsync _animeDetailsPageBlurredBackground;
+        private FrameLayout _animeDetailsPagePosterContainer;
         private TextView _animeDetailsPageWatchedLabel;
         private TextView _animeDetailsPageReadVolumesLabel;
         private Button _animeDetailsPageScoreButton;
@@ -42,6 +44,7 @@ namespace MALClient.Android.Fragments
         private PagerSlidingTabStrip _animeDetailsPageTabStrip;
         private HeightAdjustingViewPager _animeDetailsPagePivot;
         private RelativeLayout _animeDetailsPageLoadingOverlay;
+        private ScrollView _animeDetailsPageScrollView;
         private TextView _animeDetailsPageTitle;
         private TextView _animeDetailsPageSubtitle;
         private TextView _animeDetailsPageScoreValue;
@@ -50,6 +53,10 @@ namespace MALClient.Android.Fragments
         public ImageViewAsync AnimeDetailsPageShowCoverImage => GetView(ref _animeDetailsPageShowCoverImage, Resource.Id.AnimeDetailsPageShowCoverImage);
 
         public FrameLayout ImageContainer => GetView(ref _imageContainer, Resource.Id.ImageContainer);
+
+        public ImageViewAsync AnimeDetailsPageBlurredBackground => GetView(ref _animeDetailsPageBlurredBackground, Resource.Id.AnimeDetailsPageBlurredBackground);
+
+        public FrameLayout AnimeDetailsPagePosterContainer => GetView(ref _animeDetailsPagePosterContainer, Resource.Id.AnimeDetailsPagePosterContainer);
 
         public TextView AnimeDetailsPageWatchedLabel => GetView(ref _animeDetailsPageWatchedLabel, Resource.Id.AnimeDetailsPageWatchedLabel);
 
@@ -86,6 +93,8 @@ namespace MALClient.Android.Fragments
         public HeightAdjustingViewPager AnimeDetailsPagePivot => GetView(ref _animeDetailsPagePivot, Resource.Id.AnimeDetailsPagePivot);
 
         public RelativeLayout AnimeDetailsPageLoadingOverlay => GetView(ref _animeDetailsPageLoadingOverlay, Resource.Id.AnimeDetailsPageLoadingOverlay);
+
+        public ScrollView AnimeDetailsPageScrollView => GetView(ref _animeDetailsPageScrollView, Resource.Id.AnimeDetailsPageScrollView);
 
         public TextView AnimeDetailsPageTitle => GetView(ref _animeDetailsPageTitle, Resource.Id.AnimeDetailsPageTitle);
 

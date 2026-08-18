@@ -42,7 +42,7 @@
         android:layout_height="wrap_content" android:orientation="vertical">
         <TextView
           android:layout_width="wrap_content" android:id="@+id/Name" tools:text="Some very fancy club nyan!"
-          android:layout_height="wrap_content" android:fontFamily="light" android:textColor="?BrushText"  android:maxLines="2" android:ellipsize="end"/>
+          android:layout_height="wrap_content" android:fontFamily="@font/inter" android:textColor="?BrushText"  android:maxLines="2" android:ellipsize="end"/>
         <View style="@style/Divider" android:layout_margin="5dp"/>
         <TextView
           android:layout_width="wrap_content" android:id="@+id/Description" android:textSize="@dimen/FontSizeSemiNormal" tools:text="This club is very awesome and now I'mtrying this thing to ellipsize itself because testing hahah!" android:maxLines="3" android:ellipsize="end"

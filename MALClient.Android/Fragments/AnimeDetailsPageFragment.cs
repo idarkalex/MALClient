@@ -17,6 +17,7 @@ using Android.Widget;
 
 using Com.Shehabic.Droppy;
 using FFImageLoading;
+using FFImageLoading.Transformations;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
@@ -158,6 +159,7 @@ namespace MALClient.Android.Fragments
                 .WhenSourceChanges(() =>
                 {
                     AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
+                    AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Title)
@@ -250,6 +252,37 @@ namespace MALClient.Android.Fragments
                 new OnClickListener(view => AnimeDetailsPageWatchedButtonOnClick()));
             AnimeDetailsPageReadVolumesButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
+
+            // Poster scroll effect: blur background + shrink poster on scroll
+            var heroHeight = DimensionsHelper.DpToPx(380);
+            var posterContainer = AnimeDetailsPagePosterContainer;
+            var scrollView = AnimeDetailsPageScrollView;
+            scrollView.ViewTreeObserver.AddOnScrollChangedListener(
+                new ScrollListener(scrollView, posterContainer, heroHeight));
+        }
+
+        private class ScrollListener : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener
+        {
+            private readonly ScrollView _scrollView;
+            private readonly View _poster;
+            private readonly int _heroHeight;
+
+            public ScrollListener(ScrollView scrollView, View poster, int heroHeight)
+            {
+                _scrollView = scrollView;
+                _poster = poster;
+                _heroHeight = heroHeight;
+            }
+
+            public void OnScrollChanged()
+            {
+                var scrollY = _scrollView.ScrollY;
+                var ratio = Math.Max(0f, Math.Min(1f, (float)scrollY / _heroHeight));
+                var scale = 1f - ratio * 0.7f;
+                _poster.ScaleX = scale;
+                _poster.ScaleY = scale;
+                _poster.Alpha = 1f - ratio;
+            }
         }
 
         private async void OnMoreFlyoutClick(int i)

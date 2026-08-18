@@ -148,6 +148,12 @@
             android:tint="?BrushTextSecondary" />
       </LinearLayout>
 
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
       <LinearLayout
           android:id="@+id/MorePageSeasonalItem"
           android:layout_width="match_parent"
@@ -176,6 +182,12 @@
             android:textColor="?BrushText"
             android:textSize="@dimen/EmBodyLg" />
       </LinearLayout>
+
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
 
       <LinearLayout
           android:id="@+id/MorePageTopAnimeItem"
@@ -212,6 +224,12 @@
             android:tint="?BrushTextSecondary" />
       </LinearLayout>
 
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
       <LinearLayout
           android:id="@+id/MorePageSearchItem"
           android:layout_width="match_parent"
@@ -241,6 +259,12 @@
             android:textSize="@dimen/EmBodyLg" />
       </LinearLayout>
 
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
       <LinearLayout
           android:id="@+id/MorePageRecommendationsItem"
           android:layout_width="match_parent"
@@ -269,6 +293,12 @@
             android:textColor="?BrushText"
             android:textSize="@dimen/EmBodyLg" />
       </LinearLayout>
+
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
 
       <LinearLayout
           android:id="@+id/MorePageCalendarItem"
@@ -369,6 +399,12 @@
             android:tint="?BrushTextSecondary" />
       </LinearLayout>
 
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
       <LinearLayout
           android:id="@+id/MorePageTopMangaItem"
           android:layout_width="match_parent"
@@ -403,6 +439,12 @@
             android:src="@drawable/icon_more_vertical"
             android:tint="?BrushTextSecondary" />
       </LinearLayout>
+
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
 
       <LinearLayout
           android:id="@+id/MorePageAdaptedItem"
@@ -502,6 +544,12 @@
             android:textSize="@dimen/EmBodyLg" />
       </LinearLayout>
 
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
       <LinearLayout
           android:id="@+id/MorePageVideosItem"
           android:layout_width="match_parent"
@@ -531,6 +579,12 @@
             android:textSize="@dimen/EmBodyLg" />
       </LinearLayout>
 
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
       <LinearLayout
           android:id="@+id/MorePageForumsItem"
           android:layout_width="match_parent"
@@ -559,6 +613,12 @@
             android:textColor="?BrushText"
             android:textSize="@dimen/EmBodyLg" />
       </LinearLayout>
+
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
 
       <LinearLayout
           android:id="@+id/MorePageSettingsItem"
