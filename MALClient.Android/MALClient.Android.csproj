@@ -1318,6 +1318,20 @@
     <AndroidResource Include="Resources\drawable\icon_report.xml" />
     <AndroidResource Include="Resources\drawable\bottom_nav_item_color.xml" />
     <AndroidResource Include="Resources\menu\bottom_nav_menu.xml" />
+    <AndroidResource Include="Resources\drawable\icon_star_filled.xml" />
+    <AndroidResource Include="Resources\drawable\icon_trophy.xml" />
+    <AndroidResource Include="Resources\drawable\icon_users.xml" />
+    <AndroidResource Include="Resources\drawable\icon_list_bullets.xml" />
+    <AndroidResource Include="Resources\drawable\icon_circle_add.xml" />
+    <AndroidResource Include="Resources\drawable\icon_heart_outline.xml" />
+    <AndroidResource Include="Resources\drawable\icon_back_arrow.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_pill.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_circle_translucent.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_circle_glass.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_action_button.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_update_panel.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_circle_primary.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_circle_dark.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

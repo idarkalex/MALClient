@@ -45,6 +45,7 @@ namespace MALClient.Android.Fragments
         private TextView _animeDetailsPageTitle;
         private TextView _animeDetailsPageSubtitle;
         private TextView _animeDetailsPageScoreValue;
+        private TextView _animeDetailsPageTypeBadge;
 
         public ImageViewAsync AnimeDetailsPageShowCoverImage => GetView(ref _animeDetailsPageShowCoverImage, Resource.Id.AnimeDetailsPageShowCoverImage);
 
@@ -91,6 +92,8 @@ namespace MALClient.Android.Fragments
         public TextView AnimeDetailsPageSubtitle => GetView(ref _animeDetailsPageSubtitle, Resource.Id.AnimeDetailsPageSubtitle);
 
         public TextView AnimeDetailsPageScoreValue => GetView(ref _animeDetailsPageScoreValue, Resource.Id.AnimeDetailsPageScoreValue);
+
+        public TextView AnimeDetailsPageTypeBadge => GetView(ref _animeDetailsPageTypeBadge, Resource.Id.AnimeDetailsPageTypeBadge);
 
         #endregion
 

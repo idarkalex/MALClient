@@ -10,12 +10,8 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
-using Java.Util;
-using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
-using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
-using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
 
@@ -43,45 +39,26 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (!ViewModel.LoadingGlobal)
                     {
-                        //left details
-                        AnimeDetailsPageGeneralTabFragmentType.Text = ViewModel.RightDetailsRow[0].Item2;
-                        AnimeDetailsPageGeneralTabFragmentStatus.Text = ViewModel.RightDetailsRow[1].Item2;
-                        AnimeDetailsPageGeneralTabFragmentEnd.Text = ViewModel.RightDetailsRow[2].Item2;
-                        AnimeDetailsPageGeneralTabFragmentMyStartButton.SetOnClickListener(new OnClickListener(view =>
-                        {
-                            var date = ViewModel.StartDateValid ? ViewModel.StartDateTimeOffset : DateTimeOffset.Now;
-                            DatePickerDialog dpd = new DatePickerDialog(Activity, new DateSetListener((i, i1, arg3) =>
-                                {
-                                    ViewModel.StartDateTimeOffset =
-                                        new DateTimeOffset(i, i1, arg3, 0, 0, 0, TimeSpan.Zero);
-                                    AnimeDetailsPageGeneralTabFragmentMyStart.Text = ViewModel.MyStartDate;
-                                }),
-                                date.Year, date.Month - 1, date.Day);
-                            dpd.SetButton((int)DialogButtonType.Neutral,"Reset",(sender, args) => ViewModel.ResetStartDateCommand.Execute(null));
-                            dpd.Show();
-                        }));
-                        AnimeDetailsPageGeneralTabFragmentMyStartButton.SetOnLongClickListener(new OnLongClickListener(view => ViewModel.ResetStartDateCommand.Execute(null)));
+                        // Rank from Stats collection
+                        var rankEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Rank");
+                        AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text = rankEntry != null ? rankEntry.Item2.Trim() : "N/A";
 
-                        AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text = ViewModel.LeftDetailsRow[0].Item1;
-                        //right details
-                        AnimeDetailsPageGeneralTabFragmentEpisodes.Text = ViewModel.LeftDetailsRow[0].Item2;
-                        AnimeDetailsPageGeneralTabFragmentScore.Text = ViewModel.LeftDetailsRow[1].Item2;
-                        AnimeDetailsPageGeneralTabFragmentStart.Text = ViewModel.LeftDetailsRow[2].Item2;
-                        AnimeDetailsPageGeneralTabFragmentMyEndButton.SetOnClickListener(new OnClickListener(view =>
+                        // Popularity from Stats collection
+                        var popEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Popularity");
+                        AnimeDetailsPageGeneralTabFragmentScore.Text = popEntry != null ? popEntry.Item2.Trim() : "N/A";
+
+                        // Studios from Information collection
+                        var studioEntry = ViewModel.Information.FirstOrDefault(s => s.Item1 == "Studios");
+                        if (studioEntry != null)
                         {
-                            var date = ViewModel.EndDateValid ? ViewModel.EndDateTimeOffset : DateTimeOffset.Now;
-                            DatePickerDialog dpd = new DatePickerDialog(Activity, new DateSetListener((i, i1, arg3) =>
-                                {
-                                    ViewModel.EndDateTimeOffset =
-                                        new DateTimeOffset(i, i1, arg3, 0, 0, 0, TimeSpan.Zero);
-                                    AnimeDetailsPageGeneralTabFragmentMyEnd.Text = ViewModel.MyEndDate;
-                                }),
-                                date.Year, date.Month - 1, date.Day);
-                            dpd.SetButton((int)DialogButtonType.Neutral, "Reset", (sender, args) => ViewModel.ResetEndDateCommand.Execute(null));
-                            dpd.Show();
-                        }));
-                        AnimeDetailsPageGeneralTabFragmentMyEndButton.SetOnLongClickListener(new OnLongClickListener(view => ViewModel.ResetEndDateCommand.Execute(null)));
-                        //rest
+                            AnimeDetailsPageGeneralTabFragmentType.Text = studioEntry.Item2.Trim();
+                        }
+                        else
+                        {
+                            AnimeDetailsPageGeneralTabFragmentType.Text = "Unknown";
+                        }
+
+                        // Synopsis
                         if (!string.IsNullOrEmpty(ViewModel.Synopsis))
                         {
                             AnimeDetailsPageGeneralTabFragmentSynopsis.Text = ViewModel.Synopsis;
@@ -91,24 +68,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                         {
                             AnimeDetailsPageGeneralTabFragmentSynopsis.Text = "Synopsis unavailable...";
                             AnimeDetailsPageGeneralTabFragmentSynopsis.Gravity = GravityFlags.CenterHorizontal;
-                        }
-
-                        if (Settings.HideGlobalScoreInDetailsWhenNotRated && !ViewModel.IsMyScoreSet)
-                        {
-
-                            AnimeDetailsPageGeneralTabFragmentScore.Visibility = ViewStates.Gone;
-                            AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel.Visibility = ViewStates.Visible;
-                            AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel.SetOnClickListener(new OnClickListener(
-                                view =>
-                                {
-                                    AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel.Visibility = ViewStates.Gone;
-                                    AnimeDetailsPageGeneralTabFragmentScore.Visibility = ViewStates.Visible;
-                                }));
-                        }
-                        else
-                        {
-                            AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel.Visibility = ViewStates.Gone;
-                            AnimeDetailsPageGeneralTabFragmentScore.Visibility = ViewStates.Visible;
                         }
                     }
                 }
@@ -122,30 +81,10 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             Bindings.Add(this.SetBinding(() => ViewModel.AddAnimeVisibility)
                 .WhenSourceChanges(() =>
                 {
-                    if (ViewModel.AddAnimeVisibility)
-                    {
-                        AnimeDetailsPageGeneralTabFragmentMyStartButton.Visibility =
-                            AnimeDetailsPageGeneralTabFragmentMyEndButton.Visibility = ViewStates.Gone;
-                    }
-                    else
-                    {
-                        AnimeDetailsPageGeneralTabFragmentMyStartButton.Visibility =
-                            AnimeDetailsPageGeneralTabFragmentMyEndButton.Visibility = ViewStates.Visible;
-                    }
                 }));
-
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.MyStartDate,
-                    () => AnimeDetailsPageGeneralTabFragmentMyStart.Text));
-
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.MyEndDate,
-                    () => AnimeDetailsPageGeneralTabFragmentMyEnd.Text));
 
             Bindings.Add(this.SetBinding(() => ViewModel.EndDateTimeOffset).WhenSourceChanges(() =>
             {
-                AnimeDetailsPageGeneralTabFragmentMyStart.Text = ViewModel.MyStartDate;
-                AnimeDetailsPageGeneralTabFragmentMyEnd.Text = ViewModel.MyEndDate;
             }));
         }
 

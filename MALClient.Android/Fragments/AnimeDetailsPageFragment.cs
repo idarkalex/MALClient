@@ -166,13 +166,18 @@ namespace MALClient.Android.Fragments
                     AnimeDetailsPageTitle.Text = ViewModel.Title;
                 }));
 
+            Bindings.Add(this.SetBinding(() => ViewModel.AnimeMode)
+                .WhenSourceChanges(() =>
+                {
+                    AnimeDetailsPageTypeBadge.Text = ViewModel.AnimeMode ? "Anime" : "Manga";
+                }));
+
             Bindings.Add(this.SetBinding(() => ViewModel.AllEpisodes)
                 .WhenSourceChanges(() =>
                 {
-                    var type = ViewModel.AnimeMode ? "Anime" : "Manga";
                     var eps = ViewModel.AnimeItemReference?.AllEpisodes ?? ViewModel.AllEpisodes;
                     var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
-                    AnimeDetailsPageSubtitle.Text = $"{type} \u2022 {(eps == 0 ? "?" : eps.ToString())} {unit}";
+                    AnimeDetailsPageSubtitle.Text = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.LoadingGlobal)
@@ -217,10 +222,10 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageWatchedLabel.Text = ViewModel.WatchedEpsLabel;
 
             AnimeDetailsPageTitle.Text = ViewModel.Title;
+            AnimeDetailsPageTypeBadge.Text = ViewModel.AnimeMode ? "Anime" : "Manga";
             var eps = ViewModel.AnimeItemReference?.AllEpisodes ?? ViewModel.AllEpisodes;
-            var type = ViewModel.AnimeMode ? "Anime" : "Manga";
             var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
-            AnimeDetailsPageSubtitle.Text = $"{type} \u2022 {(eps == 0 ? "?" : eps.ToString())} {unit}";
+            AnimeDetailsPageSubtitle.Text = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
             if (ViewModel.AnimeItemReference != null)
             {
                 var score = ViewModel.AnimeItemReference.GlobalScore;
