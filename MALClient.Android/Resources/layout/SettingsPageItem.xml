@@ -35,6 +35,6 @@
         android:fontFamily="@font/inter"
         android:text=""
         android:textColor="?BrushTextSecondary"
-        android:textSize="@dimen/EmBodySm"
+        android:textSize="@dimen/EmBodyMd"
         android:visibility="gone" />
 </LinearLayout>
