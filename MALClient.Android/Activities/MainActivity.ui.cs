@@ -522,7 +522,7 @@ namespace MALClient.Android.Activities
 
         private bool _isBottomNavSyncing;
 
-        internal void OnBottomNavigationItemSelected(int itemId)
+        private void OnBottomNavigationItemSelected(int itemId)
         {
             if (_isBottomNavSyncing) return;
 
