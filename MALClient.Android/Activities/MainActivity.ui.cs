@@ -351,7 +351,8 @@ namespace MALClient.Android.Activities
                         MainPageHamburgerButton.Visibility = ViewStates.Gone;
             _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
-            MainPageBottomNav.SetOnNavigationItemSelectedListener(new BottomNavSelectionListener(this));
+            _lastBottomNavSelectedItemId = MainPageBottomNav.SelectedItemId;
+            StartBottomNavPolling();
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
@@ -547,6 +548,37 @@ namespace MALClient.Android.Activities
             ViewModelLocator.GeneralMain.Navigate(page, GetAppropriateArgsForPage(page));
         }
 
+        private int _lastBottomNavSelectedItemId = -1;
+        private Handler _bottomNavHandler;
+        private Runnable _bottomNavRunnable;
+
+        private void StartBottomNavPolling()
+        {
+            _bottomNavHandler = new Handler();
+            _bottomNavRunnable = new Runnable(() =>
+            {
+                try
+                {
+                    var currentSelected = MainPageBottomNav.SelectedItemId;
+                    if (_lastBottomNavSelectedItemId != -1 && currentSelected != _lastBottomNavSelectedItemId)
+                    {
+                        _lastBottomNavSelectedItemId = currentSelected;
+                        if (!_isBottomNavSyncing)
+                            OnBottomNavigationItemSelected(currentSelected);
+                    }
+                    else
+                    {
+                        _lastBottomNavSelectedItemId = currentSelected;
+                    }
+                }
+                finally
+                {
+                    _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
+                }
+            });
+            _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
+        }
+
 
 
         private void MainPageHamburgerButtonOnClick(object sender, EventArgs eventArgs)
@@ -706,21 +738,5 @@ namespace MALClient.Android.Activities
 
         #endregion
 
-    }
-
-    public class BottomNavSelectionListener : Object, BottomNavigationView.IOnNavigationItemSelectedListener
-    {
-        private readonly MainActivity _activity;
-
-        public BottomNavSelectionListener(MainActivity activity)
-        {
-            _activity = activity;
-        }
-
-        public bool OnNavigationItemSelected(IMenuItem item)
-        {
-            _activity.OnBottomNavigationItemSelected(item.ItemId);
-            return true;
-        }
     }
 }

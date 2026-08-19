@@ -309,6 +309,7 @@ namespace MALClient.Android.Activities
         {
             ViewModel.MediaElementCollapsed -= ViewModelOnMediaElementCollapsed;
             ViewModel.MainNavigationRequested -= ViewModelOnMainNavigationRequested;
+            _bottomNavHandler?.RemoveCallbacks(_bottomNavRunnable);
             base.OnDestroy();
         }
 
