@@ -86,14 +86,6 @@ namespace MALClient.Android.Fragments
                     () => AnimeListPageLoadingSpinner.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
 
             Bindings.Add(
-                this.SetBinding(() => ViewModel.AppbarBtnPinTileVisibility,
-                    () => AnimeListPageSeasonMenu.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
-
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.AppBtnSortingVisibility,
-                    () => AnimeListPageSortMenu.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
-
-            Bindings.Add(
                 this.SetBinding(() => ViewModel.EmptyNoticeVisibility,
                     () => AnimeListPageEmptyNotice.Visibility)
                     .ConvertSourceToTarget(Converters.BoolToVisibility));
@@ -377,10 +369,6 @@ namespace MALClient.Android.Fragments
         private GridView _animeListPageGridView;
         private ListView _animeListPageListView;
         private ListView _animeListPageCompactListView;
-        private ImageButton _animeListPageDisplayMenu;
-        private ImageButton _animeListPageSeasonMenu;
-        private ImageButton _animeListPageFilterMenu;
-        private ImageButton _animeListPageSortMenu;
         private RelativeLayout _animeListPageLoadingSpinner;
         private TextView _animeListPageEmptyNotice;
         private FloatingActionButton _animeListPageActionButton;
@@ -390,14 +378,6 @@ namespace MALClient.Android.Fragments
         public ListView AnimeListPageListView => GetView(ref _animeListPageListView, Resource.Id.AnimeListPageListView);
 
         public ListView AnimeListPageCompactListView => GetView(ref _animeListPageCompactListView, Resource.Id.AnimeListPageCompactListView);
-
-        public ImageButton AnimeListPageDisplayMenu => GetView(ref _animeListPageDisplayMenu, Resource.Id.AnimeListPageDisplayMenu);
-
-        public ImageButton AnimeListPageSeasonMenu => GetView(ref _animeListPageSeasonMenu, Resource.Id.AnimeListPageSeasonMenu);
-
-        public ImageButton AnimeListPageFilterMenu => GetView(ref _animeListPageFilterMenu, Resource.Id.AnimeListPageFilterMenu);
-
-        public ImageButton AnimeListPageSortMenu => GetView(ref _animeListPageSortMenu, Resource.Id.AnimeListPageSortMenu);
 
         public RelativeLayout AnimeListPageLoadingSpinner => GetView(ref _animeListPageLoadingSpinner, Resource.Id.AnimeListPageLoadingSpinner);
 
