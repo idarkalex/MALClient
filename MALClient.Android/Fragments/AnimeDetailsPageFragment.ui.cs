@@ -45,6 +45,7 @@ namespace MALClient.Android.Fragments
         private HeightAdjustingViewPager _animeDetailsPagePivot;
         private RelativeLayout _animeDetailsPageLoadingOverlay;
         private ScrollView _animeDetailsPageScrollView;
+        private ScrollListener _scrollListener;
         private TextView _animeDetailsPageTitle;
         private TextView _animeDetailsPageSubtitle;
         private TextView _animeDetailsPageScoreValue;

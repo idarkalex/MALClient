@@ -31,7 +31,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
             base.Init(savedInstanceState);
             ViewModel.NavigationRequest += ViewModelOnNavigationRequest;
             ViewModelLocator.NavMgr.DeregisterBackNav();
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
+            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageMore, null);
             ViewModelLocator.GeneralMain.CurrentStatus = "Settings";
         }
 

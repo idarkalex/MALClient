@@ -53,8 +53,20 @@ namespace MALClient.Android.Fragments.SettingsFragments
 
             // Fun section
             _items.Add("FUN");
-            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.Daki));
-            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.Info));
+            _items.Add(new SettingsPageEntry
+            {
+                Header = "Dakimakura Guide",
+                PageType = SettingsPageIndex.Daki,
+                Subtitle = "Make your life comfier and avoid filthy thieves and bootleggers!",
+                Symbol = SettingsSymbolsEnum.Rocket,
+            });
+            _items.Add(new SettingsPageEntry
+            {
+                Header = "Did you know?",
+                PageType = SettingsPageIndex.Info,
+                Subtitle = "Me explaining this UI...",
+                Symbol = SettingsSymbolsEnum.Lightbulb,
+            });
 
             BuildLayout();
         }

@@ -216,8 +216,6 @@ namespace MALClient.Android.Fragments
                     OnMoreFlyoutClick);
                 _menu.Show();
             }));
-            ImageContainer.SetOnClickListener(new OnClickListener(view =>
-                KeyImageDialog.Instance.ShowDialog(Activity, ViewModel.DetailImage)));
 
             //OneTime
 
@@ -257,8 +255,8 @@ namespace MALClient.Android.Fragments
             var heroHeight = DimensionsHelper.DpToPx(380);
             var posterContainer = AnimeDetailsPagePosterContainer;
             var scrollView = AnimeDetailsPageScrollView;
-            scrollView.ViewTreeObserver.AddOnScrollChangedListener(
-                new ScrollListener(scrollView, posterContainer, heroHeight));
+            _scrollListener = new ScrollListener(scrollView, posterContainer, heroHeight);
+            scrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
         }
 
         private class ScrollListener : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener
@@ -419,5 +417,15 @@ namespace MALClient.Android.Fragments
         }
 
         public override int LayoutResourceId => Resource.Layout.AnimeDetailsPage;
+
+        public override void DetachBindings()
+        {
+            if (_scrollListener != null)
+            {
+                AnimeDetailsPageScrollView?.ViewTreeObserver?.RemoveOnScrollChangedListener(_scrollListener);
+                _scrollListener = null;
+            }
+            base.DetachBindings();
+        }
     }
 }
