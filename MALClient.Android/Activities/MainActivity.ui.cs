@@ -351,11 +351,7 @@ namespace MALClient.Android.Activities
                         MainPageHamburgerButton.Visibility = ViewStates.Gone;
             _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
-            MainPageBottomNav.NavigationItemSelected += (s, e) =>
-            {
-                e.Item.SetChecked(true);
-                OnBottomNavigationItemSelected(e.Item.ItemId);
-            };
+            MainPageBottomNav.SetOnNavigationItemSelectedListener(new BottomNavSelectionListener(this));
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
@@ -525,7 +521,7 @@ namespace MALClient.Android.Activities
 
         private bool _isBottomNavSyncing;
 
-        private void OnBottomNavigationItemSelected(int itemId)
+        internal void OnBottomNavigationItemSelected(int itemId)
         {
             if (_isBottomNavSyncing) return;
 
@@ -710,5 +706,21 @@ namespace MALClient.Android.Activities
 
         #endregion
 
+    }
+
+    public class BottomNavSelectionListener : Object, BottomNavigationView.IOnNavigationItemSelectedListener
+    {
+        private readonly MainActivity _activity;
+
+        public BottomNavSelectionListener(MainActivity activity)
+        {
+            _activity = activity;
+        }
+
+        public bool OnNavigationItemSelected(IMenuItem item)
+        {
+            _activity.OnBottomNavigationItemSelected(item.ItemId);
+            return true;
+        }
     }
 }
