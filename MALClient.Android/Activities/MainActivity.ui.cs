@@ -351,8 +351,11 @@ namespace MALClient.Android.Activities
                         MainPageHamburgerButton.Visibility = ViewStates.Gone;
             _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 
-            _lastBottomNavSelectedItemId = MainPageBottomNav.SelectedItemId;
-            StartBottomNavPolling();
+            MainPageBottomNav.NavigationItemSelected += (s, e) =>
+            {
+                e.Item.SetChecked(true);
+                OnBottomNavigationItemSelected(e.Item.ItemId);
+            };
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
@@ -516,13 +519,16 @@ namespace MALClient.Android.Activities
                 return;
             }
 
-            SetActiveButton(XShared.Utils.Utilities.GetButtonForPage(page));
             ViewModelLocator.GeneralMain.Navigate(page, GetAppropriateArgsForPage(page));
             _drawer.CloseDrawer();
         }
 
+        private bool _isBottomNavSyncing;
+
         private void OnBottomNavigationItemSelected(int itemId)
         {
+            if (_isBottomNavSyncing) return;
+
             PageIndex page;
             switch (itemId)
             {
@@ -542,38 +548,7 @@ namespace MALClient.Android.Activities
                     return;
             }
 
-            SetActiveButton(XShared.Utils.Utilities.GetButtonForPage(page));
             ViewModelLocator.GeneralMain.Navigate(page, GetAppropriateArgsForPage(page));
-        }
-
-        private int _lastBottomNavSelectedItemId = -1;
-        private Handler _bottomNavHandler;
-        private Runnable _bottomNavRunnable;
-
-        private void StartBottomNavPolling()
-        {
-            _bottomNavHandler = new Handler();
-            _bottomNavRunnable = new Runnable(() =>
-            {
-                try
-                {
-                    var currentSelected = MainPageBottomNav.SelectedItemId;
-                    if (_lastBottomNavSelectedItemId != -1 && currentSelected != _lastBottomNavSelectedItemId)
-                    {
-                        _lastBottomNavSelectedItemId = currentSelected;
-                        OnBottomNavigationItemSelected(currentSelected);
-                    }
-                    else
-                    {
-                        _lastBottomNavSelectedItemId = currentSelected;
-                    }
-                }
-                finally
-                {
-                    _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
-                }
-            });
-            _bottomNavHandler.PostDelayed(_bottomNavRunnable, 200);
         }
 
 

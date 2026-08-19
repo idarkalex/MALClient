@@ -1,26 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="48dp"
+              android:clickable="true"
+              android:focusable="true"
+              android:foreground="?selectableItemBackground"
+              android:gravity="center_vertical"
+              android:orientation="horizontal"
+              android:paddingStart="16dp"
+              android:paddingEnd="16dp">
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="60dp"
-             android:clickable="true"
-             android:focusable="true"
-             android:foreground="?android:selectableItemBackground">
-  <RelativeLayout android:layout_width="match_parent" android:background="@color/Transparent"
-                  android:layout_height="match_parent">
-    <ImageView android:tint="?AccentColour" android:padding="10dp" android:id="@+id/SettingsPageItemIcon"
-               android:src="@drawable/icon_settings" android:layout_width="50dp" android:layout_height="50dp"
-               android:layout_margin="5dp" android:layout_gravity="center" />
-    <LinearLayout android:layout_marginStart="10dp" android:layout_width="wrap_content"
-                  android:layout_centerVertical="true" android:layout_height="wrap_content"
-                  android:layout_toRightOf="@id/SettingsPageItemIcon" android:orientation="vertical">
-      <TextView android:id="@+id/SettingsPageItemHeader" android:layout_width="wrap_content"
-                android:textSize="@dimen/FontSizeBig" android:textColor="?BrushText"
-                android:layout_height="wrap_content" android:text="General" />
-      <TextView android:id="@+id/SettingsPageItemSubtitle" android:layout_marginTop="1dp"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="?BrushSettingsSubtitle" android:fontFamily="@font/inter"
-                android:text="Default filters, theme etc..." />
-    </LinearLayout>
-  </RelativeLayout>
-</FrameLayout>
+    <ImageView
+        android:id="@+id/SettingsPageItemIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/icon_settings"
+        android:tint="?BrushTextSecondary" />
+
+    <TextView
+        android:id="@+id/SettingsPageItemHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        android:fontFamily="@font/inter"
+        android:text="General"
+        android:textColor="?BrushText"
+        android:textSize="@dimen/EmBodyLg" />
+
+    <TextView
+        android:id="@+id/SettingsPageItemSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter"
+        android:text=""
+        android:textColor="?BrushTextSecondary"
+        android:textSize="@dimen/EmBodySm"
+        android:visibility="gone" />
+</LinearLayout>

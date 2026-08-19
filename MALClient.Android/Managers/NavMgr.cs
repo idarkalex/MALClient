@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using Android.Content;
+using Android.Widget;
 using MALClient.Android.Activities;
 using MALClient.Models.Enums;
 using MALClient.XShared.Interfaces;
@@ -18,6 +19,7 @@ namespace MALClient.Android.Managers
     {
         private ICommand _currentOverride;
         private ICommand _enqueuedCommand;
+        private long _lastBackPressTicks;
 
         private readonly Stack<Tuple<PageIndex, object>> _randomNavigationStackMain =
             new Stack<Tuple<PageIndex, object>>(30);
@@ -40,7 +42,16 @@ namespace MALClient.Android.Managers
 
             if (_randomNavigationStackMain.Count == 0) //when we are called from mouse back button
             {
-                GoHome();
+                var now = DateTime.UtcNow.Ticks;
+                if (now - _lastBackPressTicks < TimeSpan.TicksPerSecond * 2)
+                {
+                    GoHome();
+                }
+                else
+                {
+                    _lastBackPressTicks = now;
+                    Toast.MakeText(MainActivity.CurrentContext, "Press back again to exit", ToastLength.Short).Show();
+                }
                 return;
             }
             var data = _randomNavigationStackMain.Pop();

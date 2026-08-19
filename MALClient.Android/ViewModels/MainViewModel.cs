@@ -249,6 +249,8 @@ namespace MALClient.Android.ViewModels
                     MainNavigationRequested?.Invoke(new ArticlesPageFragment(args as MalArticlesPageNavigationArgs));
                     break;
                 case PageIndex.PageDiscover:
+                    if (CurrentMainPage == PageIndex.PageDiscover)
+                        return;
                     HideSearchStuff();
                     CurrentStatus = "Discover";
                     RefreshButtonVisibility = false;
@@ -257,6 +259,8 @@ namespace MALClient.Android.ViewModels
                     MainNavigationRequested?.Invoke(new DiscoverPageFragment());
                     break;
                 case PageIndex.PageMore:
+                    if (CurrentMainPage == PageIndex.PageMore)
+                        return;
                     HideSearchStuff();
                     CurrentStatus = "More";
                     RefreshButtonVisibility = false;

@@ -374,8 +374,29 @@ namespace MALClient.Android.Activities
                 .Into(avatar);
         }
 
+        private void SyncBottomNavForHamburger(HamburgerButtons val)
+        {
+            int id;
+            switch (val)
+            {
+                case HamburgerButtons.Discover: id = Resource.Id.bottom_nav_discover; break;
+                case HamburgerButtons.AnimeList: id = Resource.Id.bottom_nav_anime; break;
+                case HamburgerButtons.MangaList: id = Resource.Id.bottom_nav_manga; break;
+                case HamburgerButtons.Settings: id = Resource.Id.bottom_nav_more; break;
+                default: return;
+            }
+            if (MainPageBottomNav.SelectedItemId != id)
+            {
+                _isBottomNavSyncing = true;
+                try { MainPageBottomNav.SelectedItemId = id; }
+                finally { _isBottomNavSyncing = false; }
+            }
+        }
+
         public void SetActiveButton(HamburgerButtons val)
         {
+            SyncBottomNavForHamburger(val);
+
             if (_footerView != null)
             {
                 if (_selectedProfileItem)

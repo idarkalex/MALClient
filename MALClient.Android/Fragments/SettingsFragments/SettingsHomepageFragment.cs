@@ -1,20 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using Android.App;
-using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using GalaSoft.MvvmLight.Helpers;
-using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
-using MALClient.Android.ViewModels;
 using MALClient.Models.Enums;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -23,7 +17,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
 {
     public class SettingsHomepageFragment : SettingsFragmentBase
     {
-        private Random _random = new Random();
+        private List<object> _items;
 
         protected override void InitBindings()
         {
@@ -31,59 +25,90 @@ namespace MALClient.Android.Fragments.SettingsFragments
                 .Where(entry => entry.PageType != SettingsPageIndex.Caching &&
                                 entry.PageType != SettingsPageIndex.Articles &&
                                 (Credentials.Authenticated || entry.PageType != SettingsPageIndex.Ads)).ToList();
-            pages.Add(new SettingsPageEntry
-            {
-                Header = "Dakimakura Guide",
-                PageType = SettingsPageIndex.Daki,
-                Subtitle = "Make your life comfier and avoid filthy thieves and bootleggers!",
-                Symbol = SettingsSymbolsEnum.Rocket,
-            });
 
-            pages.Add(new SettingsPageEntry
-            {
-                Header = "Did you know?",
-                PageType = SettingsPageIndex.Info,
-                Subtitle = "Me explaining this UI...",
-                Symbol = SettingsSymbolsEnum.Lightbulb,
+            _items = new List<object>();
 
-            });
+            // General section
+            _items.Add("GENERAL");
+            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.General));
+            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.Calendar));
 
-            SettingsPageHomepageList.SetAdapter(pages.GetAdapter(GetTemplateDelegate));
+            // Account section
+            _items.Add("ACCOUNT");
+            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.LogIn));
+            if (Credentials.Authenticated)
+                _items.Add(pages.First(p => p.PageType == SettingsPageIndex.Ads));
+
+            // Social section
+            _items.Add("SOCIAL");
+            var feedsEntry = pages.FirstOrDefault(p => p.PageType == SettingsPageIndex.Feeds);
+            if (feedsEntry != null) _items.Add(feedsEntry);
+            var notifEntry = pages.FirstOrDefault(p => p.PageType == SettingsPageIndex.Notifications);
+            if (notifEntry != null) _items.Add(notifEntry);
+
+            // About section
+            _items.Add("ABOUT");
+            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.About));
+            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.Misc));
+
+            // Fun section
+            _items.Add("FUN");
+            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.Daki));
+            _items.Add(pages.First(p => p.PageType == SettingsPageIndex.Info));
+
+            BuildLayout();
         }
 
-        private View GetTemplateDelegate(int i, SettingsPageEntry settingsPageEntry, View convertView)
+        private void BuildLayout()
         {
-            var view = convertView;
-            if (view == null)
-            {
-                view = Activity.LayoutInflater.Inflate(Resource.Layout.SettingsPageItem, null);
-                view.SetOnClickListener(new OnClickListener(OnEntryClicked));
-            }
-            view.Tag = settingsPageEntry.Wrap();
+            SettingsPageHomepageList.RemoveAllViews();
+            var inflater = Activity.LayoutInflater;
 
-            view.FindViewById<TextView>(Resource.Id.SettingsPageItemHeader).Text = settingsPageEntry.Header;
-            view.FindViewById<TextView>(Resource.Id.SettingsPageItemSubtitle).Text = settingsPageEntry.Subtitle;
-            var img = view.FindViewById<ImageView>(Resource.Id.SettingsPageItemIcon);
-            img.SetImageResource(GetIcon(settingsPageEntry.Symbol));
-
-            if (settingsPageEntry.PageType == SettingsPageIndex.Daki)
+            foreach (var item in _items)
             {
-                img.ImageTintList = null;
-                img.ScaleX = 1.5f;
-                img.ScaleY = 1.5f;
-            }
-            else
-            {
-                img.ImageTintList = ColorStateList.ValueOf(new Color(ResourceExtension.AccentColour));
-                img.ScaleX = 1f;
-                img.ScaleY = 1f;
-            }
+                if (item is string headerText)
+                {
+                    var header = inflater.Inflate(Resource.Layout.SettingsSectionHeader, SettingsPageHomepageList, false);
+                    header.FindViewById<TextView>(Resource.Id.SettingsSectionHeaderText).Text = headerText;
+                    SettingsPageHomepageList.AddView(header);
+                }
+                else if (item is SettingsPageEntry entry)
+                {
+                    var view = inflater.Inflate(Resource.Layout.SettingsPageItem, SettingsPageHomepageList, false);
+                    view.FindViewById<TextView>(Resource.Id.SettingsPageItemHeader).Text = entry.Header;
+                    var img = view.FindViewById<ImageView>(Resource.Id.SettingsPageItemIcon);
+                    img.SetImageResource(GetIcon(entry.Symbol));
 
-            return view;
+                    if (entry.PageType == SettingsPageIndex.Daki)
+                    {
+                        img.ImageTintList = null;
+                    }
+                    else
+                    {
+                        img.ImageTintList = ColorStateList.ValueOf(new Color(ResourceExtension.BrushTextSecondary));
+                    }
+
+                    var subtitle = view.FindViewById<TextView>(Resource.Id.SettingsPageItemSubtitle);
+                    if (!string.IsNullOrEmpty(entry.Subtitle))
+                    {
+                        subtitle.Text = entry.Subtitle;
+                        subtitle.Visibility = ViewStates.Visible;
+                    }
+                    else
+                    {
+                        subtitle.Visibility = ViewStates.Gone;
+                    }
+
+                    view.Tag = entry.Wrap();
+                    view.Click += OnItemClick;
+                    SettingsPageHomepageList.AddView(view);
+                }
+            }
         }
 
-        private void OnEntryClicked(View view)
+        private void OnItemClick(object sender, EventArgs e)
         {
+            var view = (View)sender;
             var entry = view.Tag.Unwrap<SettingsPageEntry>();
             ViewModel.RequestNavigationCommand.Execute(entry.PageType);
         }
@@ -104,8 +129,8 @@ namespace MALClient.Android.Fragments.SettingsFragments
                 SettingsSymbolsEnum.SwitchApps => Resource.Drawable.icon_ads,
                 SettingsSymbolsEnum.ContactInfo => Resource.Drawable.icon_feeds,
                 SettingsSymbolsEnum.Lightbulb => Resource.Drawable.icon_bulb,
-                SettingsSymbolsEnum.Rocket => _random.NextDouble() > .5 ? Resource.Drawable.octo : Resource.Drawable.octo,
-                _ => throw new ArgumentOutOfRangeException(nameof(symbol), symbol, null)
+                SettingsSymbolsEnum.Rocket => Resource.Drawable.octo,
+                _ => Resource.Drawable.icon_settings
             };
         }
 

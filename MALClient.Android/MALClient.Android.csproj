@@ -1225,6 +1225,8 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\SettingsPageItem.xml" />
+    <AndroidResource Include="Resources\layout\SettingsSectionHeader.xml" />
+    <AndroidResource Include="Resources\layout\SettingsSeparator.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\SettingsPageMisc.xml" />
