@@ -17,6 +17,7 @@ using Android.Widget;
 
 using Com.Shehabic.Droppy;
 using FFImageLoading;
+using FFImageLoading.Transformations;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
@@ -158,6 +159,7 @@ namespace MALClient.Android.Fragments
                 .WhenSourceChanges(() =>
                 {
                     AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
+                    AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Title)
@@ -251,10 +253,18 @@ namespace MALClient.Android.Fragments
 
             // Poster scroll effect: zoom-in on scroll
             var heroHeight = DimensionsHelper.DpToPx(380);
-            var poster = AnimeDetailsPageShowCoverImage;
+            var posterContainer = AnimeDetailsPagePosterContainer;
             var scrollView = AnimeDetailsPageScrollView;
-            _scrollListener = new ScrollListener(scrollView, poster, heroHeight);
+            _scrollListener = new ScrollListener(scrollView, posterContainer, heroHeight);
             scrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
+
+            // Pull-to-refresh
+            AnimeDetailsPageSwipeRefresh.ScrollingView = scrollView;
+            AnimeDetailsPageSwipeRefresh.Refresh += (s, e) =>
+            {
+                ViewModel.RefreshData();
+                AnimeDetailsPageSwipeRefresh.Refreshing = false;
+            };
         }
 
         private class ScrollListener : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener

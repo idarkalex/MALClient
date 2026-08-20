@@ -1,33 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.Res;
-using Android.Database;
 using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
-using Android.Provider;
 using Android.Runtime;
 using Android.Support.Design.Widget;
 using Android.Support.V4.View;
 using Android.Support.V4.Widget;
-using Android.Support.V7.Widget;
 using Android.Views;
-using Android.Views.InputMethods;
 using Android.Widget;
 
 using Com.Mikepenz.Materialdrawer;
 using Com.Mikepenz.Materialdrawer.Holder;
 using Com.Mikepenz.Materialdrawer.Model;
 using Com.Mikepenz.Materialdrawer.Model.Interfaces;
-using Com.Shehabic.Droppy;
-using FFImageLoading;
-using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Helpers;
 using GalaSoft.MvvmLight.Ioc;
 using Java.Lang;
@@ -38,7 +29,6 @@ using MALClient.Android.Fragments;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Models.Enums;
-using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -46,8 +36,6 @@ using MALClient.XShared.ViewModels.Main;
 using Debug = System.Diagnostics.Debug;
 using Object = Java.Lang.Object;
 using Orientation = Android.Widget.Orientation;
-using SimpleCursorAdapter = Android.Support.V4.Widget.SimpleCursorAdapter;
-using SearchView = Android.Support.V7.Widget.SearchView;
 using Settings = MALClient.XShared.Utils.Settings;
 using Uri = Android.Net.Uri;
 
@@ -77,57 +65,15 @@ namespace MALClient.Android.Activities
     {
         protected T GetView<T>(ref T field, int id) where T : View => field ?? (field = FindViewById<T>(id));
 
-        private DroppyMenuPopup _upperFilterMenu;
-        private SimpleCursorAdapter _searchSuggestionAdapter;
-        private View _searchFrame;
         private Drawer _drawer;
         private readonly List<Binding> Bindings = new List<Binding>();
 
         private void InitBindings()
         {
-
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.CurrentStatus,
-                    () => MainPageCurrentStatus.Text));
-
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.RefreshButtonVisibility,
-                    () => MainPageRefreshButton.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
-            MainPageRefreshButton.SetOnClickListener(new OnClickListener(view =>
-            {
-                ViewModel.RefreshDataCommand.Execute(null);
-            }));
-
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.SearchToggleVisibility,
-                    () => MainPageSearchView.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.SearchInputVisibility).WhenSourceChanges(() =>
-                {
-                    MainPageSearchView.Iconified = !ViewModel.SearchInputVisibility;
-                    if(ViewModel.SearchInputVisibility)
-                        MainPageSearchView.SetQuery(ViewModel.CurrentSearchQuery,false);
-                   
-                    MainPageSearchView.ClearFocus();
-                }));
-
-            Bindings.Add(this.SetBinding(() => ViewModel.CurrentMainPage).WhenSourceChanges(() =>
-            {
-                if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList ||
-                    ViewModel.CurrentMainPage == PageIndex.PageMangaList)
-                    MainPageSearchView.QueryHint = "Search in current list";
-                else if (ViewModel.CurrentMainPage == PageIndex.PageSearch)
-                    MainPageSearchView.QueryHint = "Search in whole database";
-                else
-                    MainPageSearchView.QueryHint = string.Empty;
-            }));
-
             Bindings.Add(this.SetBinding(() => ViewModel.UpdateAvailable).WhenSourceChanges(() =>
             {
                 if (ViewModel.UpdateAvailable)
                 {
-                    MainPageHamburgerButton.SetImageResource(Resource.Drawable.icon_hamburger_update);
-
                     var view = _accountHamburgerView?.FindViewById(Resource.Id.HamburgerUpdateNotice);
                     if (view != null)
                     {
@@ -138,155 +84,6 @@ namespace MALClient.Android.Activities
                 }
             }));
 
-            Bindings.Add(this.SetBinding(() => ViewModel.CurrentStatusSub).WhenSourceChanges(() =>
-            {
-                MainPageCurrentSatusSubtitle.Text = ViewModel.CurrentStatusSub;
-                if (string.IsNullOrEmpty(ViewModel.CurrentStatusSub))
-                {
-                    MainPageCurrentSatusSubtitle.Visibility = ViewStates.Gone;
-                    MainPageCurrentStatus.SetMaxLines(2);
-                }
-                else
-                {
-                    MainPageCurrentSatusSubtitle.Visibility = ViewStates.Visible;
-                    MainPageCurrentStatus.SetMaxLines(1);
-                }
-
-            }));
-
-            _searchFrame = MainPageSearchView.FindViewById(Resource.Id.search_edit_frame);
-
-            Bindings.Add(this.SetBinding(() => ViewModel.SearchToggleLock).WhenSourceChanges(
-                () =>
-                {
-                    if (ViewModel.SearchToggleLock)
-                    {
-                        MainPageSearchView.FindViewById(Resource.Id.search_close_btn).Alpha = 0;
-                        MainPageSearchView.FindViewById(Resource.Id.search_close_btn).Clickable = false;
-                        if (ViewModel.CurrentMainPage == PageIndex.PageSearch)
-                        {
-                            InputMethodManager imm = (InputMethodManager) GetSystemService(Context.InputMethodService);
-                            imm.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.NotAlways);
-                        }
-
-                    }
-                    else
-                    {
-                        MainPageSearchView.FindViewById(Resource.Id.search_close_btn).Alpha = 1;
-                        MainPageSearchView.FindViewById(Resource.Id.search_close_btn).Clickable = true;
-                    }
-                }));
-
-            //MainPageSearchView.LayoutChange += MainPageSearchViewOnLayoutChange;
-
-            //var padding = (int)(11*Resources.DisplayMetrics.Density);
-            //searchBtn.SetScaleType(ImageView.ScaleType.FitEnd);
-            //searchBtn.SetPadding(padding, padding, padding, padding);
-            var observer = _searchFrame.ViewTreeObserver;
-            var prevVisibility = _searchFrame.Visibility;
-            observer.GlobalLayout += (sender, args) =>
-            {
-                if(prevVisibility == _searchFrame.Visibility)
-                    return;
-                prevVisibility = _searchFrame.Visibility;
-                MainPageCurrentStatus.Visibility = Converters.VisibilityInverterConverter(_searchFrame.Visibility);
-                var param = MainPageSearchView.LayoutParameters as LinearLayout.LayoutParams;
-                Debug.WriteLine(_searchFrame.Visibility);
-                if (_searchFrame.Visibility == ViewStates.Visible)
-                {
-                    var diff = ViewModel.SearchToggleStatus != true;
-                    ViewModel.SearchToggleStatus = true;
-                    param.Width = ViewGroup.LayoutParams.MatchParent;
-                    param.SetMargins(0,0,DimensionsHelper.DpToPx(20),0);
-                    param.Weight = 1;
-                    if (diff)
-                    {
-                        MainPageSearchView.RequestFocusFromTouch();
-                        InputMethodManager imm = (InputMethodManager)GetSystemService(Context.InputMethodService);
-                        imm.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.None);
-                    }
-
-                }
-                else
-                {
-                    var diff = ViewModel.SearchToggleStatus != false;
-                    ViewModel.SearchToggleStatus = false;
-                    param.Width = (int)DimensionsHelper.DpToPx(50);
-                    param.SetMargins(0,0,0,0);
-                    param.Weight = 0;
-                    if (diff)
-                    {
-                        InputMethodManager imm = (InputMethodManager) GetSystemService(Context.InputMethodService);
-                        imm.HideSoftInputFromWindow(MainPageSearchView.WindowToken, HideSoftInputFlags.None);
-                    }
-                }
-            };
-                    
-            _searchSuggestionAdapter = new SimpleCursorAdapter(this, Resource.Layout.SuggestionItem,
-                null, new string[] {"hint"}, new int[]
-                {
-                    Resource.Id.SuggestionItemTextView
-                });
-
-            //
-            MainPageStatusContainer.SetOnClickListener(new OnClickListener(view =>
-            {
-                if (ViewModel.CurrentMainPage == PageIndex.PageDiscover)
-                {
-                    _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
-                        new List<string>
-                        {
-                            "Sigo viendo",
-                            "Leyendo",
-                            "Completados",
-                            "Temporada",
-                            "Top anime",
-                            "Top manga",
-                            "Adaptados",
-                            "Noticias"
-                        },
-                        OnUpperDiscoverSectionSelected, "Discover");
-                    _upperFilterMenu.Show();
-                }
-                else if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList)
-                {
-                    var workMode = ViewModelLocator.AnimeList.WorkMode;
-                    if (workMode == AnimeListWorkModes.SeasonalAnime)
-                    {
-                        _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
-                            ViewModelLocator.AnimeList.SeasonSelection.Select(season => season.DisplayName).ToList(),
-                            OnUpperStatusSeasonSelected);
-                    }
-                    else if (workMode == AnimeListWorkModes.TopAnime)
-                    {
-                        _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
-                            System.Enum.GetValues(typeof(TopAnimeType)).Cast<TopAnimeType>().Select(type => type.ToString()).ToList(),
-                            OnUpperTopTypeSelected);
-                    }
-                    else if (workMode == AnimeListWorkModes.TopManga)
-                    {
-                        _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
-                            System.Enum.GetValues(typeof(MangaTopType)).Cast<MangaTopType>().Select(type => type.ToString()).ToList(),
-                            OnUpperMangaTopTypeSelected);
-                    }
-                    else if (workMode == AnimeListWorkModes.MangaAdapted)
-                    {
-                        _upperFilterMenu = FlyoutMenuBuilder.BuildGenericFlyout(this, MainPageCurrentStatus,
-                            System.Enum.GetValues(typeof(MangaAdaptedType)).Cast<MangaAdaptedType>().Select(AnimeAdaptedToAnimeQuery.ToDisplayName).ToList(),
-                            OnUpperMangaAdaptedSelected);
-                    }
-                    else
-                    {
-                        _upperFilterMenu = AnimeListPageFlyoutBuilder.BuildForAnimeStatusSelection(this, MainPageCurrentStatus,
-                            OnUpperFlyoutStatusChanged, (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus,
-                            ViewModelLocator.AnimeList.IsMangaWorkMode);
-                    }
-
-                    _upperFilterMenu.Show();
-                }
-            }));
-
-
             Bindings.Add(this.SetBinding(() => ViewModel.MediaElementVisibility)
                 .WhenSourceChanges(() =>
                 {
@@ -294,7 +91,6 @@ namespace MALClient.Android.Activities
                     {
                         MainPageVideoViewContainer.Visibility = ViewStates.Visible;
                         MainPageVideoView.Visibility = ViewStates.Visible;
-                        MainUpperNavBar.Visibility = ViewStates.Gone;
                         MainPageVideoView.SetZOrderOnTop(true);
                         _drawer?.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
                     }
@@ -302,14 +98,11 @@ namespace MALClient.Android.Activities
                     {
                         MainPageVideoViewContainer.Visibility = ViewStates.Gone;
                         MainPageVideoView.Visibility = ViewStates.Gone;
-                        MainUpperNavBar.Visibility = ViewStates.Visible;
                         MainPageVideoView.SetZOrderOnTop(false);
                         _drawer?.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeUnlocked);
                         ViewModelLocator.NavMgr.ResetOneTimeOverride();
                     }
                 }));
-
-
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.MediaElementSource).WhenSourceChanges(() =>
@@ -317,42 +110,24 @@ namespace MALClient.Android.Activities
                     if (string.IsNullOrEmpty(ViewModel.MediaElementSource))
                         return;
 
-                    var mediaController = new MediaController(this);          
+                    var mediaController = new MediaController(this);
                     mediaController.SetAnchorView(MainPageVideoView);
                     MainPageVideoView.SetMediaController(mediaController);
                     MainPageVideoView.SetVideoURI(Uri.Parse(ViewModel.MediaElementSource));
                     MainPageVideoView.RequestFocus();
                 }));
 
-            AutoCompleteTextView searchAutoCompleteTextView = (AutoCompleteTextView)MainPageSearchView.FindViewById(Resource.Id.search_src_text);
-            searchAutoCompleteTextView.Threshold = 1;
-
-            MainPageSearchView.SuggestionsAdapter = _searchSuggestionAdapter;
-            MainPageSearchView.QueryTextChange += MainPageSearchViewOnQueryTextChange;
-            MainPageSearchView.QueryTextSubmit += MainPageSearchViewOnQueryTextSubmit;
-            MainPageSearchView.SuggestionClick += MainPageSearchViewOnSuggestionClick;
             MainPageCloseVideoButton.Click += MainPageCloseVideoButtonOnClick;
             MainPageCopyVideoLinkButton.Click += MainPageCopyVideoLinkButtonOnClick;
             MainPageVideoView.Prepared += MainPageVideoViewOnPrepared;
-            MainPageSearchView.Visibility = ViewStates.Visible;
-            ((EditText)MainPageSearchView.FindViewById(Resource.Id.search_src_text)).SetTextColor(Color.White);
 
-
-            MainPageHamburgerButton.Click +=  MainPageHamburgerButtonOnClick;
-            ShareFloatingActionButton.SetOnClickListener(new OnClickListener(view =>
-            {
-                SimpleIoc.Default.GetInstance<IShareProvider>()
-                    .Share(ResourceLocator.ShareManager.GenerateMessage());
-            }));
             ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
             BuildDrawer();
             _drawer.OnDrawerItemClickListener = new HamburgerItemClickListener(OnHamburgerItemClick);
 
-                        MainPageHamburgerButton.Visibility = ViewStates.Gone;
-            _drawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
-
             _lastBottomNavSelectedItemId = MainPageBottomNav.SelectedItemId;
             StartBottomNavPolling();
+            SetupBottomNavLongPress();
 
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
@@ -390,109 +165,69 @@ namespace MALClient.Android.Activities
             MainPageVideoView.Start();
         }
 
+        private DroppyMenuPopup _bottomNavFilterMenu;
+
+        private void SetupBottomNavLongPress()
+        {
+            var inner = MainPageBottomNav.GetChildAt(0) as LinearLayout;
+            if (inner == null) return;
+
+            for (int i = 0; i < inner.ChildCount; i++)
+            {
+                var itemView = inner.GetChildAt(i);
+                var itemId = MainPageBottomNav.Menu.GetItem(i).ItemId;
+                itemView.LongClickable = true;
+                itemView.SetOnLongClickListener(new OnLongClickListener(v =>
+                {
+                    OnBottomNavLongClick(itemId);
+                    return true;
+                }));
+            }
+        }
+
+        private void OnBottomNavLongClick(int itemId)
+        {
+            if (itemId == Resource.Id.bottom_nav_anime)
+                ShowStatusFilterFlyout(false);
+            else if (itemId == Resource.Id.bottom_nav_manga)
+                ShowStatusFilterFlyout(true);
+        }
+
+        private void ShowStatusFilterFlyout(bool isManga)
+        {
+            var anchorView = MainPageBottomNav;
+            var currentStatus = isManga
+                ? (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus
+                : (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus;
+
+            _bottomNavFilterMenu = AnimeListPageFlyoutBuilder.BuildForAnimeStatusSelection(
+                this, anchorView, status =>
+                {
+                    if (_bottomNavFilterMenu == null) return;
+                    var workMode = isManga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
+                    var statusIndex = Array.IndexOf(Enum.GetValues(typeof(AnimeStatus)), status);
+                    ViewModel.Navigate(PageIndex.PageAnimeList,
+                        new AnimeListPageNavigationArgs(statusIndex, workMode));
+                    _bottomNavFilterMenu.Dismiss(true);
+                    _bottomNavFilterMenu = null;
+                },
+                currentStatus, isManga);
+            _bottomNavFilterMenu.Show();
+        }
+
         private void OnUpperFlyoutStatusChanged(AnimeStatus animeStatus)
         {
-            if(_upperFilterMenu == null)
+            if(_bottomNavFilterMenu == null)
                 return;
             ViewModelLocator.AnimeList.CurrentStatus = (int)animeStatus;
             ViewModelLocator.AnimeList.RefreshList();
-            _upperFilterMenu.Dismiss(true);
-            _upperFilterMenu = null;
-        }
-
-        private void OnUpperStatusSeasonSelected(int i1)
-        {
-            if (_upperFilterMenu == null)
-                return;
-            ViewModelLocator.AnimeList.SeasonalUrlsSelectedIndex = i1;
-            _upperFilterMenu.Dismiss(true);
-            _upperFilterMenu = null;
+            _bottomNavFilterMenu.Dismiss(true);
+            _bottomNavFilterMenu = null;
         }
 
         private void OnUpperDiscoverSectionSelected(int i)
         {
-            if (_upperFilterMenu == null)
-                return;
             (_lastFragment as DiscoverPageFragment)?.ScrollToSection(i);
-            _upperFilterMenu.Dismiss(true);
-            _upperFilterMenu = null;
-        }
-
-        private void OnUpperTopTypeSelected(int i)
-        {
-            if (_upperFilterMenu == null)
-                return;
-            ViewModel.Navigate(PageIndex.PageTopAnime, AnimeListPageNavigationArgs.TopAnime((TopAnimeType)i));
-            _upperFilterMenu.Dismiss(true);
-            _upperFilterMenu = null;
-        }
-
-        private void OnUpperMangaTopTypeSelected(int i)
-        {
-            if (_upperFilterMenu == null)
-                return;
-            ViewModel.Navigate(PageIndex.PageTopManga, AnimeListPageNavigationArgs.TopMangaCategory((MangaTopType)i));
-            _upperFilterMenu.Dismiss(true);
-            _upperFilterMenu = null;
-        }
-
-        private void OnUpperMangaAdaptedSelected(int i)
-        {
-            if (_upperFilterMenu == null)
-                return;
-            ViewModel.Navigate(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted((MangaAdaptedType)i));
-            _upperFilterMenu.Dismiss(true);
-            _upperFilterMenu = null;
-        }
-
-        private void MainPageSearchViewOnSuggestionClick(object sender, SearchView.SuggestionClickEventArgs suggestionClickEventArgs)
-        {
-            MainPageSearchView.SetQuery(ViewModel.CurrentHintSet[suggestionClickEventArgs.Position],true);
-            MainPageSearchView.ClearFocus();
-        }
-
-        private void MainPageSearchViewOnQueryTextSubmit(object sender, SearchView.QueryTextSubmitEventArgs queryTextSubmitEventArgs)
-        {
-            ViewModel.OnSearchInputSubmit();
-            MainPageSearchView.ClearFocus();
-        }
-
-        private void MainPageSearchViewOnQueryTextChange(object sender, SearchView.QueryTextChangeEventArgs queryTextChangeEventArgs)
-        {
-            if(!ViewModel.SearchInputVisibility)
-                return;
-            ViewModel.CurrentSearchQuery = queryTextChangeEventArgs.NewText;
-            queryTextChangeEventArgs.Handled = true;
-        }
-
-        private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                //case nameof(ViewModel.SearchToggleStatus):
-                //    if(ViewModel.SearchToggleStatus)
-                //        MainPageSearchView.SetBackgroundColor(new Color(ResourceExtension.AccentColour));
-                //    else
-                //        MainPageSearchView.SetBackgroundResource(ResourceExtension.SelectableItemBackground);
-                //    break;
-                case nameof(ViewModel.SearchToggleLock):
-
-                    break;
-                case nameof(ViewModel.CurrentHintSet):
-                    UpdateSearchSuggestions();
-                    break;
-            }
-        }
-
-        private void UpdateSearchSuggestions()
-        {
-            var matrix = new MatrixCursor(new string[] {BaseColumns.Id,"hint"});
-            int i = 0;
-            foreach (var hint in ViewModel.CurrentHintSet.Where(s => s != MainPageSearchView.Query))
-            {
-                matrix.AddRow(new Object[] {i,hint});
-            }
-            _searchSuggestionAdapter.ChangeCursor(matrix);
         }
 
         private void OnHamburgerItemClick(View view, int i, IDrawerItem arg3)
@@ -580,12 +315,6 @@ namespace MALClient.Android.Activities
         }
 
 
-
-        private void MainPageHamburgerButtonOnClick(object sender, EventArgs eventArgs)
-        {
-            HamburgerOpened?.Invoke(this,EventArgs.Empty);
-            _drawer.OpenDrawer();
-        }
 
         private void SetRightTheme()
         {
@@ -701,13 +430,6 @@ namespace MALClient.Android.Activities
 
         #region Views
 
-        private ImageButton _mainPageHamburgerButton;
-        private TextView _mainPageCurrentStatus;
-        private TextView _mainPageCurrentSatusSubtitle;
-        private LinearLayout _mainPageStatusContainer;
-        private SearchView _mainPageSearchView;
-        private ImageButton _mainPageRefreshButton;
-        private LinearLayout _mainUpperNavBar;
         private FrameLayout _mainContentFrame;
         private AdView _mainPageAdView;
         private FloatingActionButton _shareFloatingActionButton;
@@ -718,13 +440,6 @@ namespace MALClient.Android.Activities
         private LinearLayout _mainPageRoot;
         private BottomNavigationView _mainPageBottomNav;
 
-        public ImageButton MainPageHamburgerButton => GetView(ref _mainPageHamburgerButton, Resource.Id.MainPageHamburgerButton);
-        public TextView MainPageCurrentStatus => GetView(ref _mainPageCurrentStatus, Resource.Id.MainPageCurrentStatus);
-        public TextView MainPageCurrentSatusSubtitle => GetView(ref _mainPageCurrentSatusSubtitle, Resource.Id.MainPageCurrentSatusSubtitle);
-        public LinearLayout MainPageStatusContainer => GetView(ref _mainPageStatusContainer, Resource.Id.MainPageStatusContainer);
-        public SearchView MainPageSearchView => GetView(ref _mainPageSearchView, Resource.Id.MainPageSearchView);
-        public ImageButton MainPageRefreshButton => GetView(ref _mainPageRefreshButton, Resource.Id.MainPageRefreshButton);
-        public LinearLayout MainUpperNavBar => GetView(ref _mainUpperNavBar, Resource.Id.MainUpperNavBar);
         public FrameLayout MainContentFrame => GetView(ref _mainContentFrame, Resource.Id.MainContentFrame);
         public AdView MainPageAdView => GetView(ref _mainPageAdView, Resource.Id.MainPageAdView);
         public FloatingActionButton ShareFloatingActionButton => GetView(ref _shareFloatingActionButton, Resource.Id.ShareFloatingActionButton);

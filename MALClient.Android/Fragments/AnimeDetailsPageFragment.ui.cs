@@ -23,6 +23,8 @@ namespace MALClient.Android.Fragments
         #region Views
 
         private ImageViewAsync _animeDetailsPageShowCoverImage;
+        private ImageViewAsync _animeDetailsPageBlurredBackground;
+        private FrameLayout _animeDetailsPagePosterContainer;
         private TextView _animeDetailsPageWatchedLabel;
         private TextView _animeDetailsPageReadVolumesLabel;
         private Button _animeDetailsPageScoreButton;
@@ -41,6 +43,7 @@ namespace MALClient.Android.Fragments
         private PagerSlidingTabStrip _animeDetailsPageTabStrip;
         private HeightAdjustingViewPager _animeDetailsPagePivot;
         private RelativeLayout _animeDetailsPageLoadingOverlay;
+        private ScrollableSwipeToRefreshLayout _animeDetailsPageSwipeRefresh;
         private ScrollView _animeDetailsPageScrollView;
         private ScrollListener _scrollListener;
         private TextView _animeDetailsPageTitle;
@@ -49,6 +52,10 @@ namespace MALClient.Android.Fragments
         private TextView _animeDetailsPageTypeBadge;
 
         public ImageViewAsync AnimeDetailsPageShowCoverImage => GetView(ref _animeDetailsPageShowCoverImage, Resource.Id.AnimeDetailsPageShowCoverImage);
+
+        public ImageViewAsync AnimeDetailsPageBlurredBackground => GetView(ref _animeDetailsPageBlurredBackground, Resource.Id.AnimeDetailsPageBlurredBackground);
+
+        public FrameLayout AnimeDetailsPagePosterContainer => GetView(ref _animeDetailsPagePosterContainer, Resource.Id.AnimeDetailsPagePosterContainer);
 
         public TextView AnimeDetailsPageWatchedLabel => GetView(ref _animeDetailsPageWatchedLabel, Resource.Id.AnimeDetailsPageWatchedLabel);
 
@@ -87,6 +94,8 @@ namespace MALClient.Android.Fragments
         public RelativeLayout AnimeDetailsPageLoadingOverlay => GetView(ref _animeDetailsPageLoadingOverlay, Resource.Id.AnimeDetailsPageLoadingOverlay);
 
         public ScrollView AnimeDetailsPageScrollView => GetView(ref _animeDetailsPageScrollView, Resource.Id.AnimeDetailsPageScrollView);
+
+        public ScrollableSwipeToRefreshLayout AnimeDetailsPageSwipeRefresh => GetView(ref _animeDetailsPageSwipeRefresh, Resource.Id.AnimeDetailsPageSwipeRefresh);
 
         public TextView AnimeDetailsPageTitle => GetView(ref _animeDetailsPageTitle, Resource.Id.AnimeDetailsPageTitle);
 
