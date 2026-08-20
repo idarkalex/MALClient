@@ -787,6 +787,7 @@
     <AndroidResource Include="Resources\drawable\splash_darkmode.png" />
     <AndroidResource Include="Resources\drawable-night\splash.xml" />
     <AndroidResource Include="Resources\drawable\hero_gradient_overlay.xml" />
+    <AndroidResource Include="Resources\drawable\hero_lateral_fade.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_panel.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_primary_button.xml" />

@@ -17,7 +17,6 @@ using Android.Widget;
 
 using Com.Shehabic.Droppy;
 using FFImageLoading;
-using FFImageLoading.Transformations;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
@@ -159,7 +158,6 @@ namespace MALClient.Android.Fragments
                 .WhenSourceChanges(() =>
                 {
                     AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
-                    AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Title)
@@ -251,12 +249,11 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageReadVolumesButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
 
-            // Poster scroll effect: blur background + shrink poster on scroll
+            // Poster scroll effect: zoom-in on scroll
             var heroHeight = DimensionsHelper.DpToPx(380);
-            var posterContainer = AnimeDetailsPagePosterContainer;
-            var blurredBg = AnimeDetailsPageBlurredBackground;
+            var poster = AnimeDetailsPageShowCoverImage;
             var scrollView = AnimeDetailsPageScrollView;
-            _scrollListener = new ScrollListener(scrollView, posterContainer, blurredBg, heroHeight);
+            _scrollListener = new ScrollListener(scrollView, poster, heroHeight);
             scrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
         }
 
@@ -264,14 +261,12 @@ namespace MALClient.Android.Fragments
         {
             private readonly ScrollView _scrollView;
             private readonly View _poster;
-            private readonly View _blurredBg;
             private readonly int _heroHeight;
 
-            public ScrollListener(ScrollView scrollView, View poster, View blurredBg, int heroHeight)
+            public ScrollListener(ScrollView scrollView, View poster, int heroHeight)
             {
                 _scrollView = scrollView;
                 _poster = poster;
-                _blurredBg = blurredBg;
                 _heroHeight = heroHeight;
             }
 
@@ -279,11 +274,9 @@ namespace MALClient.Android.Fragments
             {
                 var scrollY = _scrollView.ScrollY;
                 var ratio = Math.Max(0f, Math.Min(1f, (float)scrollY / _heroHeight));
-                var scale = 1f - ratio * 0.7f;
+                var scale = 1f + ratio * 0.3f;
                 _poster.ScaleX = scale;
                 _poster.ScaleY = scale;
-                _poster.Alpha = 1f - ratio;
-                _blurredBg.Alpha = 1f - ratio;
             }
         }
 

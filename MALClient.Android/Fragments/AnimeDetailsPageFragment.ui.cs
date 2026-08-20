@@ -23,9 +23,6 @@ namespace MALClient.Android.Fragments
         #region Views
 
         private ImageViewAsync _animeDetailsPageShowCoverImage;
-        private FrameLayout _imageContainer;
-        private ImageViewAsync _animeDetailsPageBlurredBackground;
-        private FrameLayout _animeDetailsPagePosterContainer;
         private TextView _animeDetailsPageWatchedLabel;
         private TextView _animeDetailsPageReadVolumesLabel;
         private Button _animeDetailsPageScoreButton;
@@ -52,12 +49,6 @@ namespace MALClient.Android.Fragments
         private TextView _animeDetailsPageTypeBadge;
 
         public ImageViewAsync AnimeDetailsPageShowCoverImage => GetView(ref _animeDetailsPageShowCoverImage, Resource.Id.AnimeDetailsPageShowCoverImage);
-
-        public FrameLayout ImageContainer => GetView(ref _imageContainer, Resource.Id.ImageContainer);
-
-        public ImageViewAsync AnimeDetailsPageBlurredBackground => GetView(ref _animeDetailsPageBlurredBackground, Resource.Id.AnimeDetailsPageBlurredBackground);
-
-        public FrameLayout AnimeDetailsPagePosterContainer => GetView(ref _animeDetailsPagePosterContainer, Resource.Id.AnimeDetailsPagePosterContainer);
 
         public TextView AnimeDetailsPageWatchedLabel => GetView(ref _animeDetailsPageWatchedLabel, Resource.Id.AnimeDetailsPageWatchedLabel);
 
