@@ -269,7 +269,7 @@ namespace MALClient.Android.Fragments
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
 
             // Pull-to-refresh
-            AnimeDetailsPageSwipeRefresh.ScrollingView = scrollView;
+            AnimeDetailsPageSwipeRefresh.ScrollingView = AnimeDetailsPageScrollView;
             AnimeDetailsPageSwipeRefresh.Refresh += (s, e) =>
             {
                 ViewModel.RefreshData();

@@ -169,7 +169,7 @@ namespace MALClient.Android.Activities
 
         private void SetupBottomNavLongPress()
         {
-            var menuView = MainPageBottomNav.GetChildAt(0);
+            var menuView = MainPageBottomNav.GetChildAt(0) as ViewGroup;
             if (menuView == null) return;
 
             for (int i = 0; i < menuView.ChildCount; i++)
