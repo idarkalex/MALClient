@@ -19,6 +19,7 @@ using Com.Mikepenz.Materialdrawer;
 using Com.Mikepenz.Materialdrawer.Holder;
 using Com.Mikepenz.Materialdrawer.Model;
 using Com.Mikepenz.Materialdrawer.Model.Interfaces;
+using Com.Shehabic.Droppy;
 using GalaSoft.MvvmLight.Helpers;
 using GalaSoft.MvvmLight.Ioc;
 using Java.Lang;
