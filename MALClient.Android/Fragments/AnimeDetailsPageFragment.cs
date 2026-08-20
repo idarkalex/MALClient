@@ -254,8 +254,9 @@ namespace MALClient.Android.Fragments
             // Poster scroll effect: blur background + shrink poster on scroll
             var heroHeight = DimensionsHelper.DpToPx(380);
             var posterContainer = AnimeDetailsPagePosterContainer;
+            var blurredBg = AnimeDetailsPageBlurredBackground;
             var scrollView = AnimeDetailsPageScrollView;
-            _scrollListener = new ScrollListener(scrollView, posterContainer, heroHeight);
+            _scrollListener = new ScrollListener(scrollView, posterContainer, blurredBg, heroHeight);
             scrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
         }
 
@@ -263,12 +264,14 @@ namespace MALClient.Android.Fragments
         {
             private readonly ScrollView _scrollView;
             private readonly View _poster;
+            private readonly View _blurredBg;
             private readonly int _heroHeight;
 
-            public ScrollListener(ScrollView scrollView, View poster, int heroHeight)
+            public ScrollListener(ScrollView scrollView, View poster, View blurredBg, int heroHeight)
             {
                 _scrollView = scrollView;
                 _poster = poster;
+                _blurredBg = blurredBg;
                 _heroHeight = heroHeight;
             }
 
@@ -280,6 +283,7 @@ namespace MALClient.Android.Fragments
                 _poster.ScaleX = scale;
                 _poster.ScaleY = scale;
                 _poster.Alpha = 1f - ratio;
+                _blurredBg.Alpha = 1f - ratio;
             }
         }
 

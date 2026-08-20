@@ -15,7 +15,7 @@
           android:layout_width="wrap_content" android:id="@+id/AnimeLightItemImgPlaceholder"
           android:layout_height="wrap_content" android:indeterminateTint="?BrushAnimeItemBackground"
           android:indeterminate="true" android:layout_centerInParent="true" android:indeterminateTintMode="src_in"/>
-      <FFImageLoading.Views.ImageViewAsync android:layout_height="220dp" android:scaleType="centerCrop"
+      <FFImageLoading.Views.ImageViewAsync android:layout_height="220dp" android:scaleType="fitCenter"
           android:layout_width="match_parent" android:adjustViewBounds="true" android:id="@+id/AnimeLightItemImage"/>
     </RelativeLayout>
     <View style="@style/Divider" android:background="?AccentColour"/>

@@ -6,12 +6,46 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+  <!-- Pinned poster layer (behind ScrollView, never scrolls) -->
+  <FrameLayout
+      android:id="@+id/ImageContainer"
+      android:layout_width="match_parent"
+      android:layout_height="380dp"
+      android:layout_alignParentTop="true">
+
+    <FFImageLoading.Views.ImageViewAsync
+        android:id="@+id/AnimeDetailsPageBlurredBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
+
+    <FrameLayout
+        android:id="@+id/AnimeDetailsPagePosterContainer"
+        android:layout_width="180dp"
+        android:layout_height="260dp"
+        android:layout_gravity="center"
+        android:elevation="4dp">
+
+      <FFImageLoading.Views.ImageViewAsync
+          android:id="@+id/AnimeDetailsPageShowCoverImage"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:scaleType="fitCenter" />
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/hero_gradient_overlay" />
+  </FrameLayout>
+
+  <!-- ScrollView scrolls underneath the pinned poster -->
   <ScrollView
       android:id="@+id/AnimeDetailsPageScrollView"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:layout_alignParentStart="true"
       android:layout_alignParentTop="true"
+      android:clipToPadding="false"
       android:fillViewport="true">
 
     <LinearLayout
@@ -19,50 +53,10 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-      <!-- Hero Section -->
-      <FrameLayout
+      <!-- Hero spacer: transparent 380dp to match pinned poster height -->
+      <RelativeLayout
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:clipToPadding="false"
-          android:paddingBottom="2dp">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="380dp"
-            android:elevation="2dp">
-
-          <FrameLayout
-              android:id="@+id/ImageContainer"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
-
-            <!-- Blurred poster background (full-bleed, blurred) -->
-            <FFImageLoading.Views.ImageViewAsync
-                android:id="@+id/AnimeDetailsPageBlurredBackground"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-            <!-- Centered poster (shrinks on scroll) -->
-            <FrameLayout
-                android:id="@+id/AnimeDetailsPagePosterContainer"
-                android:layout_width="180dp"
-                android:layout_height="260dp"
-                android:layout_gravity="center"
-                android:elevation="4dp">
-
-              <FFImageLoading.Views.ImageViewAsync
-                  android:id="@+id/AnimeDetailsPageShowCoverImage"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent"
-                  android:scaleType="centerCrop" />
-            </FrameLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/hero_gradient_overlay" />
-          </FrameLayout>
+          android:layout_height="380dp">
 
           <!-- Floating back & more buttons at top -->
           <LinearLayout
@@ -107,7 +101,7 @@
                 android:tint="@android:color/white" />
           </LinearLayout>
 
-          <!-- Title & Subtitle overlaid on hero poster -->
+          <!-- Title & Subtitle overlaid on hero -->
           <LinearLayout
               android:id="@+id/AnimeDetailsPageTitleSection"
               android:layout_width="match_parent"
@@ -452,7 +446,6 @@
               android:layout_height="wrap_content"
               android:visibility="gone" />
         </RelativeLayout>
-      </FrameLayout>
 
       <!-- Quick Actions (Add to List, Favorite) - glass panel below hero -->
       <LinearLayout
