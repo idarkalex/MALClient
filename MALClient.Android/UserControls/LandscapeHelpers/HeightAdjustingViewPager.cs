@@ -24,12 +24,12 @@ namespace MALClient.Android.UserControls
 
         public HeightAdjustingViewPager(Context context) : base(context)
         {
-            EnableAdjustments = context.Resources.Configuration.Orientation == Orientation.Landscape;
+            EnableAdjustments = true;
         }
 
         public HeightAdjustingViewPager(Context context, IAttributeSet attrs) : base(context, attrs)
         {
-            EnableAdjustments = context.Resources.Configuration.Orientation == Orientation.Landscape;
+            EnableAdjustments = true;
         }
 
         protected override void OnConfigurationChanged(Configuration newConfig)
