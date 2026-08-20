@@ -272,7 +272,7 @@ namespace MALClient.Android.Fragments
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
 
             // Poster scroll effect: zoom-in on scroll
-            var heroHeight = DimensionsHelper.DpToPx(460);
+            var heroHeight = DimensionsHelper.DpToPx(520);
             _scrollListener = new ScrollListener(AnimeDetailsPageScrollView, AnimeDetailsPagePosterContainer, heroHeight);
             AnimeDetailsPageScrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
 

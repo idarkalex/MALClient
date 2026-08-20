@@ -20,10 +20,10 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-      <!-- Hero section: poster IS the background, gradient + overlays for text legibility -->
+      <!-- Hero section -->
       <FrameLayout
           android:layout_width="match_parent"
-          android:layout_height="460dp"
+          android:layout_height="520dp"
           android:clipChildren="true">
 
         <!-- Layer 1: Blurred poster (full-bleed, visible on sides + top) -->
@@ -33,28 +33,28 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop" />
 
-        <!-- Layer 2: Sharp poster (centered, optimal resolution) -->
+        <!-- Layer 2: Sharp poster (centered, fills hero) -->
         <FrameLayout
             android:id="@+id/AnimeDetailsPagePosterContainer"
             android:layout_width="200dp"
-            android:layout_height="350dp"
+            android:layout_height="460dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="4dp">
 
           <FFImageLoading.Views.ImageViewAsync
               android:id="@+id/AnimeDetailsPageShowCoverImage"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:scaleType="fitCenter" />
+              android:scaleType="centerCrop" />
         </FrameLayout>
 
-        <!-- Layer 3: Gradient scrim (bottom 50% only) -->
+        <!-- Layer 3: Gradient scrim (bottom portion for text legibility) -->
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/hero_gradient_overlay" />
 
-        <!-- Floating buttons at top-right -->
+        <!-- Layer 4: Floating buttons at top-right (only More, fav removed — in Quick Actions below) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -72,19 +72,6 @@
               android:indeterminate="true"
               android:indeterminateTint="?AccentColour"
               android:indeterminateTintMode="src_in" />
-
-          <ImageButton
-              android:id="@+id/AnimeDetailsPageFavouriteButton"
-              android:layout_width="36dp"
-              android:layout_height="36dp"
-              android:layout_gravity="center_vertical"
-              android:layout_marginEnd="8dp"
-              android:background="@drawable/electric_midnight_circle_glass"
-              android:clickable="true"
-              android:focusable="true"
-              android:padding="8dp"
-              android:src="@drawable/icon_heart_outline"
-              android:tint="@android:color/white" />
 
           <ImageButton
               android:id="@+id/AnimeDetailsPageMoreButton"
@@ -438,6 +425,13 @@
       <!-- Hidden compat: UpdateSection moved into hero, kept for code bindings -->
       <LinearLayout
           android:id="@+id/AnimeDetailsPageUpdateSection"
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:visibility="gone" />
+
+      <!-- Hidden compat: FavouriteButton removed from hero (duplicate of QuickFavoriteButton below) -->
+      <ImageButton
+          android:id="@+id/AnimeDetailsPageFavouriteButton"
           android:layout_width="0dp"
           android:layout_height="0dp"
           android:visibility="gone" />
