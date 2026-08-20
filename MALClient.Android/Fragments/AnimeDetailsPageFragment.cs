@@ -41,6 +41,7 @@ namespace MALClient.Android.Fragments
         private AnimeDetailsPageNavigationArgs _navArgs;
         private AnimeDetailsPageViewModel ViewModel;
         private DroppyMenuPopup _menu;
+        private ScrollListener _scrollListener;
 
         public AnimeDetailsPageFragment(AnimeDetailsPageNavigationArgs navArgs)
         {
@@ -270,6 +271,11 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageReadVolumesButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
 
+            // Poster scroll effect: zoom-in on scroll
+            var heroHeight = DimensionsHelper.DpToPx(460);
+            _scrollListener = new ScrollListener(AnimeDetailsPageScrollView, AnimeDetailsPagePosterContainer, heroHeight);
+            AnimeDetailsPageScrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
+
             // Pull-to-refresh
             AnimeDetailsPageSwipeRefresh.ScrollingView = AnimeDetailsPageScrollView;
             AnimeDetailsPageSwipeRefresh.Refresh += (s, e) =>
@@ -416,7 +422,35 @@ namespace MALClient.Android.Fragments
 
         public override void DetachBindings()
         {
+            if (_scrollListener != null)
+            {
+                AnimeDetailsPageScrollView?.ViewTreeObserver?.RemoveOnScrollChangedListener(_scrollListener);
+                _scrollListener = null;
+            }
             base.DetachBindings();
+        }
+
+        private class ScrollListener : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener
+        {
+            private readonly ScrollView _scrollView;
+            private readonly View _poster;
+            private readonly int _heroHeight;
+
+            public ScrollListener(ScrollView scrollView, View poster, int heroHeight)
+            {
+                _scrollView = scrollView;
+                _poster = poster;
+                _heroHeight = heroHeight;
+            }
+
+            public void OnScrollChanged()
+            {
+                var scrollY = _scrollView.ScrollY;
+                var ratio = Math.Max(0f, Math.Min(1f, (float)scrollY / _heroHeight));
+                var scale = 1f + ratio * 0.3f;
+                _poster.ScaleX = scale;
+                _poster.ScaleY = scale;
+            }
         }
     }
 }
