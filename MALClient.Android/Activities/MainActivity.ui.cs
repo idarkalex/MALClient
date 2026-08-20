@@ -122,7 +122,6 @@ namespace MALClient.Android.Activities
             MainPageCopyVideoLinkButton.Click += MainPageCopyVideoLinkButtonOnClick;
             MainPageVideoView.Prepared += MainPageVideoViewOnPrepared;
 
-            ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
             BuildDrawer();
             _drawer.OnDrawerItemClickListener = new HamburgerItemClickListener(OnHamburgerItemClick);
 
@@ -181,7 +180,6 @@ namespace MALClient.Android.Activities
                 itemView.SetOnLongClickListener(new OnLongClickListener(v =>
                 {
                     OnBottomNavLongClick(itemId);
-                    return true;
                 }));
             }
         }
@@ -206,7 +204,7 @@ namespace MALClient.Android.Activities
                 {
                     if (_bottomNavFilterMenu == null) return;
                     var workMode = isManga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
-                    var statusIndex = Array.IndexOf(Enum.GetValues(typeof(AnimeStatus)), status);
+                    var statusIndex = Array.IndexOf(System.Enum.GetValues(typeof(AnimeStatus)), status);
                     ViewModel.Navigate(PageIndex.PageAnimeList,
                         new AnimeListPageNavigationArgs(statusIndex, workMode));
                     _bottomNavFilterMenu.Dismiss(true);

@@ -184,14 +184,6 @@ namespace MALClient.Android.Activities
                 return;
             }
 
-            if (!ViewModel.SearchToggleLock)
-                if (ViewModel.SearchToggleStatus)
-                {
-                    MainPageSearchView.SetQuery("", false);
-                    MainPageSearchView.FindViewById(Resource.Id.search_close_btn).PerformClick();
-                    return;
-                }
-
             ViewModelLocator.NavMgr.CurrentMainViewOnBackRequested();
         }
 

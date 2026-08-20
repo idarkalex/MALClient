@@ -337,8 +337,6 @@ namespace MALClient.Android.Activities
 
         private void OnOpen()
         {
-            var inputManager = (InputMethodManager)GetSystemService(Context.InputMethodService);
-            inputManager.HideSoftInputFromWindow(MainPageSearchView.WindowToken, HideSoftInputFlags.None);
             ViewModelLocator.NavMgr.RegisterOneTimeMainOverride(new RelayCommand(() => _drawer.CloseDrawer()));
         }
 
