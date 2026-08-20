@@ -169,12 +169,12 @@ namespace MALClient.Android.Activities
 
         private void SetupBottomNavLongPress()
         {
-            var inner = MainPageBottomNav.GetChildAt(0) as LinearLayout;
-            if (inner == null) return;
+            var menuView = MainPageBottomNav.GetChildAt(0);
+            if (menuView == null) return;
 
-            for (int i = 0; i < inner.ChildCount; i++)
+            for (int i = 0; i < menuView.ChildCount; i++)
             {
-                var itemView = inner.GetChildAt(i);
+                var itemView = menuView.GetChildAt(i);
                 var itemId = MainPageBottomNav.Menu.GetItem(i).ItemId;
                 itemView.LongClickable = true;
                 itemView.SetOnLongClickListener(new OnLongClickListener(v =>

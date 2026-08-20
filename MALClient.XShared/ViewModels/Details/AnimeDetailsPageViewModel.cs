@@ -102,11 +102,23 @@ namespace MALClient.XShared.ViewModels.Details
         }
 
         public string Title { get; set; }
-        private string Type { get; set; }
+        public string Type { get; private set; }
         private string Status { get; set; }
         //Dates when show starts or ends airing
-        private string StartDate { get; set; }
-        private string EndDate { get; set; }
+        public string StartDate { get; private set; }
+        public string EndDate { get; private set; }
+
+        public string StartYear
+        {
+            get
+            {
+                if (StartDate == "0000-00-00" || string.IsNullOrEmpty(StartDate))
+                    return null;
+                return StartDate.Contains("-00-00")
+                    ? StartDate.Substring(0, 4)
+                    : StartDate.Substring(0, Math.Min(4, StartDate.Length));
+            }
+        }
         //Dates set by the user
         public string MyStartDate
             =>
@@ -1074,6 +1086,7 @@ namespace MALClient.XShared.ViewModels.Details
 
             RaisePropertyChanged(() => LeftDetailsRow);
             RaisePropertyChanged(() => RightDetailsRow);
+            RaisePropertyChanged(() => StartYear);
             ViewModelLocator.GeneralMain.CurrentOffStatus = Title;
 
             DetailImage = _imgUrl;
@@ -1128,6 +1141,9 @@ namespace MALClient.XShared.ViewModels.Details
             _imgUrl = (_animeItemReference as AnimeItemViewModel)?.ImgUrl ?? data.ImgUrl;
             if (Settings.SelectedApiType == ApiType.Hummingbird)
                 MalId = data.MalId;
+
+            RaisePropertyChanged(() => Type);
+            RaisePropertyChanged(() => StartYear);
 
             _synonyms = data.Synonyms;
             _synonyms = _synonyms.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();

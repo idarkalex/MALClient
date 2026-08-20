@@ -45,11 +45,13 @@ namespace MALClient.Android.Fragments
         private RelativeLayout _animeDetailsPageLoadingOverlay;
         private ScrollableSwipeToRefreshLayout _animeDetailsPageSwipeRefresh;
         private ScrollView _animeDetailsPageScrollView;
-        private ScrollListener _scrollListener;
         private TextView _animeDetailsPageTitle;
         private TextView _animeDetailsPageSubtitle;
         private TextView _animeDetailsPageScoreValue;
         private TextView _animeDetailsPageTypeBadge;
+        private TextView _animeDetailsPageYearLabel;
+        private Button _animeDetailsPageQuickAddToListButton;
+        private Button _animeDetailsPageQuickFavoriteButton;
 
         public ImageViewAsync AnimeDetailsPageShowCoverImage => GetView(ref _animeDetailsPageShowCoverImage, Resource.Id.AnimeDetailsPageShowCoverImage);
 
@@ -104,6 +106,12 @@ namespace MALClient.Android.Fragments
         public TextView AnimeDetailsPageScoreValue => GetView(ref _animeDetailsPageScoreValue, Resource.Id.AnimeDetailsPageScoreValue);
 
         public TextView AnimeDetailsPageTypeBadge => GetView(ref _animeDetailsPageTypeBadge, Resource.Id.AnimeDetailsPageTypeBadge);
+
+        public TextView AnimeDetailsPageYearLabel => GetView(ref _animeDetailsPageYearLabel, Resource.Id.AnimeDetailsPageYearLabel);
+
+        public Button AnimeDetailsPageQuickAddToListButton => GetView(ref _animeDetailsPageQuickAddToListButton, Resource.Id.AnimeDetailsPageQuickAddToListButton);
+
+        public Button AnimeDetailsPageQuickFavoriteButton => GetView(ref _animeDetailsPageQuickFavoriteButton, Resource.Id.AnimeDetailsPageQuickFavoriteButton);
 
         #endregion
 

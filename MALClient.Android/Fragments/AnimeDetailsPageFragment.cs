@@ -17,7 +17,6 @@ using Android.Widget;
 
 using Com.Shehabic.Droppy;
 using FFImageLoading;
-using FFImageLoading.Transformations;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
@@ -158,8 +157,7 @@ namespace MALClient.Android.Fragments
             Bindings.Add(this.SetBinding(() => ViewModel.DetailImage)
                 .WhenSourceChanges(() =>
                 {
-                    AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
-                    AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
+                    AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage);
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Title)
@@ -171,7 +169,22 @@ namespace MALClient.Android.Fragments
             Bindings.Add(this.SetBinding(() => ViewModel.AnimeMode)
                 .WhenSourceChanges(() =>
                 {
-                    AnimeDetailsPageTypeBadge.Text = ViewModel.AnimeMode ? "Anime" : "Manga";
+                    // Initial fallback — will be replaced when Type loads from API
+                    if (string.IsNullOrEmpty(ViewModel.Type))
+                        AnimeDetailsPageTypeBadge.Text = ViewModel.AnimeMode ? "Anime" : "Manga";
+                }));
+
+            Bindings.Add(this.SetBinding(() => ViewModel.Type)
+                .WhenSourceChanges(() =>
+                {
+                    if (!string.IsNullOrEmpty(ViewModel.Type))
+                        AnimeDetailsPageTypeBadge.Text = ViewModel.Type;
+                }));
+
+            Bindings.Add(this.SetBinding(() => ViewModel.StartYear)
+                .WhenSourceChanges(() =>
+                {
+                    AnimeDetailsPageYearLabel.Text = ViewModel.StartYear ?? "";
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.AllEpisodes)
@@ -216,13 +229,17 @@ namespace MALClient.Android.Fragments
                     OnMoreFlyoutClick);
                 _menu.Show();
             }));
+            AnimeDetailsPageQuickAddToListButton.SetOnClickListener(
+                new OnClickListener(view => ViewModel.AddAnimeCommand.Execute(null)));
+            AnimeDetailsPageQuickFavoriteButton.SetOnClickListener(
+                new OnClickListener(view => ViewModel.ToggleFavouriteCommand.Execute(null)));
 
             //OneTime
 
             AnimeDetailsPageWatchedLabel.Text = ViewModel.WatchedEpsLabel;
 
             AnimeDetailsPageTitle.Text = ViewModel.Title;
-            AnimeDetailsPageTypeBadge.Text = ViewModel.AnimeMode ? "Anime" : "Manga";
+            AnimeDetailsPageTypeBadge.Text = ViewModel.Type ?? (ViewModel.AnimeMode ? "Anime" : "Manga");
             var eps = ViewModel.AnimeItemReference?.AllEpisodes ?? ViewModel.AllEpisodes;
             var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
             AnimeDetailsPageSubtitle.Text = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
@@ -251,13 +268,6 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageReadVolumesButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
 
-            // Poster scroll effect: zoom-in on scroll
-            var heroHeight = DimensionsHelper.DpToPx(380);
-            var posterContainer = AnimeDetailsPagePosterContainer;
-            var scrollView = AnimeDetailsPageScrollView;
-            _scrollListener = new ScrollListener(scrollView, posterContainer, heroHeight);
-            scrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
-
             // Pull-to-refresh
             AnimeDetailsPageSwipeRefresh.ScrollingView = scrollView;
             AnimeDetailsPageSwipeRefresh.Refresh += (s, e) =>
@@ -265,29 +275,6 @@ namespace MALClient.Android.Fragments
                 ViewModel.RefreshData();
                 AnimeDetailsPageSwipeRefresh.Refreshing = false;
             };
-        }
-
-        private class ScrollListener : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener
-        {
-            private readonly ScrollView _scrollView;
-            private readonly View _poster;
-            private readonly int _heroHeight;
-
-            public ScrollListener(ScrollView scrollView, View poster, int heroHeight)
-            {
-                _scrollView = scrollView;
-                _poster = poster;
-                _heroHeight = heroHeight;
-            }
-
-            public void OnScrollChanged()
-            {
-                var scrollY = _scrollView.ScrollY;
-                var ratio = Math.Max(0f, Math.Min(1f, (float)scrollY / _heroHeight));
-                var scale = 1f + ratio * 0.3f;
-                _poster.ScaleX = scale;
-                _poster.ScaleY = scale;
-            }
         }
 
         private async void OnMoreFlyoutClick(int i)
@@ -427,11 +414,6 @@ namespace MALClient.Android.Fragments
 
         public override void DetachBindings()
         {
-            if (_scrollListener != null)
-            {
-                AnimeDetailsPageScrollView?.ViewTreeObserver?.RemoveOnScrollChangedListener(_scrollListener);
-                _scrollListener = null;
-            }
             base.DetachBindings();
         }
     }
