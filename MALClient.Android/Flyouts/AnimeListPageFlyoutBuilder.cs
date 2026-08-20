@@ -125,10 +125,12 @@ namespace MALClient.Android.Flyouts
         public static DroppyMenuPopup BuildForAnimeStatusSelection(Context context, View parent,
             Action<AnimeStatus> callback,AnimeStatus currentStatus,bool manga)
         {
-            ParamRelativeLayout = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(150), DimensionsHelper.DpToPx(38));
+            ParamRelativeLayout = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(190), DimensionsHelper.DpToPx(40));
 
             var droppyBuilder = new DroppyMenuPopup.Builder(context, parent);
             InjectAnimation(droppyBuilder);
+
+            droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(BuildStatusHeader(context, manga)));
 
             var listener = new Action<int>(i => callback.Invoke((AnimeStatus)i));
 
@@ -137,13 +139,31 @@ namespace MALClient.Android.Flyouts
                 if (value == currentStatus)
                     droppyBuilder.AddMenuItem(
                         new DroppyMenuCustomItem(BuildItem(context, XShared.Utils.Utilities.StatusToString((int)value,manga), listener, (int) value,
-                            ResourceExtension.BrushSelectedDialogItem, ResourceExtension.AccentColour)));
-                else //highlighted
+                            ResourceExtension.BrushSelectedDialogItem, ResourceExtension.AccentColour, gravity: GravityFlags.CenterVertical)));
+                else
                     droppyBuilder.AddMenuItem(
-                        new DroppyMenuCustomItem(BuildItem(context, XShared.Utils.Utilities.StatusToString((int)value,manga), listener, (int) value)));
+                        new DroppyMenuCustomItem(BuildItem(context, XShared.Utils.Utilities.StatusToString((int)value,manga), listener, (int) value,
+                            gravity: GravityFlags.CenterVertical)));
             }
-            droppyBuilder.SetYOffset(DimensionsHelper.DpToPx(30));
+            droppyBuilder.SetYOffset(DimensionsHelper.DpToPx(8));
             return droppyBuilder.Build();
+        }
+
+        private static View BuildStatusHeader(Context context, bool manga)
+        {
+            var header = new TextView(context);
+            header.Text = manga ? "LEER" : "VER";
+            header.SetTextColor(new Color(ResourceExtension.BrushText));
+            header.SetTextSize(ComplexUnitType.Sp, 11);
+            header.SetTypeface(header.Typeface, TypefaceStyle.Bold);
+            header.LetterSpacing = 0.08f;
+            header.Gravity = GravityFlags.Center;
+            var padding = DimensionsHelper.DpToPx(10);
+            header.SetPadding(padding, DimensionsHelper.DpToPx(8), padding, DimensionsHelper.DpToPx(6));
+            header.SetBackgroundColor(new Color(ResourceExtension.BrushFlyoutBackground));
+            var lp = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(190), ViewGroup.LayoutParams.WrapContent);
+            header.LayoutParameters = lp;
+            return header;
         }
 
         public static DroppyMenuPopup BuildForAnimeSortingSelection(Context context, View parent,

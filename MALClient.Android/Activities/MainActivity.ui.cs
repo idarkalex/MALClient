@@ -179,22 +179,21 @@ namespace MALClient.Android.Activities
                 itemView.LongClickable = true;
                 itemView.SetOnLongClickListener(new OnLongClickListener(v =>
                 {
-                    OnBottomNavLongClick(itemId);
+                    OnBottomNavLongClick(v, itemId);
                 }));
             }
         }
 
-        private void OnBottomNavLongClick(int itemId)
+        private void OnBottomNavLongClick(View anchorView, int itemId)
         {
             if (itemId == Resource.Id.bottom_nav_anime)
-                ShowStatusFilterFlyout(false);
+                ShowStatusFilterFlyout(false, anchorView);
             else if (itemId == Resource.Id.bottom_nav_manga)
-                ShowStatusFilterFlyout(true);
+                ShowStatusFilterFlyout(true, anchorView);
         }
 
-        private void ShowStatusFilterFlyout(bool isManga)
+        private void ShowStatusFilterFlyout(bool isManga, View anchorView)
         {
-            var anchorView = MainPageBottomNav;
             var currentStatus = isManga
                 ? (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus
                 : (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus;

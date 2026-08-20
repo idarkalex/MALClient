@@ -348,18 +348,21 @@
           </LinearLayout>
         </LinearLayout>
 
-        <!-- Hidden compat elements (kept for code bindings) -->
+        <!-- Sharp poster: centered, optimal resolution -->
         <FrameLayout
             android:id="@+id/AnimeDetailsPagePosterContainer"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
+            android:layout_width="180dp"
+            android:layout_height="270dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:elevation="4dp">
 
-        <FFImageLoading.Views.ImageViewAsync
-            android:id="@+id/AnimeDetailsPageShowCoverImage"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
+          <FFImageLoading.Views.ImageViewAsync
+              android:id="@+id/AnimeDetailsPageShowCoverImage"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:scaleType="fitCenter" />
+        </FrameLayout>
 
         <RelativeLayout
             android:id="@+id/AnimeDetailsPageIncDecSection"

@@ -17,6 +17,7 @@ using Android.Widget;
 
 using Com.Shehabic.Droppy;
 using FFImageLoading;
+using FFImageLoading.Transformations;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
@@ -157,7 +158,8 @@ namespace MALClient.Android.Fragments
             Bindings.Add(this.SetBinding(() => ViewModel.DetailImage)
                 .WhenSourceChanges(() =>
                 {
-                    AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage);
+                    AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
+                    AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Title)
