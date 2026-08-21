@@ -1138,7 +1138,7 @@ namespace MALClient.XShared.ViewModels.Details
             StartDate = data.StartDate;
             EndDate = data.EndDate;
             GlobalScore = data.GlobalScore;
-            _imgUrl = (_animeItemReference as AnimeItemViewModel)?.ImgUrl ?? data.ImgUrl;
+            _imgUrl = NormalizeImageUrl((_animeItemReference as AnimeItemViewModel)?.ImgUrl ?? data.ImgUrl);
             if (Settings.SelectedApiType == ApiType.Hummingbird)
                 MalId = data.MalId;
 
@@ -1501,6 +1501,27 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 ResourceLocator.MessageDialogProvider.ShowMessageDialog("Something went wrong with loading this video, probably google has messed again with their api again... yay!","Unable to load youtube video!");
             }
+        }
+
+        private static string NormalizeImageUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return url;
+
+            url = Regex.Replace(url, @"\/r\/\d+x\d+\/", "/");
+
+            var qPos = url.IndexOf('?');
+            if (qPos > 0) url = url.Substring(0, qPos);
+
+            var dotPos = url.LastIndexOf('.');
+            if (dotPos > 0)
+            {
+                var beforeDot = url.Substring(0, dotPos);
+                var lastChar = beforeDot[beforeDot.Length - 1];
+                if (lastChar != 'l' && lastChar != 'm' && lastChar != 's')
+                    url = beforeDot + "l" + url.Substring(dotPos);
+            }
+
+            return url;
         }
     }
 }
