@@ -1557,7 +1557,7 @@ namespace MALClient.XShared.ViewModels.Details
         private static string StripSynopsisCredit(string synopsis)
         {
             if (string.IsNullOrEmpty(synopsis)) return synopsis;
-            return Regex.Replace(synopsis, @"\s*\(?\s*Written by MAL[_ ]Rewrite\s*\)?[\s.]*$",
+            return Regex.Replace(synopsis, @"[\[\(]?\s*Written by MAL[ _]Rewrite\s*[\]\)]?",
                 string.Empty, RegexOptions.IgnoreCase).TrimEnd();
         }
     }

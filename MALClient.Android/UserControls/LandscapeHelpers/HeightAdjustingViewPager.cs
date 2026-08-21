@@ -40,29 +40,19 @@ namespace MALClient.Android.UserControls
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
-            if (EnableAdjustments)
+            if (EnableAdjustments && ChildCount > 0)
             {
+                var index = Math.Max(0, Math.Min(CurrentItem, ChildCount - 1));
+                var child = GetChildAt(index);
                 int height = 0;
-                for (int i = 0; i < ChildCount; i++)
+                if (child != null)
                 {
-                    var child = GetChildAt(i);
-                    if (child != null)
-                    {
-                        child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
-                        int h = child.MeasuredHeight;
-                        if (h > height) height = h;
-                    }
+                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+                    height = child.MeasuredHeight;
                 }
-                var availableHeight = MeasureSpec.GetSize(heightMeasureSpec);
-                if (availableHeight > 0)
-                    height = Math.Min(height, availableHeight);
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
-                base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
             }
-            else
-            {
-                base.OnMeasure(widthMeasureSpec,heightMeasureSpec);
-            }
+            base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
         }
     }
 }

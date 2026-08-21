@@ -65,7 +65,11 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPagePivot.OffscreenPageLimit = 7;
 
             AnimeDetailsPageTabStrip.OnPageChangeListener =
-                new OnPageChangedListener(i => ViewModel.DetailsPivotSelectedIndex = i);
+                new OnPageChangedListener(i =>
+                {
+                    ViewModel.DetailsPivotSelectedIndex = i;
+                    AnimeDetailsPagePivot.RequestLayout();
+                });
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.MyScoreBind,

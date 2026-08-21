@@ -124,7 +124,7 @@
                 android:id="@+id/AnimeDetailsPageTypeBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/electric_midnight_badge"
+                android:background="@drawable/electric_midnight_type_badge"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:paddingTop="2dp"

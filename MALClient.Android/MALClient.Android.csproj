@@ -791,6 +791,7 @@
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_primary_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_badge.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_type_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_sheet_top.xml" />
   </ItemGroup>
   <ItemGroup>
