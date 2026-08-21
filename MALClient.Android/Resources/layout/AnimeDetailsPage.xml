@@ -33,19 +33,19 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop" />
 
-        <!-- Layer 2: Sharp poster (centered, fills hero) -->
+        <!-- Layer 2: Sharp poster (centered, full, no crop) -->
         <FrameLayout
             android:id="@+id/AnimeDetailsPagePosterContainer"
-            android:layout_width="200dp"
-            android:layout_height="460dp"
+            android:layout_width="260dp"
+            android:layout_height="420dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="16dp">
 
           <FFImageLoading.Views.ImageViewAsync
               android:id="@+id/AnimeDetailsPageShowCoverImage"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:scaleType="centerCrop" />
+              android:scaleType="fitCenter" />
         </FrameLayout>
 
         <!-- Layer 3: Gradient scrim (bottom portion for text legibility) -->
