@@ -53,6 +53,9 @@ namespace MALClient.Android.UserControls
                         if (h > height) height = h;
                     }
                 }
+                var availableHeight = MeasureSpec.GetSize(heightMeasureSpec);
+                if (availableHeight > 0)
+                    height = Math.Min(height, availableHeight);
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
                 base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
             }

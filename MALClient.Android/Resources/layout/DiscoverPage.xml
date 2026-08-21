@@ -37,7 +37,7 @@
         android:paddingRight="16dp"
         android:paddingTop="16dp"
         android:gravity="center_horizontal"
-        android:text="Inicia sesiÃ³n para ver tus listas de anime y manga"
+        android:text="Inicia sesión para ver tus listas de anime y manga"
         android:textColor="?BrushText"
         android:textSize="@dimen/FontSizeMedium"
         android:visibility="gone" />
@@ -52,7 +52,7 @@
         android:background="?android:selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:text="Iniciar sesiÃ³n"
+        android:text="Iniciar sesión"
         android:textColor="?AccentColour"
         android:textSize="@dimen/FontSizeBig"
         android:visibility="gone" />
@@ -63,7 +63,7 @@
         android:orientation="horizontal"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingTop="4dp"
+        android:paddingTop="8dp"
         android:gravity="center_vertical">
       <TextView
           android:id="@+id/DiscoverWatchingHeader"
@@ -231,7 +231,7 @@
         android:orientation="horizontal"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingTop="12dp"
+        android:paddingTop="8dp"
         android:gravity="center_vertical">
       <TextView
           android:id="@+id/DiscoverTopAnimeHeader"
@@ -273,7 +273,7 @@
         android:orientation="horizontal"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingTop="12dp"
+        android:paddingTop="8dp"
         android:gravity="center_vertical">
       <TextView
           android:id="@+id/DiscoverTopMangaHeader"
@@ -315,7 +315,7 @@
         android:orientation="horizontal"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingTop="12dp"
+        android:paddingTop="8dp"
         android:gravity="center_vertical">
       <TextView
           android:id="@+id/DiscoverAdaptedHeader"
@@ -357,7 +357,7 @@
         android:orientation="horizontal"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingTop="12dp"
+        android:paddingTop="8dp"
         android:gravity="center_vertical">
       <TextView
           android:id="@+id/DiscoverNewsHeader"

@@ -3,11 +3,14 @@ using System.Threading.Tasks;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using FFImageLoading;
+using FFImageLoading.Transformations;
 using FFImageLoading.Views;
 using MALClient.Android.Activities;
 using MALClient.Android.Listeners;
 using MALClient.Models.Enums;
 using MALClient.XShared.Comm.Anime;
+using MALClient.XShared.Comm.Profile;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -97,10 +100,48 @@ namespace MALClient.Android.Fragments
                         MorePageProfileCompleted.Visibility = ViewStates.Visible;
                     }
                 }
+                else
+                {
+                    LoadAvatarFromCdn();
+                    RefreshProfileCacheInBackground();
+                }
             }
             catch (Exception)
             {
                 // Profile not cached yet, that's ok
+                LoadAvatarFromCdn();
+            }
+        }
+
+        private void LoadAvatarFromCdn()
+        {
+            if (!IsAdded || Credentials.Id == 0)
+                return;
+            var cacheDuration = TimeSpan.FromMinutes(10);
+            ImageService.Instance
+                .LoadUrl($"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.webp", cacheDuration)
+                .FadeAnimation(false).Transform(new CircleTransformation())
+                .Error(e =>
+                {
+                    if (!IsAdded) return;
+                    ImageService.Instance
+                        .LoadUrl($"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.jpg", cacheDuration)
+                        .FadeAnimation(false).Transform(new CircleTransformation())
+                        .Into(MorePageProfileImage);
+                })
+                .Into(MorePageProfileImage);
+        }
+
+        private async void RefreshProfileCacheInBackground()
+        {
+            try
+            {
+                var fresh = await new ProfileQuery(Credentials.UserName).GetProfileData(false);
+                if (fresh?.User?.ImgUrl != null && IsAdded)
+                    MorePageProfileImage.Into(fresh.User.ImgUrl);
+            }
+            catch (Exception)
+            {
             }
         }
 

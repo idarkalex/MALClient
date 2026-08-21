@@ -401,83 +401,48 @@ namespace MALClient.Android.Fragments
             }
         }
 
+        private void AddGridCardToRow(LinearLayout row, AnimeItemViewModel viewModel)
+        {
+            var view = new AnimeGridItem(Activity);
+            view.LayoutParameters = new LinearLayout.LayoutParams(
+                (int)Resources.GetDimension(Resource.Dimension.GridCardWidth),
+                (int)Resources.GetDimension(Resource.Dimension.GridCardHeight))
+            {
+                TopMargin = DimensionsHelper.DpToPx(2),
+                BottomMargin = DimensionsHelper.DpToPx(2),
+                LeftMargin = DimensionsHelper.DpToPx(4),
+                RightMargin = DimensionsHelper.DpToPx(4)
+            };
+            view.BindModel(viewModel, false);
+            row.AddView(view);
+        }
+
         private void PopulateAnimeRow(LinearLayout row, IEnumerable<SeasonalAnimeData> data, bool isAnime)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
-            var verticalMargin = DimensionsHelper.DpToPx(2);
-            var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
-            {
-                var model = new AnimeItemAbstraction(item, isAnime).ViewModel;
-                var view = new AnimeGridItem(Activity);
-                view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
-                {
-                    TopMargin = verticalMargin,
-                    BottomMargin = verticalMargin,
-                    RightMargin = horizontalMargin
-                };
-                view.BindModel(model, false);
-                row.AddView(view);
-            }
+                AddGridCardToRow(row, new AnimeItemAbstraction(item, isAnime).ViewModel);
         }
 
         private void PopulateWatchingRow(IList<AnimeItemAbstraction> data)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
-            var verticalMargin = DimensionsHelper.DpToPx(2);
-            var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
             {
-                var view = new AnimeGridItem(Activity);
-                view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
-                {
-                    TopMargin = verticalMargin,
-                    BottomMargin = verticalMargin,
-                    RightMargin = horizontalMargin
-                };
                 var viewModel = item.ViewModel;
                 viewModel.TimeTillNextAirCache = viewModel.GetTimeTillNextAir(JstTimeZone);
-                view.BindModel(viewModel, false);
-                DiscoverWatchingRow.AddView(view);
+                AddGridCardToRow(DiscoverWatchingRow, viewModel);
             }
         }
 
         private void PopulateReadingRow(IList<AnimeItemAbstraction> data)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
-            var verticalMargin = DimensionsHelper.DpToPx(2);
-            var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
-            {
-                var view = new AnimeGridItem(Activity);
-                view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
-                {
-                    TopMargin = verticalMargin,
-                    BottomMargin = verticalMargin,
-                    RightMargin = horizontalMargin
-                };
-                view.BindModel(item.ViewModel, false);
-                DiscoverReadingRow.AddView(view);
-            }
+                AddGridCardToRow(DiscoverReadingRow, item.ViewModel);
         }
 
         private void PopulateCompletedRow(IList<AnimeItemAbstraction> data)
         {
-            var cardWidth = (int)(MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 160 : 170);
-            var verticalMargin = DimensionsHelper.DpToPx(2);
-            var horizontalMargin = DimensionsHelper.DpToPx(4);
             foreach (var item in data)
-            {
-                var view = new AnimeGridItem(Activity);
-                view.LayoutParameters = new LinearLayout.LayoutParams(cardWidth, ViewGroup.LayoutParams.WrapContent)
-                {
-                    TopMargin = verticalMargin,
-                    BottomMargin = verticalMargin,
-                    RightMargin = horizontalMargin
-                };
-                view.BindModel(item.ViewModel, false);
-                DiscoverCompletedRow.AddView(view);
-            }
+                AddGridCardToRow(DiscoverCompletedRow, item.ViewModel);
         }
 
         private void PopulateNewsRow(IList<MalNewsUnitModel> data)
