@@ -37,9 +37,9 @@
         <FrameLayout
             android:id="@+id/AnimeDetailsPagePosterContainer"
             android:layout_width="260dp"
-            android:layout_height="420dp"
+            android:layout_height="504dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="8dp">
 
           <FFImageLoading.Views.ImageViewAsync
               android:id="@+id/AnimeDetailsPageShowCoverImage"
