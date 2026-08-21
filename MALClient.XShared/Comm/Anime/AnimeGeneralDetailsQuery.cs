@@ -106,8 +106,8 @@ namespace MALClient.XShared.Comm.Anime
         {
             var endpoint = animeMode ? "anime" : "manga";
             var fields = animeMode
-                ? "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_episodes"
-                : "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_chapters,num_volumes";
+                ? "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_episodes,rank,popularity,num_list_users,num_favorites,start_season,studios{name}"
+                : "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_chapters,num_volumes,rank,popularity,num_list_users,num_favorites,serializations{name}";
             var url = $"https://api.myanimelist.net/v2/{endpoint}/{id}?fields={fields}";
 
             try
@@ -158,6 +158,9 @@ namespace MALClient.XShared.Comm.Anime
                 GlobalScore = (float)GetDouble(data, "mean"),
                 Id = GetInt(data, "id"),
                 MalId = GetInt(data, "id"),
+                Rank = GetInt(data, "rank"),
+                Popularity = GetInt(data, "popularity"),
+                Studios = GetNameList(data, animeMode ? "studios" : "serializations"),
                 Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
                 Title = WebUtility.HtmlDecode(GetString(data, "title")),
                 Synonyms = GetNestedStringList(data, "alternative_titles", "synonyms"),
@@ -188,8 +191,29 @@ namespace MALClient.XShared.Comm.Anime
                 "ona" => "ONA",
                 "special" => "Special",
                 "music" => "Music",
+                "manga" => "Manga",
+                "novel" => "Novel",
+                "light_novel" => "Light Novel",
+                "one_shot" => "One-shot",
+                "doujinshi" => "Doujinshi",
+                "manhwa" => "Manhwa",
+                "manhua" => "Manhua",
                 _ => type
             };
+
+        private static List<string> GetNameList(JsonElement el, string prop)
+        {
+            if (!el.TryGetProperty(prop, out var arr) || arr.ValueKind != JsonValueKind.Array)
+                return new List<string>();
+            var list = new List<string>();
+            foreach (var item in arr.EnumerateArray())
+            {
+                var name = GetString(item, "name");
+                if (!string.IsNullOrEmpty(name))
+                    list.Add(name);
+            }
+            return list;
+        }
 
         private static string GetString(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";

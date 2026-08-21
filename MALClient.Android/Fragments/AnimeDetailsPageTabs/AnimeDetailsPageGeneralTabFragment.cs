@@ -35,47 +35,14 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             Bindings.Add(this.SetBinding(() => ViewModel.LoadingGlobal).WhenSourceChanges(() =>
             {
-                try
-                {
-                    if (!ViewModel.LoadingGlobal)
-                    {
-                        // Rank from Stats collection
-                        var rankEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Rank");
-                        AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text = rankEntry != null ? rankEntry.Item2.Trim() : "N/A";
+                if (!ViewModel.LoadingGlobal)
+                    UpdateCards();
+            }));
 
-                        // Popularity from Stats collection
-                        var popEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Popularity");
-                        AnimeDetailsPageGeneralTabFragmentScore.Text = popEntry != null ? popEntry.Item2.Trim() : "N/A";
-
-                        // Studios from Information collection
-                        var studioEntry = ViewModel.Information.FirstOrDefault(s => s.Item1 == "Studios");
-                        if (studioEntry != null)
-                        {
-                            AnimeDetailsPageGeneralTabFragmentType.Text = studioEntry.Item2.Trim();
-                        }
-                        else
-                        {
-                            AnimeDetailsPageGeneralTabFragmentType.Text = "Unknown";
-                        }
-
-                        // Synopsis
-                        if (!string.IsNullOrEmpty(ViewModel.Synopsis))
-                        {
-                            AnimeDetailsPageGeneralTabFragmentSynopsis.Text = ViewModel.Synopsis;
-                            AnimeDetailsPageGeneralTabFragmentSynopsis.Gravity = GravityFlags.Left;
-                        }
-                        else
-                        {
-                            AnimeDetailsPageGeneralTabFragmentSynopsis.Text = "Synopsis unavailable...";
-                            AnimeDetailsPageGeneralTabFragmentSynopsis.Gravity = GravityFlags.CenterHorizontal;
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    //data loading has failed
-
-                }
+            Bindings.Add(this.SetBinding(() => ViewModel.LoadingDetails).WhenSourceChanges(() =>
+            {
+                if (!ViewModel.LoadingDetails)
+                    UpdateCards();
             }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.AddAnimeVisibility)
@@ -86,6 +53,49 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             Bindings.Add(this.SetBinding(() => ViewModel.EndDateTimeOffset).WhenSourceChanges(() =>
             {
             }));
+        }
+
+        private void UpdateCards()
+        {
+            try
+            {
+                // Rank: official API first, scraped stats as fallback
+                var rankEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Rank");
+                var rankText = rankEntry?.Item2?.Trim();
+                if (string.IsNullOrEmpty(rankText))
+                    rankText = !string.IsNullOrEmpty(ViewModel.GeneralRank) ? ViewModel.GeneralRank : "N/A";
+                AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text = rankText;
+
+                // Popularity: official API first, scraped stats as fallback
+                var popEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Popularity");
+                var popText = popEntry?.Item2?.Trim();
+                if (string.IsNullOrEmpty(popText))
+                    popText = !string.IsNullOrEmpty(ViewModel.GeneralPopularity) ? ViewModel.GeneralPopularity : "N/A";
+                AnimeDetailsPageGeneralTabFragmentScore.Text = popText;
+
+                // Studios: official API first, scraped info as fallback
+                var studioEntry = ViewModel.Information.FirstOrDefault(s => s.Item1 == "Studios");
+                var studioText = studioEntry?.Item2?.Trim();
+                if (string.IsNullOrEmpty(studioText))
+                    studioText = !string.IsNullOrEmpty(ViewModel.GeneralStudios) ? ViewModel.GeneralStudios : "Unknown";
+                AnimeDetailsPageGeneralTabFragmentType.Text = studioText;
+
+                // Synopsis
+                if (!string.IsNullOrEmpty(ViewModel.Synopsis))
+                {
+                    AnimeDetailsPageGeneralTabFragmentSynopsis.Text = ViewModel.Synopsis;
+                    AnimeDetailsPageGeneralTabFragmentSynopsis.Gravity = GravityFlags.Left;
+                }
+                else
+                {
+                    AnimeDetailsPageGeneralTabFragmentSynopsis.Text = "Synopsis unavailable...";
+                    AnimeDetailsPageGeneralTabFragmentSynopsis.Gravity = GravityFlags.CenterHorizontal;
+                }
+            }
+            catch (Exception)
+            {
+                //data loading has failed
+            }
         }
 
 

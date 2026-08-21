@@ -31,6 +31,9 @@ namespace MALClient.Models.Models.Anime
         public float GlobalScore { get; set; }
         public string AlternateTitle { get; set; }
         public List<string> Synonyms { get; set; } = new List<string>();
+        public int Rank { get; set; }
+        public int Popularity { get; set; }
+        public List<string> Studios { get; set; } = new List<string>();
 
         public void ParseXElement(XElement xmlObj, bool anime,bool preferEnglishTitle)
         {

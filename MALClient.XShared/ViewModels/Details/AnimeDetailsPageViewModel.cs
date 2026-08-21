@@ -108,11 +108,15 @@ namespace MALClient.XShared.ViewModels.Details
         public string StartDate { get; private set; }
         public string EndDate { get; private set; }
 
+        public string GeneralRank { get; private set; }
+        public string GeneralPopularity { get; private set; }
+        public string GeneralStudios { get; private set; }
+
         public string StartYear
         {
             get
             {
-                if (StartDate == "0000-00-00" || string.IsNullOrEmpty(StartDate))
+                if (StartDate == "0000-00-00" || StartDate == "N/A" || string.IsNullOrEmpty(StartDate))
                     return null;
                 return StartDate.Contains("-00-00")
                     ? StartDate.Substring(0, 4)
@@ -1138,6 +1142,9 @@ namespace MALClient.XShared.ViewModels.Details
             StartDate = data.StartDate;
             EndDate = data.EndDate;
             GlobalScore = data.GlobalScore;
+            GeneralRank = data.Rank > 0 ? $"#{data.Rank:N0}" : "";
+            GeneralPopularity = data.Popularity > 0 ? $"#{data.Popularity:N0}" : "";
+            GeneralStudios = data.Studios != null && data.Studios.Any() ? string.Join(", ", data.Studios) : "";
             _imgUrl = NormalizeImageUrl((_animeItemReference as AnimeItemViewModel)?.ImgUrl ?? data.ImgUrl);
             if (Settings.SelectedApiType == ApiType.Hummingbird)
                 MalId = data.MalId;
