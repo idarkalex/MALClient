@@ -36,10 +36,10 @@
         <!-- Layer 2: Sharp poster (centered, full, no crop) -->
         <FrameLayout
             android:id="@+id/AnimeDetailsPagePosterContainer"
-            android:layout_width="280dp"
+            android:layout_width="340dp"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="5dp">
 
           <FFImageLoading.Views.ImageViewAsync
               android:id="@+id/AnimeDetailsPageShowCoverImage"
