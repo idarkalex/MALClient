@@ -59,26 +59,32 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             try
             {
-                // Rank: official API first, scraped stats as fallback
-                var rankEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Rank");
-                var rankText = rankEntry?.Item2?.Trim();
+                // Rank: official API value first, scraped stats as fallback
+                var rankText = !string.IsNullOrEmpty(ViewModel.GeneralRank) ? ViewModel.GeneralRank : null;
                 if (string.IsNullOrEmpty(rankText))
-                    rankText = !string.IsNullOrEmpty(ViewModel.GeneralRank) ? ViewModel.GeneralRank : "N/A";
-                AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text = rankText;
+                {
+                    var rankEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Rank");
+                    rankText = rankEntry?.Item2?.Trim();
+                }
+                AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text = string.IsNullOrEmpty(rankText) ? "N/A" : rankText;
 
-                // Popularity: official API first, scraped stats as fallback
-                var popEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Popularity");
-                var popText = popEntry?.Item2?.Trim();
+                // Popularity: official API value first, scraped stats as fallback
+                var popText = !string.IsNullOrEmpty(ViewModel.GeneralPopularity) ? ViewModel.GeneralPopularity : null;
                 if (string.IsNullOrEmpty(popText))
-                    popText = !string.IsNullOrEmpty(ViewModel.GeneralPopularity) ? ViewModel.GeneralPopularity : "N/A";
-                AnimeDetailsPageGeneralTabFragmentScore.Text = popText;
+                {
+                    var popEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Popularity");
+                    popText = popEntry?.Item2?.Trim();
+                }
+                AnimeDetailsPageGeneralTabFragmentScore.Text = string.IsNullOrEmpty(popText) ? "N/A" : popText;
 
-                // Studios: official API first, scraped info as fallback
-                var studioEntry = ViewModel.Information.FirstOrDefault(s => s.Item1 == "Studios");
-                var studioText = studioEntry?.Item2?.Trim();
+                // Studios: official API value first, scraped info as fallback
+                var studioText = !string.IsNullOrEmpty(ViewModel.GeneralStudios) ? ViewModel.GeneralStudios : null;
                 if (string.IsNullOrEmpty(studioText))
-                    studioText = !string.IsNullOrEmpty(ViewModel.GeneralStudios) ? ViewModel.GeneralStudios : "Unknown";
-                AnimeDetailsPageGeneralTabFragmentType.Text = studioText;
+                {
+                    var studioEntry = ViewModel.Information.FirstOrDefault(s => s.Item1 == "Studios");
+                    studioText = studioEntry?.Item2?.Trim();
+                }
+                AnimeDetailsPageGeneralTabFragmentType.Text = string.IsNullOrEmpty(studioText) ? "Unknown" : studioText;
 
                 // Synopsis
                 if (!string.IsNullOrEmpty(ViewModel.Synopsis))

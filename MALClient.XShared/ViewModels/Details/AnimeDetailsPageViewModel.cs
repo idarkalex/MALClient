@@ -1025,6 +1025,18 @@ namespace MALClient.XShared.ViewModels.Details
 
         private void PopulateData()
         {
+            //purge scraped data possibly left over from the previously viewed entry
+            LeftGenres.Clear();
+            RightGenres.Clear();
+            Information.Clear();
+            Stats.Clear();
+            OPs.Clear();
+            EDs.Clear();
+            Episodes.Clear();
+            Reviews.Clear();
+            Recommendations.Clear();
+            RelatedAnime.Clear();
+
             var model = _animeItemReference as AnimeItemViewModel;
             if (model != null && AnimeMode)
             {
@@ -1136,9 +1148,9 @@ namespace MALClient.XShared.ViewModels.Details
         private void ExtractData(AnimeGeneralDetailsData data)
         {
             Title = _animeItemReference?.Title ?? data.Title;
-            Type = data.Type;
+            Type = NormalizeMediaType(data.Type);
             Status = data.Status;
-            Synopsis = data.Synopsis;
+            Synopsis = StripSynopsisCredit(data.Synopsis);
             StartDate = data.StartDate;
             EndDate = data.EndDate;
             GlobalScore = data.GlobalScore;
@@ -1529,6 +1541,24 @@ namespace MALClient.XShared.ViewModels.Details
             }
 
             return url;
+        }
+
+        private static string NormalizeMediaType(string type)
+        {
+            if (string.IsNullOrWhiteSpace(type)) return type;
+
+            var parts = type.Replace('_', ' ').Trim().Split(' ');
+            for (var i = 0; i < parts.Length; i++)
+                if (parts[i].Length > 0 && char.IsLower(parts[i][0]))
+                    parts[i] = char.ToUpper(parts[i][0]) + parts[i].Substring(1);
+            return string.Join(" ", parts);
+        }
+
+        private static string StripSynopsisCredit(string synopsis)
+        {
+            if (string.IsNullOrEmpty(synopsis)) return synopsis;
+            return Regex.Replace(synopsis, @"\s*\(?\s*Written by MAL[_ ]Rewrite\s*\)?[\s.]*$",
+                string.Empty, RegexOptions.IgnoreCase).TrimEnd();
         }
     }
 }
