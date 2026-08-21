@@ -4,10 +4,15 @@
                 android:layout_height="match_parent"
                 android:background="?BrushDeepBackground">
 
+  <MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
+    android:id="@+id/CharacterDetailsPageRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
   <ScrollView
+    android:id="@+id/CharacterDetailsPageScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_alignParentStart="true"
     android:fillViewport="true">
 
     <LinearLayout
@@ -162,6 +167,7 @@
         android:textColor="?BrushNoSearchResults" />
     </LinearLayout>
   </ScrollView>
+  </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
 
   <RelativeLayout
     android:id="@+id/CharacterDetailsPageLoadingSpinner"

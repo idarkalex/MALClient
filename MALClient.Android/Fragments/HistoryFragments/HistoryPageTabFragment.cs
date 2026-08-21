@@ -13,6 +13,7 @@ using Android.Widget;
 using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Resources;
+using MALClient.Android.UserControls;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.ViewModels;
@@ -38,7 +39,18 @@ namespace MALClient.Android.Fragments.HistoryFragments
 
         protected override void InitBindings()
         {
-            (RootView as ListView).InjectFlingAdapter(_data,DataTemplateFull,DataTemplateFling,ContainerTemplate,DataTemplateBasic);
+            var list = RootView.FindViewById<ListView>(Resource.Id.HistoryPageTabList);
+            list.InjectFlingAdapter(_data,DataTemplateFull,DataTemplateFling,ContainerTemplate,DataTemplateBasic);
+            var refresh = RootView as UserControls.ScrollableSwipeToRefreshLayout;
+            if (refresh != null)
+            {
+                refresh.ScrollingView = list;
+                refresh.Refresh += (sender, args) =>
+                {
+                    ViewModelLocator.History.Init(HistoryPageFragment.LastArgs, true);
+                    refresh.Refreshing = false;
+                };
+            }
             HasOnlyManualBindings = true;
         }
 

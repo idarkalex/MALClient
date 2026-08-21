@@ -1,4 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+<MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/HistoryPageTabRefresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" android:divider="@color/Transparent" android:dividerHeight="5dp" />
+    android:layout_height="match_parent">
+    <ListView
+        android:id="@+id/HistoryPageTabList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" android:divider="@color/Transparent" android:dividerHeight="5dp" />
+</MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>

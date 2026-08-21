@@ -128,8 +128,17 @@ namespace MALClient.Android.Fragments.DetailsFragments
 
             CharacterDetailsPageVoiceActorsGrid.EmptyView = CharacterDetailsPageVoiceActorsEmptyNotice;
 
+            CharacterDetailsPageRefresh.ScrollingView = CharacterDetailsPageScroll;
+            CharacterDetailsPageRefresh.Refresh += CharacterDetailsPageOnRefresh;
+
             CharacterDetailsPageSpoilerButton.SetOnClickListener(new OnClickListener(view => CharacterDetailsPageSpoilerButtonOnClick()));
             CharacterDetailsPageLinkButton.SetOnClickListener(new OnClickListener(view => ViewModel.OpenInMalCommand.Execute(null)));
+        }
+
+        private void CharacterDetailsPageOnRefresh(object sender, EventArgs e)
+        {
+            ViewModel.RefreshData();
+            CharacterDetailsPageRefresh.Refreshing = false;
         }
 
         private void CharacterDetailsPageSpoilerButtonOnClick()
@@ -191,6 +200,8 @@ namespace MALClient.Android.Fragments.DetailsFragments
 
         #region Views
 
+        private UserControls.ScrollableSwipeToRefreshLayout _characterDetailsPageRefresh;
+        private ScrollView _characterDetailsPageScroll;
         private ImageView _charactersDetailsPageNoImgNotice;
         private ImageViewAsync _characterDetailsPageImage;
         private ImageButton _characterDetailsPageLinkButton;
@@ -204,6 +215,10 @@ namespace MALClient.Android.Fragments.DetailsFragments
         private HeightAdjustingGridView _characterDetailsPageMangaographyGrid;
         private TextView _characterDetailsPageMangaographyEmptyNotice;
         private RelativeLayout _characterDetailsPageLoadingSpinner;
+
+        public UserControls.ScrollableSwipeToRefreshLayout CharacterDetailsPageRefresh => GetView(ref _characterDetailsPageRefresh, Resource.Id.CharacterDetailsPageRefresh);
+
+        public ScrollView CharacterDetailsPageScroll => GetView(ref _characterDetailsPageScroll, Resource.Id.CharacterDetailsPageScroll);
 
         public ImageView CharactersDetailsPageNoImgNotice => GetView(ref _charactersDetailsPageNoImgNotice, Resource.Id.CharactersDetailsPageNoImgNotice);
 
