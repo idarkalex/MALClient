@@ -102,12 +102,12 @@
               android:layout_height="wrap_content"
               android:fontFamily="@font/inter"
               android:textColor="#ffffff"
-              android:textSize="24sp"
+              android:textSize="26sp"
               android:textStyle="bold"
-              android:shadowColor="#80000000"
+              android:shadowColor="#b3000000"
               android:shadowDx="0"
-              android:shadowDy="2"
-              android:shadowRadius="4"
+              android:shadowDy="3"
+              android:shadowRadius="6"
               android:maxLines="2"
               android:ellipsize="end"
               tools:text="Oshi no Ko" />
@@ -436,65 +436,71 @@
           android:layout_height="0dp"
           android:visibility="gone" />
 
-      <!-- Quick Actions (Add to List, Favorite) -->
+      <!-- Bottom sheet: rounded top corners hosting quick actions + tabs + pager -->
       <LinearLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="16dp"
-          android:layout_marginEnd="16dp"
-          android:layout_marginBottom="8dp"
-          android:background="@drawable/electric_midnight_update_panel"
-          android:orientation="horizontal"
-          android:padding="4dp">
+          android:background="@drawable/electric_midnight_sheet_top"
+          android:orientation="vertical"
+          android:paddingTop="10dp">
 
-        <Button
-            android:id="@+id/AnimeDetailsPageQuickAddToListButton"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_margin="2dp"
-            android:layout_weight="1"
-            android:background="@drawable/electric_midnight_action_button"
-            android:drawableStart="@drawable/icon_circle_add"
-            android:drawablePadding="6dp"
-            android:fontFamily="@font/inter"
-            android:gravity="center"
-            android:text="Add to List"
-            android:textAllCaps="false"
-            android:textColor="#ffffff"
-            android:textSize="13sp" />
+        <!-- Quick Actions (Add to List, Favorite) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/AnimeDetailsPageQuickFavoriteButton"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_margin="2dp"
-            android:layout_weight="1"
-            android:background="@drawable/electric_midnight_action_button"
-            android:drawableStart="@drawable/icon_heart_outline"
-            android:drawablePadding="6dp"
-            android:fontFamily="@font/inter"
-            android:gravity="center"
-            android:text="Favorite"
-            android:textAllCaps="false"
-            android:textColor="#ffffff"
-            android:textSize="13sp" />
+          <Button
+              android:id="@+id/AnimeDetailsPageQuickAddToListButton"
+              android:layout_width="0dp"
+              android:layout_height="44dp"
+              android:layout_marginEnd="3dp"
+              android:layout_weight="1"
+              android:background="@drawable/electric_midnight_action_button"
+              android:drawableStart="@drawable/icon_circle_add"
+              android:drawablePadding="6dp"
+              android:fontFamily="@font/inter"
+              android:gravity="center"
+              android:text="Add to List"
+              android:textAllCaps="false"
+              android:textColor="#ffffff"
+              android:textSize="13sp" />
+
+          <Button
+              android:id="@+id/AnimeDetailsPageQuickFavoriteButton"
+              android:layout_width="0dp"
+              android:layout_height="44dp"
+              android:layout_marginStart="3dp"
+              android:layout_weight="1"
+              android:background="@drawable/electric_midnight_action_button"
+              android:drawableStart="@drawable/icon_heart_outline"
+              android:drawablePadding="6dp"
+              android:fontFamily="@font/inter"
+              android:gravity="center"
+              android:text="Favorite"
+              android:textAllCaps="false"
+              android:textColor="#ffffff"
+              android:textSize="13sp" />
+        </LinearLayout>
+
+        <MALClient.Android.UserControls.PagerSlidingTabStrip
+            android:id="@+id/AnimeDetailsPageTabStrip"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textColorPrimary="#ffffff"
+            android:textColorSecondary="?BrushTextAccentContrast" />
+
+        <MALClient.Android.UserControls.HeightAdjustingViewPager
+            android:id="@+id/AnimeDetailsPagePivot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/EmSheet" />
       </LinearLayout>
-
-      <MALClient.Android.UserControls.PagerSlidingTabStrip
-          android:id="@+id/AnimeDetailsPageTabStrip"
-          android:layout_width="match_parent"
-          android:layout_height="40dp"
-          android:layout_marginStart="16dp"
-          android:layout_marginEnd="16dp"
-          android:background="@drawable/electric_midnight_glass_panel"
-          android:textColorPrimary="?AccentColour"
-          android:textColorSecondary="?BrushTextAccentContrast" />
-
-      <MALClient.Android.UserControls.HeightAdjustingViewPager
-          android:id="@+id/AnimeDetailsPagePivot"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:background="?BrushDetailsBackground" />
     </LinearLayout>
   </ScrollView>
 

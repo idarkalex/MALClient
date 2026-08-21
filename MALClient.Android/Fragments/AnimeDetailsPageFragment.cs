@@ -57,6 +57,8 @@ namespace MALClient.Android.Fragments
         protected override void InitBindings()
         {
             AnimeDetailsPagePivot.Adapter = new AnimeDetailsPagerAdapter(ChildFragmentManager);
+            AnimeDetailsPageTabStrip.IndicatorColor = Color.ParseColor("#0066FF");
+            AnimeDetailsPageTabStrip.IndicatorHeight = 3;
             AnimeDetailsPageTabStrip.SetViewPager(AnimeDetailsPagePivot);
             AnimeDetailsPageTabStrip.CenterTabs();
             AnimeDetailsPagePivot.SetCurrentItem(_navArgs.SourceTabIndex, false);

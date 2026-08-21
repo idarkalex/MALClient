@@ -57,6 +57,7 @@
   <color name="DarkBrushDetailsRelatedBackground">#0d1d2a</color>
   <color name="DarkBrushDetailsBackground">#000D1A</color>
   <color name="DarkBrushDetailsUpperBackground">#051522</color>
+  <color name="EmSheet">#051522</color>
   <color name="DarkBrushDetailsMoreButton">#273645</color>
   <color name="DarkBrushPivotInnerHeaderBarBackground">#1c2b39</color>
   <color name="DarkBrushNewsBackground">#bd11212f</color>
