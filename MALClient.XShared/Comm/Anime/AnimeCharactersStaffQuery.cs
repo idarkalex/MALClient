@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Text.Json;
 using HtmlAgilityPack;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.Models.Models.Favourites;
@@ -32,66 +33,6 @@ namespace MALClient.XShared.Comm.Anime
             _animeMode = anime;
         }
 
-        public async Task<List<AnimeCharacter>> GetMangaCharacters(bool force) //html is malformed
-        {
-            if (_animeMode)
-                throw new InvalidOperationException("You fed constructor with anime, remember?");
-
-            var output = force
-                ? new List<AnimeCharacter>()
-                : await DataCache.RetrieveData<List<AnimeCharacter>>($"staff_{_animeId}", "MangaDetails", 7) ??
-                  new List<AnimeCharacter>();
-
-            var raw = await GetRequestResponse();
-            if (string.IsNullOrEmpty(raw))
-                return null;
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(raw);
-            try
-            {
-                var mainContainer = doc.FirstOfDescendantsWithClass("div", "js-scrollfix-bottom-rel");
-                var tables = mainContainer.ChildNodes.Where(node => node.Name == "table").ToList();
-
-                foreach (var table in tables)
-                {
-                    try
-                    {
-                        var current = new AnimeCharacter();
-
-                        var imgs = table.Descendants("img").ToList();
-                        var infos = table.Descendants("td").ToList();
-
-                        //character
-                        var img = imgs[0].Attributes["data-src"].Value;
-                        if (!img.Contains("questionmark"))
-                        {
-                            img = img.Replace("/r/46x64", "");
-                            current.ImgUrl = img.Substring(0, img.IndexOf('?'));
-                        }
-
-                        current.FromAnime = _animeMode;
-                        current.ShowId = _animeId.ToString();
-                        current.Name = WebUtility.HtmlDecode(imgs[0].Attributes["alt"].Value.Replace(",", ""));
-                        current.Id = infos[0].ChildNodes[1].ChildNodes[0].Attributes["href"].Value.Split('/')[2];
-                        current.Notes = ""; //malformed html here TODO: Check if fixed 
-                        //table.Descendants("small").First().InnerText;
-                        output.Add(current);
-                    }
-                    catch (Exception)
-                    {
-                        //
-                    }
-
-                }
-            }
-            catch (Exception)
-            {
-                //html strikes again
-            }
-            return output;
-        }
-
         public async Task<AnimeStaffData> GetCharStaffData(bool force = false)
         {
             if (!_animeMode)
@@ -102,9 +43,218 @@ namespace MALClient.XShared.Comm.Anime
                   new AnimeStaffData();
             if ((output.AnimeCharacterPairs.Count > 0 || output.AnimeStaff.Count > 0) && !force) return output;
 
+            try
+            {
+                var structured = await GetCharStaffDataStructuredAsync();
+                if (structured != null && (structured.AnimeCharacterPairs.Count > 0 || structured.AnimeStaff.Count > 0))
+                {
+                    DataCache.SaveData(structured, $"staff_{_animeId}", "AnimeDetails");
+                    return structured;
+                }
+            }
+            catch (Exception)
+            {
+                // fall back to html scraping below
+            }
+
+            return await GetCharStaffDataHtml(output);
+        }
+
+        private async Task<AnimeStaffData> GetCharStaffDataStructuredAsync()
+        {
+            var output = new AnimeStaffData();
+
+            var charsData = await TenraiClient.GetDataAsync($"anime/{_animeId}/characters");
+            foreach (var entry in EnumerateArray(charsData))
+            {
+                try
+                {
+                    var pair = new AnimeCharacterStaffModel();
+
+                    var charImg = CleanImage(GetNestedString(entry, "character", "images", "jpg", "image_url"));
+                    var charObj = pair.AnimeCharacter;
+                    charObj.Id = GetNestedString(entry, "character", "mal_id");
+                    charObj.Name = WebUtility.HtmlDecode(GetNestedString(entry, "character", "name").Replace(",", ""));
+                    if (!string.IsNullOrEmpty(charImg))
+                        charObj.ImgUrl = charImg;
+                    charObj.FromAnime = true;
+                    charObj.ShowId = _animeId.ToString();
+                    charObj.Notes = BuildRoleNotes(GetString(entry, "role"), GetInt(entry, "favorites"));
+
+                    var va = FindJapaneseVoiceActor(entry);
+                    if (va.ValueKind == JsonValueKind.Object)
+                    {
+                        var vaImg = CleanImage(GetNestedString(va, "person", "images", "jpg", "image_url"));
+                        pair.AnimeStaffPerson.Id = GetNestedString(va, "person", "mal_id");
+                        pair.AnimeStaffPerson.Name = WebUtility.HtmlDecode(GetNestedString(va, "person", "name").Replace(",", ""));
+                        if (!string.IsNullOrEmpty(vaImg))
+                            pair.AnimeStaffPerson.ImgUrl = vaImg;
+                        pair.AnimeStaffPerson.Notes = GetString(va, "language");
+                    }
+                    else
+                    {
+                        pair.AnimeStaffPerson.Name = "Unknown";
+                        pair.AnimeStaffPerson.IsUnknown = true;
+                    }
+
+                    output.AnimeCharacterPairs.Add(pair);
+                }
+                catch (Exception)
+                {
+                    //
+                }
+            }
+
+            try
+            {
+                var staffData = await TenraiClient.GetDataAsync($"anime/{_animeId}/staff");
+                foreach (var entry in EnumerateArray(staffData))
+                {
+                    try
+                    {
+                        var person = new AnimeStaffPerson();
+                        person.Id = GetNestedString(entry, "person", "mal_id");
+                        person.Name = WebUtility.HtmlDecode(GetNestedString(entry, "person", "name").Replace(",", ""));
+
+                        var img = CleanImage(GetNestedString(entry, "person", "images", "jpg", "image_url"));
+                        if (!string.IsNullOrEmpty(img))
+                            person.ImgUrl = img;
+
+                        var positions = new List<string>();
+                        if (entry.TryGetProperty("positions", out var posArr) && posArr.ValueKind == JsonValueKind.Array)
+                            foreach (var pos in posArr.EnumerateArray())
+                                positions.Add(pos.GetString() ?? "");
+                        person.Notes = string.Join(", ", positions);
+
+                        if (!string.IsNullOrEmpty(person.Name))
+                            output.AnimeStaff.Add(person);
+                    }
+                    catch (Exception)
+                    {
+                        //
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // staff endpoint optional
+            }
+
+            return output;
+        }
+
+        public async Task<AnimeStaffData> GetMangaCharStaffData(bool force = false)
+        {
+            if (_animeMode)
+                throw new InvalidOperationException("You fed constructor with anime, remember?");
+
+            var cached = force
+                ? null
+                : await DataCache.RetrieveData<AnimeStaffData>($"staff_{_animeId}", "MangaDetails", 7);
+            if (cached != null && cached.AnimeCharacterPairs.Count > 0)
+                return cached;
+
+            var output = new AnimeStaffData();
+            try
+            {
+                var charsData = await TenraiClient.GetDataAsync($"manga/{_animeId}/characters");
+                foreach (var entry in EnumerateArray(charsData))
+                {
+                    try
+                    {
+                        var pair = new AnimeCharacterStaffModel();
+                        var img = CleanImage(GetNestedString(entry, "character", "images", "jpg", "image_url"));
+                        var charObj = pair.AnimeCharacter;
+                        charObj.Id = GetNestedString(entry, "character", "mal_id");
+                        charObj.Name = WebUtility.HtmlDecode(GetNestedString(entry, "character", "name").Replace(",", ""));
+                        if (!string.IsNullOrEmpty(img))
+                            charObj.ImgUrl = img;
+                        charObj.FromAnime = false;
+                        charObj.ShowId = _animeId.ToString();
+                        charObj.Notes = BuildRoleNotes(GetString(entry, "role"), GetInt(entry, "favorites"));
+
+                        pair.AnimeStaffPerson.Name = "Unknown";
+                        pair.AnimeStaffPerson.IsUnknown = true;
+
+                        output.AnimeCharacterPairs.Add(pair);
+                    }
+                    catch (Exception)
+                    {
+                        //
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                //
+            }
+
+            if (output.AnimeCharacterPairs.Count > 0)
+                DataCache.SaveData(output, $"staff_{_animeId}", "MangaDetails");
+            return output;
+        }
+
+        private static string BuildRoleNotes(string role, int favorites)
+        {
+            var notes = role ?? "";
+            if (favorites > 0)
+                notes = string.IsNullOrEmpty(notes) ? $"{favorites:N0} favorites" : $"{notes} · {favorites:N0} favorites";
+            return notes;
+        }
+
+        private static JsonElement FindJapaneseVoiceActor(JsonElement entry)
+        {
+            if (!entry.TryGetProperty("voice_actors", out var arr) || arr.ValueKind != JsonValueKind.Array)
+                return default;
+
+            JsonElement first = default;
+            foreach (var va in arr.EnumerateArray())
+            {
+                if (first.ValueKind == JsonValueKind.Undefined)
+                    first = va.Clone();
+                var language = GetString(va, "language");
+                if (language == "Japanese")
+                    return va.Clone();
+            }
+            return first;
+        }
+
+        private static IEnumerable<JsonElement> EnumerateArray(JsonElement el)
+        {
+            if (el.ValueKind != JsonValueKind.Array)
+                yield break;
+            foreach (var item in el.EnumerateArray())
+                yield return item.Clone();
+        }
+
+        private static string CleanImage(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                return url;
+            url = Regex.Replace(url, @"\/r\/\d+x\d+", "");
+            var queryIndex = url.IndexOf('?');
+            return queryIndex > 0 ? url.Substring(0, queryIndex) : url;
+        }
+
+        private static string GetString(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+
+        private static int GetInt(JsonElement el, string prop) =>
+            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+
+        private static string GetNestedString(JsonElement el, params string[] props)
+        {
+            foreach (var prop in props.Take(props.Length - 1))
+                if (!el.TryGetProperty(prop, out el))
+                    return "";
+            return GetString(el, props.Last());
+        }
+
+        private async Task<AnimeStaffData> GetCharStaffDataHtml(AnimeStaffData output)
+        {
             var raw = await GetRequestResponse();
             if (string.IsNullOrEmpty(raw))
-                return null;
+                return output;
 
             var doc = new HtmlDocument();
             doc.LoadHtml(raw);

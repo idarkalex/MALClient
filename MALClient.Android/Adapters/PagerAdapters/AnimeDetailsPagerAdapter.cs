@@ -26,7 +26,7 @@ namespace MALClient.Android.PagerAdapters
         {
             get
             {
-                var newCount = _viewModel.AnimeMode ? 7 : 5;
+                var newCount = _viewModel.AnimeMode ? 7 : 6;
                 return newCount;
             }
         }

@@ -33,9 +33,9 @@ namespace MALClient.XShared.Comm.Anime
                                 Filler = GetBool(ep, "filler"),
                                 ForumUrl = GetString(ep, "forum_url"),
                                 Recap = GetBool(ep, "recap"),
-                                Title = GetString(ep, "title"),
-                                TitleJapanese = GetString(ep, "title_japanese"),
-                                TitleRomanji = GetString(ep, "title"),
+                Title = GetString(ep, "title"),
+                TitleJapanese = GetString(ep, "title_japanese"),
+                TitleRomanji = GetString(ep, "title_romanji"),
                                 VideoUrl = GetString(ep, "url"),
                             });
                         }

@@ -155,6 +155,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         }
 
         private readonly Dictionary<AnimeReviewData,bool> _reviewStates = new Dictionary<AnimeReviewData, bool>();
+        private readonly HashSet<AnimeReviewData> _revealedSpoilers = new HashSet<AnimeReviewData>();
 
         private void OnReviewClick(object sender, EventArgs eventArgs)
         {
@@ -163,6 +164,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             if (_reviewStates[model]) //collapse
             {
                 _reviewStates[model] = false;
+                _revealedSpoilers.Remove(model);
                 view.FindViewById<LinearLayout>(Resource.Id.AnimeReviewItemLayoutMarksList).RemoveAllViews();
                 view.FindViewById(Resource.Id.AnimeReviewItemLayoutReviewContent).Visibility = ViewStates.Gone;
                 view.FindViewById<TextView>(Resource.Id.AnimeReviewItemLayoutReviewContent).Text = "";
@@ -171,8 +173,16 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             {
                 _reviewStates[model] = true;
                 LoadScores(view, model);
-                view.FindViewById(Resource.Id.AnimeReviewItemLayoutReviewContent).Visibility = ViewStates.Visible;
-                view.FindViewById<TextView>(Resource.Id.AnimeReviewItemLayoutReviewContent).Text = model.Review;
+                var content = view.FindViewById<TextView>(Resource.Id.AnimeReviewItemLayoutReviewContent);
+                if (model.HasSpoilers && !_revealedSpoilers.Contains(model))
+                {
+                    _revealedSpoilers.Add(model);
+                    content.Text = "This review contains spoilers. Tap again to reveal.";
+                    content.Visibility = ViewStates.Visible;
+                    return;
+                }
+                content.Text = model.Review;
+                content.Visibility = ViewStates.Visible;
             }
         }
 
