@@ -105,6 +105,10 @@ namespace MALClient.Android.Fragments
             Bindings.Add(this.SetBinding(() => ViewModel.AddAnimeVisibility)
                 .WhenSourceChanges(() =>
                 {
+                    AnimeDetailsPageQuickAddToListButton.Visibility = ViewModel.AddAnimeVisibility
+                        ? ViewStates.Visible
+                        : ViewStates.Gone;
+
                     if (ViewModel.AddAnimeVisibility)
                     {
                         AnimeDetailsPageIncDecSection.Visibility = ViewStates.Gone;
@@ -251,11 +255,19 @@ namespace MALClient.Android.Fragments
                 _menu.Show();
             }));
             AnimeDetailsPageQuickAddToListButton.SetOnClickListener(
-                new OnClickListener(view => ViewModel.AddAnimeCommand.Execute(null)));
+                new OnClickListener(view =>
+                {
+                    if (ViewModel.AddAnimeVisibility)
+                        ViewModel.AddAnimeCommand.Execute(null);
+                }));
             AnimeDetailsPageQuickFavoriteButton.SetOnClickListener(
                 new OnClickListener(view => ViewModel.ToggleFavouriteCommand.Execute(null)));
 
             //OneTime
+
+            AnimeDetailsPageQuickAddToListButton.Visibility = ViewModel.AddAnimeVisibility
+                ? ViewStates.Visible
+                : ViewStates.Gone;
 
             AnimeDetailsPageWatchedLabel.Text = ViewModel.WatchedEpsLabel;
 
