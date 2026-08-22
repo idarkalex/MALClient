@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -197,7 +197,7 @@ namespace MALClient.XShared.ViewModels.Items
 
             var vm = new AnimeItemAbstraction(true, new AnimeLibraryItemData(OtherEntry.ParentAbstraction.EntryData));
 
-            var startDate = "0000-00-00";
+            var startDate = AnimeItemViewModel.InvalidStartEndDate;
             if (Settings.SetStartDateOnListAdd)
             {
                 startDate = DateTimeOffset.Now.ToString("yyyy-MM-dd");
@@ -252,3 +252,4 @@ namespace MALClient.XShared.ViewModels.Items
         }
     }
 }
+

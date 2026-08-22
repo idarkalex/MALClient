@@ -157,23 +157,7 @@ namespace MALClient.XShared.Comm
 
                                                 AnimeType GetMediaType()
                                                 {
-                                                    switch (item.media_type)
-                                                    {
-                                                        case "tv":
-                                                            return AnimeType.TV;
-                                                        case "movie":
-                                                            return AnimeType.Movie;
-                                                        case "special":
-                                                            return AnimeType.Special;
-                                                        case "ova":
-                                                            return AnimeType.OVA;
-                                                        case "ona":
-                                                            return AnimeType.ONA;
-                                                        case "music":
-                                                            return AnimeType.Music;
-                                                    }
-
-                                                    return AnimeType.TV;
+                                                    return MalTypeParser.ParseAnimeType(item.media_type);
                                                 }
                                             }
 

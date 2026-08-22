@@ -297,41 +297,12 @@ namespace MALClient.XShared.ViewModels.Main
 
         private static AnimeType ParseAnimeType(string type)
         {
-            switch (type?.ToLowerInvariant())
-            {
-                case "movie":
-                    return AnimeType.Movie;
-                case "ova":
-                    return AnimeType.OVA;
-                case "ona":
-                    return AnimeType.ONA;
-                case "special":
-                    return AnimeType.Special;
-                case "music":
-                    return AnimeType.Music;
-                default:
-                    return AnimeType.TV;
-            }
+            return MalTypeParser.ParseAnimeType(type);
         }
 
         private static MangaType ParseMangaType(string type)
         {
-            switch (type?.ToLowerInvariant())
-            {
-                case "novel":
-                    return MangaType.Novel;
-                case "manhwa":
-                    return MangaType.Manhwa;
-                case "manhua":
-                    return MangaType.Manhua;
-                case "oneshot":
-                case "one-shot":
-                    return MangaType.OneShot;
-                case "doujinshi":
-                    return MangaType.Doujinshi;
-                default:
-                    return MangaType.Manga;
-            }
+            return MalTypeParser.ParseMangaType(type);
         }
 
         private static string FormatTime(TimeSpan time)

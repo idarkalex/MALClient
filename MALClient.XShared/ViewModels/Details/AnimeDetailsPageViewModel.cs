@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -120,7 +120,7 @@ namespace MALClient.XShared.ViewModels.Details
         {
             get
             {
-                if (StartDate == "0000-00-00" || StartDate == "N/A" || string.IsNullOrEmpty(StartDate))
+                if (StartDate == AnimeItemViewModel.InvalidStartEndDate || StartDate == "N/A" || string.IsNullOrEmpty(StartDate))
                     return null;
                 return StartDate.Contains("-00-00")
                     ? StartDate.Substring(0, 4)
@@ -130,12 +130,12 @@ namespace MALClient.XShared.ViewModels.Details
         //Dates set by the user
         public string MyStartDate
             =>
-            (_animeItemReference?.StartDate ?? "0000-00-00") == "0000-00-00"
+            (_animeItemReference?.StartDate ?? AnimeItemViewModel.InvalidStartEndDate) == AnimeItemViewModel.InvalidStartEndDate
                 ? "Not set"
                 : _animeItemReference?.StartDate;
 
         public string MyEndDate
-            => (_animeItemReference?.EndDate ?? "0000-00-00") == "0000-00-00" ? "Not set" : _animeItemReference?.EndDate
+            => (_animeItemReference?.EndDate ?? AnimeItemViewModel.InvalidStartEndDate) == AnimeItemViewModel.InvalidStartEndDate ? "Not set" : _animeItemReference?.EndDate
             ;
 
         public AnimeStaffDataViewModels AnimeStaffData
@@ -637,7 +637,7 @@ namespace MALClient.XShared.ViewModels.Details
             //in case of series having one episode
             if (AllEpisodes == 1 && prevStatus == AnimeStatus.PlanToWatch && MyStatus == AnimeStatus.Completed)
                 if (Settings.SetStartDateOnWatching &&
-                    (Settings.OverrideValidStartEndDate || _animeItemReference.StartDate == "0000-00-00"))
+                    (Settings.OverrideValidStartEndDate || _animeItemReference.StartDate == AnimeItemViewModel.InvalidStartEndDate))
                 {
                     _startDateTimeOffset = DateTimeOffset.Now;
                     _animeItemReference.StartDate =
@@ -923,7 +923,7 @@ namespace MALClient.XShared.ViewModels.Details
             }
 
 
-            var startDate = "0000-00-00";
+            var startDate = AnimeItemViewModel.InvalidStartEndDate;
             if (Settings.SetStartDateOnListAdd)
             {
                 startDate = DateTimeOffset.Now.ToString("yyyy-MM-dd");
@@ -1086,7 +1086,7 @@ namespace MALClient.XShared.ViewModels.Details
 
             LeftDetailsRow.Add(new Tuple<string, string>("Score", GlobalScore == 0 ? "N/A" : GlobalScore.ToString("N2")));
             LeftDetailsRow.Add(new Tuple<string, string>("Start",
-                StartDate == "0000-00-00" || string.IsNullOrEmpty(StartDate)
+                StartDate == AnimeItemViewModel.InvalidStartEndDate || string.IsNullOrEmpty(StartDate)
                     ? "?"
                     : StartDate.Contains("-00-00")
                         ? StartDate.Substring(0, 4)
@@ -1099,7 +1099,7 @@ namespace MALClient.XShared.ViewModels.Details
             else
                 RightDetailsRow.Add(new Tuple<string, string>("Status", Status));
             RightDetailsRow.Add(new Tuple<string, string>("End",
-                EndDate == "0000-00-00" || string.IsNullOrEmpty(EndDate)
+                EndDate == AnimeItemViewModel.InvalidStartEndDate || string.IsNullOrEmpty(EndDate)
                     ? "?"
                     : EndDate.Contains("-00-00")
                         ? EndDate.Substring(0, 4)

@@ -18,8 +18,8 @@ namespace MALClient.Android
     public static class AnimeImageExtensions
     {
         //private static readonly Dictionary<View, IScheduledWork> TasksDictionary = new Dictionary<View, IScheduledWork>();
-        private static readonly HashSet<string> LoadedImgs = new HashSet<string>();
-        private static readonly HashSet<string> FailedImgs = new HashSet<string>();
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> LoadedImgs = new System.Collections.Concurrent.ConcurrentDictionary<string, byte>();
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> FailedImgs = new System.Collections.Concurrent.ConcurrentDictionary<string, byte>();
 
         #region AnimeInto
 
@@ -28,7 +28,7 @@ namespace MALClient.Android
             if (string.IsNullOrEmpty(originUrl))
                 return null;
 
-            if (Settings.PullHigherQualityImages && !FailedImgs.Contains(originUrl))
+            if (Settings.PullHigherQualityImages && !FailedImgs.ContainsKey(originUrl))
             {
                 var pos = originUrl.IndexOf(".jpg", StringComparison.InvariantCulture);
                 if (pos == -1)
@@ -49,7 +49,7 @@ namespace MALClient.Android
         public static bool AnimeIntoIfLoaded(this ImageView image, string originUrl, ITransformation transformation = null)
         {
             var url = GetImgUrl(originUrl);
-            if (LoadedImgs.Contains(url))
+            if (LoadedImgs.ContainsKey(url))
             {
                 LoadImage(image, originUrl, url, true, null, transformation);
                 return true;
@@ -60,7 +60,7 @@ namespace MALClient.Android
         public static void AnimeInto(this ImageView image, string originUrl, View loader = null, ITransformation transformation = null)
         {
             var url = GetImgUrl(originUrl);
-            LoadImage(image, originUrl, url, LoadedImgs.Contains(url), loader, transformation);
+            LoadImage(image, originUrl, url, LoadedImgs.ContainsKey(url), loader, transformation);
         }
 
         private static void LoadImage(ImageView image, string originUrl, string targetUrl,
@@ -84,15 +84,15 @@ namespace MALClient.Android
                     work = work.Transform(transformation);
                 if (loader != null)
                     work.Finish(scheduledWork => loader.Visibility = ViewStates.Gone);
-                if (imgLoaded != true && !LoadedImgs.Contains(targetUrl))
+                if (imgLoaded != true && !LoadedImgs.ContainsKey(targetUrl))
                 {
                     image.Visibility = ViewStates.Invisible;
                     work = work.Success(image.AnimateFadeIn);
-                    LoadedImgs.Add(targetUrl);
+                    LoadedImgs[targetUrl] = 0;
                 }
                 else
                 {
-                    if (image.Tag == null && !LoadedImgs.Contains(targetUrl))
+                    if (image.Tag == null && !LoadedImgs.ContainsKey(targetUrl))
                     {
                         work = work.Success(image.AnimateFadeIn);
                     }
@@ -116,8 +116,8 @@ namespace MALClient.Android
                         if (transformation != null)
                             fallbackWork = fallbackWork.Transform(transformation);
                         fallbackWork.Into(image);
-                        FailedImgs.Add(targetUrl);
-                        LoadedImgs.Add(img);
+                        FailedImgs[targetUrl] = 0;
+                        LoadedImgs[img] = 0;
                     });
                 }
                 if (transformation == null)
@@ -142,7 +142,7 @@ namespace MALClient.Android
         public static bool IntoIfLoaded(this ImageView image, string originUrl, ITransformation transformation = null,
             Action<ImageView> onCompleted = null, int? maxHeight = null)
         {
-            if (LoadedImgs.Contains(originUrl))
+            if (LoadedImgs.ContainsKey(originUrl))
             {
                 LoadImage(image, originUrl, transformation, onCompleted, maxHeight, true);
                 return true;
@@ -174,7 +174,7 @@ namespace MALClient.Android
                 if (maxHeight != null)
                     work = work.DownSampleInDip(0, maxHeight.Value);
 
-                if (imgLoaded != true && !LoadedImgs.Contains(originUrl))
+                if (imgLoaded != true && !LoadedImgs.ContainsKey(originUrl))
                 {
                     image.Visibility = ViewStates.Invisible;
                     work = work.Success(() =>
@@ -182,7 +182,7 @@ namespace MALClient.Android
                         image.AnimateFadeIn();
                         onCompleted?.Invoke(image);
                     });
-                    LoadedImgs.Add(originUrl);
+                    LoadedImgs[originUrl] = 0;
                 }
                 else
                 {

@@ -199,7 +199,7 @@ namespace MALClient.Android.Fragments
                 {
                     Title = item.anime_title,
                     ImgUrl = image,
-                    Type = (int)GetAnimeType(item.anime_media_type_string),
+                    Type = (int)MalTypeParser.ParseAnimeType(item.anime_media_type_string),
                     MalId = item.anime_id,
                     MyStatus = (AnimeStatus)status,
                     MyEpisodes = item.num_watched_episodes,
@@ -213,22 +213,7 @@ namespace MALClient.Android.Fragments
 
         private static AnimeType GetAnimeType(string type)
         {
-            switch (type)
-            {
-                case "TV":
-                    return AnimeType.TV;
-                case "Movie":
-                    return AnimeType.Movie;
-                case "Special":
-                    return AnimeType.Special;
-                case "OVA":
-                    return AnimeType.OVA;
-                case "ONA":
-                    return AnimeType.ONA;
-                case "Music":
-                    return AnimeType.Music;
-            }
-            return AnimeType.TV;
+            return MalTypeParser.ParseAnimeType(type);
         }
 
         private Task LoadReadingAsync(bool force = false)
@@ -292,7 +277,7 @@ namespace MALClient.Android.Fragments
                 {
                     Title = item.manga_title,
                     ImgUrl = image,
-                    Type = (int)GetMangaType(item.manga_media_type_string),
+                    Type = (int)MalTypeParser.ParseMangaType(item.manga_media_type_string),
                     MalId = item.manga_id,
                     MyStatus = AnimeStatus.Watching,
                     MyEpisodes = item.num_read_chapters,
@@ -308,22 +293,7 @@ namespace MALClient.Android.Fragments
 
         private static MangaType GetMangaType(string type)
         {
-            switch (type)
-            {
-                case "Manga":
-                    return MangaType.Manga;
-                case "Novel":
-                    return MangaType.Novel;
-                case "Doujinshi":
-                    return MangaType.Doujinshi;
-                case "OneShot":
-                    return MangaType.OneShot;
-                case "Manhwa":
-                    return MangaType.Manhwa;
-                case "Manhua":
-                    return MangaType.Manhua;
-            }
-            return MangaType.Manga;
+            return MalTypeParser.ParseMangaType(type);
         }
 
         private Task LoadSeasonalAsync(bool force = false)
