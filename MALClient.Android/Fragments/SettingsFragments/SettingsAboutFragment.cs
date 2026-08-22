@@ -49,8 +49,8 @@ namespace MALClient.Android.Fragments.SettingsFragments
                 AboutPageClearCacheButton.Enabled = false;
                 try
                 {
-                    await DataCache.ClearApiRelatedCache();
-                    await ImageService.Instance.InvalidateCacheAsync();
+                    await MALClient.XShared.Utils.DataCache.ClearApiRelatedCache();
+                    await ImageService.Instance.InvalidateCacheAsync(FFImageLoading.Cache.CacheType.All);
                     ResourceLocator.MessageDialogProvider.ShowMessageDialog("Cached data and images were cleared.", "Storage");
                 }
                 catch (Exception)
