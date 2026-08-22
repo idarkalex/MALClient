@@ -112,10 +112,10 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
             var model = view.Tag.Unwrap<MalNewsUnitModel>();
             if (model == null)
                 return;
-            var shareIntent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
+            var shareIntent = new global::Android.Content.Intent(global::Android.Content.Intent.ActionSend);
             shareIntent.SetType("text/plain");
-            shareIntent.PutExtra(Android.Content.Intent.ExtraText, $"{model.Title}\n{model.Url}");
-            view.Context.StartActivity(Android.Content.Intent.CreateChooser(shareIntent, "Share via"));
+            shareIntent.PutExtra(global::Android.Content.Intent.ExtraText, $"{model.Title}\n{model.Url}");
+            view.Context.StartActivity(global::Android.Content.Intent.CreateChooser(shareIntent, "Share via"));
         }
 
         public override int LayoutResourceId => Resource.Layout.ArticlesPageTabItem;
