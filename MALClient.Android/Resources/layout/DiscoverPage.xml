@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/DiscoverPageRefresh"
@@ -37,7 +37,7 @@
         android:paddingRight="16dp"
         android:paddingTop="16dp"
         android:gravity="center_horizontal"
-        android:text="Inicia sesión para ver tus listas de anime y manga"
+        android:text="Sign in to see your anime and manga lists"
         android:textColor="?BrushText"
         android:textSize="@dimen/FontSizeMedium"
         android:visibility="gone" />
@@ -52,7 +52,7 @@
         android:background="?android:selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:text="Iniciar sesión"
+        android:text="Sign in"
         android:textColor="?AccentColour"
         android:textSize="@dimen/FontSizeBig"
         android:visibility="gone" />
@@ -71,7 +71,7 @@
           android:layout_height="wrap_content"
           android:layout_weight="1"
           android:fontFamily="@font/inter"
-          android:text="Sigo viendo"
+          android:text="Continue watching"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
       <TextView
@@ -113,7 +113,7 @@
           android:layout_height="wrap_content"
           android:layout_weight="1"
           android:fontFamily="@font/inter"
-          android:text="Leyendo"
+          android:text="Reading"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
       <TextView
@@ -155,7 +155,7 @@
           android:layout_height="wrap_content"
           android:layout_weight="1"
           android:fontFamily="@font/inter"
-          android:text="Terminados"
+          android:text="Completed"
           android:textColor="?AccentColour"
           android:textSize="@dimen/FontSizeBig" />
       <TextView
@@ -176,6 +176,49 @@
         android:scrollbars="none">
       <LinearLayout
           android:id="@+id/DiscoverCompletedRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+    <!-- Suggestions (auth-gated) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverSuggestionsHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@font/inter"
+          android:text="For you"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverSuggestionsSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverSuggestionsRow"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:orientation="horizontal"
@@ -218,6 +261,49 @@
         android:scrollbars="none">
       <LinearLayout
           android:id="@+id/DiscoverSeasonalRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
+    <!-- Upcoming season -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverUpcomingHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@font/inter"
+          android:text="Upcoming"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverUpcomingSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverUpcomingRow"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:orientation="horizontal"
@@ -351,6 +437,49 @@
           android:paddingRight="4dp" />
     </HorizontalScrollView>
 
+    <!-- Featured articles -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:gravity="center_vertical">
+      <TextView
+          android:id="@+id/DiscoverFeaturedHeader"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="@font/inter"
+          android:text="Featured"
+          android:textColor="?AccentColour"
+          android:textSize="@dimen/FontSizeBig" />
+      <TextView
+          android:id="@+id/DiscoverFeaturedSeeAll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="See all"
+          android:textColor="?AccentColourDark"
+          android:textSize="@dimen/FontSizeMedium"
+          android:clickable="true"
+          android:focusable="true"
+          android:padding="4dp"
+          android:foreground="?android:selectableItemBackground" />
+    </LinearLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+      <LinearLayout
+          android:id="@+id/DiscoverFeaturedRow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:paddingLeft="4dp"
+          android:paddingRight="4dp" />
+    </HorizontalScrollView>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -379,8 +508,7 @@
           android:focusable="true"
           android:padding="4dp"
           android:foreground="?android:selectableItemBackground" />
-    </LinearLayout>
-    <HorizontalScrollView
+    </LinearLayout>    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none">

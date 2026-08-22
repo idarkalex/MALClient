@@ -63,9 +63,20 @@ namespace MALClient.Android.Fragments
                 NavigateTo(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted(MangaAdaptedType.AiringNow))));
             DiscoverNewsSeeAll.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PageNews, new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.News, Source = PageIndex.PageDiscover })));
+            DiscoverSuggestionsSeeAll.SetOnClickListener(new OnClickListener(v =>
+                NavigateTo(PageIndex.PageRecomendations, null)));
+            DiscoverUpcomingSeeAll.SetOnClickListener(new OnClickListener(v =>
+            {
+                var args = AnimeListPageNavigationArgs.Seasonal;
+                args.CurrSeason = GetNextSeason();
+                NavigateTo(PageIndex.PageSeasonal, args);
+            }));
+            DiscoverFeaturedSeeAll.SetOnClickListener(new OnClickListener(v =>
+                NavigateTo(PageIndex.PageNews, new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.Articles, Source = PageIndex.PageDiscover })));
             DiscoverLoginButton.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PageLogIn, null)));
             DiscoverSeasonalHeader.Text = $"Seasonal - {GetCurrentSeason().Name}";
+            DiscoverUpcomingHeader.Text = $"Upcoming - {GetNextSeason().Name}";
             DiscoverPageRefresh.ScrollingView = DiscoverPageScroll;
             DiscoverPageRefresh.Refresh += DiscoverPageRefreshOnRefresh;
             if (!Credentials.Authenticated)
@@ -84,24 +95,27 @@ namespace MALClient.Android.Fragments
 
         private async void ReloadSectionsAsync()
         {
-            await LoadSections();
+            await LoadSections(force: true);
             DiscoverPageRefresh.Refreshing = false;
         }
 
-        private async Task LoadSections()
+        private async Task LoadSections(bool force = false)
         {
             DiscoverPageLoadingSpinner.Visibility = ViewStates.Visible;
             try
             {
                 await Task.WhenAll(
-                    LoadWatchingAsync(),
-                    LoadReadingAsync(),
-                    LoadCompletedAsync(),
-                    LoadSeasonalAsync(),
-                    LoadTopAnimeAsync(),
-                    LoadTopMangaAsync(),
-                    LoadAdaptedAsync(),
-                    LoadNewsAsync());
+                    LoadWatchingAsync(force),
+                    LoadReadingAsync(force),
+                    LoadCompletedAsync(force),
+                    LoadSuggestionsAsync(),
+                    LoadSeasonalAsync(force),
+                    LoadUpcomingAsync(force),
+                    LoadTopAnimeAsync(force),
+                    LoadTopMangaAsync(force),
+                    LoadAdaptedAsync(force),
+                    LoadFeaturedAsync(force),
+                    LoadNewsAsync(force));
             }
             catch (Exception)
             {
@@ -110,39 +124,47 @@ namespace MALClient.Android.Fragments
             DiscoverPageLoadingSpinner.Visibility = ViewStates.Gone;
         }
 
+        private async Task LoadSectionAsync<T>(TextView header, LinearLayout row, Func<Task<List<T>>> fetch, Action<List<T>> populate)
+        {
+            try
+            {
+                var data = await fetch();
+                if (data == null || data.Count == 0)
+                {
+                    SetSectionVisibility(header, row, false);
+                    return;
+                }
+                populate(data);
+            }
+            catch (Exception)
+            {
+                SetSectionVisibility(header, row, false);
+            }
+        }
+
         private void ClearSections()
         {
             DiscoverWatchingRow.RemoveAllViews();
             DiscoverReadingRow.RemoveAllViews();
             DiscoverCompletedRow.RemoveAllViews();
+            DiscoverSuggestionsRow.RemoveAllViews();
             DiscoverSeasonalRow.RemoveAllViews();
+            DiscoverUpcomingRow.RemoveAllViews();
             DiscoverTopAnimeRow.RemoveAllViews();
             DiscoverTopMangaRow.RemoveAllViews();
             DiscoverAdaptedRow.RemoveAllViews();
+            DiscoverFeaturedRow.RemoveAllViews();
             DiscoverNewsRow.RemoveAllViews();
         }
 
-        private async Task LoadWatchingAsync()
+        private Task LoadWatchingAsync(bool force = false)
         {
-            if (!Credentials.Authenticated)
+            return LoadSectionAsync(DiscoverWatchingHeader, DiscoverWatchingRow, async () =>
             {
-                SetSectionVisibility(DiscoverWatchingHeader, DiscoverWatchingRow, false);
-                return;
-            }
-            try
-            {
-                var data = await GetWatchingAnimeAsync();
-                if (data == null || data.Count == 0)
-                {
-                    SetSectionVisibility(DiscoverWatchingHeader, DiscoverWatchingRow, false);
-                    return;
-                }
-                PopulateWatchingRow(data.Take(12).ToList());
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverWatchingHeader, DiscoverWatchingRow, false);
-            }
+                if (!Credentials.Authenticated)
+                    return new List<AnimeItemAbstraction>();
+                return await GetWatchingAnimeAsync();
+            }, data => PopulateWatchingRow(data.Take(12).ToList()));
         }
 
         private static async Task<List<AnimeItemAbstraction>> GetWatchingAnimeAsync()
@@ -209,50 +231,43 @@ namespace MALClient.Android.Fragments
             return AnimeType.TV;
         }
 
-        private async Task LoadReadingAsync()
+        private Task LoadReadingAsync(bool force = false)
         {
-            if (!Credentials.Authenticated)
+            return LoadSectionAsync(DiscoverReadingHeader, DiscoverReadingRow, async () =>
             {
-                SetSectionVisibility(DiscoverReadingHeader, DiscoverReadingRow, false);
-                return;
-            }
-            try
-            {
-                var data = await GetReadingMangaAsync();
-                if (data == null || data.Count == 0)
-                {
-                    SetSectionVisibility(DiscoverReadingHeader, DiscoverReadingRow, false);
-                    return;
-                }
-                PopulateReadingRow(data.Take(12).ToList());
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverReadingHeader, DiscoverReadingRow, false);
-            }
+                if (!Credentials.Authenticated)
+                    return new List<AnimeItemAbstraction>();
+                return await GetReadingMangaAsync();
+            }, data => PopulateReadingRow(data.Take(12).ToList()));
         }
 
-        private async Task LoadCompletedAsync()
+        private Task LoadCompletedAsync(bool force = false)
         {
-            if (!Credentials.Authenticated)
+            return LoadSectionAsync(DiscoverCompletedHeader, DiscoverCompletedRow, async () =>
             {
-                SetSectionVisibility(DiscoverCompletedHeader, DiscoverCompletedRow, false);
-                return;
-            }
-            try
+                if (!Credentials.Authenticated)
+                    return new List<AnimeItemAbstraction>();
+                return await GetCompletedAnimeAsync();
+            }, data => PopulateCompletedRow(data.Take(12).ToList()));
+        }
+
+        private Task LoadSuggestionsAsync()
+        {
+            return LoadSectionAsync(DiscoverSuggestionsHeader, DiscoverSuggestionsRow, async () =>
             {
-                var data = await GetCompletedAnimeAsync();
-                if (data == null || data.Count == 0)
+                if (!Credentials.Authenticated)
+                    return new List<AnimeLibraryItemData>();
+                var recs = await new AnimePersonalizedRecommendationsQuery(true).GetPersonalizedRecommendations();
+                if (recs == null)
+                    return new List<AnimeLibraryItemData>();
+                return recs.Take(12).Select(rec => new AnimeLibraryItemData
                 {
-                    SetSectionVisibility(DiscoverCompletedHeader, DiscoverCompletedRow, false);
-                    return;
-                }
-                PopulateCompletedRow(data.Take(12).ToList());
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverCompletedHeader, DiscoverCompletedRow, false);
-            }
+                    Title = rec.Title,
+                    ImgUrl = rec.ImgUrl,
+                    MalId = rec.Id,
+                    MyStatus = AnimeStatus.PlanToWatch,
+                }).Cast<AnimeLibraryItemData>().ToList();
+            }, data => PopulateLibraryCardRow(DiscoverSuggestionsRow, data));
         }
 
         private static async Task<List<AnimeItemAbstraction>> GetReadingMangaAsync()
@@ -311,93 +326,61 @@ namespace MALClient.Android.Fragments
             return MangaType.Manga;
         }
 
-        private async Task LoadSeasonalAsync()
+        private Task LoadSeasonalAsync(bool force = false)
         {
-            try
-            {
-                var data = await new AnimeSeasonalQuery(GetCurrentSeason()).GetSeasonalAnime();
-                if (data == null || data.Count == 0)
-                {
-                    SetSectionVisibility(DiscoverSeasonalHeader, DiscoverSeasonalRow, false);
-                    return;
-                }
-                PopulateAnimeRow(DiscoverSeasonalRow, data.Take(12).ToList(), true);
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverSeasonalHeader, DiscoverSeasonalRow, false);
-            }
+            return LoadSectionAsync(DiscoverSeasonalHeader, DiscoverSeasonalRow,
+                async () => await new AnimeSeasonalQuery(GetCurrentSeason()).GetSeasonalAnime(force),
+                data => PopulateAnimeRow(DiscoverSeasonalRow, data.Take(12).ToList(), true));
         }
 
-        private async Task LoadTopAnimeAsync()
+        private Task LoadUpcomingAsync(bool force = false)
         {
-            try
-            {
-                var data = await new AnimeTopQuery(TopAnimeType.General).GetTopAnimeData();
-                if (data == null || data.Count == 0)
-                {
-                    SetSectionVisibility(DiscoverTopAnimeHeader, DiscoverTopAnimeRow, false);
-                    return;
-                }
-                PopulateAnimeRow(DiscoverTopAnimeRow, data.Take(12).ToList(), true);
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverTopAnimeHeader, DiscoverTopAnimeRow, false);
-            }
+            return LoadSectionAsync(DiscoverUpcomingHeader, DiscoverUpcomingRow,
+                async () => await new AnimeSeasonalQuery(GetNextSeason()).GetSeasonalAnime(force),
+                data => PopulateAnimeRow(DiscoverUpcomingRow, data.Take(12).ToList(), true));
         }
 
-        private async Task LoadTopMangaAsync()
+        private Task LoadTopAnimeAsync(bool force = false)
         {
-            try
-            {
-                var data = await new AnimeTopQuery(MangaTopType.All).GetTopAnimeData();
-                if (data == null || data.Count == 0)
-                {
-                    SetSectionVisibility(DiscoverTopMangaHeader, DiscoverTopMangaRow, false);
-                    return;
-                }
-                PopulateAnimeRow(DiscoverTopMangaRow, data.Take(12).ToList(), false);
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverTopMangaHeader, DiscoverTopMangaRow, false);
-            }
+            return LoadSectionAsync(DiscoverTopAnimeHeader, DiscoverTopAnimeRow,
+                async () => await new AnimeTopQuery(TopAnimeType.General).GetTopAnimeData(force),
+                data => PopulateAnimeRow(DiscoverTopAnimeRow, data.Take(12).ToList(), true));
         }
 
-        private async Task LoadAdaptedAsync()
+        private Task LoadTopMangaAsync(bool force = false)
         {
-            try
-            {
-                var data = await new AnimeAdaptedToAnimeQuery(MangaAdaptedType.AiringNow).GetAdaptedToAnimeData();
-                if (data == null || data.Count == 0)
-                {
-                    SetSectionVisibility(DiscoverAdaptedHeader, DiscoverAdaptedRow, false);
-                    return;
-                }
-                PopulateAnimeRow(DiscoverAdaptedRow, data.Take(12).ToList(), false);
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverAdaptedHeader, DiscoverAdaptedRow, false);
-            }
+            return LoadSectionAsync(DiscoverTopMangaHeader, DiscoverTopMangaRow,
+                async () => await new AnimeTopQuery(MangaTopType.All).GetTopAnimeData(force),
+                data => PopulateAnimeRow(DiscoverTopMangaRow, data.Take(12).ToList(), false));
         }
 
-        private async Task LoadNewsAsync()
+        private Task LoadAdaptedAsync(bool force = false)
         {
-            try
+            return LoadSectionAsync(DiscoverAdaptedHeader, DiscoverAdaptedRow,
+                async () => await new AnimeAdaptedToAnimeQuery(MangaAdaptedType.AiringNow).GetAdaptedToAnimeData(force),
+                data => PopulateAnimeRow(DiscoverAdaptedRow, data.Take(12).ToList(), false));
+        }
+
+        private Task LoadFeaturedAsync(bool force = false)
+        {
+            return LoadSectionAsync(DiscoverFeaturedHeader, DiscoverFeaturedRow,
+                async () => await new MalArticlesIndexQuery(ArticlePageWorkMode.Articles).GetArticlesIndex(force),
+                data => PopulateNewsRow(DiscoverFeaturedRow, data.Take(10).ToList()));
+        }
+
+        private Task LoadNewsAsync(bool force = false)
+        {
+            return LoadSectionAsync(DiscoverNewsHeader, DiscoverNewsRow,
+                async () => await new MalArticlesIndexQuery(ArticlePageWorkMode.News).GetArticlesIndex(force),
+                data => PopulateNewsRow(DiscoverNewsRow, data.Take(10).ToList()));
+        }
+
+        private void PopulateLibraryCardRow(LinearLayout row, List<AnimeLibraryItemData> data)
+        {
+            foreach (var item in data)
             {
-                var data = await new MalArticlesIndexQuery(ArticlePageWorkMode.News).GetArticlesIndex();
-                if (data == null || data.Count == 0)
-                {
-                    SetSectionVisibility(DiscoverNewsHeader, DiscoverNewsRow, false);
-                    return;
-                }
-                PopulateNewsRow(data.Take(10).ToList());
-            }
-            catch (Exception)
-            {
-                SetSectionVisibility(DiscoverNewsHeader, DiscoverNewsRow, false);
+                item.Type = (int)AnimeType.TV;
+                AddGridCardToRow(row, new AnimeItemAbstraction(true, item).ViewModel);
             }
         }
 
@@ -445,7 +428,7 @@ namespace MALClient.Android.Fragments
                 AddGridCardToRow(DiscoverCompletedRow, item.ViewModel);
         }
 
-        private void PopulateNewsRow(IList<MalNewsUnitModel> data)
+        private void PopulateNewsRow(LinearLayout row, IList<MalNewsUnitModel> data)
         {
             var cardWidth = DimensionsHelper.DpToPx(320);
             var verticalMargin = DimensionsHelper.DpToPx(2);
@@ -466,7 +449,7 @@ namespace MALClient.Android.Fragments
                 view.FindViewById<TextView>(Resource.Id.ArticlesPageItemHighlight).Text = item.Highlight;
                 try
                 {
-                    view.FindViewById<ImageViewAsync>(Resource.Id.ArticlesPageItemImage).Into(item.ImgUrl);
+                    view.FindViewById<ImageViewAsync>(Resource.Id.ArticlesPageItemImage).Into(item.ImgUrl, null, null, 200);
                 }
                 catch (Exception)
                 {
@@ -477,7 +460,7 @@ namespace MALClient.Android.Fragments
                     ViewModelLocator.MalArticles.PendingArticle = item;
                     NavigateTo(PageIndex.PageNews, new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.News, Source = PageIndex.PageDiscover });
                 }));
-                DiscoverNewsRow.AddView(view);
+                row.AddView(view);
             }
         }
 
@@ -546,6 +529,36 @@ namespace MALClient.Android.Fragments
             };
         }
 
+        private static AnimeSeason GetNextSeason()
+        {
+            var current = GetCurrentSeason();
+            Season next;
+            int year = current.Year;
+            switch (current.Season)
+            {
+                case Season.Winter:
+                    next = Season.Spring;
+                    break;
+                case Season.Spring:
+                    next = Season.Summer;
+                    break;
+                case Season.Summer:
+                    next = Season.Fall;
+                    break;
+                default:
+                    next = Season.Winter;
+                    year++;
+                    break;
+            }
+            return new AnimeSeason
+            {
+                Name = $"{next} {year}",
+                Year = year,
+                Season = next,
+                IsCurrentSeason = false
+            };
+        }
+
         #region Views
 
         private ScrollView _discoverPageScroll;
@@ -561,6 +574,9 @@ namespace MALClient.Android.Fragments
         private TextView _discoverTopMangaSeeAll;
         private TextView _discoverAdaptedSeeAll;
         private TextView _discoverNewsSeeAll;
+        private TextView _discoverSuggestionsSeeAll;
+        private TextView _discoverUpcomingSeeAll;
+        private TextView _discoverFeaturedSeeAll;
         private TextView _discoverSeasonalHeader;
         private TextView _discoverTopAnimeHeader;
         private TextView _discoverTopMangaHeader;
@@ -569,6 +585,9 @@ namespace MALClient.Android.Fragments
         private TextView _discoverWatchingHeader;
         private TextView _discoverReadingHeader;
         private TextView _discoverCompletedHeader;
+        private TextView _discoverSuggestionsHeader;
+        private TextView _discoverUpcomingHeader;
+        private TextView _discoverFeaturedHeader;
         private LinearLayout _discoverSeasonalRow;
         private LinearLayout _discoverTopAnimeRow;
         private LinearLayout _discoverTopMangaRow;
@@ -577,6 +596,9 @@ namespace MALClient.Android.Fragments
         private LinearLayout _discoverWatchingRow;
         private LinearLayout _discoverReadingRow;
         private LinearLayout _discoverCompletedRow;
+        private LinearLayout _discoverSuggestionsRow;
+        private LinearLayout _discoverUpcomingRow;
+        private LinearLayout _discoverFeaturedRow;
 
         public ScrollView DiscoverPageScroll => GetView(ref _discoverPageScroll, Resource.Id.DiscoverPageScroll);
         public ScrollableSwipeToRefreshLayout DiscoverPageRefresh => GetView(ref _discoverPageRefresh, Resource.Id.DiscoverPageRefresh);
@@ -591,6 +613,9 @@ namespace MALClient.Android.Fragments
         public TextView DiscoverTopMangaSeeAll => GetView(ref _discoverTopMangaSeeAll, Resource.Id.DiscoverTopMangaSeeAll);
         public TextView DiscoverAdaptedSeeAll => GetView(ref _discoverAdaptedSeeAll, Resource.Id.DiscoverAdaptedSeeAll);
         public TextView DiscoverNewsSeeAll => GetView(ref _discoverNewsSeeAll, Resource.Id.DiscoverNewsSeeAll);
+        public TextView DiscoverSuggestionsSeeAll => GetView(ref _discoverSuggestionsSeeAll, Resource.Id.DiscoverSuggestionsSeeAll);
+        public TextView DiscoverUpcomingSeeAll => GetView(ref _discoverUpcomingSeeAll, Resource.Id.DiscoverUpcomingSeeAll);
+        public TextView DiscoverFeaturedSeeAll => GetView(ref _discoverFeaturedSeeAll, Resource.Id.DiscoverFeaturedSeeAll);
         public TextView DiscoverSeasonalHeader => GetView(ref _discoverSeasonalHeader, Resource.Id.DiscoverSeasonalHeader);
         public TextView DiscoverTopAnimeHeader => GetView(ref _discoverTopAnimeHeader, Resource.Id.DiscoverTopAnimeHeader);
         public TextView DiscoverTopMangaHeader => GetView(ref _discoverTopMangaHeader, Resource.Id.DiscoverTopMangaHeader);
@@ -599,11 +624,17 @@ namespace MALClient.Android.Fragments
         public TextView DiscoverWatchingHeader => GetView(ref _discoverWatchingHeader, Resource.Id.DiscoverWatchingHeader);
         public TextView DiscoverReadingHeader => GetView(ref _discoverReadingHeader, Resource.Id.DiscoverReadingHeader);
         public TextView DiscoverCompletedHeader => GetView(ref _discoverCompletedHeader, Resource.Id.DiscoverCompletedHeader);
+        public TextView DiscoverSuggestionsHeader => GetView(ref _discoverSuggestionsHeader, Resource.Id.DiscoverSuggestionsHeader);
+        public TextView DiscoverUpcomingHeader => GetView(ref _discoverUpcomingHeader, Resource.Id.DiscoverUpcomingHeader);
+        public TextView DiscoverFeaturedHeader => GetView(ref _discoverFeaturedHeader, Resource.Id.DiscoverFeaturedHeader);
         public LinearLayout DiscoverSeasonalRow => GetView(ref _discoverSeasonalRow, Resource.Id.DiscoverSeasonalRow);
         public LinearLayout DiscoverTopAnimeRow => GetView(ref _discoverTopAnimeRow, Resource.Id.DiscoverTopAnimeRow);
         public LinearLayout DiscoverTopMangaRow => GetView(ref _discoverTopMangaRow, Resource.Id.DiscoverTopMangaRow);
         public LinearLayout DiscoverAdaptedRow => GetView(ref _discoverAdaptedRow, Resource.Id.DiscoverAdaptedRow);
         public LinearLayout DiscoverNewsRow => GetView(ref _discoverNewsRow, Resource.Id.DiscoverNewsRow);
+        public LinearLayout DiscoverSuggestionsRow => GetView(ref _discoverSuggestionsRow, Resource.Id.DiscoverSuggestionsRow);
+        public LinearLayout DiscoverUpcomingRow => GetView(ref _discoverUpcomingRow, Resource.Id.DiscoverUpcomingRow);
+        public LinearLayout DiscoverFeaturedRow => GetView(ref _discoverFeaturedRow, Resource.Id.DiscoverFeaturedRow);
         public LinearLayout DiscoverWatchingRow => GetView(ref _discoverWatchingRow, Resource.Id.DiscoverWatchingRow);
         public LinearLayout DiscoverReadingRow => GetView(ref _discoverReadingRow, Resource.Id.DiscoverReadingRow);
         public LinearLayout DiscoverCompletedRow => GetView(ref _discoverCompletedRow, Resource.Id.DiscoverCompletedRow);

@@ -152,7 +152,7 @@ namespace MALClient.Android.Flyouts
         private static View BuildStatusHeader(Context context, bool manga)
         {
             var header = new TextView(context);
-            header.Text = manga ? "LEER" : "VER";
+            header.Text = manga ? "READ" : "WATCH";
             header.SetTextColor(new Color(ResourceExtension.BrushText));
             header.SetTextSize(ComplexUnitType.Sp, 11);
             header.SetTypeface(header.Typeface, TypefaceStyle.Bold);

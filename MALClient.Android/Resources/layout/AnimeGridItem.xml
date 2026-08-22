@@ -92,6 +92,25 @@
       </LinearLayout>
   </LinearLayout>
 
+  <!-- Air countdown pill (watching cards) -->
+  <TextView
+      android:id="@+id/AnimeGridItemAirTime"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|start"
+      android:layout_margin="6dp"
+      android:background="@drawable/electric_midnight_badge"
+      android:fontFamily="@font/inter"
+      android:maxLines="1"
+      android:paddingStart="6dp"
+      android:paddingEnd="6dp"
+      android:paddingTop="2dp"
+      android:paddingBottom="2dp"
+      android:textColor="#ffffff"
+      android:textSize="9sp"
+      android:visibility="gone"
+      tools:text="in 2d 4h" />
+
   <!-- Title at bottom with dark gradient background -->
   <TextView
       android:id="@+id/AnimeGridItemTitle"

@@ -72,6 +72,17 @@ namespace MALClient.Android.UserControls
             AnimeGridItemTitle.Text = ViewModel.Title;
             UpdateBadge();
 
+            var airTime = ViewModel.TimeTillNextAirCache;
+            if (!string.IsNullOrEmpty(airTime))
+            {
+                AnimeGridItemAirTime.Text = airTime;
+                AnimeGridItemAirTime.Visibility = ViewStates.Visible;
+            }
+            else
+            {
+                AnimeGridItemAirTime.Visibility = ViewStates.Gone;
+            }
+
             if (!_propertyHandlerAttached)
             {
                 ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
@@ -175,6 +186,7 @@ namespace MALClient.Android.UserControls
         private TextView _animeGridItemStatus;
         private TextView _animeGridItemEpisodes;
         private TextView _animeGridItemScore;
+        private TextView _animeGridItemAirTime;
 
         public ImageViewAsync AnimeGridItemImage => _animeGridItemImage ?? (_animeGridItemImage = FindViewById<ImageViewAsync>(Resource.Id.AnimeGridItemImage));
         public ProgressBar AnimeGridItemImgPlaceholder => _animeGridItemImgPlaceholder ?? (_animeGridItemImgPlaceholder = FindViewById<ProgressBar>(Resource.Id.AnimeGridItemImgPlaceholder));
@@ -183,6 +195,7 @@ namespace MALClient.Android.UserControls
         public TextView AnimeGridItemStatus => _animeGridItemStatus ?? (_animeGridItemStatus = FindViewById<TextView>(Resource.Id.AnimeGridItemStatus));
         public TextView AnimeGridItemEpisodes => _animeGridItemEpisodes ?? (_animeGridItemEpisodes = FindViewById<TextView>(Resource.Id.AnimeGridItemEpisodes));
         public TextView AnimeGridItemScore => _animeGridItemScore ?? (_animeGridItemScore = FindViewById<TextView>(Resource.Id.AnimeGridItemScore));
+        public TextView AnimeGridItemAirTime => _animeGridItemAirTime ?? (_animeGridItemAirTime = FindViewById<TextView>(Resource.Id.AnimeGridItemAirTime));
 
         #endregion
     }
