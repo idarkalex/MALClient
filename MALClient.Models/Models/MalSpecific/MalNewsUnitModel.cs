@@ -1,4 +1,6 @@
-﻿namespace MALClient.Models.Models.MalSpecific
+﻿using System;
+
+namespace MALClient.Models.Models.MalSpecific
 {
     public enum MalNewsType
     {
@@ -16,5 +18,8 @@
         public string Views { get; set; }
         public string Tags { get; set; }
         public MalNewsType Type { get; set; }
+        public string Source { get; set; } = "MAL";
+        public DateTime? PublishedAt { get; set; }
+        public string Id { get; set; }
     }
 }

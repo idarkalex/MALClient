@@ -24,14 +24,16 @@ namespace MALClient.Android.PagerAdapters
         {
             _articlesFragment = new ArticlesPageTabFragment(true,ArticlePageWorkMode.Articles);
             _newsFragment = new ArticlesPageTabFragment(false,ArticlePageWorkMode.News);
+            _annFragment = new ArticlesPageTabFragment(false, ArticlePageWorkMode.AnnNews);
         }
 
         private MalFragmentBase _currentFragment;
 
         private readonly MalFragmentBase _articlesFragment;
         private readonly MalFragmentBase _newsFragment;
+        private readonly MalFragmentBase _annFragment;
 
-        public override int Count => 2;
+        public override int Count => 3;
 
         public override Fragment GetItem(int p1)
         {
@@ -41,6 +43,8 @@ namespace MALClient.Android.PagerAdapters
                     return _articlesFragment;
                 case 1:
                     return _newsFragment;
+                case 2:
+                    return _annFragment;
             }
             throw new ArgumentException();
         }
@@ -58,6 +62,10 @@ namespace MALClient.Android.PagerAdapters
                 case 1:
                     _currentFragment = _newsFragment;
                     ViewModelLocator.MalArticles.Init(MalArticlesPageNavigationArgs.News);
+                    break;
+                case 2:
+                    _currentFragment = _annFragment;
+                    ViewModelLocator.MalArticles.Init(new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.AnnNews });
                     break;
             }
         }
@@ -80,6 +88,9 @@ namespace MALClient.Android.PagerAdapters
                     break;
                 case 1:
                     txt.Text = "News";
+                    break;
+                case 2:
+                    txt.Text = "ANN";
                     break;
             }
 

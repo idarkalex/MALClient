@@ -75,12 +75,15 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
             {
                 view = Activity.LayoutInflater.Inflate(Resource.Layout.ArtclesPageItem, null);
                 view.SetOnClickListener(new OnClickListener(OnItemClick));
+            view.SetOnLongClickListener(new OnLongClickListener(OnItemLongClick));
                 if(ViewModel.ThumbnailWidth == 100)
                     view.FindViewById<ImageViewAsync>(Resource.Id.ArticlesPageItemImage).SetScaleType(ImageView.ScaleType.Center);
             }
             view.Tag = malNewsUnitModel.Wrap();
 
-            view.FindViewById<TextView>(Resource.Id.ArticlesPageItemAuthor).Text = malNewsUnitModel.Author;
+            view.FindViewById<TextView>(Resource.Id.ArticlesPageItemAuthor).Text = malNewsUnitModel.Source == "ANN"
+                ? $"ANN · {malNewsUnitModel.PublishedAt:MMM d}"
+                : malNewsUnitModel.Author;
             view.FindViewById<TextView>(Resource.Id.ArticlesPageItemViews).Text = malNewsUnitModel.Views;
             view.FindViewById<TextView>(Resource.Id.ArticlesPageItemTags).Text = malNewsUnitModel.Tags;
             view.FindViewById<TextView>(Resource.Id.ArticlesPageItemHeader).Text = malNewsUnitModel.Title;
@@ -102,6 +105,17 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
         private void OnItemClick(View view)
         {
             ViewModel.LoadArticleCommand.Execute(view.Tag.Unwrap<MalNewsUnitModel>());
+        }
+
+        private void OnItemLongClick(View view)
+        {
+            var model = view.Tag.Unwrap<MalNewsUnitModel>();
+            if (model == null)
+                return;
+            var shareIntent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
+            shareIntent.SetType("text/plain");
+            shareIntent.PutExtra(Android.Content.Intent.ExtraText, $"{model.Title}\n{model.Url}");
+            view.Context.StartActivity(Android.Content.Intent.CreateChooser(shareIntent, "Share via"));
         }
 
         public override int LayoutResourceId => Resource.Layout.ArticlesPageTabItem;

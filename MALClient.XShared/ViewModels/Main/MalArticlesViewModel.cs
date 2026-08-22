@@ -114,14 +114,25 @@ namespace MALClient.XShared.ViewModels.Main
         {
             if (args == null) //refresh
             {
-                args = PrevWorkMode == ArticlePageWorkMode.Articles
-                    ? MalArticlesPageNavigationArgs.Articles
-                    : MalArticlesPageNavigationArgs.News;
+                switch (PrevWorkMode)
+                {
+                    case ArticlePageWorkMode.Articles:
+                        args = MalArticlesPageNavigationArgs.Articles;
+                        break;
+                    case ArticlePageWorkMode.AnnNews:
+                        args = new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.AnnNews };
+                        break;
+                    default:
+                        args = MalArticlesPageNavigationArgs.News;
+                        break;
+                }
                 force = true;
             }
             ArticleIndexVisibility = true;
             WebViewVisibility = false;
-            ViewModelLocator.GeneralMain.CurrentStatus = args.WorkMode == ArticlePageWorkMode.Articles ? "Articles" : "News";
+            ViewModelLocator.GeneralMain.CurrentStatus =
+                args.WorkMode == ArticlePageWorkMode.Articles ? "Articles" :
+                args.WorkMode == ArticlePageWorkMode.AnnNews ? "ANN News" : "News";
 
             if (PrevWorkMode == args.WorkMode && !force)
             {
@@ -148,6 +159,10 @@ namespace MALClient.XShared.ViewModels.Main
                     ThumbnailWidth = 100;
                     ThumbnailHeight = 150;
                     break;
+                case ArticlePageWorkMode.AnnNews:
+                    ThumbnailWidth = 100;
+                    ThumbnailHeight = 150;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -155,10 +170,12 @@ namespace MALClient.XShared.ViewModels.Main
 
             var data = new List<MalNewsUnitModel>();
             Articles = new List<MalNewsUnitModel>();
-           
+
             await Task.Run(async () =>
             {
-                data = await new MalArticlesIndexQuery(args.WorkMode).GetArticlesIndex(force);                
+                data = args.WorkMode == ArticlePageWorkMode.AnnNews
+                    ? await new Comm.Articles.AnnNewsQuery().GetAnnNewsIndex(force)
+                    : await new MalArticlesIndexQuery(args.WorkMode).GetArticlesIndex(force);
             });
             Articles = data;
             _loadingData = false;
@@ -166,14 +183,19 @@ namespace MALClient.XShared.ViewModels.Main
 
 
         }
-        
+
         private async void LoadArticle(MalNewsUnitModel data)
         {
             LoadingVisibility = true;
             ArticleIndexVisibility = false;
             ViewModelLocator.GeneralMain.CurrentStatus = data.Title;
             CurrentNews = Articles.IndexOf(data);
-            OpenWebView?.Invoke(await new MalArticleQuery(data.Url, data.Title,data.Type).GetArticleHtml(), data);
+            string html;
+            if (data.Source == "ANN")
+                html = await Comm.Articles.AnnNewsQuery.GetAnnArticleHtml(data.Url, data.Id);
+            else
+                html = await new MalArticleQuery(data.Url, data.Title, data.Type).GetArticleHtml();
+            OpenWebView?.Invoke(html, data);
         }
     }
 }

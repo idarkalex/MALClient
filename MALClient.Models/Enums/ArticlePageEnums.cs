@@ -3,6 +3,7 @@
     public enum ArticlePageWorkMode
     {
         Articles,
-        News
+        News,
+        AnnNews
     }
 }
