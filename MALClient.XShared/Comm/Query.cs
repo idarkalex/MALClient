@@ -35,7 +35,6 @@ namespace MALClient.XShared.Comm
 
         public virtual async Task<string> GetRequestResponse()
         {
-            var responseString = "";
             try
             {
                 var res = await _client.GetAsync(Request);
@@ -47,17 +46,17 @@ namespace MALClient.XShared.Comm
 
                 await Task.Delay(150);
                 var content = await res.Content.ReadAsStringAsync();
+                ResourceLocator.ConnectionInfoProvider.HasInternetConnection = true;
                 return content;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ResourceLocator.ConnectionInfoProvider.HasInternetConnection = false;
 
                 if (Credentials.Authenticated)
                     ResourceLocator.SnackbarProvider.ShowText(SnackbarMessageOnFail);
             }
-            ResourceLocator.ConnectionInfoProvider.HasInternetConnection = true;
-            return responseString;
+            return null;
         }
 
         public virtual string SnackbarMessageOnFail => "Operation failed, check your internet connection...";
@@ -67,13 +66,16 @@ namespace MALClient.XShared.Comm
         {
             ResourceLocator.DispatcherAdapter.Run(async () =>
             {
-                if (_buggedMalMessageSemaphore.CurrentCount == 0)
-                    return;
                 await _buggedMalMessageSemaphore.WaitAsync();
-
-                await ResourceLocator.MessageDialogProvider.ShowMessageDialogAsync(
-                    "There was an error connecting to MAL Api, it tends to behave in unpredictable ways unfortunately and there's nothing I can do about it. Please try again later.", "Whoops!");
-                _buggedMalMessageSemaphore.Release();
+                try
+                {
+                    await ResourceLocator.MessageDialogProvider.ShowMessageDialogAsync(
+                        "There was an error connecting to MAL Api, it tends to behave in unpredictable ways unfortunately and there's nothing I can do about it. Please try again later.", "Whoops!");
+                }
+                finally
+                {
+                    _buggedMalMessageSemaphore.Release();
+                }
             });
             //Couldn't handle it :(
         }

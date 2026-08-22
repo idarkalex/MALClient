@@ -93,35 +93,77 @@ namespace MALClient.XShared.Comm.Profile
 
                 try
                 {
-                    var favs = await TenraiClient.GetDataAsync($"users/{Uri.EscapeDataString(_userName)}/favorites");
-                    foreach (var favAnime in GetEnumerable(favs, "anime"))
-                        current.FavouriteAnime.Add(GetInt(favAnime, "mal_id"));
+                    var favResponse = await _client.GetAsync(
+                        $"https://myanimelist.net/profile/{Uri.EscapeDataString(_userName)}/favorites");
+                    var favHtml = await favResponse.Content.ReadAsStringAsync();
+                    var favDoc = new HtmlDocument();
+                    favDoc.LoadHtml(favHtml);
 
-                    foreach (var favManga in GetEnumerable(favs, "manga"))
-                        current.FavouriteManga.Add(GetInt(favManga, "mal_id"));
-
-                    foreach (var favChar in GetEnumerable(favs, "characters"))
+                    foreach (var entry in favDoc.DocumentNode.Descendants("div"))
                     {
-                        current.FavouriteCharacters.Add(new AnimeCharacter
-                        {
-                            Id = GetString(favChar, "mal_id"),
-                            Name = GetString(favChar, "name"),
-                            ImgUrl = GetNestedString(favChar, "images", "jpg", "image_url"),
-                            FromAnime = GetString(favChar, "url")?.Contains("manga") ?? false,
-                            Notes = GetString(favChar, "title"),
-                            ShowId = GetString(favChar, "mal_id"),
-                        });
-                    }
+                        var entryClass = entry.Attributes["class"]?.Value ?? "";
+                        if (!entryClass.Contains("boxlist") || entryClass.Contains("boxlist-container"))
+                            continue;
 
-                    foreach (var favPerson in GetEnumerable(favs, "people"))
-                    {
-                        current.FavouritePeople.Add(new AnimeStaffPerson
+                        var anchor = entry.Descendants("a").FirstOrDefault();
+                        var href = anchor?.Attributes["href"]?.Value;
+                        if (string.IsNullOrEmpty(href))
+                            continue;
+
+                        var segments = href.Split('/');
+                        var typeIndex = -1;
+                        for (var i = 0; i < segments.Length - 1; i++)
                         {
-                            Id = GetString(favPerson, "mal_id"),
-                            Name = GetString(favPerson, "name"),
-                            ImgUrl = GetNestedString(favPerson, "images", "jpg", "image_url"),
-                            Notes = GetString(favPerson, "title"),
-                        });
+                            if (segments[i] == "anime" || segments[i] == "manga" || segments[i] == "character" || segments[i] == "people")
+                            {
+                                typeIndex = i;
+                                break;
+                            }
+                        }
+                        if (typeIndex == -1 || typeIndex + 1 >= segments.Length)
+                            continue;
+
+                        var type = segments[typeIndex];
+                        var id = segments[typeIndex + 1];
+
+                        var img = entry.Descendants("img").FirstOrDefault();
+                        var imgRawUrl = img?.Attributes["data-src"]?.Value ?? img?.Attributes["src"]?.Value;
+                        var imgUrl = StripFavoriteImageVariant(imgRawUrl);
+
+                        var titleNode = entry.FirstOrDefaultOfDescendantsWithClass("div", "title")?.Descendants("a").FirstOrDefault();
+                        var name = WebUtility.HtmlDecode(titleNode?.InnerText.Trim() ?? img?.Attributes["alt"]?.Value ?? "");
+
+                        switch (type)
+                        {
+                            case "anime":
+                                if (int.TryParse(id, out var animeId))
+                                    current.FavouriteAnime.Add(animeId);
+                                break;
+                            case "manga":
+                                if (int.TryParse(id, out var mangaId))
+                                    current.FavouriteManga.Add(mangaId);
+                                break;
+                            case "character":
+                                current.FavouriteCharacters.Add(new AnimeCharacter
+                                {
+                                    Id = id,
+                                    Name = name,
+                                    ImgUrl = imgUrl,
+                                    FromAnime = false,
+                                    Notes = name,
+                                    ShowId = id,
+                                });
+                                break;
+                            case "people":
+                                current.FavouritePeople.Add(new AnimeStaffPerson
+                                {
+                                    Id = id,
+                                    Name = name,
+                                    ImgUrl = imgUrl,
+                                    Notes = name,
+                                });
+                                break;
+                        }
                     }
                 }
                 catch (Exception)
@@ -577,6 +619,23 @@ namespace MALClient.XShared.Comm.Profile
             foreach (var item in arr.EnumerateArray())
                 list.Add(item.Clone());
             return list;
+        }
+
+        private static string StripFavoriteImageVariant(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                return url;
+            var queryIndex = url.IndexOf('?');
+            if (queryIndex > 0)
+                url = url.Substring(0, queryIndex);
+            var resizeIndex = url.IndexOf("/r/", StringComparison.Ordinal);
+            if (resizeIndex > 0)
+            {
+                var end = url.IndexOf('/', resizeIndex + 3);
+                if (end > 0)
+                    url = url.Substring(0, resizeIndex) + url.Substring(end);
+            }
+            return url;
         }
     }
 

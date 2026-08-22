@@ -40,6 +40,13 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
             ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
         }
 
+        public override void OnDestroy()
+        {
+            if (ViewModel != null)
+                ViewModel.PropertyChanged -= ViewModelOnPropertyChanged;
+            base.OnDestroy();
+        }
+
         private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
             if (propertyChangedEventArgs.PropertyName == nameof(ViewModel.FavAnime))

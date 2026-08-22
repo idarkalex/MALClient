@@ -42,7 +42,7 @@ namespace MALClient.XShared.Comm.Anime
             }
             catch (Exception e)
             {
-
+                ResourceLocator.TelemetryProvider.TrackException(e);
             }
 
             return "";

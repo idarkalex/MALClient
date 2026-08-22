@@ -102,13 +102,10 @@ namespace MALClient.XShared.Comm.Anime
                     DataCache.SaveSeasonalData(result, _season.Name);
                     return result;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     if (attempt == maxAttempts)
-                    {
-                        ResourceLocator.ClipboardProvider.SetText($"[Seasonal] {_season.Name}\n{e}");
                         return result;
-                    }
 
                     await Task.Delay(TimeSpan.FromSeconds(2 * attempt));
                 }

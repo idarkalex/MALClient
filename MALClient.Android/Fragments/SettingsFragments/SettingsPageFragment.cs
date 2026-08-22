@@ -35,6 +35,12 @@ namespace MALClient.Android.Fragments.SettingsFragments
             ViewModelLocator.GeneralMain.CurrentStatus = "Settings";
         }
 
+        public override void OnDestroy()
+        {
+            ViewModel.NavigationRequest -= ViewModelOnNavigationRequest;
+            base.OnDestroy();
+        }
+
         private void ViewModelOnNavigationRequest(SettingsPageIndex page)
         {
             Fragment fragment = null;

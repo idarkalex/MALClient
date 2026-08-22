@@ -53,6 +53,14 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
             _listenableWebClient.NavigationInterceptOpportunity += NavigationInterceptOpportunity;
         }
 
+        public override void OnDestroy()
+        {
+            if (ViewModel != null)
+                ViewModel.OpenWebView -= ViewModelOnOpenWebView;
+            _attachedHandler = false;
+            base.OnDestroy();
+        }
+
         protected override void InitBindings()
         {
             ArticlesPagePivot.Adapter = new ArticlesPagePagerAdapter(ChildFragmentManager);

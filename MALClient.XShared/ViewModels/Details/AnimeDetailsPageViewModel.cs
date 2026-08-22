@@ -391,6 +391,7 @@ namespace MALClient.XShared.ViewModels.Details
                 case PageIndex.PageListComparison:
                 case PageIndex.PageClubDetails:
                 case PageIndex.PageSearchEverywhere:
+                case PageIndex.PageDiscover:
                     await FetchData(false, param.Source);
                     if (PrevArgs != null)
                         ViewModelLocator.NavMgr.RegisterBackNav(PrevArgs);
@@ -1230,8 +1231,19 @@ namespace MALClient.XShared.ViewModels.Details
         {
             if (LoadingDetails || (_loadedDetails && !force && Initialized))
                 return;
-            _loadedDetails = true;
             LoadingDetails = true;
+            try
+            {
+                LoadDetailsCore(force);
+            }
+            finally
+            {
+                LoadingDetails = false;
+            }
+        }
+
+        private async void LoadDetailsCore(bool force)
+        {
             LeftGenres.Clear();
             RightGenres.Clear();
             Information.Clear();
@@ -1243,9 +1255,9 @@ namespace MALClient.XShared.ViewModels.Details
             if (data == null)
             {
                 DetailedDataVisibility = false;
-                LoadingDetails = false;
                 return;
             }
+            _loadedDetails = true;
             DetailedDataVisibility = true;
             //Now we can build elements here
 
@@ -1385,7 +1397,6 @@ namespace MALClient.XShared.ViewModels.Details
             }
 
             RaisePropertyChanged(() => AnimeMode);
-            LoadingDetails = false;
             OnDetailsLoaded?.Invoke();
         }
 
@@ -1394,20 +1405,25 @@ namespace MALClient.XShared.ViewModels.Details
             if (LoadingReviews == true || (_loadedReviews && !force && Initialized))
                 return;
             LoadingReviews = true;
-            _loadedReviews = true;
-            Reviews.Clear();
-            var revs = new List<AnimeReviewData>();
-            await Task.Run(async () => revs = await new AnimeReviewsQuery(MalId, AnimeMode).GetAnimeReviews(force));
-            if (revs == null)
+            try
+            {
+                Reviews.Clear();
+                var revs = new List<AnimeReviewData>();
+                await Task.Run(async () => revs = await new AnimeReviewsQuery(MalId, AnimeMode).GetAnimeReviews(force));
+                if (revs == null)
+                {
+                    NoReviewsDataNoticeVisibility = true;
+                    return;
+                }
+                _loadedReviews = true;
+                foreach (var rev in revs)
+                    Reviews.Add(rev);
+                NoReviewsDataNoticeVisibility = Reviews.Count <= 0;
+            }
+            finally
             {
                 LoadingReviews = false;
-                NoReviewsDataNoticeVisibility = true;
-                return;
             }
-            foreach (var rev in revs)
-                Reviews.Add(rev);
-            NoReviewsDataNoticeVisibility = Reviews.Count <= 0;
-            LoadingReviews = false;
         }
 
         public async void LoadRecommendations(bool force = false)
@@ -1415,23 +1431,28 @@ namespace MALClient.XShared.ViewModels.Details
             if (LoadingRecommendations || (_loadedRecomm && !force && Initialized))
                 return;
             LoadingRecommendations = true;
-            _loadedRecomm = true;
-            Recommendations.Clear();
-            var recomm = new List<DirectRecommendationData>();
-            await
-                Task.Run(
-                    async () =>
-                        recomm =
-                            await new AnimeDirectRecommendationsQuery(MalId, AnimeMode).GetDirectRecommendations(force));
-            if (recomm == null)
+            try
+            {
+                Recommendations.Clear();
+                var recomm = new List<DirectRecommendationData>();
+                await
+                    Task.Run(
+                        async () =>
+                            recomm =
+                                await new AnimeDirectRecommendationsQuery(MalId, AnimeMode).GetDirectRecommendations(force));
+                if (recomm == null)
+                {
+                    NoRecommDataNoticeVisibility = true;
+                    return;
+                }
+                _loadedRecomm = true;
+                Recommendations.AddRange(recomm);
+                NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
+            }
+            finally
             {
                 LoadingRecommendations = false;
-                NoRecommDataNoticeVisibility = true;
-                return;
             }
-            Recommendations.AddRange(recomm);
-            NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
-            LoadingRecommendations = false;
         }
 
         public async void LoadRelatedAnime(bool force = false)
@@ -1439,20 +1460,25 @@ namespace MALClient.XShared.ViewModels.Details
             if (LoadingRelated || (_loadedRelated && !force && Initialized))
                 return;
             LoadingRelated = true;
-            _loadedRelated = true;
-            RelatedAnime.Clear();
-            var related = new List<RelatedAnimeData>();
-            await Task.Run(async () => related = await new AnimeRelatedQuery(MalId, AnimeMode).GetRelatedAnime(force));
-            if (related == null)
+            try
+            {
+                RelatedAnime.Clear();
+                var related = new List<RelatedAnimeData>();
+                await Task.Run(async () => related = await new AnimeRelatedQuery(MalId, AnimeMode).GetRelatedAnime(force));
+                if (related == null)
+                {
+                    NoRelatedDataNoticeVisibility = true;
+                    return;
+                }
+                _loadedRelated = true;
+                foreach (var item in related)
+                    RelatedAnime.Add(item);
+                NoRelatedDataNoticeVisibility = RelatedAnime.Count <= 0;
+            }
+            finally
             {
                 LoadingRelated = false;
-                NoRelatedDataNoticeVisibility = true;
-                return;
             }
-            foreach (var item in related)
-                RelatedAnime.Add(item);
-            NoRelatedDataNoticeVisibility = RelatedAnime.Count <= 0;
-            LoadingRelated = false;
         }
    
 
@@ -1491,15 +1517,20 @@ namespace MALClient.XShared.ViewModels.Details
                 return;
             AvailableVideos.Clear();
             LoadingVideosVisibility = true;
-            _loadedVideos = true;
-
-            foreach (var animeVideoData in await new AnimeVideosQuery(Id).GetVideos(force))
+            try
             {
-                AvailableVideos.Add(animeVideoData);
-            }
+                foreach (var animeVideoData in await new AnimeVideosQuery(Id).GetVideos(force))
+                {
+                    AvailableVideos.Add(animeVideoData);
+                }
 
-            NoVideosNoticeVisibility = !AvailableVideos.Any();
-            LoadingVideosVisibility = false;
+                _loadedVideos = true;
+                NoVideosNoticeVisibility = !AvailableVideos.Any();
+            }
+            finally
+            {
+                LoadingVideosVisibility = false;
+            }
         }
 
         #endregion

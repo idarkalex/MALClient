@@ -14,6 +14,7 @@ namespace MALClient.XShared.ViewModels.Main
     {
         public ArticlePageWorkMode WorkMode { get; set; }
         public int NewsId { get; set; } = -1;
+        public PageIndex Source { get; set; } = PageIndex.PageAnimeList;
 
         public static MalArticlesPageNavigationArgs Articles => new MalArticlesPageNavigationArgs {WorkMode = ArticlePageWorkMode.Articles};
         public static MalArticlesPageNavigationArgs News => new MalArticlesPageNavigationArgs {WorkMode = ArticlePageWorkMode.News};
@@ -110,6 +111,7 @@ namespace MALClient.XShared.ViewModels.Main
         public MalNewsUnitModel PendingArticle;
         public async void Init(MalArticlesPageNavigationArgs args,bool force = false)
         {
+            var freshNavigation = args != null;
             if (args == null) //refresh
             {
                 args = PrevWorkMode == ArticlePageWorkMode.Articles
@@ -117,7 +119,8 @@ namespace MALClient.XShared.ViewModels.Main
                     : MalArticlesPageNavigationArgs.News;
                 force = true;
             }
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
+            if (freshNavigation)
+                ViewModelLocator.NavMgr.RegisterBackNav(args.Source, null);
             ArticleIndexVisibility = true;
             WebViewVisibility = false;
             ViewModelLocator.GeneralMain.CurrentStatus = args.WorkMode == ArticlePageWorkMode.Articles ? "Articles" : "News";

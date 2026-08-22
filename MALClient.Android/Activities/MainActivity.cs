@@ -124,8 +124,10 @@ namespace MALClient.Android.Activities
 
             if (!_staticInitPerformed)
             {
+#if DEBUG
                 var policy = new StrictMode.ThreadPolicy.Builder().PermitAll().Build();
                 StrictMode.SetThreadPolicy(policy);
+#endif
 
                 InitializationRoutines.InitPostUpdate();
 
@@ -210,8 +212,9 @@ namespace MALClient.Android.Activities
                 trans.Replace(Resource.Id.MainContentFrame, fragment);
                 trans.CommitAllowingStateLoss();
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                ResourceLocator.TelemetryProvider.TrackException(e);
             }
         }
 

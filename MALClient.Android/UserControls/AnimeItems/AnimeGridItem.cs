@@ -135,6 +135,12 @@ namespace MALClient.Android.UserControls
             }
         }
 
+        protected override void CleanupPreviousModel()
+        {
+            ViewModel.PropertyChanged -= ViewModelOnPropertyChanged;
+            _propertyHandlerAttached = false;
+        }
+
         protected override void RootContainerInit()
         {
             RootContainer.SetOnClickListener(new OnClickListener(view => ContainerOnClick()));

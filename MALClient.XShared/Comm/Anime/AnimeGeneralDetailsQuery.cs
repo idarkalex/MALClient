@@ -99,10 +99,8 @@ namespace MALClient.XShared.Comm.Anime
 
                 DataCache.SaveAnimeSearchResultsData(id, output, animeMode);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                ResourceLocator.ClipboardProvider.SetText(
-                    $"[Details] {(animeMode ? "anime" : "manga")}/{id}\n{e}");
             }
 
             return output;

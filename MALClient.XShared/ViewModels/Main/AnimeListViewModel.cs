@@ -177,7 +177,7 @@ namespace MALClient.XShared.ViewModels.Main
                 _randomedIds = new List<int>();
                 _fetching = _fetchingSeasonal = false;
 
-                if (args == null || args.ResetBackNav)
+                if (args != null && args.ResetBackNav)
                     ViewModelLocator.NavMgr.ResetMainBackNav();
 
                 if (!_queryHandler)

@@ -216,18 +216,20 @@ namespace MALClient.XShared.Utils
 
         #region VolatileData
 
-        private static Dictionary<int, VolatileDataCache> _volatileDataCache;
+        private static readonly Dictionary<int, VolatileDataCache> _volatileDataCache = new Dictionary<int, VolatileDataCache>();
 
         private static async void LoadVolatileData()
         {
             try
             {
-                _volatileDataCache = (await DataCacheService.RetrieveData<Dictionary<int, VolatileDataCache>>("volatile_data.json","",0)) ??
-                                     new Dictionary<int, VolatileDataCache>();
+                var loaded = await DataCacheService.RetrieveData<Dictionary<int, VolatileDataCache>>("volatile_data.json","",0);
+                if (loaded == null)
+                    return;
+                foreach (var kvp in loaded)
+                    _volatileDataCache[kvp.Key] = kvp.Value;
             }
             catch (Exception)
             {
-                _volatileDataCache = new Dictionary<int, VolatileDataCache>();
             }
         }
 

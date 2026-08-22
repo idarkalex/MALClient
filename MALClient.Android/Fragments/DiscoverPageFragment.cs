@@ -62,7 +62,7 @@ namespace MALClient.Android.Fragments
             DiscoverAdaptedSeeAll.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PageMangaAdapted, AnimeListPageNavigationArgs.MangaAdapted(MangaAdaptedType.AiringNow))));
             DiscoverNewsSeeAll.SetOnClickListener(new OnClickListener(v =>
-                NavigateTo(PageIndex.PageNews, MalArticlesPageNavigationArgs.News)));
+                NavigateTo(PageIndex.PageNews, new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.News, Source = PageIndex.PageDiscover })));
             DiscoverLoginButton.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PageLogIn, null)));
             DiscoverSeasonalHeader.Text = $"Seasonal - {GetCurrentSeason().Name}";
@@ -403,7 +403,7 @@ namespace MALClient.Android.Fragments
 
         private void AddGridCardToRow(LinearLayout row, AnimeItemViewModel viewModel)
         {
-            var view = new AnimeGridItem(Activity);
+            var view = new AnimeGridItem(Activity, vm => vm.NavigateDetails(PageIndex.PageDiscover));
             view.LayoutParameters = new LinearLayout.LayoutParams(
                 (int)Resources.GetDimension(Resource.Dimension.GridCardWidth),
                 (int)Resources.GetDimension(Resource.Dimension.GridCardHeight))
@@ -475,7 +475,7 @@ namespace MALClient.Android.Fragments
                 view.SetOnClickListener(new OnClickListener(v =>
                 {
                     ViewModelLocator.MalArticles.PendingArticle = item;
-                    NavigateTo(PageIndex.PageNews, MalArticlesPageNavigationArgs.News);
+                    NavigateTo(PageIndex.PageNews, new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.News, Source = PageIndex.PageDiscover });
                 }));
                 DiscoverNewsRow.AddView(view);
             }

@@ -41,6 +41,13 @@ namespace MALClient.Android.Fragments.ForumFragments
             ViewModel.Init(_args);
         }
 
+        public override void OnDestroy()
+        {
+            if (ViewModel != null)
+                ViewModel.NavigationRequested -= ViewModelOnNavigationRequested;
+            base.OnDestroy();
+        }
+
         private void ViewModelOnNavigationRequested(ForumsPageIndex page, object args)
         {
             Fragment fragment;

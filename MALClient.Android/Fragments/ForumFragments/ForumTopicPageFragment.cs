@@ -48,6 +48,13 @@ namespace MALClient.Android.Fragments.ForumFragments
             ViewModel.Init(_args);
         }
 
+        public override void OnDestroy()
+        {
+            if (ViewModel != null)
+                ViewModel.RequestScroll -= ViewModelOnRequestScroll;
+            base.OnDestroy();
+        }
+
         private async void ViewModelOnRequestScroll(object sender, int i)
         {
             try
