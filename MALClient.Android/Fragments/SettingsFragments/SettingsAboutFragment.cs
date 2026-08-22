@@ -10,11 +10,13 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Java.Lang;
+using FFImageLoading;
 using MALClient.Android.Activities;
 using MALClient.Android.Adapters;
 using MALClient.Android.DIalogs;
 using MALClient.Android.Listeners;
 using MALClient.Android.ViewModels;
+using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using Org.Json;
 using Exception = System.Exception;
@@ -40,6 +42,25 @@ namespace MALClient.Android.Fragments.SettingsFragments
             {
                 AboutPageCheckUpdatesButton.Enabled = false;
                 CheckForUpdates();
+            }));
+
+            AboutPageClearCacheButton.SetOnClickListener(new OnClickListener(async view =>
+            {
+                AboutPageClearCacheButton.Enabled = false;
+                try
+                {
+                    await DataCache.ClearApiRelatedCache();
+                    await ImageService.Instance.InvalidateCacheAsync();
+                    ResourceLocator.MessageDialogProvider.ShowMessageDialog("Cached data and images were cleared.", "Storage");
+                }
+                catch (Exception)
+                {
+                    ResourceLocator.MessageDialogProvider.ShowMessageDialog("Something went wrong while clearing caches.", "Storage");
+                }
+                finally
+                {
+                    AboutPageClearCacheButton.Enabled = true;
+                }
             }));
         }
 
@@ -68,6 +89,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
         private Button _aboutPageIssuesBoard;
         private Button _aboutPageChangelogButton;
         private Button _aboutPageCheckUpdatesButton;
+        private Button _aboutPageClearCacheButton;
 
         public Button AboutPageViewSourceButton => GetView(ref _aboutPageViewSourceButton, Resource.Id.AboutPageViewSourceButton);
 
@@ -76,6 +98,8 @@ namespace MALClient.Android.Fragments.SettingsFragments
         public Button AboutPageChangelogButton => GetView(ref _aboutPageChangelogButton, Resource.Id.AboutPageChangelogButton);
 
         public Button AboutPageCheckUpdatesButton => GetView(ref _aboutPageCheckUpdatesButton, Resource.Id.AboutPageCheckUpdatesButton);
+
+        public Button AboutPageClearCacheButton => GetView(ref _aboutPageClearCacheButton, Resource.Id.AboutPageClearCacheButton);
 
         #endregion
     }

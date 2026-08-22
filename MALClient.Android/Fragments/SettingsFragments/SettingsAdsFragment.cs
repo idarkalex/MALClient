@@ -77,7 +77,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
             //
             List<int> availableTimes = new List<int>() { 0, 5, 10, 15, 20, 30 };
             SettingsPageAdsMinutesDailySpinner.Adapter = availableTimes.GetAdapter((i, i1, arg3) =>
-                AndroidUtilities.BuildTimeSpinnerItem(Activity, i1, arg3, i1 == 0 ? "Indefinietly" : $"{i1} minutes"));
+                AndroidUtilities.BuildTimeSpinnerItem(Activity, i1, arg3, i1 == 0 ? "Indefinitely" : $"{i1} minutes"));
             SettingsPageAdsMinutesDailySpinner.SetSelection(availableTimes.IndexOf(ViewModel.AdsSecondsPerDay/60));
             SettingsPageAdsMinutesDailySpinner.OnItemSelectedListener = this;
 

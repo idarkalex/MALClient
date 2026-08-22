@@ -64,6 +64,23 @@
             android:layout_width="wrap_content" style="@style/AccentButtonStyle"
             android:layout_height="wrap_content" android:text="Check for updates" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
 
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_horizontal"
+      android:fontFamily="@font/inter"
+      android:text="Storage" android:layout_marginTop="20dp"
+      android:textColor="?AccentColour"
+      android:textSize="@dimen/FontSizeHuge" />
+
+    <TextView android:lineSpacingExtra="2dp"
+              android:layout_width="wrap_content" android:text="Clear cached images and downloaded data if the app is acting up or storage usage is too high." android:layout_marginTop="10dp"
+              android:layout_height="wrap_content" android:textColor="?BrushText"/>
+
+    <Button android:id="@+id/AboutPageClearCacheButton"
+            android:layout_width="wrap_content" style="@style/AccentButtonStyle"
+            android:layout_height="wrap_content" android:text="Clear caches" android:layout_gravity="center_horizontal" android:layout_margin="10dp"/>
+
 
     <TextView
       android:layout_width="wrap_content"
