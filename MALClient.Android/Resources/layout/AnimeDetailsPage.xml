@@ -535,4 +535,29 @@
         android:indeterminateTint="?AccentColour"
         android:indeterminateTintMode="src_in" />
   </RelativeLayout>
+
+  <RelativeLayout
+      android:id="@+id/AnimeDetailsPageVideoOverlay"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="#E6000000"
+      android:visibility="gone">
+
+    <WebView
+        android:id="@+id/AnimeDetailsPageVideoWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageButton
+        android:id="@+id/AnimeDetailsPageVideoCloseButton"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="12dp"
+        android:background="@drawable/electric_midnight_circle_glass"
+        android:padding="8dp"
+        android:src="@drawable/icon_close"
+        android:tint="@android:color/white" />
+  </RelativeLayout>
 </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>

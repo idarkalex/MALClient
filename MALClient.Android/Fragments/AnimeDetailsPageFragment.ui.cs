@@ -9,6 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Support.V4.View;
 using Android.Views;
+using Android.WebKit;
 using Android.Widget;
 
 using FFImageLoading.Views;
@@ -41,6 +42,9 @@ namespace MALClient.Android.Fragments
         private ImageButton _animeDetailsPageFavouriteButton;
         private ImageButton _animeDetailsPageMoreButton;
         private ImageButton _animeDetailsPageTrailerButton;
+        private RelativeLayout _animeDetailsPageVideoOverlay;
+        private WebView _animeDetailsPageVideoWebView;
+        private ImageButton _animeDetailsPageVideoCloseButton;
         private PagerSlidingTabStrip _animeDetailsPageTabStrip;
         private HeightAdjustingViewPager _animeDetailsPagePivot;
         private RelativeLayout _animeDetailsPageLoadingOverlay;
@@ -90,6 +94,9 @@ namespace MALClient.Android.Fragments
 
         public ImageButton AnimeDetailsPageMoreButton => GetView(ref _animeDetailsPageMoreButton, Resource.Id.AnimeDetailsPageMoreButton);
         public ImageButton AnimeDetailsPageTrailerButton => GetView(ref _animeDetailsPageTrailerButton, Resource.Id.AnimeDetailsPageTrailerButton);
+        public RelativeLayout AnimeDetailsPageVideoOverlay => GetView(ref _animeDetailsPageVideoOverlay, Resource.Id.AnimeDetailsPageVideoOverlay);
+        public WebView AnimeDetailsPageVideoWebView => GetView(ref _animeDetailsPageVideoWebView, Resource.Id.AnimeDetailsPageVideoWebView);
+        public ImageButton AnimeDetailsPageVideoCloseButton => GetView(ref _animeDetailsPageVideoCloseButton, Resource.Id.AnimeDetailsPageVideoCloseButton);
 
         public UserControls.PagerSlidingTabStrip AnimeDetailsPageTabStrip => GetView(ref _animeDetailsPageTabStrip, Resource.Id.AnimeDetailsPageTabStrip);
 

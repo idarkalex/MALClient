@@ -13,6 +13,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Android.WebKit;
 using Android.Widget;
 
 using Com.Shehabic.Droppy;
@@ -231,9 +232,12 @@ namespace MALClient.Android.Fragments
 
             AnimeDetailsPageTrailerButton.SetOnClickListener(new OnClickListener(view =>
             {
-                if (!string.IsNullOrEmpty(ViewModel.TrailerUrl))
-                    ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(ViewModel.TrailerUrl));
+                ViewModel.PlayVideoInApp(ViewModel.TrailerUrl);
             }));
+
+            ViewModel.RequestVideoPlayback += ShowVideoOverlay;
+
+            AnimeDetailsPageVideoCloseButton.SetOnClickListener(new OnClickListener(view => HideVideoOverlay()));
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.IsAddAnimeButtonEnabled,
@@ -313,6 +317,24 @@ namespace MALClient.Android.Fragments
                 ViewModel.RefreshData();
                 AnimeDetailsPageSwipeRefresh.Refreshing = false;
             };
+        }
+
+        private void ShowVideoOverlay(string url)
+        {
+            if (string.IsNullOrEmpty(url) || !IsAdded)
+                return;
+            AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
+            AnimeDetailsPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
+            AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
+            AnimeDetailsPageVideoWebView.SetWebViewClient(new WebViewClient());
+            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
+            AnimeDetailsPageVideoWebView.LoadUrl(url);
+        }
+
+        private void HideVideoOverlay()
+        {
+            AnimeDetailsPageVideoWebView.LoadUrl("about:blank");
+            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Gone;
         }
 
         private async void OnMoreFlyoutClick(int i)
@@ -452,6 +474,7 @@ namespace MALClient.Android.Fragments
 
         public override void DetachBindings()
         {
+            ViewModel.RequestVideoPlayback -= ShowVideoOverlay;
             if (_scrollListener != null)
             {
                 AnimeDetailsPageScrollView?.ViewTreeObserver?.RemoveOnScrollChangedListener(_scrollListener);

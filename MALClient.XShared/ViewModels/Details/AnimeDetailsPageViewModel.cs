@@ -1237,6 +1237,13 @@ namespace MALClient.XShared.ViewModels.Details
         }
 
         public event EmptyEventHander OnDetailsLoaded;
+        public event Action<string> RequestVideoPlayback;
+
+        public void PlayVideoInApp(string url)
+        {
+            if (!string.IsNullOrEmpty(url))
+                RequestVideoPlayback?.Invoke(url);
+        }
         public async void LoadDetails(bool force = false)
         {
             if (LoadingDetails || (_loadedDetails && !force && Initialized))
