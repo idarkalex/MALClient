@@ -38,8 +38,6 @@ namespace MALClient.Android.Fragments.RecommendationsFragments
             ViewModel.PopulateData();
             if(_args != null)
                 ViewModel.PivotItemIndex = _args.Index;
-            ViewModelLocator.NavMgr.DeregisterBackNav();
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
         }
 
         protected override void InitBindings()

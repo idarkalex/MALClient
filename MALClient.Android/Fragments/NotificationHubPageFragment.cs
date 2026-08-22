@@ -35,8 +35,6 @@ namespace MALClient.Android.Fragments
         {
             ViewModel = ViewModelLocator.NotificationsHub;
             ViewModel.Init();
-            ViewModelLocator.NavMgr.ResetMainBackNav();
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
         }
 
         protected override void InitBindings()

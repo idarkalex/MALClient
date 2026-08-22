@@ -45,11 +45,6 @@ namespace MALClient.Android.Fragments
 
             ViewModel = ViewModelLocator.LogIn;
             ViewModel.Init();
-            if (Credentials.Authenticated)
-            {
-                ViewModelLocator.NavMgr.ResetMainBackNav();
-                ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
-            }
 
             ViewModel.Authenticating = false;
         }

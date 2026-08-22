@@ -26,6 +26,10 @@ namespace MALClient.XShared.ViewModels
 
         protected bool _subscribed;
         protected bool _wasOnDetailsFromSearch;
+        protected object _currentPageNavArgs;
+
+        public bool IsNavigatingBack { get; set; }
+        public object CurrentPageNavArgs => _currentPageNavArgs;
 
         public virtual event OffContentPaneStateChanged OffContentPaneStateChanged;
         public virtual event NavigationRequest MainNavigationRequested;

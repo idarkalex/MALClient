@@ -89,13 +89,6 @@ namespace MALClient.XShared.ViewModels.Main
                 RaisePropertyChanged(() => CurrentPivotIndex);
 
 
-                if (args.TargetUser == Credentials.UserName && args.AllowBackNavReset)
-                {
-                    ViewModelLocator.NavMgr.ResetMainBackNav();
-                    if (ViewModelLocator.Mobile)
-                        ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
-                }
-
                 if (_currUser == null || _currUser != args.TargetUser || force)
                 {
                     LoadingVisibility = true;

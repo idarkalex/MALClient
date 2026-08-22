@@ -76,8 +76,6 @@ namespace MALClient.Android.Fragments.SearchFragments
         {
             ViewModel = ViewModelLocator.CharacterSearch;
             ViewModel.Init(_prevArgs);
-            ViewModelLocator.NavMgr.DeregisterBackNav();
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
         }
 
 

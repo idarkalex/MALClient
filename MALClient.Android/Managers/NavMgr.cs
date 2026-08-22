@@ -55,9 +55,23 @@ namespace MALClient.Android.Managers
                 return;
             }
             var data = _randomNavigationStackMain.Pop();
-            ViewModelLocator.GeneralMain.Navigate(data.Item1, data.Item2);
+            var generalMain = ViewModelLocator.GeneralMain;
+            generalMain.IsNavigatingBack = true;
+            try
+            {
+                generalMain.Navigate(data.Item1, data.Item2);
+            }
+            finally
+            {
+                generalMain.IsNavigatingBack = false;
+            }
             if (_randomNavigationStackMain.Count == 0)
                 ViewModelLocator.GeneralMain.NavigateMainBackButtonVisibility = false;
+        }
+
+        public Tuple<PageIndex, object> PeekMainBackNav()
+        {
+            return _randomNavigationStackMain.Count > 0 ? _randomNavigationStackMain.Peek() : null;
         }
 
 

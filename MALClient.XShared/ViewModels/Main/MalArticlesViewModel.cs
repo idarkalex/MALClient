@@ -112,7 +112,6 @@ namespace MALClient.XShared.ViewModels.Main
         public DateTime PendingArticleAt { get; set; } = DateTime.MinValue;
         public async void Init(MalArticlesPageNavigationArgs args,bool force = false)
         {
-            var freshNavigation = args != null;
             if (args == null) //refresh
             {
                 args = PrevWorkMode == ArticlePageWorkMode.Articles
@@ -120,8 +119,6 @@ namespace MALClient.XShared.ViewModels.Main
                     : MalArticlesPageNavigationArgs.News;
                 force = true;
             }
-            if (freshNavigation)
-                ViewModelLocator.NavMgr.RegisterBackNav(args.Source, null);
             ArticleIndexVisibility = true;
             WebViewVisibility = false;
             ViewModelLocator.GeneralMain.CurrentStatus = args.WorkMode == ArticlePageWorkMode.Articles ? "Articles" : "News";

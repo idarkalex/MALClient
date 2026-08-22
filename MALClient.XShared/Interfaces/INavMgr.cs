@@ -17,6 +17,7 @@ namespace MALClient.XShared.Interfaces
         void ResetOffBackNav();
 
         bool HasSomethingOnStack();
+        Tuple<PageIndex, object> PeekMainBackNav();
         //Desktop
         void RegisterBackNav(ProfilePageNavigationArgs args);
         void CurrentMainViewOnBackRequested();

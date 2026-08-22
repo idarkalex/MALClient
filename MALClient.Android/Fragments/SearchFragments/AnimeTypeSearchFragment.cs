@@ -32,8 +32,6 @@ namespace MALClient.Android.Fragments.SearchFragments
         protected override void Init(Bundle savedInstanceState)
         {
             ViewModel = ViewModelLocator.SearchPage;
-            ViewModelLocator.NavMgr.DeregisterBackNav();
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
         }
 
 

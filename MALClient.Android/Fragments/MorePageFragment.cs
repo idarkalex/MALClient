@@ -62,7 +62,7 @@ namespace MALClient.Android.Fragments
                     AnimeListPageNavigationArgs.MangaAdapted(MangaAdaptedType.AiringNow))));
 
             MorePageArticlesItem.SetOnClickListener(new OnClickListener(v =>
-                NavigateTo(PageIndex.PageArticles, MalArticlesPageNavigationArgs.Articles)));
+                NavigateTo(PageIndex.PageArticles, new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.Articles, Source = PageIndex.PageMore })));
 
             MorePageVideosItem.SetOnClickListener(new OnClickListener(v =>
                 NavigateTo(PageIndex.PagePopularVideos, null)));

@@ -36,8 +36,6 @@ namespace MALClient.Android.Fragments.HistoryFragments
         {
             if (_args == null)
             {
-                ViewModelLocator.NavMgr.DeregisterBackNav();
-                ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
             }       
             ViewModel = ViewModelLocator.History;
             ViewModel.Init(_args);

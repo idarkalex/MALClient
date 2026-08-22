@@ -75,6 +75,17 @@ namespace MALClient.Android.ViewModels
                 index == PageIndex.PageTopAnime)
                 index = PageIndex.PageAnimeList;
 
+            var destinationIsRoot = index == PageIndex.PageAnimeList
+                                    || index == PageIndex.PageDiscover
+                                    || index == PageIndex.PageMore;
+            if (!IsNavigatingBack && !destinationIsRoot && CurrentMainPage.HasValue && CurrentMainPage != index)
+            {
+                var candidate = new Tuple<PageIndex, object>(CurrentMainPage.Value, _currentPageNavArgs);
+                var top = ViewModelLocator.NavMgr.PeekMainBackNav();
+                if (top == null || top.Item1 != candidate.Item1 || !Equals(top.Item2, candidate.Item2))
+                    ViewModelLocator.NavMgr.RegisterBackNav(candidate.Item1, candidate.Item2);
+            }
+
             switch (index)
             {
                 case PageIndex.PageAnimeList:
@@ -259,6 +270,7 @@ namespace MALClient.Android.ViewModels
             }
             CurrentMainPage = index;
             CurrentMainPageKind = index;
+            _currentPageNavArgs = args;
             RaisePropertyChanged(() => SearchToggleLock);
         }
 

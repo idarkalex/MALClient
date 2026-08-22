@@ -255,8 +255,6 @@ namespace MALClient.Android.Fragments.SearchFragments
         {
             ViewModel = ViewModelLocator.SearchEverywhereViewModel;
             ViewModel.Init(_prevArgs);
-            ViewModelLocator.NavMgr.DeregisterBackNav();
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
         }
 
         public override int LayoutResourceId => Resource.Layout.SearchEverywherePage;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,8 +47,6 @@ namespace MALClient.Android.Fragments
 
         protected override void Init(Bundle savedInstanceState)
         {
-            ViewModelLocator.NavMgr.DeregisterBackNav();
-            ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
             ViewModel = ViewModelLocator.Wallpapers;
             ViewModel.Init(null);
         }
