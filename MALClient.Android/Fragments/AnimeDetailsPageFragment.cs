@@ -216,8 +216,20 @@ namespace MALClient.Android.Fragments
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.LoadingUpdate,
-                        () => AnimeDetailsPageLoadingUpdateSpinner.Visibility)
+                    () => AnimeDetailsPageLoadingUpdateSpinner.Visibility)
                     .ConvertSourceToTarget(Converters.BoolToVisibility));
+
+            Bindings.Add(this.SetBinding(() => ViewModel.TrailerUrl).WhenSourceChanges(() =>
+            {
+                AnimeDetailsPageTrailerButton.Visibility =
+                    string.IsNullOrEmpty(ViewModel.TrailerUrl) ? ViewStates.Gone : ViewStates.Visible;
+            }));
+
+            AnimeDetailsPageTrailerButton.SetOnClickListener(new OnClickListener(view =>
+            {
+                if (!string.IsNullOrEmpty(ViewModel.TrailerUrl))
+                    ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(ViewModel.TrailerUrl));
+            }));
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.IsAddAnimeButtonEnabled,

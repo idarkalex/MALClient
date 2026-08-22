@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -455,7 +455,7 @@ namespace MALClient.XShared.Utils
                 await Task.Run(async () =>
                 {
                     await
-                        DataCacheService.SaveData(data, $"mal_details_v2_{id}.json",
+                        DataCacheService.SaveData(data, $"mal_details_v3_{id}.json",
                             anime ? "AnimeDetails" : "MangaDetails");
                 });
             }
@@ -471,7 +471,7 @@ namespace MALClient.XShared.Utils
             {
                 return
                     await
-                        DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v2_{animeId}.json",
+                        DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v3_{animeId}.json",
                             anime ? "AnimeDetails" : "MangaDetails", 14);
             }
             catch (Exception)

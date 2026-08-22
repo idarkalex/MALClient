@@ -74,6 +74,18 @@
               android:indeterminateTintMode="src_in" />
 
           <ImageButton
+              android:id="@+id/AnimeDetailsPageTrailerButton"
+              android:layout_width="36dp"
+              android:layout_height="36dp"
+              android:layout_gravity="center_vertical"
+              android:layout_marginEnd="8dp"
+              android:background="@drawable/electric_midnight_circle_glass"
+              android:padding="8dp"
+              android:src="@drawable/icon_video"
+              android:tint="@android:color/white"
+              android:visibility="gone" />
+
+          <ImageButton
               android:id="@+id/AnimeDetailsPageMoreButton"
               android:layout_width="36dp"
               android:layout_height="36dp"

@@ -114,6 +114,107 @@
       </LinearLayout>
     </LinearLayout>
 
+    <!-- Row 1b: Favorites + Members (50/50) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:layout_marginBottom="12dp">
+
+      <!-- Favorites card -->
+      <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_marginEnd="4dp"
+          android:background="@drawable/electric_midnight_glass_panel"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:padding="12dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/icon_heart"
+            android:tint="#FFD700" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="FAVORITES"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
+
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentFavorites"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="2dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/EmTitleMd"
+              android:textStyle="bold"
+              tools:text="12,345" />
+        </LinearLayout>
+      </LinearLayout>
+
+      <!-- Members card -->
+      <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_marginStart="4dp"
+          android:background="@drawable/electric_midnight_glass_panel"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:padding="12dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/icon_eye"
+            android:tint="#FFD700" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="MEMBERS"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
+
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentMembers"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="2dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/EmTitleMd"
+              android:textStyle="bold"
+              tools:text="456,789" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+
     <!-- Hidden score label (code compat) -->
     <LinearLayout
         android:id="@+id/AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel"
@@ -121,48 +222,104 @@
         android:layout_height="wrap_content"
         android:visibility="gone" />
 
-    <!-- Row 2: Studios (full width) -->
+    <!-- Row 2: Studios + Premiered (50/50) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/electric_midnight_glass_panel"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="12dp"
+        android:baselineAligned="false"
         android:layout_marginBottom="12dp">
 
-      <ImageView
-          android:layout_width="20dp"
-          android:layout_height="20dp"
-          android:layout_marginEnd="10dp"
-          android:src="@drawable/icon_circles"
-          android:tint="#FFD700" />
-
+      <!-- Studios card -->
       <LinearLayout
-          android:layout_width="wrap_content"
+          android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:orientation="vertical">
+          android:layout_weight="1"
+          android:layout_marginEnd="4dp"
+          android:background="@drawable/electric_midnight_glass_panel"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:padding="12dp">
 
-        <TextView
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/icon_circles"
+            android:tint="#FFD700" />
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/inter"
-            android:text="STUDIOS"
-            android:textAllCaps="true"
-            android:letterSpacing="0.08"
-            android:textColor="?BrushTextSecondary"
-            android:textSize="@dimen/EmLabelCaps" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/AnimeDetailsPageGeneralTabFragmentType"
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="STUDIOS"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
+
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentType"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="2dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/FontSizeNormal"
+              android:textStyle="bold"
+              tools:text="Doga Kobo" />
+        </LinearLayout>
+      </LinearLayout>
+
+      <!-- Premiered card -->
+      <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_marginStart="4dp"
+          android:background="@drawable/electric_midnight_glass_panel"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:padding="12dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/icon_calendar"
+            android:tint="#FFD700" />
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:fontFamily="@font/inter"
-            android:textColor="?BrushText"
-            android:textSize="@dimen/FontSizeNormal"
-            android:textStyle="bold"
-            tools:text="Doga Kobo" />
+            android:orientation="vertical">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="PREMIERED"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="?BrushTextSecondary"
+              android:textSize="@dimen/EmLabelCaps" />
+
+          <TextView
+              android:id="@+id/AnimeDetailsPageGeneralTabFragmentPremiered"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="2dp"
+              android:fontFamily="@font/inter"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/FontSizeNormal"
+              android:textStyle="bold"
+              tools:text="Spring 2014" />
+        </LinearLayout>
       </LinearLayout>
     </LinearLayout>
 

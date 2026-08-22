@@ -111,6 +111,10 @@ namespace MALClient.XShared.ViewModels.Details
         public string GeneralRank { get; private set; }
         public string GeneralPopularity { get; private set; }
         public string GeneralStudios { get; private set; }
+        public string GeneralFavorites { get; private set; }
+        public string GeneralMembers { get; private set; }
+        public string GeneralSeason { get; private set; }
+        public string TrailerUrl { get; private set; }
 
         public string StartYear
         {
@@ -1158,6 +1162,10 @@ namespace MALClient.XShared.ViewModels.Details
             GeneralRank = data.Rank > 0 ? $"#{data.Rank:N0}" : "";
             GeneralPopularity = data.Popularity > 0 ? $"#{data.Popularity:N0}" : "";
             GeneralStudios = data.Studios != null && data.Studios.Any() ? string.Join(", ", data.Studios) : "";
+            GeneralFavorites = data.FavoritesCount > 0 ? data.FavoritesCount.ToString("N0") : "";
+            GeneralMembers = data.MembersCount > 0 ? data.MembersCount.ToString("N0") : "";
+            GeneralSeason = string.IsNullOrWhiteSpace(data.Season) ? "" : data.Season;
+            TrailerUrl = data.TrailerUrl;
             _imgUrl = NormalizeImageUrl((_animeItemReference as AnimeItemViewModel)?.ImgUrl ?? data.ImgUrl);
             if (Settings.SelectedApiType == ApiType.Hummingbird)
                 MalId = data.MalId;

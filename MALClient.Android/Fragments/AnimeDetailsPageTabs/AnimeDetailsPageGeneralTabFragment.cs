@@ -86,6 +86,14 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 }
                 AnimeDetailsPageGeneralTabFragmentType.Text = string.IsNullOrEmpty(studioText) ? "Unknown" : studioText;
 
+                // Favorites / Members / Premiered: official API only
+                AnimeDetailsPageGeneralTabFragmentFavorites.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralFavorites) ? "N/A" : ViewModel.GeneralFavorites;
+                AnimeDetailsPageGeneralTabFragmentMembers.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralMembers) ? "N/A" : ViewModel.GeneralMembers;
+                AnimeDetailsPageGeneralTabFragmentPremiered.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralSeason) ? "N/A" : ViewModel.GeneralSeason;
+
                 // Synopsis
                 if (!string.IsNullOrEmpty(ViewModel.Synopsis))
                 {
@@ -124,6 +132,9 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private TextView _animeDetailsPageGeneralTabFragmentMyEnd;
         private FrameLayout _animeDetailsPageGeneralTabFragmentMyEndButton;
         private TextView _animeDetailsPageGeneralTabFragmentSynopsis;
+        private TextView _animeDetailsPageGeneralTabFragmentFavorites;
+        private TextView _animeDetailsPageGeneralTabFragmentMembers;
+        private TextView _animeDetailsPageGeneralTabFragmentPremiered;
 
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodesLabel => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodesLabel, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodesLabel);
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodes => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodes, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodes);
@@ -138,6 +149,9 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         public TextView AnimeDetailsPageGeneralTabFragmentMyEnd => GetView(ref _animeDetailsPageGeneralTabFragmentMyEnd, Resource.Id.AnimeDetailsPageGeneralTabFragmentMyEnd);
         public FrameLayout AnimeDetailsPageGeneralTabFragmentMyEndButton => GetView(ref _animeDetailsPageGeneralTabFragmentMyEndButton, Resource.Id.AnimeDetailsPageGeneralTabFragmentMyEndButton);
         public TextView AnimeDetailsPageGeneralTabFragmentSynopsis => GetView(ref _animeDetailsPageGeneralTabFragmentSynopsis, Resource.Id.AnimeDetailsPageGeneralTabFragmentSynopsis);
+        public TextView AnimeDetailsPageGeneralTabFragmentFavorites => GetView(ref _animeDetailsPageGeneralTabFragmentFavorites, Resource.Id.AnimeDetailsPageGeneralTabFragmentFavorites);
+        public TextView AnimeDetailsPageGeneralTabFragmentMembers => GetView(ref _animeDetailsPageGeneralTabFragmentMembers, Resource.Id.AnimeDetailsPageGeneralTabFragmentMembers);
+        public TextView AnimeDetailsPageGeneralTabFragmentPremiered => GetView(ref _animeDetailsPageGeneralTabFragmentPremiered, Resource.Id.AnimeDetailsPageGeneralTabFragmentPremiered);
 
         #endregion
     }

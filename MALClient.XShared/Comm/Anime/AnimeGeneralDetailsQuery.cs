@@ -37,7 +37,7 @@ namespace MALClient.XShared.Comm.Anime
 
             try
             {
-                var data = await TenraiClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}");
+                var data = await TenraiClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}/full");
 
                 if (animeMode)
                 {
@@ -55,7 +55,14 @@ namespace MALClient.XShared.Comm.Anime
                         MalId = GetInt(data, "mal_id"),
                         Rank = GetInt(data, "rank"),
                         Popularity = GetInt(data, "popularity"),
+                        FavoritesCount = GetInt(data, "favorites"),
+                        MembersCount = GetInt(data, "members"),
+                        Season = FormatSeason(GetString(data, "season"), GetInt(data, "year")),
+                        Broadcast = GetBroadcastString(data),
+                        TrailerUrl = GetTrailerUrl(data),
                         Studios = GetNameList(data, "studios"),
+                        Genres = GetNameList(data, "genres"),
+                        Themes = GetNameList(data, "themes"),
                         Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
                         Title = WebUtility.HtmlDecode(GetString(data, "title")),
                         Synonyms = GetStringList(data, "title_synonyms"),
@@ -87,7 +94,12 @@ namespace MALClient.XShared.Comm.Anime
                         MalId = GetInt(data, "mal_id"),
                         Rank = GetInt(data, "rank"),
                         Popularity = GetInt(data, "popularity"),
+                        FavoritesCount = GetInt(data, "favorites"),
+                        MembersCount = GetInt(data, "members"),
                         Studios = GetNameList(data, "serializations"),
+                        Genres = GetNameList(data, "genres"),
+                        Themes = GetNameList(data, "themes"),
+                        Authors = GetJikanAuthors(data),
                         Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
                         Title = WebUtility.HtmlDecode(GetString(data, "title")),
                         Synonyms = GetStringList(data, "title_synonyms"),
@@ -110,8 +122,8 @@ namespace MALClient.XShared.Comm.Anime
         {
             var endpoint = animeMode ? "anime" : "manga";
             var fields = animeMode
-                ? "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_episodes,rank,popularity,num_list_users,num_favorites,start_season,studios{name}"
-                : "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_chapters,num_volumes,rank,popularity,num_list_users,num_favorites,serializations{name}";
+                ? "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_episodes,rank,popularity,num_list_users,num_favorites,start_season,broadcast,trailer{youtube_embed_url},studios{name},genres{name},themes{name}"
+                : "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,media_type,status,num_chapters,num_volumes,rank,popularity,num_list_users,num_favorites,serializations{name},genres{name},themes{name},authors{first_name,last_name}";
             var url = $"https://api.myanimelist.net/v2/{endpoint}/{id}?fields={fields}";
 
             try
@@ -164,7 +176,11 @@ namespace MALClient.XShared.Comm.Anime
                 MalId = GetInt(data, "id"),
                 Rank = GetInt(data, "rank"),
                 Popularity = GetInt(data, "popularity"),
+                FavoritesCount = GetInt(data, "num_favorites"),
+                MembersCount = GetInt(data, "num_list_users"),
                 Studios = GetNameList(data, animeMode ? "studios" : "serializations"),
+                Genres = GetNameList(data, "genres"),
+                Themes = GetNameList(data, "themes"),
                 Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
                 Title = WebUtility.HtmlDecode(GetString(data, "title")),
                 Synonyms = GetNestedStringList(data, "alternative_titles", "synonyms"),
@@ -174,7 +190,75 @@ namespace MALClient.XShared.Comm.Anime
             if (!string.IsNullOrEmpty(englishTitle))
                 ResourceLocator.EnglishTitlesProvider.AddOrUpdate(int.Parse(id), animeMode, englishTitle);
 
+            if (animeMode)
+            {
+                output.Season = FormatSeason(GetNestedString(data, "start_season", "season"), GetNestedInt(data, "start_season", "year"));
+                var broadcastDay = GetNestedString(data, "broadcast", "day_of_the_week");
+                var broadcastTime = GetNestedString(data, "broadcast", "start_time");
+                if (!string.IsNullOrEmpty(broadcastDay))
+                    output.Broadcast = Capitalize(broadcastDay) + (string.IsNullOrEmpty(broadcastTime) ? "" : $" {broadcastTime} JST");
+                output.TrailerUrl = GetNestedString(data, "trailer", "youtube_embed_url");
+            }
+            else
+            {
+                foreach (var author in GetNameArray(data, "authors"))
+                {
+                    var first = GetString(author, "first_name");
+                    var last = GetString(author, "last_name");
+                    var name = $"{last} {first}".Trim();
+                    if (!string.IsNullOrEmpty(name))
+                        output.Authors.Add(name);
+                }
+            }
+
             return output;
+        }
+
+        private static string Capitalize(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            return char.ToUpper(input[0]) + input.Substring(1);
+        }
+
+        private static string FormatSeason(string season, int year)
+        {
+            var s = Capitalize(season ?? "");
+            if (string.IsNullOrEmpty(s))
+                return year > 0 ? year.ToString() : "";
+            return year > 0 ? $"{s} {year}" : s;
+        }
+
+        private static List<JsonElement> GetNameArray(JsonElement el, string prop)
+        {
+            var list = new List<JsonElement>();
+            if (el.TryGetProperty(prop, out var arr) && arr.ValueKind == JsonValueKind.Array)
+                foreach (var item in arr.EnumerateArray())
+                    list.Add(item.Clone());
+            return list;
+        }
+
+        private static string GetBroadcastString(JsonElement data) =>
+            data.TryGetProperty("broadcast", out var bc) ? GetString(bc, "string") : "";
+
+        private static string GetTrailerUrl(JsonElement data)
+        {
+            if (!data.TryGetProperty("trailer", out var trailer))
+                return "";
+            var embed = GetString(trailer, "embed_url");
+            return !string.IsNullOrEmpty(embed) ? embed : GetString(trailer, "url");
+        }
+
+        private static List<string> GetJikanAuthors(JsonElement data)
+        {
+            var list = new List<string>();
+            if (data.TryGetProperty("authors", out var arr) && arr.ValueKind == JsonValueKind.Array)
+                foreach (var item in arr.EnumerateArray())
+                {
+                    var name = GetNestedString(item, "author", "name");
+                    if (!string.IsNullOrEmpty(name))
+                        list.Add(name);
+                }
+            return list;
         }
 
         private static string MapStatus(string status) =>
@@ -235,6 +319,15 @@ namespace MALClient.XShared.Comm.Anime
                 if (!el.TryGetProperty(prop, out el)) return "";
             }
             return GetString(el, props.Last());
+        }
+
+        private static int GetNestedInt(JsonElement el, params string[] props)
+        {
+            foreach (var prop in props.Take(props.Length - 1))
+            {
+                if (!el.TryGetProperty(prop, out el)) return 0;
+            }
+            return GetInt(el, props.Last());
         }
 
         private static List<string> GetStringList(JsonElement el, string prop)
