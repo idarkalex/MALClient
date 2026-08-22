@@ -11,23 +11,21 @@
     android:id="@+id/GenreItemRootContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/border_accent_rightleft"
+    android:background="@drawable/electric_midnight_glass_panel"
     android:orientation="horizontal"
-    android:paddingStart="5dp"
-    android:paddingEnd="5dp">
+    android:paddingStart="12dp"
+    android:paddingEnd="6dp">
 
     <TextView
       android:id="@+id/GenreItemTextView"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_gravity="center"
+      android:layout_gravity="center_vertical"
       android:layout_weight="1"
       android:fontFamily="@font/inter"
-      android:gravity="center"
-      android:minHeight="40dp"
-      android:paddingStart="4dp"
-      android:paddingEnd="4dp"
-      android:textAlignment="center"
+      android:minHeight="44dp"
+      android:paddingTop="6dp"
+      android:paddingBottom="6dp"
       android:textColor="?BrushText"
       android:textSize="@dimen/FontSizeNormal"
       tools:text="Adventure veeery long at that so long that gets wrappeedddddddddddddddddddddddddddddddddddddddddddddd " />
@@ -35,8 +33,8 @@
 
     <ImageButton
       android:id="@+id/MoreButton"
-      android:layout_width="40dp"
-      android:layout_height="40dp"
+      android:layout_width="36dp"
+      android:layout_height="36dp"
       android:layout_gravity="end|center_vertical"
       android:background="@color/Transparent"
       android:foreground="?selectableItemBackgroundBorderless"

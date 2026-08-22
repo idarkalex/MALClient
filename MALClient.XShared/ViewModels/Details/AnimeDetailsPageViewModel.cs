@@ -114,6 +114,8 @@ namespace MALClient.XShared.ViewModels.Details
         public string GeneralFavorites { get; private set; }
         public string GeneralMembers { get; private set; }
         public string GeneralSeason { get; private set; }
+        public string GeneralDuration { get; private set; }
+        public string GeneralRating { get; private set; }
         public string TrailerUrl { get; private set; }
 
         public string StartYear
@@ -1329,7 +1331,7 @@ namespace MALClient.XShared.ViewModels.Details
                     infoString = infoString.Replace(", add some", "");
                     var parts = infoString.Split(':');
 
-                    if (parts[0] == "Broadcast" && parts[1] != "Unknown")
+                    if (parts[0] == "Broadcast" && parts.Length > 1 && parts[1] != "Unknown")
                     {
                         if (_animeItemReference is AnimeItemViewModel vm)
                         {
@@ -1346,7 +1348,16 @@ namespace MALClient.XShared.ViewModels.Details
                             }
                         }
                     }
-                    Information.Add(new Tuple<string, string>(parts[0], string.Join(":", parts.Skip(1))));
+
+                    // fields duplicated by General tab cards / hero stay out of Details
+                    var duplicated = parts[0] == "Type" || parts[0] == "Episodes" || parts[0] == "Status"
+                                     || parts[0] == "Aired" || parts[0] == "Premiered" || parts[0] == "Studios";
+                    if (parts[0] == "Duration")
+                        GeneralDuration = string.Join(":", parts.Skip(1)).Trim();
+                    if (parts[0] == "Rating")
+                        GeneralRating = string.Join(":", parts.Skip(1)).Trim();
+                    if (!duplicated)
+                        Information.Add(new Tuple<string, string>(parts[0], string.Join(":", parts.Skip(1))));
                 }
                 catch (Exception e)
                 {
@@ -1373,6 +1384,8 @@ namespace MALClient.XShared.ViewModels.Details
                         infoString = infoString.Substring(0, pos - 2);
 
                     var parts = infoString.Split(':');
+                    if (parts[0] == "Rank" || parts[0] == "Popularity" || parts[0] == "Members" || parts[0] == "Favorites")
+                        continue;
                     Stats.Add(new Tuple<string, string>(parts[0], parts[1]));
                 }
                 catch

@@ -1,11 +1,11 @@
-﻿<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
                 android:layout_height="match_parent">
   <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?BrushDeepBackground"
+    android:background="@color/EmSheet"
     android:padding="5dp">
     <ListView android:layout_width="match_parent" android:divider="@color/Transparent" android:dividerHeight="15dp"
               android:layout_height="match_parent" android:id="@+id/AnimeDetailsPageRelatedTabsList" />
@@ -20,3 +20,4 @@
                  android:indeterminate="true" android:layout_centerInParent="true" />
   </RelativeLayout>
 </RelativeLayout>
+

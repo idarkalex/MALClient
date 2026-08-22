@@ -59,40 +59,26 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             try
             {
-                // Rank: official API value first, scraped stats as fallback
-                var rankText = !string.IsNullOrEmpty(ViewModel.GeneralRank) ? ViewModel.GeneralRank : null;
-                if (string.IsNullOrEmpty(rankText))
-                {
-                    var rankEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Rank");
-                    rankText = rankEntry?.Item2?.Trim();
-                }
-                AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text = string.IsNullOrEmpty(rankText) ? "N/A" : rankText;
+                AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralRank) ? "N/A" : ViewModel.GeneralRank;
 
-                // Popularity: official API value first, scraped stats as fallback
-                var popText = !string.IsNullOrEmpty(ViewModel.GeneralPopularity) ? ViewModel.GeneralPopularity : null;
-                if (string.IsNullOrEmpty(popText))
-                {
-                    var popEntry = ViewModel.Stats.FirstOrDefault(s => s.Item1 == "Popularity");
-                    popText = popEntry?.Item2?.Trim();
-                }
-                AnimeDetailsPageGeneralTabFragmentScore.Text = string.IsNullOrEmpty(popText) ? "N/A" : popText;
+                AnimeDetailsPageGeneralTabFragmentScore.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralPopularity) ? "N/A" : ViewModel.GeneralPopularity;
 
-                // Studios: official API value first, scraped info as fallback
-                var studioText = !string.IsNullOrEmpty(ViewModel.GeneralStudios) ? ViewModel.GeneralStudios : null;
-                if (string.IsNullOrEmpty(studioText))
-                {
-                    var studioEntry = ViewModel.Information.FirstOrDefault(s => s.Item1 == "Studios");
-                    studioText = studioEntry?.Item2?.Trim();
-                }
-                AnimeDetailsPageGeneralTabFragmentType.Text = string.IsNullOrEmpty(studioText) ? "Unknown" : studioText;
+                AnimeDetailsPageGeneralTabFragmentType.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralStudios) ? "Unknown" : ViewModel.GeneralStudios;
 
-                // Favorites / Members / Premiered: official API only
+                // Favorites / Members / Premiered / Duration / Rating: official API + Tenrai enrichment
                 AnimeDetailsPageGeneralTabFragmentFavorites.Text =
                     string.IsNullOrEmpty(ViewModel.GeneralFavorites) ? "N/A" : ViewModel.GeneralFavorites;
                 AnimeDetailsPageGeneralTabFragmentMembers.Text =
                     string.IsNullOrEmpty(ViewModel.GeneralMembers) ? "N/A" : ViewModel.GeneralMembers;
                 AnimeDetailsPageGeneralTabFragmentPremiered.Text =
                     string.IsNullOrEmpty(ViewModel.GeneralSeason) ? "N/A" : ViewModel.GeneralSeason;
+                AnimeDetailsPageGeneralTabFragmentDuration.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralDuration) ? "N/A" : ViewModel.GeneralDuration;
+                AnimeDetailsPageGeneralTabFragmentRating.Text =
+                    string.IsNullOrEmpty(ViewModel.GeneralRating) ? "N/A" : ViewModel.GeneralRating;
 
                 // Synopsis
                 if (!string.IsNullOrEmpty(ViewModel.Synopsis))
@@ -135,6 +121,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private TextView _animeDetailsPageGeneralTabFragmentFavorites;
         private TextView _animeDetailsPageGeneralTabFragmentMembers;
         private TextView _animeDetailsPageGeneralTabFragmentPremiered;
+        private TextView _animeDetailsPageGeneralTabFragmentDuration;
+        private TextView _animeDetailsPageGeneralTabFragmentRating;
 
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodesLabel => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodesLabel, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodesLabel);
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodes => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodes, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodes);
@@ -152,6 +140,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         public TextView AnimeDetailsPageGeneralTabFragmentFavorites => GetView(ref _animeDetailsPageGeneralTabFragmentFavorites, Resource.Id.AnimeDetailsPageGeneralTabFragmentFavorites);
         public TextView AnimeDetailsPageGeneralTabFragmentMembers => GetView(ref _animeDetailsPageGeneralTabFragmentMembers, Resource.Id.AnimeDetailsPageGeneralTabFragmentMembers);
         public TextView AnimeDetailsPageGeneralTabFragmentPremiered => GetView(ref _animeDetailsPageGeneralTabFragmentPremiered, Resource.Id.AnimeDetailsPageGeneralTabFragmentPremiered);
+        public TextView AnimeDetailsPageGeneralTabFragmentDuration => GetView(ref _animeDetailsPageGeneralTabFragmentDuration, Resource.Id.AnimeDetailsPageGeneralTabFragmentDuration);
+        public TextView AnimeDetailsPageGeneralTabFragmentRating => GetView(ref _animeDetailsPageGeneralTabFragmentRating, Resource.Id.AnimeDetailsPageGeneralTabFragmentRating);
 
         #endregion
     }

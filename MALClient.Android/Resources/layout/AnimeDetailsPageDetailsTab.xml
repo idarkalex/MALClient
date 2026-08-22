@@ -1,4 +1,4 @@
-﻿<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -13,10 +13,16 @@
         android:orientation="vertical">
 
       <TextView
-          style="@style/TextViewHeaderStyle"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
           android:text="Genres" />
 
       <LinearLayout
@@ -47,10 +53,16 @@
       </LinearLayout>
 
       <TextView
-          style="@style/TextViewHeaderStyle"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
           android:text="Information" />
 
       <LinearLayout
@@ -63,10 +75,16 @@
           android:scrollbars="none" />
 
       <TextView
-          style="@style/TextViewHeaderStyle"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
           android:text="Statistics" />
 
       <LinearLayout
@@ -80,10 +98,16 @@
 
       <TextView
           android:id="@+id/AnimeDetailsPageDetailsTabOPsListLabel"
-          style="@style/TextViewHeaderStyle"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
           android:text="Opening themes" />
 
       <LinearLayout
@@ -97,10 +121,16 @@
 
       <TextView
           android:id="@+id/AnimeDetailsPageDetailsTabEDsListLabel"
-          style="@style/TextViewHeaderStyle"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
           android:text="Ending themes" />
 
       <LinearLayout
@@ -114,10 +144,16 @@
 
       <TextView
           android:id="@+id/EpisodesLabel"
-          style="@style/TextViewHeaderStyle"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
           android:text="Episodes" />
 
       <ListView
@@ -149,3 +185,6 @@
         android:indeterminate="true" />
   </RelativeLayout>
 </RelativeLayout>
+
+
+

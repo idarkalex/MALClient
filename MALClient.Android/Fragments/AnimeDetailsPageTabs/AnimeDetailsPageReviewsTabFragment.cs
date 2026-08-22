@@ -147,7 +147,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 var txt = new TextView(view.Context)
                 {
                     Text = $"{score.Field} {score.Score}",
-                    Typeface = Typeface.Create(ResourceExtension.FontSizeLight, TypefaceStyle.Normal)
+                    Typeface = Typeface.Create("sans-serif-light", TypefaceStyle.Normal)
                 };
                 txt.SetTextColor(new Color(ResourceExtension.BrushText));
                 scores.AddView(txt);

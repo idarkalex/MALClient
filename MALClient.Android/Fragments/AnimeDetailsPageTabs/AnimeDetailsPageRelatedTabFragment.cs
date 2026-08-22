@@ -55,7 +55,10 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         private void DataTemplateBasic(View view, int i, RelatedAnimeData relatedAnimeData)
         {
-            view.FindViewById<TextView>(Resource.Id.AnimeRelatedItemContent).Text = relatedAnimeData.WholeRelation + relatedAnimeData.Title;
+            view.FindViewById<TextView>(Resource.Id.AnimeRelatedItemContent).Text =
+            string.IsNullOrEmpty(relatedAnimeData.WholeRelation)
+                ? relatedAnimeData.Title
+                : $"{relatedAnimeData.WholeRelation.TrimEnd()} · {relatedAnimeData.Title}";
         }
 
         private View ContainerTemplate(int i)

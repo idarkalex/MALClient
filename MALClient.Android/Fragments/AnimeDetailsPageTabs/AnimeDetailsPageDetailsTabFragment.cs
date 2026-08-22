@@ -101,11 +101,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             var view = arg3 ?? Activity.LayoutInflater.Inflate(Resource.Layout.DetailAnimeEpisodeView, null);
 
-            view.SetBackgroundColor(
-                new Color(i % 2 == 0
-                    ? ResourceExtension.BrushRowAlternate1
-                    : ResourceExtension.BrushRowAlternate2));
-
             view.FindViewById<TextView>(Resource.Id.EpisodeCount).Text = $"Ep. {ep.EpisodeId}";
             view.FindViewById<TextView>(Resource.Id.EpisodeName).Text = ep.Title;
 
@@ -177,10 +172,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             var view = Activity.LayoutInflater.Inflate(Resource.Layout.GenreItemView, null);
             view.FindViewById<TextView>(Resource.Id.GenreItemTextView).Text = s;
-            view.SetBackgroundColor(
-                new Color(i % 2 == 0
-                    ? ResourceExtension.BrushRowAlternate1
-                    : ResourceExtension.BrushRowAlternate2));
 
             return view;
         }
@@ -213,11 +204,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 _opEdPopup.Show();
             }));
 
-            view.SetBackgroundColor(
-                new Color(i % 2 == 0
-                    ? ResourceExtension.BrushRowAlternate1
-                    : ResourceExtension.BrushRowAlternate2));
-
             return view;
         }
 
@@ -229,11 +215,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             contentTextView.Text = tuple.Item2;
             if (tuple.Item1 == "Alt. Titles")
                 contentTextView.SetMaxLines(int.MaxValue);
-
-            view.FindViewById(Resource.Id.DetailItemRootContainer).SetBackgroundColor(
-                new Color(i % 2 == 0
-                    ? ResourceExtension.BrushRowAlternate1
-                    : ResourceExtension.BrushRowAlternate2));
 
             return view;
         }
@@ -268,3 +249,4 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         #endregion
     }
 }
+
