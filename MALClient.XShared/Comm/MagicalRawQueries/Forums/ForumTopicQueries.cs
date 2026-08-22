@@ -134,11 +134,18 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Forums
                     await client.PostAsync(
                         $"https://myanimelist.net/forum/?action=message&topic_id={id}", requestContent);
 
-                //var response =
-                //    await client.PostAsync(
-                //        $"/forum/?action=message&topic_id=1586126", requestContent);
+                if (!response.IsSuccessStatusCode)
+                    return false;
 
-                return response.IsSuccessStatusCode;
+                var body = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(body))
+                    return false;
+
+                // A successful post re-renders the topic page; captcha/login/error pages mean failure
+                if (body.Contains("g-recaptcha") || body.Contains("action=login") || body.Contains("badresult"))
+                    return false;
+
+                return true;
             }
             catch (Exception e)
             {

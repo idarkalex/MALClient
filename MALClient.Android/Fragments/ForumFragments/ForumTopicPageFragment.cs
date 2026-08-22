@@ -132,10 +132,12 @@ namespace MALClient.Android.Fragments.ForumFragments
 
         private async void ForumTopicPageActionButtonOnClick()
         {
-            ResourceLocator.MessageDialogProvider.ShowMessageDialog("Sorry, but MAL has introduced recaptchas which limit what I can do on the forums." +
-                                                                    " Forums will be back once their API is well enough featured and stable.", "Sorry.");
-            return;
-            
+            if (!Credentials.Authenticated)
+            {
+                ResourceLocator.MessageDialogProvider.ShowMessageDialog("Log in first in order to post replies.", "Log in required");
+                return;
+            }
+
             var str = await TextInputDialogBuilder.BuildForumPostTextInputDialog(Context, TextInputDialogBuilder.ForumPostTextInputContext.Reply, "");
             if (!string.IsNullOrEmpty(str))
             {

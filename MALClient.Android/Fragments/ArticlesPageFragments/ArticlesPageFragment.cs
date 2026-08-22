@@ -74,8 +74,10 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
             if (ViewModel.PendingArticle != null)
             {
                 var article = ViewModel.PendingArticle;
+                var age = DateTime.UtcNow - ViewModel.PendingArticleAt;
                 ViewModel.PendingArticle = null;
-                ViewModel.LoadArticleCommand.Execute(article);
+                if (age < TimeSpan.FromSeconds(60))
+                    ViewModel.LoadArticleCommand.Execute(article);
             }
 
             Bindings.Add(

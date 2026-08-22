@@ -55,6 +55,17 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
                 this.SetBinding(() => ViewModel.ArticleIndexVisibility,
                     () => ArticlesPageTabItemList.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
 
+            var refresh = RootView.FindViewById<UserControls.ScrollableSwipeToRefreshLayout>(Resource.Id.ArticlesPageTabItemRefresh);
+            if (refresh != null)
+            {
+                refresh.ScrollingView = ArticlesPageTabItemList;
+                refresh.Refresh += (sender, args) =>
+                {
+                    _dataPopulated = false;
+                    ViewModel.Init(null);
+                    refresh.Refreshing = false;
+                };
+            }
         }
 
         private View GetTemplateDelegate(int i, MalNewsUnitModel malNewsUnitModel, View convertView)

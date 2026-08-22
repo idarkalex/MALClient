@@ -76,10 +76,6 @@ namespace MALClient.Android.Fragments.ForumFragments
 
             ForumNewTopicPageAcceptButton.SetOnClickListener(new OnClickListener(view =>
             {
-                ResourceLocator.MessageDialogProvider.ShowMessageDialog("Sorry, but MAL has introduced recaptchas which limit what I can do on the forums." +
-                                                                        " Forums will be back once their API is well enough featured and stable.", "Sorry.");
-                return;
-
                 if (ViewModel.IsSendButtonEnabled)
                     ViewModel.CreateTopicCommand.Execute(null);
             }));

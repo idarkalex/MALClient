@@ -458,6 +458,7 @@ namespace MALClient.Android.Fragments
                 view.SetOnClickListener(new OnClickListener(v =>
                 {
                     ViewModelLocator.MalArticles.PendingArticle = item;
+                    ViewModelLocator.MalArticles.PendingArticleAt = DateTime.UtcNow;
                     NavigateTo(PageIndex.PageNews, new MalArticlesPageNavigationArgs { WorkMode = ArticlePageWorkMode.News, Source = PageIndex.PageDiscover });
                 }));
                 row.AddView(view);

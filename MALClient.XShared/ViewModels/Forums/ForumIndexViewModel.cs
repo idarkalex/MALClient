@@ -122,7 +122,7 @@ namespace MALClient.XShared.ViewModels.Forums
                         FontAwesomeIcon.Television, ForumBoards.AnimeDisc),
                     new ForumBoardEntryViewModel("Manga Discussion",
                         "General manga discussion that is not specific to any particular series.", FontAwesomeIcon.Book,
-                        ForumBoards.MangaSeriesDisc),
+                        ForumBoards.MangaDisc),
                 }
             },
             new ForumBoardEntryGroup

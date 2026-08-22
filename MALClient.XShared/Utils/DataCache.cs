@@ -698,7 +698,7 @@ namespace MALClient.XShared.Utils
                 return
                     await
                         DataCacheService.RetrieveData<string>(
-                            $"mal_{(type == MalNewsType.Article ? "article" : "news")}_html_{title}.json", "Articles", 0);
+                            $"mal_{(type == MalNewsType.Article ? "article" : "news")}_html_{title}.json", "Articles", 7);
             }
             catch (Exception)
             {
