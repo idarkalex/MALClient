@@ -9,10 +9,12 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Android.Graphics;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
+using MALClient.Android.Resources;
 using MALClient.Android.ViewModels;
 using MALClient.Models.Enums;
 using MALClient.XShared.Utils;
@@ -44,6 +46,8 @@ namespace MALClient.Android.Fragments.SettingsFragments
                     temp.LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent,
                         ViewGroup.LayoutParams.MatchParent) {TopMargin = DimensionsHelper.DpToPx(5)};
                     temp.Tag = (int) malNotificationsType;
+                    temp.SetTextColor(new global::Android.Graphics.Color(ResourceExtension.BrushText));
+                    temp.Typeface = Typeface.Create("Inter", TypefaceStyle.Normal);
 
                     NotificationsTypesCheckBoxGroup.AddView(temp);
                     temp.CheckedChange += NotificationsCheckBoxesChange;

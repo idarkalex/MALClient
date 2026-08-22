@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -19,10 +19,15 @@
       <TextView
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
-          android:text="Start page"
-          android:textColor="?BrushText"
-          android:textSize="@dimen/FontSizeMedium" />
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
+          android:text="Start page" />
 
       <RadioGroup
           android:id="@+id/SettingsPageGeneralStartPageRadioGroup"
@@ -70,10 +75,15 @@
       <TextView
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
-          android:text="Colour theme"
-          android:textColor="?BrushText"
-          android:textSize="@dimen/FontSizeMedium" />
+          android:layout_marginTop="18dp"
+          android:layout_marginBottom="8dp"
+          android:fontFamily="@font/inter"
+          android:textAllCaps="true"
+          android:letterSpacing="0.08"
+          android:textColor="?BrushTextSecondary"
+          android:textSize="@dimen/EmLabelCaps"
+          android:textStyle="bold"
+          android:text="Colour theme" />
 
       <RadioGroup
           android:id="@+id/SettingsPageGeneralThemeRadioGroup"
@@ -1162,13 +1172,13 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-          <CheckBox
+          <Switch
               android:id="@+id/SettingsPageGeneralStartDateWhenAddCheckBox"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:text="Set to today when adding to list." />
 
-          <CheckBox
+          <Switch
               android:id="@+id/SettingsPageGeneralStartDateWhenWatchCheckBox"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
@@ -1198,14 +1208,14 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-          <CheckBox
+          <Switch
               android:id="@+id/SettingsPageGeneralEndDateWhenCompleted"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:gravity="center"
               android:text="Set to today when setting completed status." />
 
-          <CheckBox
+          <Switch
               android:id="@+id/SettingsPageGeneralEndDateWhenDropCheckBox"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
@@ -1214,7 +1224,7 @@
         </LinearLayout>
       </LinearLayout>
 
-      <CheckBox
+      <Switch
           android:id="@+id/SettingsPageGeneralAllowDateOverrideCheckBox"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
@@ -1326,4 +1336,7 @@
     </LinearLayout>
   </LinearLayout>
 </ScrollView>
+
+
+
 
