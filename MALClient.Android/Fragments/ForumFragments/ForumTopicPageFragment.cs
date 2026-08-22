@@ -22,6 +22,7 @@ using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
 using MALClient.Android.UserControls.ForumItems;
 using MALClient.XShared.NavArgs;
+using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Forums;
 using MALClient.XShared.ViewModels.Forums.Items;
