@@ -18,10 +18,7 @@ namespace MALClient.XShared.Comm.Profile
         public FriendsQuery(string userName)
         {
             _userName = userName;
-            Request =
-                WebRequest.Create(Uri.EscapeUriString($"https://myanimelist.net/profile/{userName}/friends"));
-            Request.ContentType = "application/x-www-form-urlencoded";
-            Request.Method = "GET";
+            Request = new Uri($"https://myanimelist.net/profile/{Uri.EscapeDataString(userName)}/friends");
         }
 
         public async Task<List<MalFriend>> GetFriends()
