@@ -9,7 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Support.V4.View;
 using Android.Views;
-using Android.WebKit;
+using Android.Webkit;
 using Android.Widget;
 
 using FFImageLoading.Views;
