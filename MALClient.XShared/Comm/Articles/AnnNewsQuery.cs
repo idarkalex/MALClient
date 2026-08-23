@@ -79,6 +79,13 @@ namespace MALClient.XShared.Comm.Articles
                     var body = doc.DocumentNode.Descendants("div")
                         .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("KonaBody") ?? false);
                     if (body == null)
+                    {
+                        // fallback: use the main content area or the whole body
+                        body = doc.DocumentNode.Descendants("div")
+                            .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("text-zone") ?? false)
+                            ?? doc.DocumentNode.SelectSingleNode("//body");
+                    }
+                    if (body == null)
                         return null;
 
                     foreach (var script in body.Descendants("script").ToList())
