@@ -326,18 +326,10 @@ namespace MALClient.Android.Fragments
 
         private void ShowVideoOverlay(string url)
         {
+            // YouTube blocks embed playback in WebViews (error 153) — no workaround
             if (string.IsNullOrEmpty(url) || !IsAdded)
                 return;
-            var videoId = Web.InlineVideoWebViewClient.ExtractYouTubeId(url);
-            if (string.IsNullOrEmpty(videoId))
-                return;
-            AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
-            AnimeDetailsPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
-            AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
-            AnimeDetailsPageVideoWebView.SetWebViewClient(new Web.InlineVideoWebViewClient(AnimeDetailsPageVideoWebView));
-            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
-            AnimeDetailsPageVideoWebView.LoadUrl(
-                $"https://www.youtube.com/embed/{videoId}?origin=https://myanimelist.net&autoplay=1");
+            ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(url));
         }
 
         private void HideVideoOverlay()

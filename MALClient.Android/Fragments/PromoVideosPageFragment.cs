@@ -126,18 +126,10 @@ namespace MALClient.Android.Fragments
 
         private void ShowVideoOverlay(string url)
         {
+            // YouTube blocks embed playback in WebViews (error 153)
             if (string.IsNullOrEmpty(url) || !IsAdded)
                 return;
-            var videoId = Web.InlineVideoWebViewClient.ExtractYouTubeId(url);
-            if (string.IsNullOrEmpty(videoId))
-                return;
-            PromoVideosPageVideoWebView.Settings.JavaScriptEnabled = true;
-            PromoVideosPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
-            PromoVideosPageVideoWebView.SetWebChromeClient(new WebChromeClient());
-            PromoVideosPageVideoWebView.SetWebViewClient(new Web.InlineVideoWebViewClient(PromoVideosPageVideoWebView));
-            PromoVideosPageVideoOverlay.Visibility = ViewStates.Visible;
-            PromoVideosPageVideoWebView.LoadUrl(
-                $"https://www.youtube.com/embed/{videoId}?origin=https://myanimelist.net&autoplay=1");
+            ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(url));
         }
 
         private void HideVideoOverlay()
@@ -178,5 +170,6 @@ namespace MALClient.Android.Fragments
         #endregion
     }
 }
+
 
 

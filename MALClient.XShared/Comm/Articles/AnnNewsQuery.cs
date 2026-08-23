@@ -32,7 +32,7 @@ namespace MALClient.XShared.Comm.Articles
         {
             var cached = force
                 ? null
-                : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index.json", "Articles", 1);
+                : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index_v2.json", "Articles", 1);
             if (cached != null && cached.Count > 0)
                 return cached;
 
@@ -56,7 +56,7 @@ namespace MALClient.XShared.Comm.Articles
 
             var output = ParseRss(raw);
             if (output.Count > 0)
-                DataCache.SaveData(output, "ann_news_index.json", "Articles");
+                DataCache.SaveData(output, "ann_news_index_v2.json", "Articles");
             return output;
         }
 
@@ -188,3 +188,4 @@ namespace MALClient.XShared.Comm.Articles
         }
     }
 }
+

@@ -12,16 +12,17 @@
       android:layout_height="match_parent"
       android:orientation="vertical">
 
-    <!-- Hero area: swipe-to-refresh + scrollable -->
+    <!-- Hero area: swipe-to-refresh + scrollable (shares screen with tabs via weight) -->
     <MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
         android:id="@+id/AnimeDetailsPageSwipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
       <ScrollView
           android:id="@+id/AnimeDetailsPageScrollView"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:scrollbars="none">
 
         <LinearLayout
