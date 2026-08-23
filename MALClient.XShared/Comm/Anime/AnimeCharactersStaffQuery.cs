@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -97,7 +97,10 @@ namespace MALClient.XShared.Comm.Anime
                         pair.AnimeStaffPerson.IsUnknown = true;
                     }
 
-                    output.AnimeCharacterPairs.Add(pair);
+                    if (output.AnimeCharacterPairs.Count >= 50)
+                        break;
+                    if (output.AnimeCharacterPairs.Count < 50)
+                        output.AnimeCharacterPairs.Add(pair);
                 }
                 catch (Exception)
                 {
@@ -127,7 +130,8 @@ namespace MALClient.XShared.Comm.Anime
                         person.Notes = string.Join(", ", positions);
 
                         if (!string.IsNullOrEmpty(person.Name))
-                            output.AnimeStaff.Add(person);
+                            if (output.AnimeStaff.Count < 30)
+                        output.AnimeStaff.Add(person);
                     }
                     catch (Exception)
                     {
@@ -176,6 +180,7 @@ namespace MALClient.XShared.Comm.Anime
                         pair.AnimeStaffPerson.Name = "Unknown";
                         pair.AnimeStaffPerson.IsUnknown = true;
 
+                        if (output.AnimeCharacterPairs.Count < 50)
                         output.AnimeCharacterPairs.Add(pair);
                     }
                     catch (Exception)
@@ -198,7 +203,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             var notes = role ?? "";
             if (favorites > 0)
-                notes = string.IsNullOrEmpty(notes) ? $"{favorites:N0} favorites" : $"{notes} · {favorites:N0} favorites";
+                notes = string.IsNullOrEmpty(notes) ? $"{favorites:N0} favorites" : $"{notes} � {favorites:N0} favorites";
             return notes;
         }
 
@@ -416,3 +421,5 @@ namespace MALClient.XShared.Comm.Anime
 
     }
 }
+
+

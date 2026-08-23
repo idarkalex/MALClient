@@ -64,6 +64,11 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         private void BindDetailsTab()
         {
+            MainActivity.WriteCrashLog(
+                $"DetailsTab bind: Info={ViewModel.Information.Count} Stats={ViewModel.Stats.Count} " +
+                $"OP={ViewModel.OPs.Count} ED={ViewModel.EDs.Count} EP={ViewModel.Episodes.Count} " +
+                $"Genres={ViewModel.LeftGenres.Count + ViewModel.RightGenres.Count}", null);
+
             AnimeDetailsPageDetailsTabLeftGenresList.SetAdapter(
                 ViewModel.LeftGenres.GetAdapter(GetSingleDetailTemplateDelegate));
             AnimeDetailsPageDetailsTabRightGenresList.SetAdapter(

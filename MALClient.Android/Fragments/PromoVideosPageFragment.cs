@@ -13,6 +13,7 @@ using Android.Text;
 using Android.Text.Style;
 using Android.Util;
 using Android.Views;
+using Android.Webkit;
 using Android.Widget;
 using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
@@ -50,6 +51,7 @@ namespace MALClient.Android.Fragments
 
         protected override void InitBindings()
         {
+            PromoVideosPageVideoCloseButton.SetOnClickListener(new OnClickListener(view => HideVideoOverlay()));
             Bindings.Add(
                 this.SetBinding(() => ViewModel.Loading,
                     () => PromoVideosPageLoadingSpinner.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
@@ -115,7 +117,30 @@ namespace MALClient.Android.Fragments
 
         private async void VideoItemOnClickOpenVideo(object sender, EventArgs eventArgs)
         {
-            await ViewModelLocator.AnimeDetails.OpenVideo(((sender as View).Parent as View).Tag.Unwrap<AnimeVideoData>());
+            var data = ((sender as View).Parent as View).Tag.Unwrap<AnimeVideoData>();
+            if (string.IsNullOrEmpty(data?.YtLink))
+                return;
+            ShowVideoOverlay(data.YtLink);
+        }
+
+        private void ShowVideoOverlay(string url)
+        {
+            if (string.IsNullOrEmpty(url) || !IsAdded)
+                return;
+            PromoVideosPageVideoWebView.Settings.JavaScriptEnabled = true;
+            PromoVideosPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
+            PromoVideosPageVideoWebView.Settings.UserAgentString =
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+            PromoVideosPageVideoWebView.SetWebChromeClient(new WebChromeClient());
+            PromoVideosPageVideoWebView.SetWebViewClient(new Web.InlineVideoWebViewClient(PromoVideosPageVideoWebView));
+            PromoVideosPageVideoOverlay.Visibility = ViewStates.Visible;
+            PromoVideosPageVideoWebView.LoadUrl(url);
+        }
+
+        private void HideVideoOverlay()
+        {
+            PromoVideosPageVideoWebView.LoadUrl("about:blank");
+            PromoVideosPageVideoOverlay.Visibility = ViewStates.Gone;
         }
 
         private void VideoItemOnClickOpenAnime(object sender, EventArgs eventArgs)
@@ -135,6 +160,13 @@ namespace MALClient.Android.Fragments
 
         private GridView _promoVideosPageGridView;
         private ProgressBar _promoVideosPageLoadingSpinner;
+        private RelativeLayout _promoVideosPageVideoOverlay;
+        private WebView _promoVideosPageVideoWebView;
+        private ImageButton _promoVideosPageVideoCloseButton;
+
+        public RelativeLayout PromoVideosPageVideoOverlay => GetView(ref _promoVideosPageVideoOverlay, Resource.Id.PromoVideosPageVideoOverlay);
+        public WebView PromoVideosPageVideoWebView => GetView(ref _promoVideosPageVideoWebView, Resource.Id.PromoVideosPageVideoWebView);
+        public ImageButton PromoVideosPageVideoCloseButton => GetView(ref _promoVideosPageVideoCloseButton, Resource.Id.PromoVideosPageVideoCloseButton);
 
         public GridView PromoVideosPageGridView => GetView(ref _promoVideosPageGridView, Resource.Id.PromoVideosPageGridView);
 
@@ -143,3 +175,4 @@ namespace MALClient.Android.Fragments
         #endregion
     }
 }
+

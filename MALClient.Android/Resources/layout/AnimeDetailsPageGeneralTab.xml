@@ -215,48 +215,6 @@
       </LinearLayout>
     </LinearLayout>
 
-    <!-- Row 2b: Duration + Rating pills -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="12dp"
-        android:gravity="center_vertical">
-
-      <TextView
-          android:id="@+id/AnimeDetailsPageGeneralTabFragmentDuration"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginEnd="6dp"
-          android:background="@drawable/electric_midnight_pill"
-          android:fontFamily="@font/inter"
-          android:maxLines="1"
-          android:ellipsize="end"
-          android:paddingStart="10dp"
-          android:paddingEnd="10dp"
-          android:paddingTop="5dp"
-          android:paddingBottom="5dp"
-          android:textColor="?BrushText"
-          android:textSize="@dimen/FontSizeSemiNormal"
-          tools:text="24 min per ep" />
-
-      <TextView
-          android:id="@+id/AnimeDetailsPageGeneralTabFragmentRating"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:background="@drawable/electric_midnight_pill"
-          android:fontFamily="@font/inter"
-          android:maxLines="1"
-          android:ellipsize="end"
-          android:paddingStart="10dp"
-          android:paddingEnd="10dp"
-          android:paddingTop="5dp"
-          android:paddingBottom="5dp"
-          android:textColor="?BrushText"
-          android:textSize="@dimen/FontSizeSemiNormal"
-          tools:text="PG-13" />
-    </LinearLayout>
-
     <!-- Hidden score label (code compat) -->
     <LinearLayout
         android:id="@+id/AnimeDetailsPageGeneralTabFragmentScoreHiddenLabel"

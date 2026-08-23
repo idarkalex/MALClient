@@ -114,8 +114,6 @@ namespace MALClient.XShared.ViewModels.Details
         public string GeneralFavorites { get; private set; }
         public string GeneralMembers { get; private set; }
         public string GeneralSeason { get; private set; }
-        public string GeneralDuration { get; private set; }
-        public string GeneralRating { get; private set; }
         public string TrailerUrl { get; private set; }
 
         public string StartYear
@@ -258,8 +256,11 @@ namespace MALClient.XShared.ViewModels.Details
 
             _loadingAlternate = false;
 
-            //details reset
-            _loadedDetails = _loadedReviews = _loadedRecomm = _loadedRelated = _loadedVideos = _loadedCharacters = false;
+            //details reset - only for a DIFFERENT entry; back-nav to the same entry keeps loaded data
+            var sameEntry = _animeItemReference != null && param.AnimeItem != null &&
+                            _animeItemReference.Id == param.AnimeItem.Id && AnimeMode == param.AnimeMode;
+            if (!sameEntry)
+                _loadedDetails = _loadedReviews = _loadedRecomm = _loadedRelated = _loadedVideos = _loadedCharacters = false;
 
             //basic init assignment
             _animeItemReference = param.AnimeItem;
@@ -1242,7 +1243,7 @@ namespace MALClient.XShared.ViewModels.Details
         }
         public async void LoadDetails(bool force = false)
         {
-            if (LoadingDetails || (_loadedDetails && !force && Initialized))
+            if (LoadingDetails || (_loadedDetails && !force))
                 return;
             LoadingDetails = true;
             try
@@ -1355,10 +1356,6 @@ namespace MALClient.XShared.ViewModels.Details
                     // fields duplicated by General tab cards / hero stay out of Details
                     var duplicated = parts[0] == "Type" || parts[0] == "Episodes" || parts[0] == "Status"
                                      || parts[0] == "Aired" || parts[0] == "Premiered" || parts[0] == "Studios";
-                    if (parts[0] == "Duration")
-                        GeneralDuration = string.Join(":", parts.Skip(1)).Trim();
-                    if (parts[0] == "Rating")
-                        GeneralRating = string.Join(":", parts.Skip(1)).Trim();
                     // backfill General cards when official API/Tenrai /full failed for this entry
                     if (string.IsNullOrEmpty(GeneralStudios) && parts[0] == "Studios")
                         GeneralStudios = string.Join(":", parts.Skip(1)).Trim();
@@ -1443,7 +1440,7 @@ namespace MALClient.XShared.ViewModels.Details
 
         public async void LoadReviews(bool force = false)
         {
-            if (LoadingReviews == true || (_loadedReviews && !force && Initialized))
+            if (LoadingReviews == true || (_loadedReviews && !force))
                 return;
             LoadingReviews = true;
             try
@@ -1469,7 +1466,7 @@ namespace MALClient.XShared.ViewModels.Details
 
         public async void LoadRecommendations(bool force = false)
         {
-            if (LoadingRecommendations || (_loadedRecomm && !force && Initialized))
+            if (LoadingRecommendations || (_loadedRecomm && !force))
                 return;
             LoadingRecommendations = true;
             try
@@ -1498,7 +1495,7 @@ namespace MALClient.XShared.ViewModels.Details
 
         public async void LoadRelatedAnime(bool force = false)
         {
-            if (LoadingRelated || (_loadedRelated && !force && Initialized))
+            if (LoadingRelated || (_loadedRelated && !force))
                 return;
             LoadingRelated = true;
             try
@@ -1635,3 +1632,5 @@ namespace MALClient.XShared.ViewModels.Details
         }
     }
 }
+
+

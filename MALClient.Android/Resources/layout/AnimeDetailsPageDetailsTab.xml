@@ -1,10 +1,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
   <MALClient.Android.UserControls.OrientationDependentScrollView xmlns:android="http://schemas.android.com/apk/res/android"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
+      android:layout_height="wrap_content"
       android:background="@color/EmSheet">
 
     <LinearLayout
@@ -175,7 +175,7 @@
   <RelativeLayout
       android:id="@+id/AnimeDetailsPageDetailsTabLoadingOverlay"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
+      android:layout_height="250dp"
       android:background="?BrushLoadingNonOpaque">
 
     <ProgressBar
@@ -185,6 +185,8 @@
         android:indeterminate="true" />
   </RelativeLayout>
 </RelativeLayout>
+
+
 
 
 

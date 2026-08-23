@@ -121,7 +121,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 case Orientation.Square:
                 case Orientation.Undefined:
                     param = RootView.LayoutParameters;
-                    param.Height = ViewGroup.LayoutParams.MatchParent;
+                    param.Height = ViewGroup.LayoutParams.WrapContent;
                     RootView.LayoutParameters = param;
                     break;
                 default:

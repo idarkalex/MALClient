@@ -358,50 +358,11 @@
             android:layout_height="match_parent"
             android:visibility="gone" />
 
-        <LinearLayout
-            android:id="@+id/AnimeDetailsPageAddSection"
+        <FrameLayout
+            android:id="@+id/AnimeDetailsPageAddButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="12dp"
-            android:visibility="gone">
-
-          <FrameLayout
-              android:id="@+id/AnimeDetailsPageAddButton"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:background="@drawable/electric_midnight_glass_button"
-              android:clickable="true"
-              android:focusable="true"
-              android:gravity="center"
-              android:padding="8dp">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-              <ImageView
-                  android:layout_width="18dp"
-                  android:layout_height="18dp"
-                  android:src="@drawable/icon_add"
-                  android:tint="?BrushText" />
-
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_marginStart="6dp"
-                  android:fontFamily="@font/inter"
-                  android:text="Add to my list"
-                  android:textColor="?BrushText"
-                  android:textSize="@dimen/EmBodyMd" />
-            </LinearLayout>
-          </FrameLayout>
-        </LinearLayout>
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/AnimeDetailsPageScoreButton"

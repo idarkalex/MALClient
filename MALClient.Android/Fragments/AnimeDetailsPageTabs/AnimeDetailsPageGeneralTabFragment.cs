@@ -75,10 +75,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     string.IsNullOrEmpty(ViewModel.GeneralMembers) ? "N/A" : ViewModel.GeneralMembers;
                 AnimeDetailsPageGeneralTabFragmentPremiered.Text =
                     string.IsNullOrEmpty(ViewModel.GeneralSeason) ? "N/A" : ViewModel.GeneralSeason;
-                AnimeDetailsPageGeneralTabFragmentDuration.Text =
-                    string.IsNullOrEmpty(ViewModel.GeneralDuration) ? "N/A" : ViewModel.GeneralDuration;
-                AnimeDetailsPageGeneralTabFragmentRating.Text =
-                    string.IsNullOrEmpty(ViewModel.GeneralRating) ? "N/A" : ViewModel.GeneralRating;
 
                 // Synopsis
                 if (!string.IsNullOrEmpty(ViewModel.Synopsis))
@@ -121,8 +117,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private TextView _animeDetailsPageGeneralTabFragmentFavorites;
         private TextView _animeDetailsPageGeneralTabFragmentMembers;
         private TextView _animeDetailsPageGeneralTabFragmentPremiered;
-        private TextView _animeDetailsPageGeneralTabFragmentDuration;
-        private TextView _animeDetailsPageGeneralTabFragmentRating;
 
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodesLabel => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodesLabel, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodesLabel);
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodes => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodes, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodes);
@@ -140,8 +134,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         public TextView AnimeDetailsPageGeneralTabFragmentFavorites => GetView(ref _animeDetailsPageGeneralTabFragmentFavorites, Resource.Id.AnimeDetailsPageGeneralTabFragmentFavorites);
         public TextView AnimeDetailsPageGeneralTabFragmentMembers => GetView(ref _animeDetailsPageGeneralTabFragmentMembers, Resource.Id.AnimeDetailsPageGeneralTabFragmentMembers);
         public TextView AnimeDetailsPageGeneralTabFragmentPremiered => GetView(ref _animeDetailsPageGeneralTabFragmentPremiered, Resource.Id.AnimeDetailsPageGeneralTabFragmentPremiered);
-        public TextView AnimeDetailsPageGeneralTabFragmentDuration => GetView(ref _animeDetailsPageGeneralTabFragmentDuration, Resource.Id.AnimeDetailsPageGeneralTabFragmentDuration);
-        public TextView AnimeDetailsPageGeneralTabFragmentRating => GetView(ref _animeDetailsPageGeneralTabFragmentRating, Resource.Id.AnimeDetailsPageGeneralTabFragmentRating);
 
         #endregion
     }

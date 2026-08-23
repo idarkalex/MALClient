@@ -285,6 +285,7 @@
     <Compile Include="Utilities\CssManager.cs" />
     <Compile Include="Utilities\DimensionsHelper.cs" />
     <Compile Include="Utilities\FlingCollectionsHelper.cs" />
+    <Compile Include="Web\InlineVideoWebViewClient.cs" />
     <Compile Include="Utilities\FontManager.cs" />
     <Compile Include="Utilities\GridViewColumnHelper.cs" />
     <Compile Include="Utilities\HamburgerUtilities.cs" />
