@@ -338,6 +338,12 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageVideoWebView.LoadUrl(url);
         }
 
+        private void HideVideoOverlay()
+        {
+            AnimeDetailsPageVideoWebView.LoadUrl("about:blank");
+            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Gone;
+        }
+
         private async void OnMoreFlyoutClick(int i)
         {
             switch (i)

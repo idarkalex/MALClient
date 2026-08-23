@@ -15,6 +15,7 @@ using Android.Util;
 using Android.Views;
 using Android.Webkit;
 using Android.Widget;
+using MALClient.Android.Listeners;
 using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
@@ -175,4 +176,5 @@ namespace MALClient.Android.Fragments
         #endregion
     }
 }
+
 

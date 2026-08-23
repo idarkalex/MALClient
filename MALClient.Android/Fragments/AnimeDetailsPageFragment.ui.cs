@@ -37,7 +37,6 @@ namespace MALClient.Android.Fragments
         private FrameLayout _animeDetailsPageDecrementButton;
         private RelativeLayout _animeDetailsPageIncDecSection;
         private FrameLayout _animeDetailsPageAddButton;
-        private LinearLayout _animeDetailsPageAddSection;
         private ProgressBar _animeDetailsPageLoadingUpdateSpinner;
         private ImageButton _animeDetailsPageFavouriteButton;
         private ImageButton _animeDetailsPageMoreButton;
@@ -85,8 +84,6 @@ namespace MALClient.Android.Fragments
         public RelativeLayout AnimeDetailsPageIncDecSection => GetView(ref _animeDetailsPageIncDecSection, Resource.Id.AnimeDetailsPageIncDecSection);
 
         public FrameLayout AnimeDetailsPageAddButton => GetView(ref _animeDetailsPageAddButton, Resource.Id.AnimeDetailsPageAddButton);
-
-        public LinearLayout AnimeDetailsPageAddSection => GetView(ref _animeDetailsPageAddSection, Resource.Id.AnimeDetailsPageAddSection);
 
         public ProgressBar AnimeDetailsPageLoadingUpdateSpinner => GetView(ref _animeDetailsPageLoadingUpdateSpinner, Resource.Id.AnimeDetailsPageLoadingUpdateSpinner);
 
