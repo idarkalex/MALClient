@@ -19,6 +19,7 @@ namespace MALClient.Android
         {
             if(!FlingStates.ContainsKey(container))
                 FlingStates.Add(container,false);
+            HookCollectionChanged(container, items);
             container.MakeFlingAware(b =>
             {
                 if(FlingStates[container] == b)
@@ -74,6 +75,7 @@ namespace MALClient.Android
                 FlingStates.Add(container, false);
             if (!ViewHolders.ContainsKey(container))
                 ViewHolders.Add(container, new Dictionary<View, object>());
+            HookCollectionChanged(container, items);
             if (onScrolled == null)
             {
                 container.MakeFlingAware(b =>
@@ -177,6 +179,19 @@ namespace MALClient.Android
             
             container.SetOnScrollListener(null);
             container.Adapter = null;
+        }
+
+        private static void HookCollectionChanged<T>(AbsListView container, IList<T> items) where T : class
+        {
+            var notifying = items as System.Collections.Specialized.INotifyCollectionChanged;
+            if (notifying == null)
+                return;
+            System.Collections.Specialized.NotifyCollectionChangedEventHandler handler = (s, e) =>
+            {
+                (container.Adapter as BaseAdapter)?.NotifyDataSetChanged();
+                container.Post(() => container.RequestLayout());
+            };
+            notifying.CollectionChanged += handler;
         }
     }
 }

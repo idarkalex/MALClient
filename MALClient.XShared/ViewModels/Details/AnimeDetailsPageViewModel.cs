@@ -1224,14 +1224,10 @@ namespace MALClient.XShared.ViewModels.Details
         public async void RefreshData()
         {
             await FetchData(true);
-            if (_loadedDetails)
-                LoadDetails(true);
-            if (_loadedReviews)
-                LoadReviews(true);
-            if (_loadedRecomm)
-                LoadRecommendations(true);
-            if(_loadedRelated)
-                LoadRelatedAnime(true);  
+            LoadDetails(true);
+            LoadReviews(true);
+            LoadRecommendations(true);
+            LoadRelatedAnime(true);
             if(_loadedCharacters)
                 LoadCharacters(true);
         }
@@ -1251,7 +1247,7 @@ namespace MALClient.XShared.ViewModels.Details
             LoadingDetails = true;
             try
             {
-                LoadDetailsCore(force);
+                await LoadDetailsCoreAsync(force);
             }
             finally
             {
@@ -1259,7 +1255,7 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        private async void LoadDetailsCore(bool force)
+        private async Task LoadDetailsCoreAsync(bool force)
         {
             LeftGenres.Clear();
             RightGenres.Clear();
@@ -1566,17 +1562,15 @@ namespace MALClient.XShared.ViewModels.Details
 
         #endregion
 
-        public static async Task OpenVideo(AnimeVideoData data)
+        public async Task OpenVideo(AnimeVideoData data)
         {
             try
             {
-                //var youTube = YouTube.Default;
-                //var video = youTube.GetVideo(data.YtLink);
-                ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(data.YtLink));
-                //var uri =  await video.GetUriAsync();
-                //ViewModelLocator.GeneralMain.MediaElementSource = uri;
-                //ViewModelLocator.GeneralMain.MediaElementVisibility = true;
-                //ViewModelLocator.GeneralMain.MediaElementIndirectSource = data.YtLink;
+                var handler = RequestVideoPlayback;
+                if (handler != null)
+                    handler(data.YtLink);
+                else
+                    ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(data.YtLink));
             }
             catch (Exception e)
             {

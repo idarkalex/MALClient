@@ -73,18 +73,37 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             Holder holder, int position)
         {
             var view = holder.ItemView;
-            var itemCharacter = view.FindViewById<FavouriteItem>(Resource.Id.CharacterActorPairItemCharacter);
-            var itemPerson = view.FindViewById<FavouriteItem>(Resource.Id.CharacterActorPairItemActor);
 
-            itemCharacter.BindModel(item.AnimeCharacter, false);
-            itemPerson.BindModel(item.AnimeStaffPerson, false);
+            itemCharacterBind(holder.CharacterActorPairItemCharacter, item.AnimeCharacter);
+            itemPersonBind(holder.CharacterActorPairItemActor, item.AnimeStaffPerson);
 
-            holder.CharacterActorPairItemActor.FavouriteItemImage.Into(item.AnimeStaffPerson.Data.ImgUrl);
-            holder.CharacterActorPairItemCharacter.FavouriteItemImage.Into(item.AnimeCharacter.Data.ImgUrl);
+            LoadCharacterImage(holder.CharacterActorPairItemCharacter.FavouriteItemImage, item.AnimeCharacter.Data.ImgUrl);
+            LoadCharacterImage(holder.CharacterActorPairItemActor.FavouriteItemImage, item.AnimeStaffPerson.Data.ImgUrl);
 
-            itemCharacter.RootContainer.SetOnClickListener(new OnClickListener(view1 => ItemCharacterOnClick(item.AnimeCharacter)));
-            itemPerson.RootContainer.SetOnClickListener(new OnClickListener(view1 => ItemPersonOnClick(item.AnimeStaffPerson)));
+            holder.CharacterActorPairItemCharacter.RootContainer.SetOnClickListener(new OnClickListener(view1 => ItemCharacterOnClick(item.AnimeCharacter)));
+            holder.CharacterActorPairItemActor.RootContainer.SetOnClickListener(new OnClickListener(view1 => ItemPersonOnClick(item.AnimeStaffPerson)));
+        }
 
+        private void itemCharacterBind(FavouriteItem target, FavouriteViewModel model)
+        {
+            if (!ReferenceEquals(target.ViewModel, model))
+                target.BindModel(model, false);
+        }
+
+        private void itemPersonBind(FavouriteItem target, FavouriteViewModel model)
+        {
+            if (!ReferenceEquals(target.ViewModel, model))
+                target.BindModel(model, false);
+        }
+
+        private void LoadCharacterImage(FFImageLoading.Views.ImageViewAsync image, string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                return;
+            if ((string)image.Tag == url)
+                return;
+            image.Tag = url;
+            image.Into(url, null, null, 400);
         }
 
         private void ItemPersonOnClick(FavouriteViewModel item)

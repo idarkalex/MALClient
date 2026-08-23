@@ -236,8 +236,16 @@ namespace MALClient.XShared.Comm.Anime
             return queryIndex > 0 ? url.Substring(0, queryIndex) : url;
         }
 
-        private static string GetString(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+        private static string GetString(JsonElement el, string prop)
+        {
+            if (!el.TryGetProperty(prop, out var p))
+                return "";
+            if (p.ValueKind == JsonValueKind.String)
+                return p.GetString();
+            if (p.ValueKind == JsonValueKind.Number)
+                return p.GetRawText();
+            return "";
+        }
 
         private static int GetInt(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;

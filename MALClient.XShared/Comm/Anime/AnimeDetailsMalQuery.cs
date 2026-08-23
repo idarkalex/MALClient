@@ -137,8 +137,13 @@ namespace MALClient.XShared.Comm.Anime
             }
 
             if (output.Information.Count > 0 || output.Statistics.Count > 0)
+            {
                 DataCache.SaveData(output, _id.ToString(), "anime_details_scrapped");
-            return output;
+                return output;
+            }
+
+            // a failed anime scrape must not be treated as loaded (manga legitimately scrapes empty)
+            return _anime ? null : output;
         }
 
         private static string GetString(JsonElement el, string prop) =>

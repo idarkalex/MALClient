@@ -475,9 +475,11 @@ namespace MALClient.XShared.ViewModels.Details
             => _navigateCharacterDetailsCommand ?? (_navigateCharacterDetailsCommand = new RelayCommand<AnimeCharacter>(
                 character =>
                 {
+                    if (PrevArgs == null || !int.TryParse(character?.Id, out var characterId) || characterId <= 0)
+                        return;
                     PrevArgs.SourceTabIndex = DetailsPivotSelectedIndex;
                     ViewModelLocator.NavMgr.RegisterBackNav(PrevArgs);
-                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageCharacterDetails, new CharacterDetailsNavigationArgs { Id = int.Parse(character.Id) });
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageCharacterDetails, new CharacterDetailsNavigationArgs { Id = characterId });
                 }));
 
         private ICommand _navigateStaffDetailsCommand;
@@ -488,9 +490,11 @@ namespace MALClient.XShared.ViewModels.Details
                 {
                     if(person.IsUnknown)
                         return;
+                    if (PrevArgs == null || !int.TryParse(person?.Id, out var personId) || personId <= 0)
+                        return;
                     PrevArgs.SourceTabIndex = DetailsPivotSelectedIndex;
                     ViewModelLocator.NavMgr.RegisterBackNav(PrevArgs);
-                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageStaffDetails, new StaffDetailsNaviagtionArgs { Id = int.Parse(person.Id) });
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageStaffDetails, new StaffDetailsNaviagtionArgs { Id = personId });
                 }));
 
 
