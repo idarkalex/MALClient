@@ -55,8 +55,9 @@ namespace MALClient.Android.UserControls
                 int height = 0;
                 if (child != null)
                 {
-                    var maxH = (int)(Context.Resources.DisplayMetrics.HeightPixels * 0.55);
-                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(maxH, MeasureSpecMode.AtMost));
+                    // Generous cap: effectively no limit, just prevents integer overflow.
+                    // Content determines height, outer ScrollView scrolls everything.
+                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(100000, MeasureSpecMode.AtMost));
                     height = child.MeasuredHeight;
                 }
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
