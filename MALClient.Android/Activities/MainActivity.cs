@@ -87,7 +87,7 @@ namespace MALClient.Android.Activities
             WriteCrashLog("=== session start ===", null);
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
                 WriteCrashLog("AppDomain.UnhandledException", e.ExceptionObject as Exception);
-            AndroidEnvironment.UnhandledExceptionRaiser += (s, e) =>
+            global::Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (s, e) =>
                 WriteCrashLog("AndroidEnvironment.UnhandledExceptionRaiser", e.Exception);
             TaskScheduler.UnobservedTaskException += (s, e) =>
                 WriteCrashLog("TaskScheduler.UnobservedTaskException", e.Exception);
@@ -97,7 +97,9 @@ namespace MALClient.Android.Activities
         {
             try
             {
-                var path = System.IO.Path.Combine(CacheDir.Path, "crash_log.txt");
+                var cacheDir = CurrentContext?.CacheDir?.Path ?? global::Android.OS.Environment.GetExternalStoragePublicDirectory(global::Android.OS.Environment.DirectoryDownloads)?.Path;
+                if (string.IsNullOrEmpty(cacheDir)) return;
+                var path = System.IO.Path.Combine(cacheDir, "crash_log.txt");
                 var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {origin}\n{ex}\n\n";
                 System.IO.File.AppendAllText(path, line);
             }

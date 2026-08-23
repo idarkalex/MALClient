@@ -124,8 +124,8 @@ namespace MALClient.Android
                     (root, i, arg2) =>
                     {
                         TViewHolder holder;
-                        if (!ViewHolders[container].TryGetValue(root, out holder))
-                            ViewHolders[container][root] = holder = holderFactory(root);
+                        if (!ViewHolders[container].ContainsKey(root))
+                            holder = (TViewHolder)ViewHolders[container][root] = holderFactory(root);
                         dataTemplateBasic.Invoke(root, i, arg2, holder);
                         if (FlingStates[container])
                             dataTemplateFling(root, i, arg2, holder);
@@ -140,8 +140,8 @@ namespace MALClient.Android
                     (root, i, arg2) =>
                     {
                         TViewHolder holder;
-                        if (!ViewHolders[container].TryGetValue(root, out holder))
-                            ViewHolders[container][root] = holder = holderFactory(root);
+                        if (!ViewHolders[container].ContainsKey(root))
+                            holder = (TViewHolder)ViewHolders[container][root] = holderFactory(root);
                         if (FlingStates[container])
                             dataTemplateFling(root, i, arg2, holder);
                         else
