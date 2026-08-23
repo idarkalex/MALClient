@@ -330,12 +330,10 @@ namespace MALClient.Android.Fragments
                 return;
             AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
             AnimeDetailsPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
-            AnimeDetailsPageVideoWebView.Settings.UserAgentString =
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
             AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
             AnimeDetailsPageVideoWebView.SetWebViewClient(new Web.InlineVideoWebViewClient(AnimeDetailsPageVideoWebView));
             AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
-            AnimeDetailsPageVideoWebView.LoadUrl(url);
+            AnimeDetailsPageVideoWebView.LoadDataWithBaseURL(null, Web.InlineVideoWebViewClient.BuildVideoHtml(url), "text/html", "utf-8", null);
         }
 
         private void HideVideoOverlay()

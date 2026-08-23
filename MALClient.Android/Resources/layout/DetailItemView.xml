@@ -5,6 +5,7 @@
              android:layout_height="wrap_content" android:paddingTop="3dp" android:paddingBottom="3dp">
   <LinearLayout
     android:layout_width="match_parent" android:id="@+id/DetailItemRootContainer"
+    android:layout_height="wrap_content"
     android:minHeight="44dp"
     android:background="@drawable/electric_midnight_glass_panel"
     android:gravity="center_vertical"

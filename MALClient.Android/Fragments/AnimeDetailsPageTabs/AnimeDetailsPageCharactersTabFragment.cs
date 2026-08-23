@@ -91,7 +91,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             if ((string)image.Tag == url)
                 return;
             image.Tag = url;
-            image.Into(url, null, null, 400);
+            image.Into(url, null, null, 200);
         }
 
         private void ItemPersonOnClick(FavouriteViewModel item)

@@ -130,12 +130,10 @@ namespace MALClient.Android.Fragments
                 return;
             PromoVideosPageVideoWebView.Settings.JavaScriptEnabled = true;
             PromoVideosPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
-            PromoVideosPageVideoWebView.Settings.UserAgentString =
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
             PromoVideosPageVideoWebView.SetWebChromeClient(new WebChromeClient());
             PromoVideosPageVideoWebView.SetWebViewClient(new Web.InlineVideoWebViewClient(PromoVideosPageVideoWebView));
             PromoVideosPageVideoOverlay.Visibility = ViewStates.Visible;
-            PromoVideosPageVideoWebView.LoadUrl(url);
+            PromoVideosPageVideoWebView.LoadDataWithBaseURL(null, Web.InlineVideoWebViewClient.BuildVideoHtml(url), "text/html", "utf-8", null);
         }
 
         private void HideVideoOverlay()

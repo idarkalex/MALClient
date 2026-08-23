@@ -291,6 +291,65 @@ namespace MALClient.XShared.Utils
     		padding: 7px;
     		background: BodyBackgroundThemeDarkerColor;
     		font-family: 'Consolas';
+        }
+
+        img
+        {
+            max-width: 100%;
+            height: auto;
+        }
+
+        cite
+        {
+            font-style: italic;
+            color: AccentColourBase;
+        }
+
+        .intro
+        {
+            font-size: 16px;
+            font-weight: 500;
+            color: BodyForegroundThemeColor;
+            padding: 8px 0;
+        }
+
+        .meat
+        {
+            font-size: 14px;
+            line-height: 1.6;
+            color: BodyForegroundThemeColor;
+        }
+
+        table
+        {
+            width: 100%;
+            border-collapse: collapse;
+            color: BodyForegroundThemeColor;
+        }
+        td, th
+        {
+            padding: 6px;
+            border: 1px solid HorizontalSeparatorColor;
+            font-size: 13px;
+        }
+
+        blockquote
+        {
+            border-left: 2px solid AccentColourBase;
+            background: BodyBackgroundThemeDarkerColor;
+            padding: 10px;
+            margin: 8px 0;
+            color: BodyForegroundThemeColor;
+        }
+
+        ul, ol
+        {
+            color: BodyForegroundThemeColor;
+            padding-left: 20px;
+        }
+        li
+        {
+            margin-bottom: 4px;
         }";
 
         #endregion
