@@ -157,7 +157,15 @@ namespace MALClient.Android.Activities
                 builder.SetNegativeButton("Dismiss", (s, e) => { });
                 RunOnUiThread(() =>
                 {
-                    try { builder.Show(); } catch (Exception) { }
+                    try
+                    {
+                        builder.Show();
+                        // clear log so the dialog doesn't appear again for the same crash
+                        var path = GetCrashLogPath();
+                        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                            System.IO.File.WriteAllText(path, "");
+                    }
+                    catch (Exception) { }
                 });
             }
             catch (Exception)

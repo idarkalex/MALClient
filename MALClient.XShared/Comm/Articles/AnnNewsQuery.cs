@@ -62,7 +62,7 @@ namespace MALClient.XShared.Comm.Articles
 
         public static async Task<string> GetAnnArticleHtml(string url, string id)
         {
-            var cached = await DataCache.RetrieveArticleContentData($"ann_{id}", MalNewsType.News);
+            var cached = await DataCache.RetrieveArticleContentData($"ann_v2_{id}", MalNewsType.News);
             if (cached != null)
                 return cached;
 
@@ -91,7 +91,7 @@ namespace MALClient.XShared.Comm.Articles
                     foreach (var script in body.Descendants("script").ToList())
                         script.Remove();
 
-                    DataCache.SaveArticleContentData($"ann_{id}", body.InnerHtml, MalNewsType.News);
+                    DataCache.SaveArticleContentData($"ann_v2_{id}", body.InnerHtml, MalNewsType.News);
                     return body.InnerHtml;
                 }
             }
