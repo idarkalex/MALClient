@@ -144,7 +144,7 @@ namespace MALClient.Android.Activities
                     return;
 
                 var tail = previousRun.Length > 3000 ? "..." + previousRun.Substring(previousRun.Length - 3000) : previousRun;
-                var builder = new AlertDialog.Builder(this);
+                var builder = new global::Android.App.AlertDialog.Builder(this);
                 builder.SetTitle("Previous run crashed");
                 builder.SetMessage("The app crashed on the previous run. Share the log to help fix it?");
                 builder.SetPositiveButton("Share", (s, e) =>
