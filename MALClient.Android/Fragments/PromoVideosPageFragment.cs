@@ -115,7 +115,7 @@ namespace MALClient.Android.Fragments
 
         private async void VideoItemOnClickOpenVideo(object sender, EventArgs eventArgs)
         {
-            await AnimeDetailsPageViewModel.OpenVideo(((sender as View).Parent as View).Tag.Unwrap<AnimeVideoData>());
+            await ViewModelLocator.AnimeDetails.OpenVideo(((sender as View).Parent as View).Tag.Unwrap<AnimeVideoData>());
         }
 
         private void VideoItemOnClickOpenAnime(object sender, EventArgs eventArgs)

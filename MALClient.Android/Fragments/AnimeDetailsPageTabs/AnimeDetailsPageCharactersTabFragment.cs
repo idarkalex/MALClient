@@ -74,26 +74,14 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             var view = holder.ItemView;
 
-            itemCharacterBind(holder.CharacterActorPairItemCharacter, item.AnimeCharacter);
-            itemPersonBind(holder.CharacterActorPairItemActor, item.AnimeStaffPerson);
+            holder.CharacterActorPairItemCharacter.BindModel(item.AnimeCharacter, false);
+            holder.CharacterActorPairItemActor.BindModel(item.AnimeStaffPerson, false);
 
             LoadCharacterImage(holder.CharacterActorPairItemCharacter.FavouriteItemImage, item.AnimeCharacter.Data.ImgUrl);
             LoadCharacterImage(holder.CharacterActorPairItemActor.FavouriteItemImage, item.AnimeStaffPerson.Data.ImgUrl);
 
             holder.CharacterActorPairItemCharacter.RootContainer.SetOnClickListener(new OnClickListener(view1 => ItemCharacterOnClick(item.AnimeCharacter)));
             holder.CharacterActorPairItemActor.RootContainer.SetOnClickListener(new OnClickListener(view1 => ItemPersonOnClick(item.AnimeStaffPerson)));
-        }
-
-        private void itemCharacterBind(FavouriteItem target, FavouriteViewModel model)
-        {
-            if (!ReferenceEquals(target.ViewModel, model))
-                target.BindModel(model, false);
-        }
-
-        private void itemPersonBind(FavouriteItem target, FavouriteViewModel model)
-        {
-            if (!ReferenceEquals(target.ViewModel, model))
-                target.BindModel(model, false);
         }
 
         private void LoadCharacterImage(FFImageLoading.Views.ImageViewAsync image, string url)
