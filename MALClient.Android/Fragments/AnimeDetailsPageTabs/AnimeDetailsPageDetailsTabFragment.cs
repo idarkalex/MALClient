@@ -59,6 +59,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     MainActivity.WriteCrashLog("DetailsTab bind", ex);
                 }
+
+                (RootView?.Parent as UserControls.HeightAdjustingViewPager)?.RefreshHeight();
             }));
         }
 
@@ -211,7 +213,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        ViewModelLocator.AnimeDetails.PlayVideoInApp($"https://www.youtube.com/results?search_query={WebUtility.UrlEncode(s)}");
+                        ViewModelLocator.AnimeDetails.PlayVideoInApp($"https://www.youtube.com/embed?listType=search&list={WebUtility.UrlEncode(s)}");
                     }
                     else if(item.ItemId == 1)
                     {

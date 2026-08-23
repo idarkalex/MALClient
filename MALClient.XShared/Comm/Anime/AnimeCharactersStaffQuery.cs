@@ -97,9 +97,9 @@ namespace MALClient.XShared.Comm.Anime
                         pair.AnimeStaffPerson.IsUnknown = true;
                     }
 
-                    if (output.AnimeCharacterPairs.Count >= 50)
+                    if (output.AnimeCharacterPairs.Count >= 24)
                         break;
-                    if (output.AnimeCharacterPairs.Count < 50)
+                    if (output.AnimeCharacterPairs.Count < 24)
                         output.AnimeCharacterPairs.Add(pair);
                 }
                 catch (Exception)
@@ -130,7 +130,7 @@ namespace MALClient.XShared.Comm.Anime
                         person.Notes = string.Join(", ", positions);
 
                         if (!string.IsNullOrEmpty(person.Name))
-                            if (output.AnimeStaff.Count < 30)
+                            if (output.AnimeStaff.Count < 20)
                         output.AnimeStaff.Add(person);
                     }
                     catch (Exception)
@@ -180,7 +180,7 @@ namespace MALClient.XShared.Comm.Anime
                         pair.AnimeStaffPerson.Name = "Unknown";
                         pair.AnimeStaffPerson.IsUnknown = true;
 
-                        if (output.AnimeCharacterPairs.Count < 50)
+                        if (output.AnimeCharacterPairs.Count < 24)
                         output.AnimeCharacterPairs.Add(pair);
                     }
                     catch (Exception)
@@ -421,5 +421,6 @@ namespace MALClient.XShared.Comm.Anime
 
     }
 }
+
 
 

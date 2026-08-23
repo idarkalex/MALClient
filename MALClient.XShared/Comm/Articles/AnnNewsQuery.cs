@@ -105,7 +105,8 @@ namespace MALClient.XShared.Comm.Articles
                     var block = item.Groups[1].Value;
                     var title = WebUtility.HtmlDecode(ExtractTag(block, "title"));
                     var link = ExtractTag(block, "link");
-                    var description = WebUtility.HtmlDecode(StripHtml(ExtractTag(block, "description")));
+                    var rawDescription = ExtractRawTag(block, "description");
+                    var description = WebUtility.HtmlDecode(StripHtml(rawDescription));
                     var pubDate = ExtractTag(block, "pubDate");
                     var category = ExtractTag(block, "category");
                     var guid = ExtractTag(block, "guid");
@@ -118,6 +119,8 @@ namespace MALClient.XShared.Comm.Articles
                         DateTimeOffset.TryParse(pubDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dto))
                         published = dto.UtcDateTime;
 
+                    var imgUrl = ExtractFirstImage(rawDescription) ?? "";
+
                     output.Add(new MalNewsUnitModel
                     {
                         Title = title,
@@ -129,6 +132,7 @@ namespace MALClient.XShared.Comm.Articles
                         Type = MalNewsType.News,
                         Source = "ANN",
                         PublishedAt = published,
+                        ImgUrl = imgUrl,
                         Id = ExtractAnnId(link) ?? ExtractAnnId(guid) ?? Guid.NewGuid().ToString("N"),
                     });
                 }
@@ -149,6 +153,27 @@ namespace MALClient.XShared.Comm.Articles
             var value = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
             value = Regex.Replace(value, "^\\s*<!\\[CDATA\\[", "").Replace("\\]\\]>\\s*$", "").Trim();
             return value;
+        }
+
+        private static string ExtractRawTag(string block, string tag)
+        {
+            var match = Regex.Match(block, $"<{tag}(?s)(.*?)</{tag}>");
+            if (!match.Success)
+                return "";
+            return match.Groups[1].Value.Trim();
+        }
+
+        private static string ExtractFirstImage(string html)
+        {
+            if (string.IsNullOrEmpty(html))
+                return null;
+            var match = Regex.Match(html, "<img[^>]+src=\"([^\"]+)\"");
+            if (!match.Success)
+                return null;
+            var src = WebUtility.HtmlDecode(match.Groups[1].Value);
+            if (src.StartsWith("//"))
+                src = "https:" + src;
+            return src;
         }
 
         private static string StripHtml(string input) =>

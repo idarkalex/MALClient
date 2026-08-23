@@ -100,7 +100,9 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
                 ViewModel.ArticleIndexVisibility = true;
             }));
             _currentId = ViewModel.Articles.IndexOf(item);
-            ArticlesPageWebView.LoadDataWithBaseURL(null,ResourceLocator.CssManager.WrapWithCss(html), "text/html; charset=utf-8", "UTF-8",null);
+            var baseUrl = string.IsNullOrEmpty(item.Url) ? null :
+                (item.Source == "ANN" ? item.Url : "https://myanimelist.net/");
+            ArticlesPageWebView.LoadDataWithBaseURL(baseUrl, ResourceLocator.CssManager.WrapWithCss(html), "text/html; charset=utf-8", "UTF-8", null);
         }
 
 

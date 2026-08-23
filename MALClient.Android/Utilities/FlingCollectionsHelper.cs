@@ -5,6 +5,7 @@ using Android.Views;
 using Android.Widget;
 using FFImageLoading.Extensions;
 using GalaSoft.MvvmLight.Helpers;
+using MALClient.Android.UserControls;
 
 namespace MALClient.Android
 {
@@ -174,6 +175,7 @@ namespace MALClient.Android
             System.Collections.Specialized.NotifyCollectionChangedEventHandler handler = (s, e) =>
             {
                 (container.Adapter as BaseAdapter)?.NotifyDataSetChanged();
+                (container.Parent as UserControls.HeightAdjustingViewPager)?.RefreshHeight();
                 container.Post(() => container.RequestLayout());
             };
             notifying.CollectionChanged += handler;
