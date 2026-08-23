@@ -21,6 +21,13 @@ namespace MALClient.XShared.Comm.Articles
             Request = new Uri(RssUrl);
         }
 
+        private static readonly System.Net.Http.HttpClient AnnClient = new System.Net.Http.HttpClient();
+
+        static AnnNewsQuery()
+        {
+            AnnClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        }
+
         public async Task<List<MalNewsUnitModel>> GetAnnNewsIndex(bool force = false)
         {
             var cached = force
@@ -29,7 +36,21 @@ namespace MALClient.XShared.Comm.Articles
             if (cached != null && cached.Count > 0)
                 return cached;
 
-            var raw = await GetRequestResponse();
+            string raw = null;
+            for (var attempt = 1; attempt <= 3 && raw == null; attempt++)
+            {
+                try
+                {
+                    raw = await AnnClient.GetStringAsync(RssUrl);
+                    if (string.IsNullOrWhiteSpace(raw))
+                        raw = null;
+                }
+                catch (Exception)
+                {
+                    if (attempt < 3)
+                        await Task.Delay(TimeSpan.FromSeconds(attempt));
+                }
+            }
             if (string.IsNullOrEmpty(raw))
                 return new List<MalNewsUnitModel>();
 

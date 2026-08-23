@@ -39,30 +39,30 @@ namespace MALClient.Android
             });
             if (footer == null)
             {
-                container.Adapter = items.GetAdapter((i, arg2, arg3) =>
-                {
-                    var root = arg3 ?? containerTemplate(i);
-                    root.Tag = arg2.Wrap();
-                    dataTemplateBasic?.Invoke(root, i, arg2);
-                    if (FlingStates[container])
-                        dataTemplateFling(root, i, arg2);
-                    else
-                        dataTemplateFull(root, i, arg2);
-                    return root;
-                });
+                container.Adapter = new LiveFlingAdapter<T>(container, items,
+                    (root, i, arg2) =>
+                    {
+                        dataTemplateBasic?.Invoke(root, i, arg2);
+                        if (FlingStates[container])
+                            dataTemplateFling(root, i, arg2);
+                        else
+                            dataTemplateFull(root, i, arg2);
+                    },
+                    containerTemplate);
             }
             else
             {
-                container.Adapter = items.GetAdapter((i, arg2, arg3) =>
-                {
-                    var root = arg3 ?? containerTemplate(i);
-                    root.Tag = arg2.Wrap();
-                    if (FlingStates[container])
-                        dataTemplateFling(root, i, arg2);
-                    else
-                        dataTemplateFull(root, i, arg2);
-                    return root;
-                },footer,container is GridView && !skipBugFix);
+                container.Adapter = new LiveFlingAdapter<T>(container, items,
+                    (root, i, arg2) =>
+                    {
+                        if (FlingStates[container])
+                            dataTemplateFling(root, i, arg2);
+                        else
+                            dataTemplateFull(root, i, arg2);
+                    },
+                    containerTemplate,
+                    footer);
+
             }
 
         }
@@ -120,52 +120,35 @@ namespace MALClient.Android
 
             if (footer == null)
             {
-                container.Adapter = items.GetAdapter((i, arg2, arg3) =>
-                {
-                    TViewHolder holder;
-                    View root = null;
-                    if (arg3 == null)
+                container.Adapter = new LiveFlingAdapter<T>(container, items,
+                    (root, i, arg2) =>
                     {
-                        root = containerTemplate(i);
-                        ViewHolders[container][root] = holder = holderFactory(root);
-                    }
-                    else
-                    {
-                        root = arg3;
-                        holder = (TViewHolder) ViewHolders[container][root];
-                    }
-                    root.Tag = arg2.Wrap();
-                    dataTemplateBasic.Invoke(root, i, arg2, holder);
-                    if (FlingStates[container])
-                        dataTemplateFling(root, i, arg2, holder);
-                    else
-                        dataTemplateFull(root, i, arg2, holder);
-                    return root;
-                });
+                        TViewHolder holder;
+                        if (!ViewHolders[container].TryGetValue(root, out holder))
+                            ViewHolders[container][root] = holder = holderFactory(root);
+                        dataTemplateBasic.Invoke(root, i, arg2, holder);
+                        if (FlingStates[container])
+                            dataTemplateFling(root, i, arg2, holder);
+                        else
+                            dataTemplateFull(root, i, arg2, holder);
+                    },
+                    containerTemplate);
             }
             else
             {
-                container.Adapter = items.GetAdapter((i, arg2, arg3) =>
-                {
-                    TViewHolder holder;
-                    View root = null;
-                    if (arg3 == null)
+                container.Adapter = new LiveFlingAdapter<T>(container, items,
+                    (root, i, arg2) =>
                     {
-                        root = containerTemplate(i);
-                        ViewHolders[container][root] = holder = holderFactory(root);
-                    }
-                    else
-                    {
-                        root = arg3;
-                        holder = (TViewHolder) ViewHolders[container][root];
-                    }
-                    root.Tag = arg2.Wrap();
-                    if (FlingStates[container])
-                        dataTemplateFling(root, i, arg2, holder);
-                    else
-                        dataTemplateFull(root, i, arg2, holder);
-                    return root;
-                }, footer, container is GridView && !skipBugFix);
+                        TViewHolder holder;
+                        if (!ViewHolders[container].TryGetValue(root, out holder))
+                            ViewHolders[container][root] = holder = holderFactory(root);
+                        if (FlingStates[container])
+                            dataTemplateFling(root, i, arg2, holder);
+                        else
+                            dataTemplateFull(root, i, arg2, holder);
+                    },
+                    containerTemplate,
+                    footer);
             }
 
         }
@@ -192,6 +175,43 @@ namespace MALClient.Android
                 container.Post(() => container.RequestLayout());
             };
             notifying.CollectionChanged += handler;
+        }
+
+        private class LiveFlingAdapter<T> : BaseAdapter<T> where T : class
+        {
+            private readonly AbsListView _container;
+            private readonly IList<T> _items;
+            private readonly Action<View, int, T> _bind;
+            private readonly Func<int, View> _containerTemplate;
+            private readonly View _footer;
+
+            public LiveFlingAdapter(AbsListView container, IList<T> items, Action<View, int, T> bind,
+                Func<int, View> containerTemplate, View footer = null)
+            {
+                _container = container;
+                _items = items;
+                _bind = bind;
+                _containerTemplate = containerTemplate;
+                _footer = footer;
+            }
+
+            public override int Count => _items.Count + (_footer != null ? 1 : 0);
+
+            public override T this[int position] => position < _items.Count ? _items[position] : null;
+
+            public override long GetItemId(int position) => position;
+
+            public override View GetView(int position, View convertView, ViewGroup parent)
+            {
+                if (_footer != null && position >= _items.Count)
+                    return _footer;
+
+                var item = _items[position];
+                var root = convertView ?? _containerTemplate(position);
+                root.Tag = item.Wrap();
+                _bind(root, position, item);
+                return root;
+            }
         }
     }
 }

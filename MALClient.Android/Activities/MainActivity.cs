@@ -82,8 +82,33 @@ namespace MALClient.Android.Activities
             SimpleIoc.Default.Register<Activity>(() => this);
         }
 
+        private static void RegisterCrashLogging()
+        {
+            WriteCrashLog("=== session start ===", null);
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+                WriteCrashLog("AppDomain.UnhandledException", e.ExceptionObject as Exception);
+            AndroidEnvironment.UnhandledExceptionRaiser += (s, e) =>
+                WriteCrashLog("AndroidEnvironment.UnhandledExceptionRaiser", e.Exception);
+            TaskScheduler.UnobservedTaskException += (s, e) =>
+                WriteCrashLog("TaskScheduler.UnobservedTaskException", e.Exception);
+        }
+
+        public static void WriteCrashLog(string origin, Exception ex)
+        {
+            try
+            {
+                var path = System.IO.Path.Combine(CacheDir.Path, "crash_log.txt");
+                var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {origin}\n{ex}\n\n";
+                System.IO.File.AppendAllText(path, line);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         protected override async void OnCreate(Bundle bundle)
         {
+            RegisterCrashLogging();
             RequestWindowFeature(WindowFeatures.NoTitle);
             CurrentTheme = Settings.SelectedTheme;
             CurrentAccent = AndroidColourThemeHelper.CurrentTheme;
