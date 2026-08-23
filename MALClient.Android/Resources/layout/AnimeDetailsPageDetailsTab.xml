@@ -4,7 +4,8 @@
 
   <MALClient.Android.UserControls.OrientationDependentScrollView xmlns:android="http://schemas.android.com/apk/res/android"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"`r`n      android:backgroundandroid:background="@color/EmSheet">
+      android:layout_height="match_parent"
+      android:background="@color/EmSheet">
 
     <LinearLayout
         android:layout_width="match_parent"

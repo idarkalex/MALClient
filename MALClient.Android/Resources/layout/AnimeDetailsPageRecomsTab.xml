@@ -4,9 +4,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"`r`n    android:backgroundandroid:background="@color/EmSheet"
+    android:layout_height="match_parent"
+    android:background="@color/EmSheet"
     android:padding="5dp">
-    <MALClient.Android.UserControls.HeightAdjustingListView android:layout_width="match_parent" android:layout_height="wrap_content"
+    <MALClient.Android.UserControls.HeightAdjustingListView android:layout_width="match_parent" android:layout_height="match_parent"
               android:id="@+id/AnimeDetailsPageRecomTabsList" />
   </LinearLayout>
   <TextView android:layout_centerInParent="true" android:visibility="gone"
