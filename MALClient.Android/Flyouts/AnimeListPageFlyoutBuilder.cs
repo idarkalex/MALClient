@@ -138,7 +138,7 @@ namespace MALClient.Android.Flyouts
         public static DroppyMenuPopup BuildForAnimeStatusSelection(Context context, View parent,
             Action<AnimeStatus> callback,AnimeStatus currentStatus,bool manga)
         {
-            ParamRelativeLayout = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(190), DimensionsHelper.DpToPx(40));
+            ParamRelativeLayout = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(140), DimensionsHelper.DpToPx(40));
 
             var droppyBuilder = new DroppyMenuPopup.Builder(context, parent);
             InjectAnimation(droppyBuilder);
@@ -159,7 +159,7 @@ namespace MALClient.Android.Flyouts
                             gravity: GravityFlags.CenterVertical)));
             }
             droppyBuilder.SetYOffset(DimensionsHelper.DpToPx(8));
-            AlignRightUnder(droppyBuilder, parent, 190);
+            AlignRightUnder(droppyBuilder, parent, 140);
             return droppyBuilder.Build();
         }
 

@@ -213,7 +213,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        ViewModelLocator.AnimeDetails.PlayVideoInApp($"https://www.youtube.com/embed?listType=search&list={WebUtility.UrlEncode(s)}");
+                        ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri($"https://www.youtube.com/results?search_query={WebUtility.UrlEncode(s)}"));
                     }
                     else if(item.ItemId == 1)
                     {

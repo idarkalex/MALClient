@@ -1401,7 +1401,7 @@ namespace MALClient.XShared.ViewModels.Details
                         if (string.IsNullOrEmpty(GeneralFavorites) && parts[0] == "Favorites")
                             GeneralFavorites = value;
                     }
-                    if (parts[0] == "Rank" || parts[0] == "Popularity" || parts[0] == "Members" || parts[0] == "Favorites")
+                    if (parts[0] == "Rank" || parts[0] == "Popularity" || parts[0] == "Members" || parts[0] == "Favorites" || parts[0] == "Score")
                         continue;
                     Stats.Add(new Tuple<string, string>(parts[0], parts[1]));
                 }

@@ -328,12 +328,16 @@ namespace MALClient.Android.Fragments
         {
             if (string.IsNullOrEmpty(url) || !IsAdded)
                 return;
+            var videoId = Web.InlineVideoWebViewClient.ExtractYouTubeId(url);
+            if (string.IsNullOrEmpty(videoId))
+                return;
             AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
             AnimeDetailsPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
             AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
             AnimeDetailsPageVideoWebView.SetWebViewClient(new Web.InlineVideoWebViewClient(AnimeDetailsPageVideoWebView));
             AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
-            AnimeDetailsPageVideoWebView.LoadDataWithBaseURL(null, Web.InlineVideoWebViewClient.BuildVideoHtml(url), "text/html", "utf-8", null);
+            AnimeDetailsPageVideoWebView.LoadUrl(
+                $"https://www.youtube.com/embed/{videoId}?origin=https://myanimelist.net&autoplay=1");
         }
 
         private void HideVideoOverlay()

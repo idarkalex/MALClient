@@ -47,7 +47,10 @@ namespace MALClient.Android.UserControls
                 int height = 0;
                 if (child != null)
                 {
-                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(1000000, MeasureSpecMode.AtMost));
+                    // Cap at 55% of screen: tabs taller than this scroll internally (virtualized = fast).
+                    // Prevents infinite bars, giant gaps, and cut-off tabs regardless of content timing.
+                    var maxH = (int)(Context.Resources.DisplayMetrics.HeightPixels * 0.55);
+                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(maxH, MeasureSpecMode.AtMost));
                     height = child.MeasuredHeight;
                 }
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);

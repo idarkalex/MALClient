@@ -103,12 +103,12 @@ namespace MALClient.XShared.Comm.Articles
                 try
                 {
                     var block = item.Groups[1].Value;
-                    var title = WebUtility.HtmlDecode(ExtractTag(block, "title"));
+                    var title = StripHtml(WebUtility.HtmlDecode(ExtractTag(block, "title"))).TrimStart('>').Trim();
                     var link = ExtractTag(block, "link");
                     var rawDescription = ExtractRawTag(block, "description");
-                    var description = WebUtility.HtmlDecode(StripHtml(rawDescription));
+                    var description = StripHtml(WebUtility.HtmlDecode(rawDescription)).TrimStart('>').Trim();
                     var pubDate = ExtractTag(block, "pubDate");
-                    var category = ExtractTag(block, "category");
+                    var category = StripHtml(WebUtility.HtmlDecode(ExtractTag(block, "category"))).TrimStart('>').Trim();
                     var guid = ExtractTag(block, "guid");
 
                     if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(link))
