@@ -109,24 +109,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         private void SetUpForOrientation(Orientation orientation)
         {
-            ViewGroup.LayoutParams param;
-            switch (orientation)
-            {
-                case Orientation.Landscape:
-                    param = RootView.LayoutParameters;
-                    param.Height = ViewGroup.LayoutParams.WrapContent;
-                    RootView.LayoutParameters = param;
-                    break;
-                case Orientation.Portrait:
-                case Orientation.Square:
-                case Orientation.Undefined:
-                    param = RootView.LayoutParameters;
-                    param.Height = ViewGroup.LayoutParams.WrapContent;
-                    RootView.LayoutParameters = param;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null);
-            }
+            // Root is match_parent in XML; ViewPager fills remaining space via weight
+            // No orientation-dependent height adjustment needed
         }
 
         #region Views

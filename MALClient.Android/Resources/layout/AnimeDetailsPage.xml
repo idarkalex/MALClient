@@ -1,485 +1,479 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/AnimeDetailsPageSwipeRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-  <ScrollView
-      android:id="@+id/AnimeDetailsPageScrollView"
+  <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:clipToPadding="false"
-      android:fillViewport="true">
+      android:orientation="vertical">
 
-    <LinearLayout
+    <!-- Hero area: swipe-to-refresh + scrollable -->
+    <MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
+        android:id="@+id/AnimeDetailsPageSwipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-      <!-- Hero section -->
-      <FrameLayout
+      <ScrollView
+          android:id="@+id/AnimeDetailsPageScrollView"
           android:layout_width="match_parent"
-          android:layout_height="520dp"
-          android:clipChildren="true">
+          android:layout_height="wrap_content"
+          android:scrollbars="none">
 
-        <!-- Layer 1: Blurred poster (full-bleed, visible on sides + top) -->
-        <FFImageLoading.Views.ImageViewAsync
-            android:id="@+id/AnimeDetailsPageBlurredBackground"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
-
-        <!-- Layer 2: Sharp poster (centered, full, no crop) -->
-        <FrameLayout
-            android:id="@+id/AnimeDetailsPagePosterContainer"
-            android:layout_width="340dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="5dp">
-
-          <FFImageLoading.Views.ImageViewAsync
-              android:id="@+id/AnimeDetailsPageShowCoverImage"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:scaleType="fitCenter" />
-        </FrameLayout>
-
-        <!-- Layer 3: Gradient scrim (bottom portion for text legibility) -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/hero_gradient_overlay" />
-
-        <!-- Layer 4: Floating buttons at top-right (only More, fav removed — in Quick Actions below) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:orientation="horizontal"
-            android:gravity="end"
-            android:padding="12dp">
-
-          <ProgressBar
-              android:id="@+id/AnimeDetailsPageLoadingUpdateSpinner"
-              android:layout_width="32dp"
-              android:layout_height="32dp"
-              android:layout_gravity="center_vertical"
-              android:layout_marginEnd="8dp"
-              android:indeterminate="true"
-              android:indeterminateTint="?AccentColour"
-              android:indeterminateTintMode="src_in" />
-
-          <ImageButton
-              android:id="@+id/AnimeDetailsPageTrailerButton"
-              android:layout_width="36dp"
-              android:layout_height="36dp"
-              android:layout_gravity="center_vertical"
-              android:layout_marginEnd="8dp"
-              android:background="@drawable/electric_midnight_circle_glass"
-              android:padding="8dp"
-              android:src="@drawable/icon_video"
-              android:tint="@android:color/white"
-              android:visibility="gone" />
-        </LinearLayout>
-
-        <!-- Bottom content overlay: title, metadata, score, episode controls -->
-        <LinearLayout
-            android:id="@+id/AnimeDetailsPageTitleSection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
-          <!-- Title -->
-          <TextView
-              android:id="@+id/AnimeDetailsPageTitle"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:fontFamily="@font/inter"
-              android:textColor="#ffffff"
-              android:textSize="26sp"
-              android:textStyle="bold"
-              android:shadowColor="#b3000000"
-              android:shadowDx="0"
-              android:shadowDy="3"
-              android:shadowRadius="6"
-              android:maxLines="2"
-              android:ellipsize="end"
-              tools:text="Oshi no Ko" />
-
-          <!-- Type badge • year • episodes -->
-          <LinearLayout
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_marginTop="4dp"
-              android:orientation="horizontal"
-              android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/AnimeDetailsPageTypeBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/electric_midnight_type_badge"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:fontFamily="@font/inter"
-                android:textColor="#ffffffff"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                tools:text="Anime" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                android:textColor="#80ffffff"
-                android:textSize="11sp"
-                android:text="&#8226;" />
-
-            <TextView
-                android:id="@+id/AnimeDetailsPageYearLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter"
-                android:textColor="#ccffffff"
-                android:textSize="12sp"
-                tools:text="2023" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                android:textColor="#80ffffff"
-                android:textSize="11sp"
-                android:text="&#8226;" />
-
-            <TextView
-                android:id="@+id/AnimeDetailsPageSubtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter"
-                android:textColor="#ccffffff"
-                android:textSize="12sp"
-                tools:text="11 Episodes" />
-          </LinearLayout>
-
-          <!-- Row: Score + Status (left) | Episode stepper (right) -->
-          <LinearLayout
+          <!-- Hero section -->
+          <FrameLayout
               android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_marginTop="12dp"
-              android:orientation="horizontal"
-              android:gravity="center_vertical">
+              android:layout_height="520dp"
+              android:clipChildren="true">
 
-            <!-- Score + Status block -->
+            <FFImageLoading.Views.ImageViewAsync
+                android:id="@+id/AnimeDetailsPageBlurredBackground"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <FrameLayout
+                android:id="@+id/AnimeDetailsPagePosterContainer"
+                android:layout_width="340dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="5dp">
+
+              <FFImageLoading.Views.ImageViewAsync
+                  android:id="@+id/AnimeDetailsPageShowCoverImage"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:scaleType="fitCenter" />
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/hero_gradient_overlay" />
+
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_gravity="top|end"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="end"
+                android:padding="12dp">
 
-              <!-- Score column -->
+              <ProgressBar
+                  android:id="@+id/AnimeDetailsPageLoadingUpdateSpinner"
+                  android:layout_width="32dp"
+                  android:layout_height="32dp"
+                  android:layout_gravity="center_vertical"
+                  android:layout_marginEnd="8dp"
+                  android:indeterminate="true"
+                  android:indeterminateTint="?AccentColour"
+                  android:indeterminateTintMode="src_in" />
+
+              <ImageButton
+                  android:id="@+id/AnimeDetailsPageTrailerButton"
+                  android:layout_width="36dp"
+                  android:layout_height="36dp"
+                  android:layout_gravity="center_vertical"
+                  android:layout_marginEnd="8dp"
+                  android:background="@drawable/electric_midnight_circle_glass"
+                  android:padding="8dp"
+                  android:src="@drawable/icon_video"
+                  android:tint="@android:color/white"
+                  android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/AnimeDetailsPageTitleSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:orientation="vertical">
+
+              <TextView
+                  android:id="@+id/AnimeDetailsPageTitle"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:fontFamily="@font/inter"
+                  android:textColor="#ffffff"
+                  android:textSize="26sp"
+                  android:textStyle="bold"
+                  android:shadowColor="#b3000000"
+                  android:shadowDx="0"
+                  android:shadowDy="3"
+                  android:shadowRadius="6"
+                  android:maxLines="2"
+                  android:ellipsize="end"
+                  tools:text="Oshi no Ko" />
+
               <LinearLayout
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:orientation="vertical"
-                  android:layout_marginEnd="24dp">
+                  android:layout_marginTop="4dp"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/AnimeDetailsPageTypeBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/electric_midnight_type_badge"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:fontFamily="@font/inter"
+                    android:textColor="#ffffffff"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    tools:text="Anime" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter"
-                    android:text="SCORE"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.08"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
                     android:textColor="#80ffffff"
-                    android:textSize="10sp" />
+                    android:textSize="11sp"
+                    android:text="&#8226;" />
+
+                <TextView
+                    android:id="@+id/AnimeDetailsPageYearLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter"
+                    android:textColor="#ccffffff"
+                    android:textSize="12sp"
+                    tools:text="2023" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:textColor="#80ffffff"
+                    android:textSize="11sp"
+                    android:text="&#8226;" />
+
+                <TextView
+                    android:id="@+id/AnimeDetailsPageSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter"
+                    android:textColor="#ccffffff"
+                    android:textSize="12sp"
+                    tools:text="11 Episodes" />
+              </LinearLayout>
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="12dp"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                  <LinearLayout
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:layout_marginEnd="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter"
+                        android:text="SCORE"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:textColor="#80ffffff"
+                        android:textSize="10sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                      <ImageView
+                          android:layout_width="14dp"
+                          android:layout_height="14dp"
+                          android:layout_marginEnd="4dp"
+                          android:src="@drawable/icon_star_filled"
+                          android:tint="#FFD700" />
+
+                      <TextView
+                          android:id="@+id/AnimeDetailsPageScoreValue"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:fontFamily="@font/inter"
+                          android:textColor="#ffffff"
+                          android:textSize="15sp"
+                          android:textStyle="bold"
+                          tools:text="8.74" />
+                    </LinearLayout>
+                  </LinearLayout>
+
+                  <LinearLayout
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter"
+                        android:text="STATUS"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:textColor="#80ffffff"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/AnimeDetailsPageStatusButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:background="@android:color/transparent"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:paddingTop="0dp"
+                        android:paddingBottom="0dp"
+                        android:textAllCaps="false"
+                        android:textColor="#ffffff"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                  </LinearLayout>
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:background="@drawable/electric_midnight_pill"
+                    android:padding="4dp">
 
-                  <ImageView
-                      android:layout_width="14dp"
-                      android:layout_height="14dp"
-                      android:layout_marginEnd="4dp"
-                      android:src="@drawable/icon_star_filled"
-                      android:tint="#FFD700" />
+                  <FrameLayout
+                      android:id="@+id/AnimeDetailsPageDecrementButton"
+                      android:layout_width="36dp"
+                      android:layout_height="36dp"
+                      android:clickable="true"
+                      android:focusable="true"
+                      android:foreground="?android:selectableItemBackground">
 
-                  <TextView
-                      android:id="@+id/AnimeDetailsPageScoreValue"
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/electric_midnight_circle_dark"
+                        android:padding="8dp"
+                        android:src="@drawable/icon_minus"
+                        android:tint="#80ffffff" />
+                  </FrameLayout>
+
+                  <LinearLayout
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
-                      android:fontFamily="@font/inter"
-                      android:textColor="#ffffff"
-                      android:textSize="15sp"
-                      android:textStyle="bold"
-                      tools:text="8.74" />
-        </LinearLayout>
-              </LinearLayout>
+                      android:orientation="vertical"
+                      android:gravity="center"
+                      android:minWidth="56dp"
+                      android:paddingStart="4dp"
+                      android:paddingEnd="4dp">
 
-              <!-- Status column -->
-              <LinearLayout
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/AnimeDetailsPageWatchedLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter"
+                        android:text="EP"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:textColor="#80ffffff"
+                        android:textSize="10sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter"
-                    android:text="STATUS"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.08"
-                    android:textColor="#80ffffff"
-                    android:textSize="10sp" />
+                    <Button
+                        android:id="@+id/AnimeDetailsPageWatchedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter"
+                        android:textColor="#ffffff"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@android:color/transparent"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:paddingTop="0dp"
+                        android:paddingBottom="0dp" />
+                  </LinearLayout>
 
-                <Button
-                    android:id="@+id/AnimeDetailsPageStatusButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:background="@android:color/transparent"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    android:paddingTop="0dp"
-                    android:paddingBottom="0dp"
-                    android:textAllCaps="false"
-                    android:textColor="#ffffff"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                  <FrameLayout
+                      android:id="@+id/AnimeDetailsPageIncrementButton"
+                      android:layout_width="36dp"
+                      android:layout_height="36dp"
+                      android:clickable="true"
+                      android:focusable="true"
+                      android:foreground="?android:selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/electric_midnight_circle_primary"
+                        android:padding="8dp"
+                        android:src="@drawable/icon_add"
+                        android:tint="@android:color/white" />
+                  </FrameLayout>
+                </LinearLayout>
               </LinearLayout>
             </LinearLayout>
 
-            <!-- Episode stepper pill -->
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/AnimeDetailsPageIncDecSection"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+            <FrameLayout
+                android:id="@+id/AnimeDetailsPageAddButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:background="@drawable/electric_midnight_pill"
-                android:padding="4dp">
+                android:visibility="gone" />
 
-              <FrameLayout
-                  android:id="@+id/AnimeDetailsPageDecrementButton"
-                  android:layout_width="36dp"
-                  android:layout_height="36dp"
-                  android:clickable="true"
-                  android:focusable="true"
-                  android:foreground="?android:selectableItemBackground">
+            <Button
+                android:id="@+id/AnimeDetailsPageScoreButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:text="" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/electric_midnight_circle_dark"
-                    android:padding="8dp"
-                    android:src="@drawable/icon_minus"
-                    android:tint="#80ffffff" />
-              </FrameLayout>
+            <Button
+                android:id="@+id/AnimeDetailsPageReadVolumesButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:text="" />
 
-              <LinearLayout
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical"
-                  android:gravity="center"
-                  android:minWidth="56dp"
-                  android:paddingStart="4dp"
-                  android:paddingEnd="4dp">
+            <TextView
+                android:id="@+id/AnimeDetailsPageReadVolumesLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+          </FrameLayout>
 
-                <TextView
-                    android:id="@+id/AnimeDetailsPageWatchedLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter"
-                    android:text="EP"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.08"
-                    android:textColor="#80ffffff"
-                    android:textSize="10sp" />
-
-                <Button
-                    android:id="@+id/AnimeDetailsPageWatchedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter"
-                    android:textColor="#ffffff"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:gravity="center"
-                    android:background="@android:color/transparent"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"
-                    android:paddingTop="0dp"
-                    android:paddingBottom="0dp" />
-              </LinearLayout>
-
-              <FrameLayout
-                  android:id="@+id/AnimeDetailsPageIncrementButton"
-                  android:layout_width="36dp"
-                  android:layout_height="36dp"
-                  android:clickable="true"
-                  android:focusable="true"
-                  android:foreground="?android:selectableItemBackground">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/electric_midnight_circle_primary"
-                    android:padding="8dp"
-                    android:src="@drawable/icon_add"
-                    android:tint="@android:color/white" />
-              </FrameLayout>
-            </LinearLayout>
-
-          </LinearLayout>
-        </LinearLayout>
-
-        <RelativeLayout
-            android:id="@+id/AnimeDetailsPageIncDecSection"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
-
-        <FrameLayout
-            android:id="@+id/AnimeDetailsPageAddButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/AnimeDetailsPageScoreButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="" />
-
-        <Button
-            android:id="@+id/AnimeDetailsPageReadVolumesButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="" />
-
-        <TextView
-            android:id="@+id/AnimeDetailsPageReadVolumesLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-      </FrameLayout>
-
-      <!-- Hidden compat: UpdateSection moved into hero, kept for code bindings -->
-      <LinearLayout
-          android:id="@+id/AnimeDetailsPageUpdateSection"
-          android:layout_width="0dp"
-          android:layout_height="0dp"
-          android:visibility="gone" />
-
-      <!-- Hidden compat: FavouriteButton removed from hero (duplicate of QuickFavoriteButton below) -->
-      <ImageButton
-          android:id="@+id/AnimeDetailsPageFavouriteButton"
-          android:layout_width="0dp"
-          android:layout_height="0dp"
-          android:visibility="gone" />
-
-      <!-- Bottom sheet: rounded top corners hosting quick actions + tabs + pager -->
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:background="@drawable/electric_midnight_sheet_top"
-          android:orientation="vertical"
-          android:paddingTop="10dp">
-
-        <!-- Quick Actions (Add to List, Favorite) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
-            android:orientation="horizontal">
-
-          <Button
-              android:id="@+id/AnimeDetailsPageQuickAddToListButton"
+          <LinearLayout
+              android:id="@+id/AnimeDetailsPageUpdateSection"
               android:layout_width="0dp"
-              android:layout_height="44dp"
-              android:layout_marginEnd="3dp"
-              android:layout_weight="1"
-              android:background="@drawable/electric_midnight_action_button"
-              android:drawableStart="@drawable/icon_circle_add"
-              android:drawablePadding="8dp"
-              android:fontFamily="@font/inter"
-              android:gravity="center"
-              android:paddingStart="14dp"
-              android:paddingEnd="14dp"
-              android:text="Add to List"
-              android:textAllCaps="false"
-              android:textColor="#ffffff"
-              android:textSize="13sp" />
-
-          <Button
-              android:id="@+id/AnimeDetailsPageQuickFavoriteButton"
-              android:layout_width="0dp"
-              android:layout_height="44dp"
-              android:layout_marginStart="3dp"
-              android:layout_weight="1"
-              android:background="@drawable/electric_midnight_action_button"
-              android:drawableStart="@drawable/icon_heart_outline"
-              android:drawablePadding="8dp"
-              android:fontFamily="@font/inter"
-              android:gravity="center"
-              android:paddingStart="14dp"
-              android:paddingEnd="14dp"
-              android:text="Favorite"
-              android:textAllCaps="false"
-              android:textColor="#ffffff"
-              android:textSize="13sp" />
+              android:layout_height="0dp"
+              android:visibility="gone" />
 
           <ImageButton
-              android:id="@+id/AnimeDetailsPageMoreButton"
-              android:layout_width="44dp"
-              android:layout_height="44dp"
-              android:layout_marginStart="8dp"
-              android:background="@drawable/electric_midnight_action_button"
-              android:padding="10dp"
-              android:src="@drawable/icon_more_vertical"
-              android:tint="#ffffff" />
+              android:id="@+id/AnimeDetailsPageFavouriteButton"
+              android:layout_width="0dp"
+              android:layout_height="0dp"
+              android:visibility="gone" />
+
+          <!-- Quick Actions with sheet transition -->
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/electric_midnight_sheet_top"
+              android:orientation="horizontal"
+              android:paddingTop="10dp"
+              android:paddingStart="16dp"
+              android:paddingEnd="16dp"
+              android:paddingBottom="8dp">
+
+            <Button
+                android:id="@+id/AnimeDetailsPageQuickAddToListButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/electric_midnight_action_button"
+                android:drawableStart="@drawable/icon_circle_add"
+                android:drawablePadding="8dp"
+                android:fontFamily="@font/inter"
+                android:gravity="center"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="Add to List"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/AnimeDetailsPageQuickFavoriteButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/electric_midnight_action_button"
+                android:drawableStart="@drawable/icon_heart_outline"
+                android:drawablePadding="8dp"
+                android:fontFamily="@font/inter"
+                android:gravity="center"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="Favorite"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:textSize="13sp" />
+
+            <ImageButton
+                android:id="@+id/AnimeDetailsPageMoreButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/electric_midnight_action_button"
+                android:padding="10dp"
+                android:src="@drawable/icon_more_vertical"
+                android:tint="#ffffff" />
+          </LinearLayout>
         </LinearLayout>
+      </ScrollView>
+    </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
 
-        <MALClient.Android.UserControls.PagerSlidingTabStrip
-            android:id="@+id/AnimeDetailsPageTabStrip"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:textColorPrimary="#ffffff"
-            android:textColorSecondary="?BrushTextAccentContrast" />
+    <!-- Tab strip: fixed below hero -->
+    <MALClient.Android.UserControls.PagerSlidingTabStrip
+        android:id="@+id/AnimeDetailsPageTabStrip"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@color/EmSheet"
+        android:textColorPrimary="#ffffff"
+        android:textColorSecondary="?BrushTextAccentContrast" />
 
-        <MALClient.Android.UserControls.HeightAdjustingViewPager
-            android:id="@+id/AnimeDetailsPagePivot"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/EmSheet" />
-      </LinearLayout>
-    </LinearLayout>
-  </ScrollView>
+    <!-- Pager: fills ALL remaining space, tabs scroll internally -->
+    <MALClient.Android.UserControls.HeightAdjustingViewPager
+        android:id="@+id/AnimeDetailsPagePivot"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/EmSheet" />
+
+  </LinearLayout>
 
   <RelativeLayout
       android:id="@+id/AnimeDetailsPageLoadingOverlay"
@@ -521,4 +515,4 @@
         android:src="@drawable/icon_close"
         android:tint="@android:color/white" />
   </RelativeLayout>
-</MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
+</FrameLayout>

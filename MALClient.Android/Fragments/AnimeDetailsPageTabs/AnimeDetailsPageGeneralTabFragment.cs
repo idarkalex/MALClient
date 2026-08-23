@@ -59,7 +59,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             try
             {
-                (RootView?.Parent as UserControls.HeightAdjustingViewPager)?.RefreshHeight();
                 AnimeDetailsPageGeneralTabFragmentEpisodesLabel.Text =
                     string.IsNullOrEmpty(ViewModel.GeneralRank) ? "N/A" : ViewModel.GeneralRank;
 

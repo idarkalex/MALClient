@@ -40,6 +40,14 @@ namespace MALClient.Android.UserControls
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
+            // When parent gives Exactly mode (e.g. LinearLayout weight), respect it —
+            // the pager fills remaining space and tabs scroll internally
+            if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Exactly)
+            {
+                base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+                return;
+            }
+
             if (EnableAdjustments && ChildCount > 0)
             {
                 var index = Math.Max(0, Math.Min(CurrentItem, ChildCount - 1));
@@ -47,8 +55,6 @@ namespace MALClient.Android.UserControls
                 int height = 0;
                 if (child != null)
                 {
-                    // Cap at 55% of screen: tabs taller than this scroll internally (virtualized = fast).
-                    // Prevents infinite bars, giant gaps, and cut-off tabs regardless of content timing.
                     var maxH = (int)(Context.Resources.DisplayMetrics.HeightPixels * 0.55);
                     child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(maxH, MeasureSpecMode.AtMost));
                     height = child.MeasuredHeight;

@@ -59,8 +59,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     MainActivity.WriteCrashLog("DetailsTab bind", ex);
                 }
-
-                (RootView?.Parent as UserControls.HeightAdjustingViewPager)?.RefreshHeight();
             }));
         }
 
@@ -268,4 +266,5 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         #endregion
     }
 }
+
 

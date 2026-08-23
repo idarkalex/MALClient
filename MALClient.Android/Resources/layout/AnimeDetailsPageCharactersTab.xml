@@ -2,8 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:orientation="vertical"
              android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:background="@color/EmSheet">
+             android:layout_height="match_parent"`r`n             android:backgroundandroid:background="@color/EmSheet">
 <!--  <MALClient.Android.UserControls.HeightAdjustingGridView
     android:id="@+id/AnimeDetailsPageCharactersTabGridView"
     android:layout_width="match_parent"
@@ -26,5 +25,6 @@
                android:layout_height="wrap_content"
                android:indeterminate="true" android:layout_gravity="center"/>
 </FrameLayout>
+
 
 
