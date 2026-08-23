@@ -1,4 +1,4 @@
-﻿using MALClient.Adapters;
+using MALClient.Adapters;
 
 namespace MALClient.XShared.Utils
 {
@@ -65,25 +65,25 @@ namespace MALClient.XShared.Utils
                 Replace("AccentColourLight", AccentColourLight).
                 Replace("AccentColourDark", AccentColourDark)
                 .Replace("BodyBackgroundThemeColor",
-                    Settings.SelectedTheme == 1 ? "#2d2d2d" : "#e6e6e6")
+                    Settings.SelectedTheme == 1 ? "#051522" : "#e6e6e6")
                 .Replace("BodyForegroundThemeColor",
                     Settings.SelectedTheme == 1 ? "white" : "black").Replace(
                     "HorizontalSeparatorColor",
-                    Settings.SelectedTheme == 1 ? "#0d0d0d" : "#b3b3b3")
+                    Settings.SelectedTheme == 1 ? "#424656" : "#b3b3b3")
                 .Replace("BodyBackgroundThemeDarkerColor",
-                    Settings.SelectedTheme == 1 ? "#212121" : "#dadada");
+                    Settings.SelectedTheme == 1 ? "#0d1d2a" : "#dadada");
 
             bodyCssMinWidth = bodyCssMinWidth.Replace("AccentColourBase", AccentColour).
                 Replace("AccentColourLight", AccentColourLight).
                 Replace("AccentColourDark", AccentColourDark)
                 .Replace("BodyBackgroundThemeColor",
-                    Settings.SelectedTheme == 1 ? "#2d2d2d" : "#e6e6e6")
+                    Settings.SelectedTheme == 1 ? "#051522" : "#e6e6e6")
                 .Replace("BodyForegroundThemeColor",
                     Settings.SelectedTheme == 1 ? "white" : "black").Replace(
                     "HorizontalSeparatorColor",
-                    Settings.SelectedTheme == 1 ? "#0d0d0d" : "#b3b3b3")
+                    Settings.SelectedTheme == 1 ? "#424656" : "#b3b3b3")
                 .Replace("BodyBackgroundThemeDarkerColor",
-                    Settings.SelectedTheme == 1 ? "#212121" : "#dadada");
+                    Settings.SelectedTheme == 1 ? "#0d1d2a" : "#dadada");
 
             ReplacedBegin = Begin.Replace("$notifyFunction$", NotifyFunction);
             ReplacedCssHtmlBodyScrollEnabled = bodyCss;
@@ -143,7 +143,7 @@ namespace MALClient.XShared.Utils
 	        {
 		        background-color: BodyBackgroundThemeColor;
 		        color: BodyForegroundThemeColor;
-                font-family: 'Segoe UI';
+                font-family: 'Inter', sans-serif;
                 -webkit-align-content: center;
                 min-width: MinimalWidthpx;
                 width: MinimalWidthpx;
@@ -154,7 +154,7 @@ namespace MALClient.XShared.Utils
 	        {
 		        background-color: BodyBackgroundThemeColor;
 		        color: BodyForegroundThemeColor;
-                font-family: 'Segoe UI';
+                font-family: 'Inter', sans-serif;
 	        }";
         private const string Css =
             @"
@@ -179,7 +179,7 @@ namespace MALClient.XShared.Utils
             a:hover{color:AccentColourLight}
 
         h1 {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 24px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -187,7 +187,7 @@ namespace MALClient.XShared.Utils
 	        line-height: 26.4px;
         }
         h2 {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 24px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -195,7 +195,7 @@ namespace MALClient.XShared.Utils
 	        line-height: 26.4px;
         }
         h3 {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 18px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -205,7 +205,7 @@ namespace MALClient.XShared.Utils
 	        line-height: 15.4px;
         }
         h4 {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 14px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -225,7 +225,7 @@ namespace MALClient.XShared.Utils
             padding-right: 0;
         }
         p {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 14px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -233,7 +233,7 @@ namespace MALClient.XShared.Utils
 	        line-height: 20px;
         }
         blockquote {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 21px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -241,7 +241,7 @@ namespace MALClient.XShared.Utils
 	        line-height: 30px;
         }
         pre {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 13px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -270,7 +270,7 @@ namespace MALClient.XShared.Utils
 
         .information
         {
-	        font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+	        font-family: 'Inter', sans-serif;
 	        font-size: 12px;
 	        font-style: normal;
 	        font-variant: normal;
@@ -296,3 +296,4 @@ namespace MALClient.XShared.Utils
         #endregion
     }
 }
+

@@ -102,6 +102,11 @@ namespace MALClient.Android.Fragments
 
             Bindings.Add(this.SetBinding(() => ViewModel.AnimeMode).WhenSourceChanges(() =>
             {
+                // pager Count changes 7<->6; a stale CurrentItem (e.g. Staff=6 on manga)
+                // explodes inside ViewPager's Java internals with no managed trace
+                var maxIndex = ViewModelLocator.AnimeDetails.AnimeMode ? 6 : 5;
+                if (AnimeDetailsPagePivot.CurrentItem > maxIndex)
+                    AnimeDetailsPagePivot.SetCurrentItem(0, false);
                 AnimeDetailsPagePivot.Adapter.NotifyDataSetChanged();
             }));
 

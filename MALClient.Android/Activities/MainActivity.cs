@@ -82,8 +82,11 @@ namespace MALClient.Android.Activities
             SimpleIoc.Default.Register<Activity>(() => this);
         }
 
-        private static void RegisterCrashLogging()
+        private string _previousCrashLog;
+
+        private string RegisterCrashLogging()
         {
+            var prior = ReadCrashLog();
             WriteCrashLog("=== session start ===", null);
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
                 WriteCrashLog("AppDomain.UnhandledException", e.ExceptionObject as Exception);
@@ -91,15 +94,36 @@ namespace MALClient.Android.Activities
                 WriteCrashLog("AndroidEnvironment.UnhandledExceptionRaiser", e.Exception);
             TaskScheduler.UnobservedTaskException += (s, e) =>
                 WriteCrashLog("TaskScheduler.UnobservedTaskException", e.Exception);
+            return prior;
+        }
+
+        private static string GetCrashLogPath()
+        {
+            var cacheDir = CurrentContext?.CacheDir?.Path;
+            return string.IsNullOrEmpty(cacheDir) ? null : System.IO.Path.Combine(cacheDir, "crash_log.txt");
+        }
+
+        private static string ReadCrashLog()
+        {
+            try
+            {
+                var path = GetCrashLogPath();
+                return string.IsNullOrEmpty(path) || !System.IO.File.Exists(path)
+                    ? ""
+                    : System.IO.File.ReadAllText(path);
+            }
+            catch (Exception)
+            {
+                return "";
+            }
         }
 
         public static void WriteCrashLog(string origin, Exception ex)
         {
             try
             {
-                var cacheDir = CurrentContext?.CacheDir?.Path ?? global::Android.OS.Environment.GetExternalStoragePublicDirectory(global::Android.OS.Environment.DirectoryDownloads)?.Path;
-                if (string.IsNullOrEmpty(cacheDir)) return;
-                var path = System.IO.Path.Combine(cacheDir, "crash_log.txt");
+                var path = GetCrashLogPath();
+                if (string.IsNullOrEmpty(path)) return;
                 var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {origin}\n{ex}\n\n";
                 System.IO.File.AppendAllText(path, line);
             }
@@ -108,9 +132,42 @@ namespace MALClient.Android.Activities
             }
         }
 
+        private void PromptPreviousCrashLog()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_previousCrashLog))
+                    return;
+                var idx = _previousCrashLog.LastIndexOf("=== session start ===", StringComparison.Ordinal);
+                var previousRun = idx > 0 ? _previousCrashLog.Substring(0, idx) : _previousCrashLog;
+                if (!previousRun.Contains("Exception") || previousRun.Length < 40)
+                    return;
+
+                var tail = previousRun.Length > 3000 ? "..." + previousRun.Substring(previousRun.Length - 3000) : previousRun;
+                var builder = new AlertDialog.Builder(this);
+                builder.SetTitle("Previous run crashed");
+                builder.SetMessage("The app crashed on the previous run. Share the log to help fix it?");
+                builder.SetPositiveButton("Share", (s, e) =>
+                {
+                    var share = new Intent(Intent.ActionSend);
+                    share.SetType("text/plain");
+                    share.PutExtra(Intent.ExtraText, tail);
+                    StartActivity(Intent.CreateChooser(share, "Share crash log"));
+                });
+                builder.SetNegativeButton("Dismiss", (s, e) => { });
+                RunOnUiThread(() =>
+                {
+                    try { builder.Show(); } catch (Exception) { }
+                });
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         protected override async void OnCreate(Bundle bundle)
         {
-            RegisterCrashLogging();
+            _previousCrashLog = RegisterCrashLogging();
             RequestWindowFeature(WindowFeatures.NoTitle);
             CurrentTheme = Settings.SelectedTheme;
             CurrentAccent = AndroidColourThemeHelper.CurrentTheme;
@@ -169,6 +226,8 @@ namespace MALClient.Android.Activities
 
                 _staticInitPerformed = true;
             }
+
+            PromptPreviousCrashLog();
 
             //basically splitscreen
             if (_lastFragment != null && !_firstCreation) ViewModelOnMainNavigationRequested(_lastFragment);

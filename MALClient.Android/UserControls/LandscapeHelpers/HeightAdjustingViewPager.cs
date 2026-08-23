@@ -47,7 +47,9 @@ namespace MALClient.Android.UserControls
                 int height = 0;
                 if (child != null)
                 {
-                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+                    // AbsListView under Unspecified measures a single row -> collapse to 1 item.
+                    // A generous AtMost cap lets lists/scrollviews report their full content height.
+                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(1000000, MeasureSpecMode.AtMost));
                     height = child.MeasuredHeight;
                 }
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);

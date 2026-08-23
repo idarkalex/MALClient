@@ -43,15 +43,8 @@ namespace MALClient.Android.Flyouts
             droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(AnimeListPageFlyoutBuilder.BuildItem(context, "Open in browser", listener, 4)));
             if (!viewModel.AddAnimeVisibility)
                 droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(AnimeListPageFlyoutBuilder.BuildItem(context, "Remove from my list", listener, 5)));
-            //if (viewModel.AiringNotificationsButtonVisibility)
-            //    droppyBuilder.AddMenuItem(
-            //        new DroppyMenuCustomItem(
-            //            AnimeListPageFlyoutBuilder.BuildItem(context, "Air Notifications", listener, 8,
-            //                viewModel.AreAirNotificationsEnabled ? (int?) ResourceExtension.AccentColour : null,
-            //                viewModel.AreAirNotificationsEnabled
-            //                    ? (int?) ResourceExtension.White
-            //                    : null)));
 
+            AnimeListPageFlyoutBuilder.AlignRightUnder(droppyBuilder, parent, 150);
             return droppyBuilder.Build();
         }
     }

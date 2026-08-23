@@ -69,6 +69,7 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
 
 
             ArticlesPageWebView.SetWebViewClient(_listenableWebClient);
+            ArticlesPageWebView.SetWebChromeClient(new WebChromeClient());
             ArticlesPageWebView.Settings.JavaScriptEnabled = true;
 
             if (ViewModel.PendingArticle != null)
@@ -107,6 +108,14 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
         {
             if (targetUrl != null)
             {
+                // keep youtube videos inside the in-app reader
+                if (targetUrl.Contains("youtube.com") || targetUrl.Contains("youtu.be"))
+                {
+                    var embed = ConvertToYouTubeEmbed(targetUrl);
+                    if (embed != null)
+                        return embed;
+                }
+
                 var navArgs = MalLinkParser.GetNavigationParametersForUrl(targetUrl);
                 if (navArgs != null)
                 {
@@ -135,6 +144,12 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
                 }
             }
             return null;
+        }
+
+        private static string ConvertToYouTubeEmbed(string url)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(url, @"(?:v=|youtu\.be/|/embed/)([A-Za-z0-9_\-]{6,})");
+            return match.Success ? $"https://www.youtube.com/embed/{match.Groups[1].Value}" : null;
         }
 
         private void PageReady()

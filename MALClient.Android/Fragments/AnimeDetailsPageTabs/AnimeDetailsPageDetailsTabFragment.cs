@@ -51,50 +51,62 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 if (ViewModel.LoadingDetails)
                     return;
 
-                AnimeDetailsPageDetailsTabLeftGenresList.SetAdapter(
-                    ViewModel.RightGenres.GetAdapter(GetSingleDetailTemplateDelegate));          
-                AnimeDetailsPageDetailsTabRightGenresList.SetAdapter(
-                    ViewModel.LeftGenres.GetAdapter(GetSingleDetailTemplateDelegate));
-                AnimeDetailsPageDetailsTabInformationList.SetAdapter(
-                    ViewModel.Information.GetAdapter(GetDetailsTemplateDelegate));
-                AnimeDetailsPageDetailsTabStatsList.SetAdapter(ViewModel.Stats.GetAdapter(GetDetailsTemplateDelegate));
-
-                if (ViewModel.AnimeMode)
+                try
                 {
-                    AnimeDetailsPageDetailsTabOPsList.Visibility =
-                        AnimeDetailsPageDetailsTabEDsList.Visibility =
-                            AnimeDetailsPageDetailsTabEDsListLabel.Visibility =
-                                AnimeDetailsPageDetailsTabOPsListLabel.Visibility = ViewStates.Visible;
+                    BindDetailsTab();
+                }
+                catch (Exception ex)
+                {
+                    MainActivity.WriteCrashLog("DetailsTab bind", ex);
+                }
+            }));
+        }
 
-                    AnimeDetailsPageDetailsTabOPsList.SetAdapter(
-                        ViewModel.OPs.GetAdapter(GetOpEdDetailTemplateDelegate));
-                    AnimeDetailsPageDetailsTabEDsList.SetAdapter(
-                        ViewModel.EDs.GetAdapter(GetOpEdDetailTemplateDelegate));
+        private void BindDetailsTab()
+        {
+            AnimeDetailsPageDetailsTabLeftGenresList.SetAdapter(
+                ViewModel.LeftGenres.GetAdapter(GetSingleDetailTemplateDelegate));
+            AnimeDetailsPageDetailsTabRightGenresList.SetAdapter(
+                ViewModel.RightGenres.GetAdapter(GetSingleDetailTemplateDelegate));
+            AnimeDetailsPageDetailsTabInformationList.SetAdapter(
+                ViewModel.Information.GetAdapter(GetDetailsTemplateDelegate));
+            AnimeDetailsPageDetailsTabStatsList.SetAdapter(ViewModel.Stats.GetAdapter(GetDetailsTemplateDelegate));
 
-                    if (ViewModel.Episodes.Any())
-                    {
-                        EpisodesLabel.Visibility =
-                            EpisodesList.Visibility = ViewStates.Visible;
+            if (ViewModel.AnimeMode)
+            {
+                AnimeDetailsPageDetailsTabOPsList.Visibility =
+                    AnimeDetailsPageDetailsTabEDsList.Visibility =
+                        AnimeDetailsPageDetailsTabEDsListLabel.Visibility =
+                            AnimeDetailsPageDetailsTabOPsListLabel.Visibility = ViewStates.Visible;
 
-                        EpisodesList.Adapter = ViewModel.Episodes.GetAdapter(EpisodeItemTemplate);
-                        EpisodesList.LayoutParameters.Height =
-                            (Math.Min(5, ViewModel.Episodes.Count) * DimensionsHelper.DpToPx(54));
-                    }
-                    else
-                    {
-                        EpisodesLabel.Visibility =
-                            EpisodesList.Visibility = ViewStates.Gone;
-                    }
+                AnimeDetailsPageDetailsTabOPsList.SetAdapter(
+                    ViewModel.OPs.GetAdapter(GetOpEdDetailTemplateDelegate));
+                AnimeDetailsPageDetailsTabEDsList.SetAdapter(
+                    ViewModel.EDs.GetAdapter(GetOpEdDetailTemplateDelegate));
+
+                if (ViewModel.Episodes.Any())
+                {
+                    EpisodesLabel.Visibility =
+                        EpisodesList.Visibility = ViewStates.Visible;
+
+                    EpisodesList.Adapter = ViewModel.Episodes.GetAdapter(EpisodeItemTemplate);
+                    EpisodesList.LayoutParameters.Height =
+                        (Math.Min(5, ViewModel.Episodes.Count) * DimensionsHelper.DpToPx(54));
                 }
                 else
                 {
-                    AnimeDetailsPageDetailsTabOPsList.Visibility =
-                        AnimeDetailsPageDetailsTabEDsList.Visibility =
-                            AnimeDetailsPageDetailsTabEDsListLabel.Visibility =
-                                AnimeDetailsPageDetailsTabOPsListLabel.Visibility = EpisodesLabel.Visibility =
-                                    EpisodesList.Visibility = ViewStates.Gone;
-                }              
-            }));
+                    EpisodesLabel.Visibility =
+                        EpisodesList.Visibility = ViewStates.Gone;
+                }
+            }
+            else
+            {
+                AnimeDetailsPageDetailsTabOPsList.Visibility =
+                    AnimeDetailsPageDetailsTabEDsList.Visibility =
+                        AnimeDetailsPageDetailsTabEDsListLabel.Visibility =
+                            AnimeDetailsPageDetailsTabOPsListLabel.Visibility = EpisodesLabel.Visibility =
+                                EpisodesList.Visibility = ViewStates.Gone;
+            }
         }
 
         private View EpisodeItemTemplate(int i, AnimeEpisode ep, View arg3)

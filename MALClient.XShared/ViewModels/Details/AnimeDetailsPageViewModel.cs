@@ -1359,6 +1359,11 @@ namespace MALClient.XShared.ViewModels.Details
                         GeneralDuration = string.Join(":", parts.Skip(1)).Trim();
                     if (parts[0] == "Rating")
                         GeneralRating = string.Join(":", parts.Skip(1)).Trim();
+                    // backfill General cards when official API/Tenrai /full failed for this entry
+                    if (string.IsNullOrEmpty(GeneralStudios) && parts[0] == "Studios")
+                        GeneralStudios = string.Join(":", parts.Skip(1)).Trim();
+                    if (string.IsNullOrEmpty(GeneralSeason) && parts[0] == "Premiered")
+                        GeneralSeason = string.Join(":", parts.Skip(1)).Trim();
                     if (!duplicated)
                         Information.Add(new Tuple<string, string>(parts[0], string.Join(":", parts.Skip(1))));
                 }
@@ -1387,6 +1392,18 @@ namespace MALClient.XShared.ViewModels.Details
                         infoString = infoString.Substring(0, pos - 2);
 
                     var parts = infoString.Split(':');
+                    if (parts.Length > 1)
+                    {
+                        var value = parts[1].Trim();
+                        if (string.IsNullOrEmpty(GeneralRank) && parts[0] == "Rank")
+                            GeneralRank = value.StartsWith("#") ? value : $"#{value}";
+                        if (string.IsNullOrEmpty(GeneralPopularity) && parts[0] == "Popularity")
+                            GeneralPopularity = value.StartsWith("#") ? value : $"#{value}";
+                        if (string.IsNullOrEmpty(GeneralMembers) && parts[0] == "Members")
+                            GeneralMembers = value;
+                        if (string.IsNullOrEmpty(GeneralFavorites) && parts[0] == "Favorites")
+                            GeneralFavorites = value;
+                    }
                     if (parts[0] == "Rank" || parts[0] == "Popularity" || parts[0] == "Members" || parts[0] == "Favorites")
                         continue;
                     Stats.Add(new Tuple<string, string>(parts[0], parts[1]));
