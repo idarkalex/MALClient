@@ -1,29 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout
+<MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/AnimeDetailsPageSwipeRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-  <LinearLayout
+  <ScrollView
+      android:id="@+id/AnimeDetailsPageScrollView"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:orientation="vertical">
-
-    <!-- Hero area: swipe-to-refresh + scrollable (shares screen with tabs via weight) -->
-    <MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
-        android:id="@+id/AnimeDetailsPageSwipeRefresh"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-      <ScrollView
-          android:id="@+id/AnimeDetailsPageScrollView"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:scrollbars="none">
+      android:clipToPadding="false"
+      android:fillViewport="true"
+      android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -451,30 +442,23 @@
                 android:src="@drawable/icon_more_vertical"
                 android:tint="#ffffff" />
           </LinearLayout>
+
+          <MALClient.Android.UserControls.PagerSlidingTabStrip
+              android:id="@+id/AnimeDetailsPageTabStrip"
+              android:layout_width="match_parent"
+              android:layout_height="40dp"
+              android:layout_marginStart="16dp"
+              android:layout_marginEnd="16dp"
+              android:textColorPrimary="#ffffff"
+              android:textColorSecondary="?BrushTextAccentContrast" />
+
+          <MALClient.Android.UserControls.HeightAdjustingViewPager
+              android:id="@+id/AnimeDetailsPagePivot"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@color/EmSheet" />
         </LinearLayout>
       </ScrollView>
-    </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
-
-    <!-- Tab strip: fixed below hero -->
-    <MALClient.Android.UserControls.PagerSlidingTabStrip
-        android:id="@+id/AnimeDetailsPageTabStrip"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="@color/EmSheet"
-        android:textColorPrimary="#ffffff"
-        android:textColorSecondary="?BrushTextAccentContrast" />
-
-    <!-- Pager: fills ALL remaining space, tabs scroll internally -->
-    <MALClient.Android.UserControls.HeightAdjustingViewPager
-        android:id="@+id/AnimeDetailsPagePivot"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@color/EmSheet" />
-
-  </LinearLayout>
 
   <RelativeLayout
       android:id="@+id/AnimeDetailsPageLoadingOverlay"
@@ -516,4 +500,4 @@
         android:src="@drawable/icon_close"
         android:tint="@android:color/white" />
   </RelativeLayout>
-</FrameLayout>
+</MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
