@@ -167,6 +167,17 @@ namespace MALClient.Android
             container.Adapter = null;
         }
 
+        private static UserControls.HeightAdjustingViewPager FindViewPager(View view)
+        {
+            var parent = view.Parent;
+            while (parent != null)
+            {
+                if (parent is UserControls.HeightAdjustingViewPager vp) return vp;
+                parent = (parent as View)?.Parent;
+            }
+            return null;
+        }
+
         private static void HookCollectionChanged<T>(AbsListView container, IList<T> items) where T : class
         {
             var notifying = items as System.Collections.Specialized.INotifyCollectionChanged;
@@ -175,7 +186,7 @@ namespace MALClient.Android
             System.Collections.Specialized.NotifyCollectionChangedEventHandler handler = (s, e) =>
             {
                 (container.Adapter as BaseAdapter)?.NotifyDataSetChanged();
-                (container.Parent as UserControls.HeightAdjustingViewPager)?.RefreshHeight();
+                (FindViewPager(container))?.RefreshHeight();
                 container.Post(() => container.RequestLayout());
             };
             notifying.CollectionChanged += handler;
@@ -219,4 +230,5 @@ namespace MALClient.Android
         }
     }
 }
+
 

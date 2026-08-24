@@ -42,17 +42,16 @@ namespace MALClient.Android.UserControls
         {
             if (EnableAdjustments && ChildCount > 0)
             {
+                // Probe ONLY the active child: each tab gets exactly the height it needs.
+                // Empty tabs collapse (no infinite scroll), tall tabs expand fully.
+                var index = Math.Max(0, Math.Min(CurrentItem, ChildCount - 1));
+                var child = GetChildAt(index);
                 int height = 0;
-                for (int i = 0; i < ChildCount; i++)
+                if (child != null)
                 {
-                    var child = GetChildAt(i);
-                    if (child == null) continue;
-                    // AtMost(2x screen): ScrollViews report full content,
-                    // ListViews measure ALL rows (not just 1 like Unspecified)
                     child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(
                         Context.Resources.DisplayMetrics.HeightPixels * 2, MeasureSpecMode.AtMost));
-                    int h = child.MeasuredHeight;
-                    if (h > height) height = h;
+                    height = child.MeasuredHeight;
                 }
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
             }
