@@ -211,7 +211,21 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri($"https://www.youtube.com/results?search_query={WebUtility.UrlEncode(s)}"));
+                        var query = WebUtility.UrlEncode(s);
+                        Task.Run(async () =>
+                        {
+                            var videoId = await Web.InlineVideoWebViewClient.SearchYouTubeVideoId(query);
+                            if (Activity == null || Activity.IsFinishing) return;
+                            Activity.RunOnUiThread(() =>
+                            {
+                                if (!string.IsNullOrEmpty(videoId))
+                                    ViewModelLocator.AnimeDetails.PlayVideoInApp(
+                                        $"https://www.youtube.com/watch?v={videoId}");
+                                else
+                                    ResourceLocator.SystemControlsLauncherService.LaunchUri(
+                                        new Uri($"https://www.youtube.com/results?search_query={query}"));
+                            });
+                        });
                     }
                     else if(item.ItemId == 1)
                     {

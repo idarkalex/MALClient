@@ -52,5 +52,25 @@ namespace MALClient.Android.Web
                    "iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}</style></head>" +
                    "<body><iframe src='" + embedUrl + "' allow='autoplay;encrypted-media;fullscreen' allowfullscreen></iframe></body></html>";
         }
+
+        public static async System.Threading.Tasks.Task<string> SearchYouTubeVideoId(string encodedQuery)
+        {
+            try
+            {
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                    var html = await client.GetStringAsync(
+                        $"https://www.youtube.com/results?search_query={encodedQuery}");
+                    var match = Regex.Match(html, @"""videoId"":""([A-Za-z0-9_\-]{11})""");
+                    return match.Success ? match.Groups[1].Value : null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
     }
 }
