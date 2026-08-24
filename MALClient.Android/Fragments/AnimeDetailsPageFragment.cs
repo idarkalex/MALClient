@@ -350,6 +350,12 @@ namespace MALClient.Android.Fragments
             }
             AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
             AnimeDetailsPageVideoWebView.LoadDataWithBaseURL("https://myanimelist.net", html, "text/html", "utf-8", null);
+
+            // Back button closes the video overlay instead of navigating away
+            ViewModelLocator.NavMgr.RegisterOneTimeOverride(new RelayCommand(() =>
+            {
+                HideVideoOverlay();
+            }));
         }
 
         public void ShowVideoLoading()

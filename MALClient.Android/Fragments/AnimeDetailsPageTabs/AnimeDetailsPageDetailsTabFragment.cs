@@ -217,7 +217,20 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             {
                 try
                 {
-                    // PRIMARY: YouTube search scraping
+                    // PRIMARY: AnimeThemes (direct WebM, better quality, exact match)
+                    var videos = await AnimeThemesHelper.SearchAsync(title);
+                    var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
+                    DiagnosticsReporter.Info("OP/ED", $"AnimeThemes: {videos.Count} videos, match={(match?.Url ?? "null")}");
+
+                    if (!string.IsNullOrEmpty(match?.Url))
+                    {
+                        if (Activity == null || Activity.IsFinishing) return;
+                        Activity.RunOnUiThread(() =>
+                            ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url));
+                        return;
+                    }
+
+                    // SECONDARY: YouTube search scraping
                     var videoId = await Web.InlineVideoWebViewClient.SearchYouTubeVideoId(
                         WebUtility.UrlEncode(searchQuery));
                     DiagnosticsReporter.Info("OP/ED", $"YouTube scrape: videoId={videoId ?? "null"}");
@@ -228,19 +241,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                         Activity.RunOnUiThread(() =>
                             ViewModelLocator.AnimeDetails.PlayVideoInApp(
                                 $"https://www.youtube.com/watch?v={videoId}"));
-                        return;
-                    }
-
-                    // SECONDARY: AnimeThemes
-                    var videos = await AnimeThemesHelper.SearchAsync(title);
-                    var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
-                    DiagnosticsReporter.Info("OP/ED", $"AnimeThemes: {videos.Count} videos, match={(match?.Url ?? "null")}");
-
-                    if (!string.IsNullOrEmpty(match?.Url))
-                    {
-                        if (Activity == null || Activity.IsFinishing) return;
-                        Activity.RunOnUiThread(() =>
-                            ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url));
                         return;
                     }
 

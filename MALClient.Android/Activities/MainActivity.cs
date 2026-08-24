@@ -181,6 +181,7 @@ namespace MALClient.Android.Activities
         protected override async void OnCreate(Bundle bundle)
         {
             _previousCrashLog = RegisterCrashLogging();
+            DiagnosticsReporter.Success("Startup", $"MAL+ iniciado — {DateTime.Now:HH:mm:ss}");
             RequestWindowFeature(WindowFeatures.NoTitle);
             CurrentTheme = Settings.SelectedTheme;
             CurrentAccent = AndroidColourThemeHelper.CurrentTheme;
