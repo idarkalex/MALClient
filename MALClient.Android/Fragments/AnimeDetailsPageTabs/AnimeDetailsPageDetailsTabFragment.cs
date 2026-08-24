@@ -16,6 +16,7 @@ using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Models.Models.Anime;
+using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
 
@@ -215,12 +216,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        var seq = Utils.AnimeThemesHelper.ParseSequence(s);
+                        var seq = AnimeThemesHelper.ParseSequence(s);
                         var title = ViewModelLocator.AnimeDetails.Title;
                         Task.Run(async () =>
                         {
-                            var videos = await Utils.AnimeThemesHelper.SearchAsync(title);
-                            var match = Utils.AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
+                            var videos = await AnimeThemesHelper.SearchAsync(title);
+                            var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
                             if (Activity == null || Activity.IsFinishing) return;
                             Activity.RunOnUiThread(() =>
                             {
@@ -288,5 +289,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         #endregion
     }
 }
+
 
 
