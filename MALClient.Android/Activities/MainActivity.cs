@@ -128,9 +128,9 @@ namespace MALClient.Android.Activities
                 System.IO.File.AppendAllText(path, line);
 
                 if (ex != null)
-                    Utils.DiagnosticsReporter.Error("Crash", $"{origin}\n{ex.Message}", ex);
+                    DiagnosticsReporter.Error("Crash", $"{origin}\n{ex.Message}", ex);
                 else if (origin.StartsWith("DetailsTab bind:"))
-                    Utils.DiagnosticsReporter.Info("Details", origin);
+                    DiagnosticsReporter.Info("Details", origin);
             }
             catch (Exception)
             {
