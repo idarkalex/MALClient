@@ -352,6 +352,19 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageVideoWebView.LoadDataWithBaseURL("https://myanimelist.net", html, "text/html", "utf-8", null);
         }
 
+        public void ShowVideoLoading()
+        {
+            if (!IsAdded) return;
+            AnimeDetailsPageVideoWebView.LoadUrl("about:blank");
+            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
+        }
+
+        public void HideVideoLoading()
+        {
+            if (!IsAdded) return;
+            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Gone;
+        }
+
         private static string BuildVideoPlayerHtml(string videoUrl)
         {
             return "<html><head><meta name='viewport' content='width=device-width,initial-scale=1'/>" +
