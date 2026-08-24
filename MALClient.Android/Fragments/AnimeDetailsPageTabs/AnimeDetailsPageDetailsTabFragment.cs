@@ -209,23 +209,32 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             var seq = AnimeThemesHelper.ParseSequence(s);
             var title = ViewModelLocator.AnimeDetails.Title;
+            MainActivity.WriteCrashLog($"PlayOpEdTheme: seq={seq} isOp={_currentOpEdIsOp} title={title}", null);
 
             Task.Run(async () =>
             {
-                var videos = await AnimeThemesHelper.SearchAsync(title);
-                var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
-                if (Activity == null || Activity.IsFinishing) return;
-                Activity.RunOnUiThread(() =>
+                try
                 {
-                    if (match != null && !string.IsNullOrEmpty(match.Url))
-                        ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url);
-                    else
+                    var videos = await AnimeThemesHelper.SearchAsync(title);
+                    MainActivity.WriteCrashLog($"PlayOpEdTheme: found {videos.Count} videos", null);
+                    var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
+                    if (Activity == null || Activity.IsFinishing) return;
+                    Activity.RunOnUiThread(() =>
                     {
-                        var query = WebUtility.UrlEncode(s);
-                        ResourceLocator.SystemControlsLauncherService.LaunchUri(
-                            new Uri($"https://www.youtube.com/results?search_query={query}"));
-                    }
-                });
+                        if (match != null && !string.IsNullOrEmpty(match.Url))
+                            ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url);
+                        else
+                        {
+                            var query = WebUtility.UrlEncode(s);
+                            ResourceLocator.SystemControlsLauncherService.LaunchUri(
+                                new Uri($"https://www.youtube.com/results?search_query={query}"));
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MainActivity.WriteCrashLog("PlayOpEdTheme error", ex);
+                }
             });
         }
 

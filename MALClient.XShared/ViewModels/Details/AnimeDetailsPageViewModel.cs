@@ -1113,6 +1113,10 @@ namespace MALClient.XShared.ViewModels.Details
             RaisePropertyChanged(() => StartYear);
             ViewModelLocator.GeneralMain.CurrentOffStatus = Title;
 
+            // Pre-cache AnimeThemes themes for this entry (fire-and-forget)
+            if (!string.IsNullOrEmpty(Title))
+                Task.Run(async () => await AnimeThemesHelper.SearchAsync(Title));
+
             DetailImage = _imgUrl;
             LoadingGlobal = false;
 
