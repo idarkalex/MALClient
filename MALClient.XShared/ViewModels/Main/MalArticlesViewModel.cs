@@ -195,6 +195,14 @@ namespace MALClient.XShared.ViewModels.Main
                 html = await Comm.Articles.AnnNewsQuery.GetAnnArticleHtml(data.Url, data.Id);
             else
                 html = await new MalArticleQuery(data.Url, data.Title, data.Type).GetArticleHtml();
+            if (string.IsNullOrEmpty(html))
+            {
+                LoadingVisibility = false;
+                ArticleIndexVisibility = true;
+                ResourceLocator.MessageDialogProvider.ShowMessageDialog(
+                    "Could not load this article. Please try again later.", "Load error");
+                return;
+            }
             OpenWebView?.Invoke(html, data);
         }
     }

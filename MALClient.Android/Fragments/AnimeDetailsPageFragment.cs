@@ -328,7 +328,20 @@ namespace MALClient.Android.Fragments
         {
             if (string.IsNullOrEmpty(url) || !IsAdded)
                 return;
-            ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(url));
+            var videoId = Web.InlineVideoWebViewClient.ExtractYouTubeId(url);
+            if (string.IsNullOrEmpty(videoId))
+                return;
+            AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
+            AnimeDetailsPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
+            AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
+            var html = "<html><head><meta name='viewport' content='width=device-width,initial-scale=1'/>" +
+                       "<style>body{margin:0;padding:0;background:#000;overflow:hidden}" +
+                       "iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}</style></head>" +
+                       "<body><iframe src='https://www.youtube.com/embed/" + videoId + "?autoplay=1' " +
+                       "allow='autoplay;encrypted-media;fullscreen' allowfullscreen></iframe></body></html>";
+            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
+            // Same technique as article reader (proven working): LoadDataWithBaseURL with real base URL
+            AnimeDetailsPageVideoWebView.LoadDataWithBaseURL("https://myanimelist.net", html, "text/html", "utf-8", null);
         }
 
         private void HideVideoOverlay()

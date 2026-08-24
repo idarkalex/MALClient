@@ -40,11 +40,22 @@ namespace MALClient.Android.UserControls
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
-            // FIXED height: 1.5x screen. No probing, no child measurement, no stale heights.
-            // Every tab gets the same height and scrolls internally via its own
-            // ScrollView/ListView/RecyclerView. This eliminates ALL measurement issues.
-            var height = (int)(Context.Resources.DisplayMetrics.HeightPixels * 1.5);
-            heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
+            if (EnableAdjustments && ChildCount > 0)
+            {
+                int height = 0;
+                for (int i = 0; i < ChildCount; i++)
+                {
+                    var child = GetChildAt(i);
+                    if (child == null) continue;
+                    // AtMost(2x screen): ScrollViews report full content,
+                    // ListViews measure ALL rows (not just 1 like Unspecified)
+                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(
+                        Context.Resources.DisplayMetrics.HeightPixels * 2, MeasureSpecMode.AtMost));
+                    int h = child.MeasuredHeight;
+                    if (h > height) height = h;
+                }
+                heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
+            }
             base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
         }
 

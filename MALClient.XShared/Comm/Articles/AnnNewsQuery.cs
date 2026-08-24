@@ -66,34 +66,53 @@ namespace MALClient.XShared.Comm.Articles
             if (cached != null)
                 return cached;
 
+            string html = null;
+            for (var attempt = 1; attempt <= 3 && html == null; attempt++)
+            {
+                try
+                {
+                    using (var request = new System.Net.Http.HttpRequestMessage(
+                        System.Net.Http.HttpMethod.Get, url))
+                    {
+                        request.Headers.Add("User-Agent",
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                        using (var response = await AnnClient.SendAsync(request))
+                        {
+                            if (response.IsSuccessStatusCode)
+                                html = await response.Content.ReadAsStringAsync();
+                        }
+                    }
+                    if (html == null && attempt < 3)
+                        await Task.Delay(TimeSpan.FromSeconds(attempt));
+                }
+                catch (Exception)
+                {
+                    if (attempt < 3)
+                        await Task.Delay(TimeSpan.FromSeconds(attempt));
+                }
+            }
+            if (string.IsNullOrEmpty(html))
+                return null;
+
             try
             {
-                using (var client = new System.Net.Http.HttpClient())
-                {
-                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
-                    var html = await client.GetStringAsync(url);
+                var doc = new HtmlDocument();
+                doc.LoadHtml(html);
 
-                    var doc = new HtmlDocument();
-                    doc.LoadHtml(html);
+                var body = doc.DocumentNode.Descendants("div")
+                    .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("KonaBody") ?? false);
+                if (body == null)
+                    body = doc.DocumentNode.Descendants("div")
+                        .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("text-zone") ?? false)
+                        ?? doc.DocumentNode.SelectSingleNode("//body");
+                if (body == null)
+                    return null;
 
-                    var body = doc.DocumentNode.Descendants("div")
-                        .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("KonaBody") ?? false);
-                    if (body == null)
-                    {
-                        // fallback: use the main content area or the whole body
-                        body = doc.DocumentNode.Descendants("div")
-                            .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("text-zone") ?? false)
-                            ?? doc.DocumentNode.SelectSingleNode("//body");
-                    }
-                    if (body == null)
-                        return null;
+                foreach (var script in body.Descendants("script").ToList())
+                    script.Remove();
 
-                    foreach (var script in body.Descendants("script").ToList())
-                        script.Remove();
-
-                    DataCache.SaveArticleContentData($"ann_v2_{id}", body.InnerHtml, MalNewsType.News);
-                    return body.InnerHtml;
-                }
+                DataCache.SaveArticleContentData($"ann_v2_{id}", body.InnerHtml, MalNewsType.News);
+                return body.InnerHtml;
             }
             catch (Exception)
             {
