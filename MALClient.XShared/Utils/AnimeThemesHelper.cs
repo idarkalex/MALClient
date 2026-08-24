@@ -33,41 +33,57 @@ namespace MALClient.XShared.Utils
             if (string.IsNullOrEmpty(animeTitle))
                 return new List<ThemeVideo>();
 
-            var cacheKey = animeTitle.Trim().ToLowerInvariant();
-            if (Cache.TryGetValue(cacheKey, out var cached))
-                return cached;
+            // Try multiple title variants: full, first part before ":", without season/part suffix
+            var variants = new List<string> { animeTitle.Trim() };
+            var colonIdx = animeTitle.IndexOf(':');
+            if (colonIdx > 0)
+                variants.Add(animeTitle.Substring(0, colonIdx).Trim());
+            var partMatch = Regex.Match(animeTitle, @"^(.+?)(?:\s+(?:Part|Season|S\d|2nd|3rd|4th).*)?$", RegexOptions.IgnoreCase);
+            if (partMatch.Success && partMatch.Groups[1].Value.Trim() != animeTitle.Trim())
+                variants.Add(partMatch.Groups[1].Value.Trim());
 
-            try
+            foreach (var variant in variants)
             {
-                var query = Uri.EscapeDataString(animeTitle);
-                var json = await Client.GetStringAsync(
-                    $"https://api.animethemes.moe/search?q={query}");
-                var response = JsonConvert.DeserializeObject<SearchResponse>(json);
+                var cacheKey = variant.ToLowerInvariant();
+                if (Cache.TryGetValue(cacheKey, out var cached) && cached.Count > 0)
+                    return cached;
 
-                var videos = new List<ThemeVideo>();
-                if (response?.search?.videos != null)
+                try
                 {
-                    foreach (var video in response.search.videos)
+                    var query = Uri.EscapeDataString(variant);
+                    var json = await Client.GetStringAsync(
+                        $"https://api.animethemes.moe/search?q={query}");
+                    var response = JsonConvert.DeserializeObject<SearchResponse>(json);
+
+                    var videos = new List<ThemeVideo>();
+                    if (response?.search?.videos != null)
                     {
-                        var match = Regex.Match(video.basename ?? "",
-                            @"-((OP|ED)(\d*))\.webm$", RegexOptions.IgnoreCase);
-                        if (match.Success)
+                        foreach (var video in response.search.videos)
                         {
-                            var type = match.Groups[2].Value.ToUpper();
-                            var seqStr = match.Groups[3].Value;
-                            var seq = string.IsNullOrEmpty(seqStr) ? 1 : int.Parse(seqStr);
-                            videos.Add(new ThemeVideo { Type = type, Sequence = seq, Url = video.link });
+                            var match = Regex.Match(video.basename ?? "",
+                                @"-((OP|ED)(\d*))\.webm$", RegexOptions.IgnoreCase);
+                            if (match.Success)
+                            {
+                                var type = match.Groups[2].Value.ToUpper();
+                                var seqStr = match.Groups[3].Value;
+                                var seq = string.IsNullOrEmpty(seqStr) ? 1 : int.Parse(seqStr);
+                                videos.Add(new ThemeVideo { Type = type, Sequence = seq, Url = video.link });
+                            }
                         }
                     }
-                }
 
-                Cache[cacheKey] = videos;
-                return videos;
+                    if (videos.Count > 0)
+                    {
+                        Cache[cacheKey] = videos;
+                        return videos;
+                    }
+                }
+                catch (Exception)
+                {
+                }
             }
-            catch (Exception)
-            {
-                return new List<ThemeVideo>();
-            }
+
+            return new List<ThemeVideo>();
         }
 
         public static ThemeVideo FindMatch(List<ThemeVideo> videos, bool isOp, int sequence)

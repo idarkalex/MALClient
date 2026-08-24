@@ -1,12 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/AnimeDetailsPageSwipeRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+  <MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
+      android:id="@+id/AnimeDetailsPageSwipeRefresh"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
 
   <ScrollView
       android:id="@+id/AnimeDetailsPageScrollView"
@@ -458,12 +462,14 @@
               android:background="@color/EmSheet" />
         </LinearLayout>
       </ScrollView>
+    </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
 
   <RelativeLayout
       android:id="@+id/AnimeDetailsPageLoadingOverlay"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:background="?BrushLoading"
+      android:elevation="10dp"
       android:visibility="gone">
 
     <ProgressBar
@@ -480,6 +486,7 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:background="#E6000000"
+      android:elevation="10dp"
       android:visibility="gone">
 
     <WebView
@@ -499,4 +506,4 @@
         android:src="@drawable/icon_close"
         android:tint="@android:color/white" />
   </RelativeLayout>
-</MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
+</FrameLayout>

@@ -197,10 +197,36 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         private bool _currentOpEdIsOp;
 
+        private void PlayOpEdTheme(string s)
+        {
+            var seq = AnimeThemesHelper.ParseSequence(s);
+            var title = ViewModelLocator.AnimeDetails.Title;
+            Task.Run(async () =>
+            {
+                var videos = await AnimeThemesHelper.SearchAsync(title);
+                var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
+                if (Activity == null || Activity.IsFinishing) return;
+                Activity.RunOnUiThread(() =>
+                {
+                    if (match != null && !string.IsNullOrEmpty(match.Url))
+                        ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url);
+                    else
+                    {
+                        var query = WebUtility.UrlEncode(s);
+                        ResourceLocator.SystemControlsLauncherService.LaunchUri(
+                            new Uri($"https://www.youtube.com/results?search_query={query}"));
+                    }
+                });
+            });
+        }
+
         private View GetOpEdDetailTemplateDelegate(int i, string s, View arg3)
         {
             var view = Activity.LayoutInflater.Inflate(Resource.Layout.OpEdItemView, null);
             view.FindViewById<TextView>(Resource.Id.GenreItemTextView).Text = s;
+
+            _currentOpEdIsOp = ViewModel.OPs.Contains(s);
+            view.SetOnClickListener(new OnClickListener(v => PlayOpEdTheme(s)));
 
             view.FindViewById(Resource.Id.MoreButton).SetOnClickListener(new OnClickListener(v =>
             {
@@ -216,25 +242,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        var seq = AnimeThemesHelper.ParseSequence(s);
-                        var title = ViewModelLocator.AnimeDetails.Title;
-                        Task.Run(async () =>
-                        {
-                            var videos = await AnimeThemesHelper.SearchAsync(title);
-                            var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
-                            if (Activity == null || Activity.IsFinishing) return;
-                            Activity.RunOnUiThread(() =>
-                            {
-                                if (match != null && !string.IsNullOrEmpty(match.Url))
-                                    ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url);
-                                else
-                                {
-                                    var query = WebUtility.UrlEncode(s);
-                                    ResourceLocator.SystemControlsLauncherService.LaunchUri(
-                                        new Uri($"https://www.youtube.com/results?search_query={query}"));
-                                }
-                            });
-                        });
+                        PlayOpEdTheme(s);
                     }
                     else if(item.ItemId == 1)
                     {
