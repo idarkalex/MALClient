@@ -110,12 +110,15 @@ namespace MALClient.XShared.Comm.Articles
                 try
                 {
                     var block = item.Groups[1].Value;
-                    var title = StripHtml(WebUtility.HtmlDecode(ExtractTag(block, "title"))).TrimStart('>').Trim();
+                    var title = StripHtml(WebUtility.HtmlDecode(ExtractTag(block, "title"))).Trim().TrimStart('>').Trim();
                     var link = ExtractTag(block, "link");
                     var rawDescription = ExtractRawTag(block, "description");
-                    var description = StripHtml(WebUtility.HtmlDecode(rawDescription)).TrimStart('>').Trim();
+                    var description = StripHtml(WebUtility.HtmlDecode(rawDescription)).Trim().TrimStart('>').Trim();
                     var pubDate = ExtractTag(block, "pubDate");
-                    var category = StripHtml(WebUtility.HtmlDecode(ExtractTag(block, "category"))).TrimStart('>').Trim();
+                    var categories = new List<string>();
+                    foreach (Match catMatch in Regex.Matches(block, "<category>(.*?)</category>"))
+                        categories.Add(WebUtility.HtmlDecode(catMatch.Groups[1].Value.Trim()));
+                    var category = string.Join(", ", categories.Where(c => !string.IsNullOrEmpty(c)));
                     var guid = ExtractTag(block, "guid");
 
                     if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(link))
@@ -195,4 +198,5 @@ namespace MALClient.XShared.Comm.Articles
         }
     }
 }
+
 

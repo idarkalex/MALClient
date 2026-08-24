@@ -40,28 +40,11 @@ namespace MALClient.Android.UserControls
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
-            // When parent gives Exactly mode (e.g. LinearLayout weight), respect it —
-            // the pager fills remaining space and tabs scroll internally
-            if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Exactly)
-            {
-                base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-                return;
-            }
-
-            if (EnableAdjustments && ChildCount > 0)
-            {
-                var index = Math.Max(0, Math.Min(CurrentItem, ChildCount - 1));
-                var child = GetChildAt(index);
-                int height = 0;
-                if (child != null)
-                {
-                    // Generous cap: effectively no limit, just prevents integer overflow.
-                    // Content determines height, outer ScrollView scrolls everything.
-                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(100000, MeasureSpecMode.AtMost));
-                    height = child.MeasuredHeight;
-                }
-                heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
-            }
+            // FIXED height: 1.5x screen. No probing, no child measurement, no stale heights.
+            // Every tab gets the same height and scrolls internally via its own
+            // ScrollView/ListView/RecyclerView. This eliminates ALL measurement issues.
+            var height = (int)(Context.Resources.DisplayMetrics.HeightPixels * 1.5);
+            heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
             base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
         }
 
