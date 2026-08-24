@@ -328,20 +328,62 @@ namespace MALClient.Android.Fragments
         {
             if (string.IsNullOrEmpty(url) || !IsAdded)
                 return;
-            var videoId = Web.InlineVideoWebViewClient.ExtractYouTubeId(url);
-            if (string.IsNullOrEmpty(videoId))
-                return;
             AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
             AnimeDetailsPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
             AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
-            var html = "<html><head><meta name='viewport' content='width=device-width,initial-scale=1'/>" +
+
+            var videoId = Web.InlineVideoWebViewClient.ExtractYouTubeId(url);
+            string html;
+            if (!string.IsNullOrEmpty(videoId))
+            {
+                // YouTube embed (trailer)
+                html = "<html><head><meta name='viewport' content='width=device-width,initial-scale=1'/>" +
                        "<style>body{margin:0;padding:0;background:#000;overflow:hidden}" +
                        "iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}</style></head>" +
                        "<body><iframe src='https://www.youtube.com/embed/" + videoId + "?autoplay=1' " +
                        "allow='autoplay;encrypted-media;fullscreen' allowfullscreen></iframe></body></html>";
+            }
+            else
+            {
+                // Direct video (AnimeThemes WebM) with EM-styled controls
+                html = BuildVideoPlayerHtml(url);
+            }
             AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
-            // Same technique as article reader (proven working): LoadDataWithBaseURL with real base URL
             AnimeDetailsPageVideoWebView.LoadDataWithBaseURL("https://myanimelist.net", html, "text/html", "utf-8", null);
+        }
+
+        private static string BuildVideoPlayerHtml(string videoUrl)
+        {
+            return "<html><head><meta name='viewport' content='width=device-width,initial-scale=1'/>" +
+                "<style>" +
+                "*{box-sizing:border-box}" +
+                "body{margin:0;padding:0;background:#000;overflow:hidden;font-family:sans-serif;user-select:none}" +
+                "#video{position:absolute;top:0;left:0;width:100%;height:calc(100% - 48px);object-fit:contain;background:#000}" +
+                "#controls{position:absolute;bottom:0;left:0;right:0;height:48px;background:rgba(5,21,34,0.92);display:flex;align-items:center;padding:0 12px;z-index:10}" +
+                "#playBtn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;margin-right:10px;padding:4px}" +
+                "#progressContainer{flex:1;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;cursor:pointer;position:relative}" +
+                "#progressFill{height:100%;background:#0066FF;border-radius:2px;width:0%;pointer-events:none}" +
+                "#timeDisplay{color:#d4e4f7;font-size:11px;margin-left:10px;white-space:nowrap}" +
+                "</style></head><body>" +
+                "<video id='video' src='" + videoUrl + "' autoplay playsinline webkit-playsinline></video>" +
+                "<div id='controls'>" +
+                "<button id='playBtn'>&#9208;</button>" +
+                "<div id='progressContainer'><div id='progressFill'></div></div>" +
+                "<span id='timeDisplay'>0:00 / 0:00</span>" +
+                "</div>" +
+                "<script>" +
+                "var v=document.getElementById('video');" +
+                "var btn=document.getElementById('playBtn');" +
+                "var fill=document.getElementById('progressFill');" +
+                "var container=document.getElementById('progressContainer');" +
+                "var time=document.getElementById('timeDisplay');" +
+                "btn.onclick=function(e){e.stopPropagation();v.paused?v.play():v.pause()};" +
+                "v.onplay=function(){btn.innerHTML='&#9208;'};" +
+                "v.onpause=function(){btn.innerHTML='&#9654;'};" +
+                "v.ontimeupdate=function(){if(v.duration){fill.style.width=((v.currentTime/v.duration)*100)+'%';time.textContent=fmt(v.currentTime)+' / '+fmt(v.duration)}};" +
+                "container.onclick=function(e){var r=container.getBoundingClientRect();v.currentTime=((e.clientX-r.left)/r.width)*v.duration};" +
+                "function fmt(s){s=Math.floor(s);return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}" +
+                "</script></body></html>";
         }
 
         private void HideVideoOverlay()

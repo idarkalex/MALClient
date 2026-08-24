@@ -194,6 +194,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             return view;
         }
 
+        private bool _currentOpEdIsOp;
+
         private View GetOpEdDetailTemplateDelegate(int i, string s, View arg3)
         {
             var view = Activity.LayoutInflater.Inflate(Resource.Layout.OpEdItemView, null);
@@ -201,6 +203,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
             view.FindViewById(Resource.Id.MoreButton).SetOnClickListener(new OnClickListener(v =>
             {
+                _currentOpEdIsOp = ViewModel.OPs.Contains(s);
                 _opEdPopup = new PopupMenu(Activity, view.FindViewById(Resource.Id.MoreButton));
 
 
@@ -212,19 +215,23 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        var query = WebUtility.UrlEncode(s);
+                        var seq = Utils.AnimeThemesHelper.ParseSequence(s);
+                        var title = ViewModelLocator.AnimeDetails.Title;
                         Task.Run(async () =>
                         {
-                            var videoId = await Web.InlineVideoWebViewClient.SearchYouTubeVideoId(query);
+                            var videos = await Utils.AnimeThemesHelper.SearchAsync(title);
+                            var match = Utils.AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
                             if (Activity == null || Activity.IsFinishing) return;
                             Activity.RunOnUiThread(() =>
                             {
-                                if (!string.IsNullOrEmpty(videoId))
-                                    ViewModelLocator.AnimeDetails.PlayVideoInApp(
-                                        $"https://www.youtube.com/watch?v={videoId}");
+                                if (match != null && !string.IsNullOrEmpty(match.Url))
+                                    ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url);
                                 else
+                                {
+                                    var query = WebUtility.UrlEncode(s);
                                     ResourceLocator.SystemControlsLauncherService.LaunchUri(
                                         new Uri($"https://www.youtube.com/results?search_query={query}"));
+                                }
                             });
                         });
                     }
