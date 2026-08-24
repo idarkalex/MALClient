@@ -78,6 +78,7 @@ namespace MALClient.XShared.Comm.Articles
                             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
                         using (var response = await AnnClient.SendAsync(request))
                         {
+                            DiagnosticsReporter.Info("ANN", $"article fetch attempt {attempt}: {url} -> {response.StatusCode}");
                             if (response.IsSuccessStatusCode)
                                 html = await response.Content.ReadAsStringAsync();
                         }
@@ -85,8 +86,9 @@ namespace MALClient.XShared.Comm.Articles
                     if (html == null && attempt < 3)
                         await Task.Delay(TimeSpan.FromSeconds(attempt));
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    DiagnosticsReporter.Error("ANN", $"article fetch attempt {attempt} failed", ex);
                     if (attempt < 3)
                         await Task.Delay(TimeSpan.FromSeconds(attempt));
                 }
@@ -111,6 +113,7 @@ namespace MALClient.XShared.Comm.Articles
                 foreach (var script in body.Descendants("script").ToList())
                     script.Remove();
 
+                DiagnosticsReporter.Success("ANN", $"article extracted: {body.InnerHtml.Length} chars from {url}");
                 DataCache.SaveArticleContentData($"ann_v2_{id}", body.InnerHtml, MalNewsType.News);
                 return body.InnerHtml;
             }

@@ -126,6 +126,11 @@ namespace MALClient.Android.Activities
                 if (string.IsNullOrEmpty(path)) return;
                 var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {origin}\n{ex}\n\n";
                 System.IO.File.AppendAllText(path, line);
+
+                if (ex != null)
+                    Utils.DiagnosticsReporter.Error("Crash", $"{origin}\n{ex.Message}", ex);
+                else if (origin.StartsWith("DetailsTab bind:"))
+                    Utils.DiagnosticsReporter.Info("Details", origin);
             }
             catch (Exception)
             {

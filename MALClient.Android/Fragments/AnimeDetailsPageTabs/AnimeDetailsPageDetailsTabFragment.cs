@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Graphics;
@@ -209,33 +210,68 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             var seq = AnimeThemesHelper.ParseSequence(s);
             var title = ViewModelLocator.AnimeDetails.Title;
-            MainActivity.WriteCrashLog($"PlayOpEdTheme: seq={seq} isOp={_currentOpEdIsOp} title={title}", null);
+            var searchQuery = BuildOpEdSearchQuery(s);
+            DiagnosticsReporter.Info("OP/ED", $"click: seq={seq} isOp={_currentOpEdIsOp} query=\"{searchQuery}\" title=\"{title}\"");
 
             Task.Run(async () =>
             {
                 try
                 {
+                    // PRIMARY: YouTube search scraping
+                    var videoId = await Web.InlineVideoWebViewClient.SearchYouTubeVideoId(
+                        WebUtility.UrlEncode(searchQuery));
+                    DiagnosticsReporter.Info("OP/ED", $"YouTube scrape: videoId={videoId ?? "null"}");
+
+                    if (!string.IsNullOrEmpty(videoId))
+                    {
+                        if (Activity == null || Activity.IsFinishing) return;
+                        Activity.RunOnUiThread(() =>
+                            ViewModelLocator.AnimeDetails.PlayVideoInApp(
+                                $"https://www.youtube.com/watch?v={videoId}"));
+                        return;
+                    }
+
+                    // SECONDARY: AnimeThemes
                     var videos = await AnimeThemesHelper.SearchAsync(title);
-                    MainActivity.WriteCrashLog($"PlayOpEdTheme: found {videos.Count} videos", null);
                     var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
+                    DiagnosticsReporter.Info("OP/ED", $"AnimeThemes: {videos.Count} videos, match={(match?.Url ?? "null")}");
+
+                    if (!string.IsNullOrEmpty(match?.Url))
+                    {
+                        if (Activity == null || Activity.IsFinishing) return;
+                        Activity.RunOnUiThread(() =>
+                            ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url));
+                        return;
+                    }
+
+                    // FALLBACK: external YouTube
+                    DiagnosticsReporter.Warn("OP/ED", "no match, opening external");
                     if (Activity == null || Activity.IsFinishing) return;
                     Activity.RunOnUiThread(() =>
-                    {
-                        if (match != null && !string.IsNullOrEmpty(match.Url))
-                            ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url);
-                        else
-                        {
-                            var query = WebUtility.UrlEncode(s);
-                            ResourceLocator.SystemControlsLauncherService.LaunchUri(
-                                new Uri($"https://www.youtube.com/results?search_query={query}"));
-                        }
-                    });
+                        ResourceLocator.SystemControlsLauncherService.LaunchUri(
+                            new Uri($"https://www.youtube.com/results?search_query={WebUtility.UrlEncode(searchQuery)}")));
                 }
                 catch (Exception ex)
                 {
+                    DiagnosticsReporter.Error("OP/ED", "exception", ex);
                     MainActivity.WriteCrashLog("PlayOpEdTheme error", ex);
                 }
             });
+        }
+
+        private static string BuildOpEdSearchQuery(string opEdText)
+        {
+            if (string.IsNullOrEmpty(opEdText)) return "";
+            // Input: 1: "Song Name (Japanese Name)" by Artist Name (eps 1)
+            // Extract: Song Name Artist Name
+            var songMatch = Regex.Match(opEdText, @"""\s*([^""]+?)\s*(?:\([^)]*\))?\s*""");
+            var song = songMatch.Success ? songMatch.Groups[1].Value.Trim() : "";
+            var artistMatch = Regex.Match(opEdText, @"by\s+(.+?)(?:\s*\(eps|\s*$)");
+            var artist = artistMatch.Success ? artistMatch.Groups[1].Value.Trim() : "";
+            var query = $"{song} {artist}".Trim();
+            // Strip Japanese characters and extra spaces
+            query = Regex.Replace(query, @"[\u3000-\u9FFF\uFF00-\uFFEF]+", " ").Trim();
+            return Regex.Replace(query, @"\s+", " ");
         }
 
         private View GetOpEdDetailTemplateDelegate(int i, string s, View arg3)
