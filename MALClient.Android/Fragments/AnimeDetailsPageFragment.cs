@@ -19,6 +19,7 @@ using Android.Widget;
 using Com.Shehabic.Droppy;
 using FFImageLoading;
 using FFImageLoading.Transformations;
+using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
