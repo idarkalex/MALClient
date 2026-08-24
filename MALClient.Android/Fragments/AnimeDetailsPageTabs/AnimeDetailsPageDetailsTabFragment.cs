@@ -210,10 +210,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             var seq = AnimeThemesHelper.ParseSequence(s);
             var title = ViewModelLocator.AnimeDetails.Title;
 
-            // Show overlay immediately with loading spinner
-            var activity = Activity as Activities.MainActivity;
-            activity?.ShowVideoLoading();
-
             Task.Run(async () =>
             {
                 var videos = await AnimeThemesHelper.SearchAsync(title);
@@ -225,7 +221,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                         ViewModelLocator.AnimeDetails.PlayVideoInApp(match.Url);
                     else
                     {
-                        activity?.HideVideoLoading();
                         var query = WebUtility.UrlEncode(s);
                         ResourceLocator.SystemControlsLauncherService.LaunchUri(
                             new Uri($"https://www.youtube.com/results?search_query={query}"));
