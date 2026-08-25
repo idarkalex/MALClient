@@ -11,6 +11,7 @@ using Android.OS;
 using Android.Support.V4.Content;
 using Android.Support.V7.App;
 using Android.Views;
+using Android.Widget;
 using Com.Orhanobut.Dialogplus;
 using Com.Shehabic.Droppy;
 using GalaSoft.MvvmLight.Command;
