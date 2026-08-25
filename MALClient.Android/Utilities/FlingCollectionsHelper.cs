@@ -31,9 +31,11 @@ namespace MALClient.Android
                     for (int i = 0; i < container.ChildCount; i++)
                     {
                         var view = container.GetChildAt(i);
-                        var item = view.Tag.Unwrap<T>();
                         if (view.Tag?.ToString() == "Footer")
-                            continue;  
+                            continue;
+                        var item = view.Tag.Unwrap<T>();
+                        if (item == null)
+                            continue;
                         dataTemplateFull(view,items.IndexOf(item),item);
                     }
                 }
@@ -89,8 +91,10 @@ namespace MALClient.Android
                         for (int i = 0; i < container.ChildCount; i++)
                         {
                             var view = container.GetChildAt(i);
-                            var item = view.Tag.Unwrap<T>();
                             if (view.Tag?.ToString() == "Footer")
+                                continue;
+                            var item = view.Tag.Unwrap<T>();
+                            if (item == null)
                                 continue;
                             dataTemplateFull(view, items.IndexOf(item), item, (TViewHolder)ViewHolders[container][view]);
                         }
@@ -110,8 +114,10 @@ namespace MALClient.Android
                         for (int i = 0; i < container.ChildCount; i++)
                         {
                             var view = container.GetChildAt(i);
-                            var item = view.Tag.Unwrap<T>();
                             if (view.Tag?.ToString() == "Footer")
+                                continue;
+                            var item = view.Tag.Unwrap<T>();
+                            if (item == null)
                                 continue;
                             dataTemplateFull(view, items.IndexOf(item), item, (TViewHolder)ViewHolders[container][view]);
                         }

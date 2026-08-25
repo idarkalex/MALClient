@@ -13,6 +13,7 @@ using Android.Webkit;
 using Android.Widget;
 
 using FFImageLoading.Views;
+using Android.Support.Design.Widget;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
 
@@ -26,6 +27,13 @@ namespace MALClient.Android.Fragments
         private ImageViewAsync _animeDetailsPageShowCoverImage;
         private ImageViewAsync _animeDetailsPageBlurredBackground;
         private FrameLayout _animeDetailsPagePosterContainer;
+        private AppBarLayout _animeDetailsPageAppBar;
+        private LinearLayout _animeDetailsPageCompactBar;
+        private ImageViewAsync _animeDetailsPageCompactPoster;
+        private TextView _animeDetailsPageCompactTitle;
+        private TextView _animeDetailsPageCompactScore;
+        private TextView _animeDetailsPageCompactSubtitle;
+        private TextView _animeDetailsPageCompactStatus;
         private TextView _animeDetailsPageWatchedLabel;
         private TextView _animeDetailsPageReadVolumesLabel;
         private Button _animeDetailsPageScoreButton;
@@ -48,7 +56,6 @@ namespace MALClient.Android.Fragments
         private HeightAdjustingViewPager _animeDetailsPagePivot;
         private RelativeLayout _animeDetailsPageLoadingOverlay;
         private ScrollableSwipeToRefreshLayout _animeDetailsPageSwipeRefresh;
-        private ScrollView _animeDetailsPageScrollView;
         private TextView _animeDetailsPageTitle;
         private TextView _animeDetailsPageSubtitle;
         private TextView _animeDetailsPageScoreValue;
@@ -62,6 +69,20 @@ namespace MALClient.Android.Fragments
         public ImageViewAsync AnimeDetailsPageBlurredBackground => GetView(ref _animeDetailsPageBlurredBackground, Resource.Id.AnimeDetailsPageBlurredBackground);
 
         public FrameLayout AnimeDetailsPagePosterContainer => GetView(ref _animeDetailsPagePosterContainer, Resource.Id.AnimeDetailsPagePosterContainer);
+
+        public AppBarLayout AnimeDetailsPageAppBar => GetView(ref _animeDetailsPageAppBar, Resource.Id.AnimeDetailsPageAppBar);
+
+        public LinearLayout AnimeDetailsPageCompactBar => GetView(ref _animeDetailsPageCompactBar, Resource.Id.AnimeDetailsPageCompactBar);
+
+        public ImageViewAsync AnimeDetailsPageCompactPoster => GetView(ref _animeDetailsPageCompactPoster, Resource.Id.AnimeDetailsPageCompactPoster);
+
+        public TextView AnimeDetailsPageCompactTitle => GetView(ref _animeDetailsPageCompactTitle, Resource.Id.AnimeDetailsPageCompactTitle);
+
+        public TextView AnimeDetailsPageCompactScore => GetView(ref _animeDetailsPageCompactScore, Resource.Id.AnimeDetailsPageCompactScore);
+
+        public TextView AnimeDetailsPageCompactSubtitle => GetView(ref _animeDetailsPageCompactSubtitle, Resource.Id.AnimeDetailsPageCompactSubtitle);
+
+        public TextView AnimeDetailsPageCompactStatus => GetView(ref _animeDetailsPageCompactStatus, Resource.Id.AnimeDetailsPageCompactStatus);
 
         public TextView AnimeDetailsPageWatchedLabel => GetView(ref _animeDetailsPageWatchedLabel, Resource.Id.AnimeDetailsPageWatchedLabel);
 
@@ -100,8 +121,6 @@ namespace MALClient.Android.Fragments
         public HeightAdjustingViewPager AnimeDetailsPagePivot => GetView(ref _animeDetailsPagePivot, Resource.Id.AnimeDetailsPagePivot);
 
         public RelativeLayout AnimeDetailsPageLoadingOverlay => GetView(ref _animeDetailsPageLoadingOverlay, Resource.Id.AnimeDetailsPageLoadingOverlay);
-
-        public ScrollView AnimeDetailsPageScrollView => GetView(ref _animeDetailsPageScrollView, Resource.Id.AnimeDetailsPageScrollView);
 
         public ScrollableSwipeToRefreshLayout AnimeDetailsPageSwipeRefresh => GetView(ref _animeDetailsPageSwipeRefresh, Resource.Id.AnimeDetailsPageSwipeRefresh);
 

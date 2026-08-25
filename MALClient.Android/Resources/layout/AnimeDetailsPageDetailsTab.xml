@@ -1,22 +1,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
   <MALClient.Android.UserControls.OrientationDependentScrollView xmlns:android="http://schemas.android.com/apk/res/android"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_height="match_parent"
       android:background="@color/EmSheet">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
 
       <TextView
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:gravity="center"
           android:layout_marginTop="18dp"
           android:layout_marginBottom="8dp"
+          android:paddingStart="16dp"
+          android:paddingEnd="16dp"
           android:fontFamily="@font/inter"
           android:textAllCaps="true"
           android:letterSpacing="0.08"
@@ -55,8 +61,12 @@
       <TextView
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:gravity="center"
           android:layout_marginTop="18dp"
           android:layout_marginBottom="8dp"
+          android:paddingStart="16dp"
+          android:paddingEnd="16dp"
           android:fontFamily="@font/inter"
           android:textAllCaps="true"
           android:letterSpacing="0.08"
@@ -75,10 +85,15 @@
           android:scrollbars="none" />
 
       <TextView
+          android:id="@+id/AnimeDetailsPageDetailsTabStatsLabel"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:gravity="center"
           android:layout_marginTop="18dp"
           android:layout_marginBottom="8dp"
+          android:paddingStart="16dp"
+          android:paddingEnd="16dp"
           android:fontFamily="@font/inter"
           android:textAllCaps="true"
           android:letterSpacing="0.08"
@@ -100,8 +115,12 @@
           android:id="@+id/AnimeDetailsPageDetailsTabOPsListLabel"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:gravity="center"
           android:layout_marginTop="18dp"
           android:layout_marginBottom="8dp"
+          android:paddingStart="16dp"
+          android:paddingEnd="16dp"
           android:fontFamily="@font/inter"
           android:textAllCaps="true"
           android:letterSpacing="0.08"
@@ -123,8 +142,12 @@
           android:id="@+id/AnimeDetailsPageDetailsTabEDsListLabel"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:gravity="center"
           android:layout_marginTop="18dp"
           android:layout_marginBottom="8dp"
+          android:paddingStart="16dp"
+          android:paddingEnd="16dp"
           android:fontFamily="@font/inter"
           android:textAllCaps="true"
           android:letterSpacing="0.08"
@@ -138,32 +161,6 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:orientation="vertical"
-          android:paddingStart="3dp"
-          android:paddingEnd="3dp"
-          android:scrollbars="none" />
-
-      <TextView
-          android:id="@+id/EpisodesLabel"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="18dp"
-          android:layout_marginBottom="8dp"
-          android:fontFamily="@font/inter"
-          android:textAllCaps="true"
-          android:letterSpacing="0.08"
-          android:textColor="?BrushTextSecondary"
-          android:textSize="@dimen/EmLabelCaps"
-          android:textStyle="bold"
-          android:text="Episodes" />
-
-      <ListView
-          android:id="@+id/EpisodesList"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:nestedScrollingEnabled="true"
-          android:orientation="vertical"
-          android:dividerHeight="0dp"
-          android:divider="@color/Transparent"
           android:paddingStart="3dp"
           android:paddingEnd="3dp"
           android:scrollbars="none" />

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -32,7 +32,7 @@ namespace MALClient.XShared.Comm.Articles
         {
             var cached = force
                 ? null
-                : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index_v2.json", "Articles", 1);
+                : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index_v6.json", "Articles", 1);
             if (cached != null && cached.Count > 0)
                 return cached;
 
@@ -56,13 +56,28 @@ namespace MALClient.XShared.Comm.Articles
 
             var output = ParseRss(raw);
             if (output.Count > 0)
-                DataCache.SaveData(output, "ann_news_index_v2.json", "Articles");
+            {
+                var thumbs = await FetchThumbMap();
+                foreach (var entry in output)
+                {
+                    if (string.IsNullOrEmpty(entry.ImgUrl) && thumbs.TryGetValue(entry.Id, out var thumb))
+                        entry.ImgUrl = thumb;
+                }
+                DataCache.SaveData(output, "ann_news_index_v6.json", "Articles");
+            }
             return output;
         }
 
         public static async Task<string> GetAnnArticleHtml(string url, string id)
         {
-            var cached = await DataCache.RetrieveArticleContentData($"ann_v2_{id}", MalNewsType.News);
+            if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var requestUri) ||
+                (requestUri.Scheme != Uri.UriSchemeHttp && requestUri.Scheme != Uri.UriSchemeHttps))
+            {
+                DiagnosticsReporter.Error("ANN", $"article url invalid: \"{url}\" (id={id})");
+                return null;
+            }
+
+            var cached = await DataCache.RetrieveArticleContentData($"ann_v4_{id}", MalNewsType.News);
             if (cached != null)
                 return cached;
 
@@ -72,7 +87,7 @@ namespace MALClient.XShared.Comm.Articles
                 try
                 {
                     using (var request = new System.Net.Http.HttpRequestMessage(
-                        System.Net.Http.HttpMethod.Get, url))
+                        System.Net.Http.HttpMethod.Get, requestUri))
                     {
                         request.Headers.Add("User-Agent",
                             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
@@ -88,7 +103,7 @@ namespace MALClient.XShared.Comm.Articles
                 }
                 catch (Exception ex)
                 {
-                    DiagnosticsReporter.Error("ANN", $"article fetch attempt {attempt} failed", ex);
+                    DiagnosticsReporter.Error("ANN", $"article fetch attempt {attempt} failed for \"{url}\"", ex);
                     if (attempt < 3)
                         await Task.Delay(TimeSpan.FromSeconds(attempt));
                 }
@@ -104,22 +119,161 @@ namespace MALClient.XShared.Comm.Articles
                 var body = doc.DocumentNode.Descendants("div")
                     .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("KonaBody") ?? false);
                 if (body == null)
+                    body = doc.DocumentNode.SelectSingleNode("//*[@itemprop='articleBody']");
+                if (body == null)
                     body = doc.DocumentNode.Descendants("div")
-                        .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("text-zone") ?? false)
-                        ?? doc.DocumentNode.SelectSingleNode("//body");
+                        .FirstOrDefault(node => node.Attributes["class"]?.Value?.Contains("text-zone") ?? false);
+                if (body == null)
+                    body = doc.DocumentNode.SelectSingleNode("//article")
+                        ?? doc.DocumentNode.SelectSingleNode("//main");
+                if (body == null)
+                    body = doc.DocumentNode.SelectSingleNode("//body");
                 if (body == null)
                     return null;
 
                 foreach (var script in body.Descendants("script").ToList())
                     script.Remove();
+                foreach (var style in body.Descendants("style").ToList())
+                    style.Remove();
 
-                DiagnosticsReporter.Success("ANN", $"article extracted: {body.InnerHtml.Length} chars from {url}");
-                DataCache.SaveArticleContentData($"ann_v2_{id}", body.InnerHtml, MalNewsType.News);
-                return body.InnerHtml;
+                // Normalize images: absolute https src, no lazy attrs, no srcset overflow
+                var imgCount = 0;
+                foreach (var img in body.Descendants("img").ToList())
+                {
+                    imgCount++;
+                    var srcAttr = img.Attributes["src"];
+                    var src = srcAttr?.Value ?? "";
+                    if (string.IsNullOrEmpty(src))
+                    {
+                        var lazy = img.Attributes["data-src"]?.Value ?? img.Attributes["data-lazy-src"]?.Value;
+                        if (string.IsNullOrEmpty(lazy))
+                        {
+                            // <picture><source srcset="..."> pattern: fall back to first srcset URL
+                            var picture = img.ParentNode != null && img.ParentNode.Name == "picture"
+                                ? img.ParentNode.SelectSingleNode("source[@srcset]")
+                                : null;
+                            if (picture != null)
+                                lazy = picture.Attributes["srcset"]?.Value?.Split(',')[0]?.Trim().Split(' ')[0];
+                        }
+                        if (!string.IsNullOrEmpty(lazy))
+                        {
+                            src = lazy;
+                            img.SetAttributeValue("src", src);
+                        }
+                    }
+                    if (src.StartsWith("//"))
+                    {
+                        src = "https:" + src;
+                        img.SetAttributeValue("src", src);
+                    }
+                    else if (!string.IsNullOrEmpty(src) && !src.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            img.SetAttributeValue("src", new Uri(requestUri, src).AbsoluteUri);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    foreach (var attr in img.Attributes.Where(a =>
+                                 a.Name == "srcset" || a.Name == "sizes" || a.Name.StartsWith("data-")).ToList())
+                        attr.Remove();
+                    var finalSrc = img.Attributes["src"]?.Value ?? "";
+                    var isPlaceholder = string.IsNullOrEmpty(finalSrc) || finalSrc.Contains("data:image") ||
+                        Regex.IsMatch(finalSrc, @"(spacer|1x1|blank|pixel|lazy)", RegexOptions.IgnoreCase);
+                    if (isPlaceholder)
+                    {
+                        img.Remove();
+                        continue;
+                    }
+                    // Broken images must not leave giant empty blocks in the reader
+                    img.SetAttributeValue("onerror", "this.style.display='none'");
+                    img.SetAttributeValue("style", "max-width:100%;height:auto;");
+                }
+                DiagnosticsReporter.Info("ANN", $"imgs found: {imgCount} in {url}");
+
+                // ANN keeps the hero image outside the body container: pull og:image
+                var og = Regex.Match(html, "property=\"og:image\"[^>]*content=\"([^\"]+)\"", RegexOptions.IgnoreCase);
+                if (!og.Success)
+                    og = Regex.Match(html, "content=\"([^\"]+)\"[^>]*property=\"og:image\"", RegexOptions.IgnoreCase);
+                var inner = body.InnerHtml;
+                if (og.Success)
+                {
+                    var ogUrl = SanitizeUrl(og.Groups[1].Value);
+                    // Only real content images; ANN's generic logos live elsewhere
+                    var isContent = ogUrl.Contains("/cms/") || ogUrl.Contains("/thumbnails/");
+                    if (isContent && !string.IsNullOrEmpty(ogUrl) && !inner.Contains(ogUrl))
+                        inner = "<img src=\"" + ogUrl + "\" style=\"max-width:100%;height:auto;\" />" + inner;
+                }
+
+                DiagnosticsReporter.Success("ANN", $"article extracted: {inner.Length} chars from {url}");
+                DataCache.SaveArticleContentData($"ann_v4_{id}", inner, MalNewsType.News);
+                return inner;
             }
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        private static string SanitizeUrl(string raw)
+        {
+            if (string.IsNullOrEmpty(raw))
+                return "";
+            var lastGt = raw.LastIndexOf('>');
+            if (lastGt >= 0 && lastGt < raw.Length - 1)
+                raw = raw.Substring(lastGt + 1);
+            var match = Regex.Match(raw, @"https?://[^\s<>""']+", RegexOptions.IgnoreCase);
+            if (!match.Success)
+                return "";
+            var url = match.Value;
+            if (url.StartsWith("//"))
+                url = "https:" + url;
+            return url;
+        }
+
+        /// <summary>
+        /// ANN feeds carry no images; scrape the /news/ listing once and map
+        /// article id -> thumbnail (data-src="/thumbnails/.../{id}/x.jpg").
+        /// </summary>
+        public static async Task<Dictionary<string, string>> FetchThumbMap()
+        {
+            try
+            {
+                using (var request = new System.Net.Http.HttpRequestMessage(
+                    System.Net.Http.HttpMethod.Get, "https://www.animenewsnetwork.com/news/"))
+                {
+                    request.Headers.Add("User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                    using (var response = await AnnClient.SendAsync(request))
+                    {
+                        if (!response.IsSuccessStatusCode)
+                            return new Dictionary<string, string>();
+                        var html = await response.Content.ReadAsStringAsync();
+                        var map = new Dictionary<string, string>();
+                        // Split per card: each data-src segment pairs ONLY with the first
+                        // /news/ link found before the next thumbnail (prevents mispairing)
+                        var segments = Regex.Split(html, "(?=<img[^>]+data-src=)");
+                        foreach (var segment in segments)
+                        {
+                            var thumb = Regex.Match(segment, "data-src=\"(/thumbnails/[^\"]+)\"");
+                            if (!thumb.Success)
+                                continue;
+                            var link = Regex.Match(segment, "href=\"/news/[^\"]*/\\.(\\d+)\"");
+                            if (!link.Success)
+                                continue;
+                            var id = link.Groups[1].Value;
+                            if (!map.ContainsKey(id))
+                                map[id] = "https://www.animenewsnetwork.com" + thumb.Groups[1].Value;
+                        }
+                        return map;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return new Dictionary<string, string>();
             }
         }
 
@@ -133,13 +287,19 @@ namespace MALClient.XShared.Comm.Articles
                 {
                     var block = item.Groups[1].Value;
                     var title = StripHtml(WebUtility.HtmlDecode(ExtractTag(block, "title"))).Trim().TrimStart('>').Trim();
-                    var link = ExtractTag(block, "link");
+                    var link = SanitizeUrl(ExtractTag(block, "link"));
                     var rawDescription = ExtractRawTag(block, "description");
                     var description = StripHtml(WebUtility.HtmlDecode(rawDescription)).Trim().TrimStart('>').Trim();
                     var pubDate = ExtractTag(block, "pubDate");
                     var categories = new List<string>();
                     foreach (Match catMatch in Regex.Matches(block, "<category>(.*?)</category>"))
                         categories.Add(WebUtility.HtmlDecode(catMatch.Groups[1].Value.Trim()));
+                    // Only content relevant to the app: anime and manga
+                    var relevant = categories.Any(c =>
+                        c.Equals("Anime", StringComparison.OrdinalIgnoreCase) ||
+                        c.Equals("Manga", StringComparison.OrdinalIgnoreCase));
+                    if (!relevant)
+                        continue;
                     var category = string.Join(", ", categories.Where(c => !string.IsNullOrEmpty(c)));
                     var guid = ExtractTag(block, "guid");
 
@@ -183,7 +343,8 @@ namespace MALClient.XShared.Comm.Articles
             if (!match.Success)
                 return "";
             var value = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
-            value = Regex.Replace(value, "^\\s*<!\\[CDATA\\[", "").Replace("\\]\\]>\\s*$", "").Trim();
+            value = Regex.Replace(value, "^\\s*<!\\[CDATA\\[", "");
+            value = Regex.Replace(value, "\\]\\]>\\s*$", "").Trim();
             return value;
         }
 
@@ -220,5 +381,7 @@ namespace MALClient.XShared.Comm.Articles
         }
     }
 }
+
+
 
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -26,7 +26,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
     internal class AnimeDetailsPageDetailsTabFragment : MalFragmentBase
     {    
         private readonly AnimeDetailsPageViewModel ViewModel;
-        private PopupMenu _epPopupMenu;
         private PopupMenu _opEdPopup;
 
         private AnimeDetailsPageDetailsTabFragment()
@@ -79,7 +78,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             {
                 var animeTitle = ViewModelLocator.AnimeDetails.Title;
                 if (!string.IsNullOrEmpty(animeTitle))
-                    Task.Run(async () => await AnimeThemesHelper.SearchAsync(animeTitle));
+                    Task.Run(async () =>
+                    {
+                        ResourceLocator.EnglishTitlesProvider.TryGetEnglishTitleForSeries(
+                            ViewModelLocator.AnimeDetails.Id, ViewModelLocator.AnimeDetails.AnimeMode, out var english);
+                        await AnimeThemesHelper.SearchAsync(animeTitle, english);
+                    });
             }
 
             AnimeDetailsPageDetailsTabLeftGenresList.SetAdapter(
@@ -88,7 +92,20 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 ViewModel.RightGenres.GetAdapter(GetSingleDetailTemplateDelegate));
             AnimeDetailsPageDetailsTabInformationList.SetAdapter(
                 ViewModel.Information.GetAdapter(GetDetailsTemplateDelegate));
-            AnimeDetailsPageDetailsTabStatsList.SetAdapter(ViewModel.Stats.GetAdapter(GetDetailsTemplateDelegate));
+
+            // Hide Statistics section when empty (all data moved to General cards)
+            var statsHeader = RootView.FindViewById<TextView>(Resource.Id.AnimeDetailsPageDetailsTabStatsLabel);
+            if (ViewModel.Stats.Count == 0)
+            {
+                statsHeader.Visibility = ViewStates.Gone;
+                AnimeDetailsPageDetailsTabStatsList.Visibility = ViewStates.Gone;
+            }
+            else
+            {
+                statsHeader.Visibility = ViewStates.Visible;
+                AnimeDetailsPageDetailsTabStatsList.Visibility = ViewStates.Visible;
+                AnimeDetailsPageDetailsTabStatsList.SetAdapter(ViewModel.Stats.GetAdapter(GetDetailsTemplateDelegate));
+            }
 
             if (ViewModel.AnimeMode)
             {
@@ -101,102 +118,16 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     ViewModel.OPs.GetAdapter(GetOpEdDetailTemplateDelegate));
                 AnimeDetailsPageDetailsTabEDsList.SetAdapter(
                     ViewModel.EDs.GetAdapter(GetOpEdDetailTemplateDelegate));
-
-                if (ViewModel.Episodes.Any())
-                {
-                    EpisodesLabel.Visibility =
-                        EpisodesList.Visibility = ViewStates.Visible;
-
-                    EpisodesList.Adapter = ViewModel.Episodes.GetAdapter(EpisodeItemTemplate);
-                    EpisodesList.LayoutParameters.Height =
-                        (Math.Min(5, ViewModel.Episodes.Count) * DimensionsHelper.DpToPx(54));
-                }
-                else
-                {
-                    EpisodesLabel.Visibility =
-                        EpisodesList.Visibility = ViewStates.Gone;
-                }
             }
             else
             {
                 AnimeDetailsPageDetailsTabOPsList.Visibility =
                     AnimeDetailsPageDetailsTabEDsList.Visibility =
                         AnimeDetailsPageDetailsTabEDsListLabel.Visibility =
-                            AnimeDetailsPageDetailsTabOPsListLabel.Visibility = EpisodesLabel.Visibility =
-                                EpisodesList.Visibility = ViewStates.Gone;
+                            AnimeDetailsPageDetailsTabOPsListLabel.Visibility = ViewStates.Gone;
             }
         }
 
-        private View EpisodeItemTemplate(int i, AnimeEpisode ep, View arg3)
-        {
-            var view = arg3 ?? Activity.LayoutInflater.Inflate(Resource.Layout.DetailAnimeEpisodeView, null);
-
-            view.FindViewById<TextView>(Resource.Id.EpisodeCount).Text = $"Ep. {ep.EpisodeId}";
-            view.FindViewById<TextView>(Resource.Id.EpisodeName).Text = ep.Title;
-
-            if (ep.EpisodeId <= ViewModel.MyEpisodes)
-                view.FindViewById(Resource.Id.TickIcon).Visibility = ViewStates.Visible;
-            else
-                view.FindViewById(Resource.Id.TickIcon).Visibility = ViewStates.Gone;
-
-            if (string.IsNullOrEmpty(ep.TitleJapanese) && string.IsNullOrEmpty(ep.TitleRomanji) &&
-                string.IsNullOrEmpty(ep.ForumUrl) && string.IsNullOrEmpty(ep.VideoUrl))
-            {
-                view.FindViewById(Resource.Id.MoreButton).Visibility = ViewStates.Gone;
-            }
-            else
-            {
-                var moreBtn = view.FindViewById(Resource.Id.MoreButton);
-                moreBtn.Visibility = ViewStates.Visible;
-                moreBtn.SetOnClickListener(new OnClickListener(v =>
-                {
-                    _epPopupMenu = new PopupMenu(Activity, view.FindViewById(Resource.Id.MoreButton));
-
-                    if (!string.IsNullOrEmpty(ep.VideoUrl))
-                        _epPopupMenu.Menu.Add(0, 0, 0, "Open website");
-                    if (!string.IsNullOrEmpty(ep.ForumUrl))
-                        _epPopupMenu.Menu.Add(0, 1, 0, "Forum discussion");
-                    if (!string.IsNullOrEmpty(ep.TitleJapanese) || !string.IsNullOrEmpty(ep.TitleRomanji))
-                        _epPopupMenu.Menu.Add(0, 2, 0, "Alternate titles");
-                    _epPopupMenu.SetOnMenuItemClickListener(new AnimeItemFlyoutBuilder.MenuListener(item =>
-                    {
-                        if (item.ItemId == 0)
-                        {
-                            ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri(ep.VideoUrl));
-                        }
-                        else if (item.ItemId == 1)
-                        {
-                            ViewModel.NavigateEpDiscussionCommand.Execute(ep);
-                        }
-                        else if (item.ItemId == 2)
-                        {
-                            var content = "";
-                            if (!string.IsNullOrEmpty(ep.TitleJapanese))
-                                content += $"Japanese: {ep.TitleJapanese}\n\n";
-                            if (!string.IsNullOrEmpty(ep.TitleRomanji))
-                                content += $"Romaji: {ep.TitleRomanji}";
-
-
-                            ResourceLocator.MessageDialogProvider.ShowMessageDialog(content, "Alternate titles");
-                        }
-                    }));
-                    _epPopupMenu.Show();
-                }));
-            }
-
-            if (ep.Filler || ep.Recap)
-            {
-                var note = view.FindViewById<TextView>(Resource.Id.EpisodeNote);
-                note.Visibility = ViewStates.Visible;
-                note.Text = $"{(ep.Filler ? "Filler " : "")} {(ep.Recap ? "Recap" : "")}".Trim();
-            }
-            else
-            {
-                view.FindViewById(Resource.Id.EpisodeNote).Visibility = ViewStates.Gone;
-            }
-
-            return view;
-        }
 
         private View GetSingleDetailTemplateDelegate(int i, string s, View arg3)
         {
@@ -206,22 +137,26 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             return view;
         }
 
-        private bool _currentOpEdIsOp;
-
-        private void PlayOpEdTheme(string s)
+        private void PlayOpEdTheme(string s, bool isOp)
         {
             var seq = AnimeThemesHelper.ParseSequence(s);
             var title = ViewModelLocator.AnimeDetails.Title;
             var searchQuery = BuildOpEdSearchQuery(s);
-            DiagnosticsReporter.Info("OP/ED", $"click: seq={seq} isOp={_currentOpEdIsOp} query=\"{searchQuery}\" title=\"{title}\"");
+            global::Android.Util.Log.Info("MALPlus", $"PlayOpEdTheme: seq={seq} isOp={isOp} query={searchQuery} title={title}");
+            DiagnosticsReporter.Info("OP/ED", $"click: seq={seq} isOp={isOp} query=\"{searchQuery}\" title=\"{title}\"");
 
             Task.Run(async () =>
             {
                 try
                 {
                     // PRIMARY: AnimeThemes (direct WebM, EM controls, exact match)
-                    var videos = await AnimeThemesHelper.SearchAsync(title);
-                    var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
+                    ResourceLocator.EnglishTitlesProvider.TryGetEnglishTitleForSeries(
+                        ViewModelLocator.AnimeDetails.Id, ViewModelLocator.AnimeDetails.AnimeMode, out var englishTitle);
+                    var videos = await AnimeThemesHelper.SearchAsync(title, englishTitle);
+                    global::Android.Util.Log.Info("MALPlus", $"AnimeThemes search: {videos.Count} videos for '{title}'");
+                    foreach (var v in videos)
+                        global::Android.Util.Log.Info("MALPlus", $"  AT: {v.Type}{v.Sequence} -> {v.Url}");
+                    var match = AnimeThemesHelper.FindMatch(videos, isOp, seq);
                     DiagnosticsReporter.Info("OP/ED", $"AnimeThemes: {videos.Count} videos, match={(match?.Url ?? "null")}");
 
                     if (!string.IsNullOrEmpty(match?.Url))
@@ -233,8 +168,10 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     }
 
                     // SECONDARY: YouTube search scraping
+                    global::Android.Util.Log.Info("MALPlus", "AnimeThemes empty, trying YouTube scraping...");
                     var videoId = await Web.InlineVideoWebViewClient.SearchYouTubeVideoId(
                         WebUtility.UrlEncode(searchQuery));
+                    global::Android.Util.Log.Info("MALPlus", $"YouTube scrape: videoId={videoId ?? "null"}");
                     DiagnosticsReporter.Info("OP/ED", $"YouTube: videoId={videoId ?? "null"}");
 
                     if (!string.IsNullOrEmpty(videoId))
@@ -247,6 +184,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     }
 
                     // FALLBACK: external YouTube
+                    global::Android.Util.Log.Info("MALPlus", "Both failed, opening external");
                     DiagnosticsReporter.Warn("OP/ED", "no match, opening external");
                     if (Activity == null || Activity.IsFinishing) return;
                     Activity.RunOnUiThread(() =>
@@ -255,6 +193,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 }
                 catch (Exception ex)
                 {
+                    global::Android.Util.Log.Error("MALPlus", $"PlayOpEdTheme ERROR: {ex}");
                     DiagnosticsReporter.Error("OP/ED", "exception", ex);
                     MainActivity.WriteCrashLog("PlayOpEdTheme error", ex);
                 }
@@ -281,12 +220,10 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             var view = Activity.LayoutInflater.Inflate(Resource.Layout.OpEdItemView, null);
             view.FindViewById<TextView>(Resource.Id.GenreItemTextView).Text = s;
 
-            _currentOpEdIsOp = ViewModel.OPs.Contains(s);
-            view.SetOnClickListener(new OnClickListener(v => PlayOpEdTheme(s)));
+            view.SetOnClickListener(new OnClickListener(v => PlayOpEdTheme(s, ViewModel.OPs.Contains(s))));
 
             view.FindViewById(Resource.Id.MoreButton).SetOnClickListener(new OnClickListener(v =>
             {
-                _currentOpEdIsOp = ViewModel.OPs.Contains(s);
                 _opEdPopup = new PopupMenu(Activity, view.FindViewById(Resource.Id.MoreButton));
 
 
@@ -298,7 +235,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        PlayOpEdTheme(s);
+                        PlayOpEdTheme(s, ViewModel.OPs.Contains(s));
                     }
                     else if(item.ItemId == 1)
                     {
@@ -333,8 +270,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private LinearLayout _animeDetailsPageDetailsTabOPsList;
         private TextView _animeDetailsPageDetailsTabEDsListLabel;
         private LinearLayout _animeDetailsPageDetailsTabEDsList;
-        private TextView _episodesLabel;
-        private ListView _episodesList;
         private RelativeLayout _animeDetailsPageDetailsTabLoadingOverlay;
 
 
@@ -346,13 +281,13 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         public LinearLayout AnimeDetailsPageDetailsTabOPsList => GetView(ref _animeDetailsPageDetailsTabOPsList, Resource.Id.AnimeDetailsPageDetailsTabOPsList);
         public TextView AnimeDetailsPageDetailsTabEDsListLabel => GetView(ref _animeDetailsPageDetailsTabEDsListLabel, Resource.Id.AnimeDetailsPageDetailsTabEDsListLabel);
         public LinearLayout AnimeDetailsPageDetailsTabEDsList => GetView(ref _animeDetailsPageDetailsTabEDsList, Resource.Id.AnimeDetailsPageDetailsTabEDsList);
-        public TextView EpisodesLabel => GetView(ref _episodesLabel, Resource.Id.EpisodesLabel);
-        public ListView EpisodesList => GetView(ref _episodesList, Resource.Id.EpisodesList);
         public RelativeLayout AnimeDetailsPageDetailsTabLoadingOverlay => GetView(ref _animeDetailsPageDetailsTabLoadingOverlay, Resource.Id.AnimeDetailsPageDetailsTabLoadingOverlay);
 
         #endregion
     }
 }
+
+
 
 
 

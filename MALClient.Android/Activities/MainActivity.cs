@@ -128,6 +128,12 @@ namespace MALClient.Android.Activities
                 var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {origin}\n{ex}\n\n";
                 System.IO.File.AppendAllText(path, line);
 
+                // Also output to logcat so adb can read it
+                if (ex != null)
+                    global::Android.Util.Log.Error("MALPlus", $"{origin}: {ex}");
+                else
+                    global::Android.Util.Log.Info("MALPlus", origin);
+
                 if (ex != null)
                     DiagnosticsReporter.Error("Crash", $"{origin}\n{ex.Message}", ex);
                 else if (origin.StartsWith("DetailsTab bind:"))

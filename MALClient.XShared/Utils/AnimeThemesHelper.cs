@@ -23,24 +23,64 @@ namespace MALClient.XShared.Utils
             public string Type { get; set; }
             public int Sequence { get; set; }
             public string Url { get; set; }
+            public string AnimeSlug { get; set; }
+        }
+
+        private static string Slugify(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return "";
+            var sb = new System.Text.StringBuilder();
+            foreach (var c in s.ToLowerInvariant())
+                if (char.IsLetterOrDigit(c))
+                    sb.Append(c);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Rejects fuzzy false positives: "Enen no Shouboutai..." must never match
+        /// "ShingekiNoKyojinS3Part2" just because the search API returned it.
+        /// </summary>
+        private static bool SlugMatches(string videoSlug, string querySlug)
+        {
+            if (string.IsNullOrEmpty(videoSlug) || string.IsNullOrEmpty(querySlug))
+                return true;
+            if (videoSlug.Contains(querySlug) || querySlug.Contains(videoSlug))
+                return true;
+            var prefix = 0;
+            var max = Math.Min(videoSlug.Length, querySlug.Length);
+            while (prefix < max && videoSlug[prefix] == querySlug[prefix])
+                prefix++;
+            return prefix >= 6;
         }
 
         private static readonly Dictionary<string, List<ThemeVideo>> Cache =
             new Dictionary<string, List<ThemeVideo>>();
 
-        public static async Task<List<ThemeVideo>> SearchAsync(string animeTitle)
+        public static async Task<List<ThemeVideo>> SearchAsync(string animeTitle, string englishTitle = null)
         {
-            if (string.IsNullOrEmpty(animeTitle))
+            if (string.IsNullOrEmpty(animeTitle) && string.IsNullOrEmpty(englishTitle))
                 return new List<ThemeVideo>();
 
-            // Try multiple title variants: full, first part before ":", without season/part suffix
-            var variants = new List<string> { animeTitle.Trim() };
-            var colonIdx = animeTitle.IndexOf(':');
-            if (colonIdx > 0)
-                variants.Add(animeTitle.Substring(0, colonIdx).Trim());
-            var partMatch = Regex.Match(animeTitle, @"^(.+?)(?:\s+(?:Part|Season|S\d|2nd|3rd|4th).*)?$", RegexOptions.IgnoreCase);
-            if (partMatch.Success && partMatch.Groups[1].Value.Trim() != animeTitle.Trim())
-                variants.Add(partMatch.Groups[1].Value.Trim());
+            // Build search variants: English title FIRST (matches AnimeThemes DB), then romaji
+            var variants = new List<string>();
+            if (!string.IsNullOrEmpty(englishTitle))
+            {
+                variants.Add(englishTitle.Trim());
+                var colonIdx = englishTitle.IndexOf(':');
+                if (colonIdx > 0)
+                    variants.Add(englishTitle.Substring(0, colonIdx).Trim());
+            }
+            if (!string.IsNullOrEmpty(animeTitle))
+            {
+                variants.Add(animeTitle.Trim());
+                var colonIdx = animeTitle.IndexOf(':');
+                if (colonIdx > 0)
+                    variants.Add(animeTitle.Substring(0, colonIdx).Trim());
+                var partMatch = Regex.Match(animeTitle, @"^(.+?)(?:\s+(?:Part|Season|S\d|2nd|3rd|4th).*)?$", RegexOptions.IgnoreCase);
+                if (partMatch.Success && partMatch.Groups[1].Value.Trim() != animeTitle.Trim())
+                    variants.Add(partMatch.Groups[1].Value.Trim());
+            }
 
             foreach (var variant in variants)
             {
@@ -58,23 +98,33 @@ namespace MALClient.XShared.Utils
                     var videos = new List<ThemeVideo>();
                     if (response?.search?.videos != null)
                     {
+                        var querySlug = Slugify(variant);
                         foreach (var video in response.search.videos)
                         {
                             var match = Regex.Match(video.basename ?? "",
                                 @"-((OP|ED)(\d*))\.webm$", RegexOptions.IgnoreCase);
-                            if (match.Success)
+                            if (!match.Success)
+                                continue;
+                            var animeSlug = video.basename.Substring(0, match.Index);
+                            if (!SlugMatches(Slugify(animeSlug), querySlug))
+                                continue;
+                            var type = match.Groups[2].Value.ToUpper();
+                            var seqStr = match.Groups[3].Value;
+                            var seq = string.IsNullOrEmpty(seqStr) ? 1 : int.Parse(seqStr);
+                            videos.Add(new ThemeVideo
                             {
-                                var type = match.Groups[2].Value.ToUpper();
-                                var seqStr = match.Groups[3].Value;
-                                var seq = string.IsNullOrEmpty(seqStr) ? 1 : int.Parse(seqStr);
-                                videos.Add(new ThemeVideo { Type = type, Sequence = seq, Url = video.link });
-                            }
+                                Type = type,
+                                Sequence = seq,
+                                Url = video.link,
+                                AnimeSlug = animeSlug
+                            });
                         }
                     }
 
                     if (videos.Count > 0)
                     {
-                        Cache[cacheKey] = videos;
+                        foreach (var v in variants)
+                            Cache[v.ToLowerInvariant()] = videos;
                         return videos;
                     }
                 }

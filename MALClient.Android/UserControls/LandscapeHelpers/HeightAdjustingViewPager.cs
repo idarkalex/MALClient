@@ -66,21 +66,23 @@ namespace MALClient.Android.UserControls
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
+            // CoordinatorLayout gives Exactly mode via scrolling_view_behavior:
+            // the pager fills ALL remaining space below the AppBarLayout. Pass through.
+            if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Exactly)
+            {
+                base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+                return;
+            }
+
+            // Fallback for non-CoordinatorLayout usage (wrap_content in ScrollView)
             if (ChildCount > 0)
             {
                 var index = Math.Max(0, Math.Min(CurrentItem, ChildCount - 1));
-
                 int height = 0;
                 if (_tabHeights.TryGetValue(index, out var stored))
-                {
                     height = stored;
-                }
                 else
-                {
-                    // No height set yet: default to 60% screen
                     height = (int)(Context.Resources.DisplayMetrics.HeightPixels * 0.6);
-                }
-
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
             }
             base.OnMeasure(widthMeasureSpec, heightMeasureSpec);

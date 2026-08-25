@@ -1115,7 +1115,16 @@ namespace MALClient.XShared.ViewModels.Details
 
             // Pre-cache AnimeThemes themes for this entry (fire-and-forget)
             if (!string.IsNullOrEmpty(Title))
-                Task.Run(async () => await AnimeThemesHelper.SearchAsync(Title));
+            {
+                var atTitle = Title;
+                var atId = Id;
+                var atAnime = AnimeMode;
+                Task.Run(async () =>
+                {
+                    ResourceLocator.EnglishTitlesProvider.TryGetEnglishTitleForSeries(atId, atAnime, out var english);
+                    await AnimeThemesHelper.SearchAsync(atTitle, english);
+                });
+            }
 
             DetailImage = _imgUrl;
             LoadingGlobal = false;
@@ -1245,6 +1254,15 @@ namespace MALClient.XShared.ViewModels.Details
             if (!string.IsNullOrEmpty(url))
                 RequestVideoPlayback?.Invoke(url);
         }
+
+        public event Action<string> RequestWebNavigation;
+
+        public void OpenWebPageInApp(string url)
+        {
+            if (!string.IsNullOrEmpty(url))
+                RequestWebNavigation?.Invoke(url);
+        }
+
         public async void LoadDetails(bool force = false)
         {
             if (LoadingDetails || (_loadedDetails && !force))

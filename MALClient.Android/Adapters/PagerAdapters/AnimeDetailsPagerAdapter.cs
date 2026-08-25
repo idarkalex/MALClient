@@ -26,7 +26,7 @@ namespace MALClient.Android.PagerAdapters
         {
             get
             {
-                var newCount = _viewModel.AnimeMode ? 7 : 6;
+                var newCount = _viewModel.AnimeMode ? 8 : 6;
                 return newCount;
             }
         }
@@ -38,6 +38,7 @@ namespace MALClient.Android.PagerAdapters
         private AnimeDetailsPageRelatedTabFragment _relatedFragment;
         private AnimeDetailsPageCharactersTabFragment _charactersFragment;
         private AnimeDetailsPageStaffTabFragment _staffFragment;
+        private AnimeDetailsPageEpisodesTabFragment _episodesFragment;
 
         public override Fragment GetItem(int position)
         {
@@ -48,14 +49,16 @@ namespace MALClient.Android.PagerAdapters
                 case 1:
                     return _detailsFragment ?? (_detailsFragment = AnimeDetailsPageDetailsTabFragment.Instance);
                 case 2:
-                    return _reviewsFragment ?? (_reviewsFragment = AnimeDetailsPageReviewsTabFragment.Instance);
+                    return _episodesFragment ?? (_episodesFragment = AnimeDetailsPageEpisodesTabFragment.Instance);
                 case 3:
-                    return _recomsFragment ?? (_recomsFragment = AnimeDetailsPageRecomsTabFragment.Instance);
+                    return _reviewsFragment ?? (_reviewsFragment = AnimeDetailsPageReviewsTabFragment.Instance);
                 case 4:
-                    return _relatedFragment ?? (_relatedFragment = AnimeDetailsPageRelatedTabFragment.Instance);
+                    return _recomsFragment ?? (_recomsFragment = AnimeDetailsPageRecomsTabFragment.Instance);
                 case 5:
-                    return _charactersFragment ?? (_charactersFragment = new AnimeDetailsPageCharactersTabFragment());
+                    return _relatedFragment ?? (_relatedFragment = AnimeDetailsPageRelatedTabFragment.Instance);
                 case 6:
+                    return _charactersFragment ?? (_charactersFragment = new AnimeDetailsPageCharactersTabFragment());
+                case 7:
                     return _staffFragment ?? (_staffFragment = new AnimeDetailsPageStaffTabFragment());
             }
             throw new Exception("Emm we've run out of fragments?");
@@ -76,18 +79,21 @@ namespace MALClient.Android.PagerAdapters
                     txt.Text = "Details";
                     break;
                 case 2:
-                    txt.Text = "Reviews";
+                    txt.Text = "Episodes";
                     break;
                 case 3:
-                    txt.Text = "Recoms";
+                    txt.Text = "Reviews";
                     break;
                 case 4:
-                    txt.Text = "Related";
+                    txt.Text = "Recoms";
                     break;
                 case 5:
-                    txt.Text = "Characters";
+                    txt.Text = "Related";
                     break;
                 case 6:
+                    txt.Text = "Characters";
+                    break;
+                case 7:
                     txt.Text = "Staff";
                     break;
             }
@@ -105,16 +111,19 @@ namespace MALClient.Android.PagerAdapters
                     _viewModel.LoadDetails();
                     break;
                 case 2:
-                    _viewModel.LoadReviews();
+                    _viewModel.LoadDetails();
                     break;
                 case 3:
-                    _viewModel.LoadRecommendations();
+                    _viewModel.LoadReviews();
                     break;
                 case 4:
-                    _viewModel.LoadRelatedAnime();
+                    _viewModel.LoadRecommendations();
                     break;
                 case 5:
+                    _viewModel.LoadRelatedAnime();
+                    break;
                 case 6:
+                case 7:
                     _viewModel.LoadCharacters();
                     break;
             }

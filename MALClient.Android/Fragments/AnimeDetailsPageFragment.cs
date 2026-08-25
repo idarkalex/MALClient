@@ -11,6 +11,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.Design.Widget;
 using Android.Util;
 using Android.Views;
 using Android.Webkit;
@@ -40,10 +41,22 @@ namespace MALClient.Android.Fragments
 {
     public partial class AnimeDetailsPageFragment : MalFragmentBase
     {
+        private class AppBarOffsetListener : Java.Lang.Object, AppBarLayout.IOnOffsetChangedListener
+        {
+            private readonly Action<AppBarLayout, int> _onOffset;
+
+            public AppBarOffsetListener(Action<AppBarLayout, int> onOffset)
+            {
+                _onOffset = onOffset;
+            }
+
+            public void OnOffsetChanged(AppBarLayout appBarLayout, int verticalOffset)
+                => _onOffset?.Invoke(appBarLayout, verticalOffset);
+        }
+
         private AnimeDetailsPageNavigationArgs _navArgs;
         private AnimeDetailsPageViewModel ViewModel;
         private DroppyMenuPopup _menu;
-        private ScrollListener _scrollListener;
 
         public AnimeDetailsPageFragment(AnimeDetailsPageNavigationArgs navArgs)
         {
@@ -64,7 +77,7 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageTabStrip.SetViewPager(AnimeDetailsPagePivot);
             AnimeDetailsPageTabStrip.CenterTabs();
             AnimeDetailsPagePivot.OffscreenPageLimit = 7;
-            var maxTabs = ViewModelLocator.AnimeDetails.AnimeMode ? 7 : 6;
+            var maxTabs = ViewModelLocator.AnimeDetails.AnimeMode ? 8 : 6;
             var initialTab = Math.Max(0, Math.Min(_navArgs.SourceTabIndex, maxTabs - 1));
             AnimeDetailsPagePivot.SetCurrentItem(initialTab, false);
 
@@ -79,8 +92,12 @@ namespace MALClient.Android.Fragments
                 this.SetBinding(() => ViewModel.MyScoreBind,
                     () => AnimeDetailsPageScoreButton.Text));
             Bindings.Add(
-                this.SetBinding(() => ViewModel.MyStatusBind,
-                    () => AnimeDetailsPageStatusButton.Text));
+                this.SetBinding(() => ViewModel.MyStatusBind)
+                    .WhenSourceChanges(() =>
+                    {
+                        AnimeDetailsPageStatusButton.Text = ViewModel.MyStatusBind;
+                        AnimeDetailsPageCompactStatus.Text = ViewModel.MyStatusBind;
+                    }));
             Bindings.Add(
                 this.SetBinding(() => ViewModel.MyEpisodesBind,
                     () => AnimeDetailsPageWatchedButton.Text));
@@ -103,9 +120,9 @@ namespace MALClient.Android.Fragments
 
             Bindings.Add(this.SetBinding(() => ViewModel.AnimeMode).WhenSourceChanges(() =>
             {
-                // pager Count changes 7<->6; a stale CurrentItem (e.g. Staff=6 on manga)
+                // pager Count changes 8<->6; a stale CurrentItem (e.g. Staff=6/Episodes=7 on manga)
                 // explodes inside ViewPager's Java internals with no managed trace
-                var maxIndex = ViewModelLocator.AnimeDetails.AnimeMode ? 6 : 5;
+                var maxIndex = ViewModelLocator.AnimeDetails.AnimeMode ? 7 : 5;
                 if (AnimeDetailsPagePivot.CurrentItem > maxIndex)
                     AnimeDetailsPagePivot.SetCurrentItem(0, false);
                 AnimeDetailsPagePivot.ClearTabHeights();
@@ -150,12 +167,16 @@ namespace MALClient.Android.Fragments
                             AnimeDetailsPageFavouriteButton.ImageTintList = ColorStateList.ValueOf(Color.White);
                             AnimeDetailsPageFavouriteButton.SetImageResource(Resource.Drawable.icon_favourite);
                             AnimeDetailsPageFavouriteButton.SetBackgroundResource(ResourceExtension.AccentColourRes);
+                            AnimeDetailsPageQuickFavoriteButton.SetCompoundDrawablesRelativeWithIntrinsicBounds(
+                                Resource.Drawable.icon_heart_white, 0, 0, 0);
                         }
                         else
                         {
                             AnimeDetailsPageFavouriteButton.ImageTintList = ColorStateList.ValueOf(new Color(ResourceExtension.BrushText));
                             AnimeDetailsPageFavouriteButton.SetImageResource(Resource.Drawable.icon_unfavourite);
                             AnimeDetailsPageFavouriteButton.SetBackgroundColor(Color.Transparent);
+                            AnimeDetailsPageQuickFavoriteButton.SetCompoundDrawablesRelativeWithIntrinsicBounds(
+                                Resource.Drawable.icon_heart_outline, 0, 0, 0);
                         }
                     }));
 
@@ -179,12 +200,14 @@ namespace MALClient.Android.Fragments
                 {
                     AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
                     AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
+                    AnimeDetailsPageCompactPoster.Into(ViewModel.DetailImage);
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Title)
                 .WhenSourceChanges(() =>
                 {
                     AnimeDetailsPageTitle.Text = ViewModel.Title;
+                    AnimeDetailsPageCompactTitle.Text = ViewModel.Title;
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.AnimeMode)
@@ -213,7 +236,9 @@ namespace MALClient.Android.Fragments
                 {
                     var eps = ViewModel.AnimeItemReference?.AllEpisodes ?? ViewModel.AllEpisodes;
                     var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
-                    AnimeDetailsPageSubtitle.Text = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
+                    var subtitle = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
+                    AnimeDetailsPageSubtitle.Text = subtitle;
+                    AnimeDetailsPageCompactSubtitle.Text = subtitle;
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.LoadingGlobal)
@@ -222,7 +247,9 @@ namespace MALClient.Android.Fragments
                     if (!ViewModel.LoadingGlobal && ViewModel.AnimeItemReference != null)
                     {
                         var score = ViewModel.AnimeItemReference.GlobalScore;
-                        AnimeDetailsPageScoreValue.Text = score == 0 ? "N/A" : score.ToString("N2");
+                        var scoreText = score == 0 ? "N/A" : score.ToString("N2");
+                        AnimeDetailsPageScoreValue.Text = scoreText;
+                        AnimeDetailsPageCompactScore.Text = scoreText;
                     }
                 }));
 
@@ -243,6 +270,7 @@ namespace MALClient.Android.Fragments
             }));
 
             ViewModel.RequestVideoPlayback += ShowVideoOverlay;
+            ViewModel.RequestWebNavigation += ShowWebOverlay;
 
             AnimeDetailsPageVideoCloseButton.SetOnClickListener(new OnClickListener(view => HideVideoOverlay()));
 
@@ -272,7 +300,11 @@ namespace MALClient.Android.Fragments
                         ViewModel.AddAnimeCommand.Execute(null);
                 }));
             AnimeDetailsPageQuickFavoriteButton.SetOnClickListener(
-                new OnClickListener(view => ViewModel.ToggleFavouriteCommand.Execute(null)));
+                new OnClickListener(view =>
+                {
+                    ViewModel.ToggleFavouriteCommand.Execute(null);
+                    Toast.MakeText(Activity, ViewModel.IsFavourite ? "Añadido a favoritos" : "Eliminado de favoritos", ToastLength.Short).Show();
+                }));
 
             //OneTime
 
@@ -290,7 +322,9 @@ namespace MALClient.Android.Fragments
             if (ViewModel.AnimeItemReference != null)
             {
                 var score = ViewModel.AnimeItemReference.GlobalScore;
-                AnimeDetailsPageScoreValue.Text = score == 0 ? "N/A" : score.ToString("N2");
+                var scoreText = score == 0 ? "N/A" : score.ToString("N2");
+                AnimeDetailsPageScoreValue.Text = scoreText;
+                AnimeDetailsPageCompactScore.Text = scoreText;
             }
 
             if (Settings.HideDecrementButtons)
@@ -312,13 +346,23 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageReadVolumesButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
 
-            // Poster scroll effect: zoom-in on scroll
-            var heroHeight = DimensionsHelper.DpToPx(520);
-            _scrollListener = new ScrollListener(AnimeDetailsPageScrollView, AnimeDetailsPagePosterContainer, heroHeight);
-            AnimeDetailsPageScrollView.ViewTreeObserver.AddOnScrollChangedListener(_scrollListener);
-
             // Pull-to-refresh
-            AnimeDetailsPageSwipeRefresh.ScrollingView = AnimeDetailsPageScrollView;
+            AnimeDetailsPageSwipeRefresh.ScrollingView = AnimeDetailsPagePivot;
+            AnimeDetailsPageSwipeRefresh.CurrentPageViewProvider = () =>
+            {
+                var tag = $"android:switcher:{AnimeDetailsPagePivot.Id}:{AnimeDetailsPagePivot.CurrentItem}";
+                return ChildFragmentManager.FindFragmentByTag(tag)?.View;
+            };
+
+            // Mini hero appears once the full hero is nearly fully collapsed
+            AnimeDetailsPageAppBar.AddOnOffsetChangedListener(new AppBarOffsetListener((bar, offset) =>
+            {
+                var range = bar.TotalScrollRange;
+                var collapsed = range > 0 && -offset >= range - DimensionsHelper.DpToPx(80);
+                var target = collapsed ? ViewStates.Visible : ViewStates.Gone;
+                if (AnimeDetailsPageCompactBar.Visibility != target)
+                    AnimeDetailsPageCompactBar.Visibility = target;
+            }));
             AnimeDetailsPageSwipeRefresh.Refresh += (s, e) =>
             {
                 ViewModel.RefreshData();
@@ -330,6 +374,7 @@ namespace MALClient.Android.Fragments
         {
             if (string.IsNullOrEmpty(url) || !IsAdded)
                 return;
+            AnimeDetailsPageVideoWebView.OnResume();
             AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
             AnimeDetailsPageVideoWebView.Settings.MediaPlaybackRequiresUserGesture = false;
             AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
@@ -358,6 +403,20 @@ namespace MALClient.Android.Fragments
             {
                 HideVideoOverlay();
             }));
+        }
+
+        private void ShowWebOverlay(string url)
+        {
+            if (string.IsNullOrEmpty(url) || !IsAdded)
+                return;
+            AnimeDetailsPageVideoWebView.OnResume();
+            AnimeDetailsPageVideoWebView.Settings.JavaScriptEnabled = true;
+            AnimeDetailsPageVideoWebView.SetWebChromeClient(new WebChromeClient());
+            AnimeDetailsPageVideoWebView.SetWebViewClient(new global::Android.Webkit.WebViewClient());
+            AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Visible;
+            AnimeDetailsPageVideoWebView.LoadUrl(url);
+
+            ViewModelLocator.NavMgr.RegisterOneTimeOverride(new RelayCommand(HideVideoOverlay));
         }
 
         public void ShowVideoLoading()
@@ -409,6 +468,8 @@ namespace MALClient.Android.Fragments
 
         private void HideVideoOverlay()
         {
+            AnimeDetailsPageVideoWebView.OnPause();
+            AnimeDetailsPageVideoWebView.LoadUrl("about:blank");
             AnimeDetailsPageVideoOverlay.Visibility = ViewStates.Gone;
         }
 
@@ -550,35 +611,15 @@ namespace MALClient.Android.Fragments
         public override void DetachBindings()
         {
             ViewModel.RequestVideoPlayback -= ShowVideoOverlay;
-            if (_scrollListener != null)
+            ViewModel.RequestWebNavigation -= ShowWebOverlay;
+            try
             {
-                AnimeDetailsPageScrollView?.ViewTreeObserver?.RemoveOnScrollChangedListener(_scrollListener);
-                _scrollListener = null;
+                AnimeDetailsPageVideoWebView?.OnPause();
+            }
+            catch
+            {
             }
             base.DetachBindings();
-        }
-
-        private class ScrollListener : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener
-        {
-            private readonly ScrollView _scrollView;
-            private readonly View _poster;
-            private readonly int _heroHeight;
-
-            public ScrollListener(ScrollView scrollView, View poster, int heroHeight)
-            {
-                _scrollView = scrollView;
-                _poster = poster;
-                _heroHeight = heroHeight;
-            }
-
-            public void OnScrollChanged()
-            {
-                var scrollY = _scrollView.ScrollY;
-                var ratio = Math.Max(0f, Math.Min(1f, (float)scrollY / _heroHeight));
-                var scale = 1f + ratio * 0.3f;
-                _poster.ScaleX = scale;
-                _poster.ScaleY = scale;
-            }
         }
     }
 }

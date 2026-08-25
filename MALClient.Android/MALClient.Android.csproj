@@ -148,6 +148,7 @@
     <Compile Include="Fragments\AnimeDetailsPageFragment.ui.cs" />
     <Compile Include="Fragments\AnimeDetailsPageTabs\AnimeDetailsPageCharactersTabFragment.cs" />
     <Compile Include="Fragments\AnimeDetailsPageTabs\AnimeDetailsPageDetailsTabFragment.cs" />
+    <Compile Include="Fragments\AnimeDetailsPageTabs\AnimeDetailsPageEpisodesTabFragment.cs" />
     <Compile Include="Fragments\AnimeDetailsPageTabs\AnimeDetailsPageGeneralTabFragment.cs" />
     <Compile Include="Fragments\AnimeDetailsPageTabs\AnimeDetailsPageRecomsTabFragment.cs" />
     <Compile Include="Fragments\AnimeDetailsPageTabs\AnimeDetailsPageRelatedTabFragment.cs" />
@@ -589,6 +590,7 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon_heart.xml" />
+    <AndroidResource Include="Resources\drawable\icon_heart_white.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon_help.xml" />
@@ -869,6 +871,7 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\AnimeDetailsPageDetailsTab.xml" />
+    <AndroidResource Include="Resources\layout\AnimeDetailsPageEpisodesTab.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\AnimeDetailsPageGeneralTab.xml" />
@@ -1348,4 +1351,7 @@
     </Target>
   -->
 </Project>
+
+
+
 
