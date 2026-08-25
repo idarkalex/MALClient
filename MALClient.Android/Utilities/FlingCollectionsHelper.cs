@@ -186,8 +186,8 @@ namespace MALClient.Android
             System.Collections.Specialized.NotifyCollectionChangedEventHandler handler = (s, e) =>
             {
                 (container.Adapter as BaseAdapter)?.NotifyDataSetChanged();
-                (FindViewPager(container))?.RefreshHeight();
-                container.Post(() => container.RequestLayout());
+                var pager = FindViewPager(container);
+                pager?.SetTabHeightForCurrentView(container);
             };
             notifying.CollectionChanged += handler;
         }

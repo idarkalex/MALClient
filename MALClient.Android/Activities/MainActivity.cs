@@ -182,6 +182,7 @@ namespace MALClient.Android.Activities
         {
             _previousCrashLog = RegisterCrashLogging();
             DiagnosticsReporter.Success("Startup", $"MAL+ iniciado — {DateTime.Now:HH:mm:ss}");
+            Toast.MakeText(this, "MAL+ nueva build cargada ✓", ToastLength.Long).Show();
             RequestWindowFeature(WindowFeatures.NoTitle);
             CurrentTheme = Settings.SelectedTheme;
             CurrentAccent = AndroidColourThemeHelper.CurrentTheme;

@@ -1,9 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
@@ -16,7 +12,7 @@ namespace MALClient.Android.UserControls
 {
     public class HeightAdjustingViewPager : ViewPager
     {
-        private bool EnableAdjustments { get; set; }
+        private readonly Dictionary<int, int> _tabHeights = new Dictionary<int, int>();
 
         public HeightAdjustingViewPager(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
@@ -24,43 +20,70 @@ namespace MALClient.Android.UserControls
 
         public HeightAdjustingViewPager(Context context) : base(context)
         {
-            EnableAdjustments = true;
         }
 
         public HeightAdjustingViewPager(Context context, IAttributeSet attrs) : base(context, attrs)
         {
-            EnableAdjustments = true;
         }
 
-        protected override void OnConfigurationChanged(Configuration newConfig)
+        /// <summary>
+        /// Called by tab fragments after their content is fully loaded.
+        /// Measures the view and stores the height for the current tab.
+        /// </summary>
+        public void SetTabHeightForCurrentView(View view)
         {
-            //EnableAdjustments = newConfig.Orientation == Orientation.Landscape;
-            base.OnConfigurationChanged(newConfig);
+            Post(() =>
+            {
+                view.Measure(
+                    MeasureSpec.MakeMeasureSpec(Width, MeasureSpecMode.Exactly),
+                    MeasureSpec.MakeMeasureSpec(Resources.DisplayMetrics.HeightPixels * 3, MeasureSpecMode.AtMost));
+                _tabHeights[CurrentItem] = view.MeasuredHeight;
+                RequestLayout();
+            });
+        }
+
+        /// <summary>
+        /// Called by tab fragments after their content is fully loaded.
+        /// Sets the height for the given tab index and triggers re-layout if active.
+        /// </summary>
+        public void SetTabHeight(int tabIndex, int height)
+        {
+            _tabHeights[tabIndex] = height;
+            if (tabIndex == CurrentItem)
+            {
+                RequestLayout();
+            }
+        }
+
+        /// <summary>
+        /// Clears all cached heights (call when navigating to a different entry).
+        /// </summary>
+        public void ClearTabHeights()
+        {
+            _tabHeights.Clear();
+            RequestLayout();
         }
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
-            if (EnableAdjustments && ChildCount > 0)
+            if (ChildCount > 0)
             {
-                // Probe ONLY the active child: each tab gets exactly the height it needs.
-                // Empty tabs collapse (no infinite scroll), tall tabs expand fully.
                 var index = Math.Max(0, Math.Min(CurrentItem, ChildCount - 1));
-                var child = GetChildAt(index);
+
                 int height = 0;
-                if (child != null)
+                if (_tabHeights.TryGetValue(index, out var stored))
                 {
-                    child.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(
-                        Context.Resources.DisplayMetrics.HeightPixels * 2, MeasureSpecMode.AtMost));
-                    height = child.MeasuredHeight;
+                    height = stored;
                 }
+                else
+                {
+                    // No height set yet: default to 60% screen
+                    height = (int)(Context.Resources.DisplayMetrics.HeightPixels * 0.6);
+                }
+
                 heightMeasureSpec = MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
             }
             base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-        }
-
-        public void RefreshHeight()
-        {
-            Post(() => RequestLayout());
         }
     }
 }

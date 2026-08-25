@@ -62,6 +62,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     MainActivity.WriteCrashLog("DetailsTab bind", ex);
                 }
+
+                (RootView?.Parent as UserControls.HeightAdjustingViewPager)?.SetTabHeightForCurrentView(RootView);
             }));
         }
 
@@ -217,7 +219,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             {
                 try
                 {
-                    // PRIMARY: AnimeThemes (direct WebM, better quality, exact match)
+                    // PRIMARY: AnimeThemes (direct WebM, EM controls, exact match)
                     var videos = await AnimeThemesHelper.SearchAsync(title);
                     var match = AnimeThemesHelper.FindMatch(videos, _currentOpEdIsOp, seq);
                     DiagnosticsReporter.Info("OP/ED", $"AnimeThemes: {videos.Count} videos, match={(match?.Url ?? "null")}");
@@ -233,7 +235,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     // SECONDARY: YouTube search scraping
                     var videoId = await Web.InlineVideoWebViewClient.SearchYouTubeVideoId(
                         WebUtility.UrlEncode(searchQuery));
-                    DiagnosticsReporter.Info("OP/ED", $"YouTube scrape: videoId={videoId ?? "null"}");
+                    DiagnosticsReporter.Info("OP/ED", $"YouTube: videoId={videoId ?? "null"}");
 
                     if (!string.IsNullOrEmpty(videoId))
                     {

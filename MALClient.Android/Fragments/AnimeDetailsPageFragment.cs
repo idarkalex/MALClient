@@ -108,6 +108,7 @@ namespace MALClient.Android.Fragments
                 var maxIndex = ViewModelLocator.AnimeDetails.AnimeMode ? 6 : 5;
                 if (AnimeDetailsPagePivot.CurrentItem > maxIndex)
                     AnimeDetailsPagePivot.SetCurrentItem(0, false);
+                AnimeDetailsPagePivot.ClearTabHeights();
                 AnimeDetailsPagePivot.Adapter.NotifyDataSetChanged();
             }));
 
