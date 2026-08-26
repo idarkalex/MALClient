@@ -9,6 +9,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V7.Widget;
 using Android.Text;
 using Android.Util;
 using Android.Views;
@@ -17,11 +18,11 @@ using FFImageLoading;
 using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
-using MALClient.Android;
+using MALClient.Android.AoLibsCompat;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
-using MALClient.Android.UserControls;
+using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
@@ -34,7 +35,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
     {
         private AnimeDetailsPageViewModel ViewModel;
 
-
         private AnimeDetailsPageRecomsTabFragment()
         {
             ViewModel = ViewModelLocator.AnimeDetails;
@@ -42,39 +42,56 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         protected override void Init(Bundle savedInstanceState)
         {
-            
+
         }
 
         protected override void InitBindings()
         {
-            AnimeDetailsPageRecomTabsList.InjectFlingAdapter(ViewModel.Recommendations,DataTemplateFull,DataTemplateFling,ContainerTemplate,DataTemplateBasic);
-            AnimeDetailsPageRecomTabsList.OnItemClickListener = new OnItemClickListener<DirectRecommendationData>(data => ViewModel.NavigateDetailsCommand.Execute(data));
+            Bindings.Add(
+                this.SetBinding(() => ViewModel.LoadingRecommendations,
+                    () => AnimeDetailsPageRecomTabLoadingOverlay.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
 
+            Bindings.Add(
+                this.SetBinding(() => ViewModel.LoadingRecommendations).WhenSourceChanges(() =>
+                {
+                    if (ViewModel.LoadingRecommendations)
+                    {
+                        AnimeDetailsPageRecomTabsList.SetAdapter(null);
+                    }
+                    else
+                    {
+                        if (ViewModel.Recommendations == null || !ViewModel.Recommendations.Any())
+                        {
+                            AnimeDetailsPageRecomTabsList.SetAdapter(null);
+                            return;
+                        }
+                        AnimeDetailsPageRecomTabsList.SetAdapter(
+                            new ObservableRecyclerAdapter<DirectRecommendationData, RecomHolder>(
+                                ViewModel.Recommendations, BindRecom, LayoutInflater, Resource.Layout.AnimeRecomItem));
+                    }
+                }));
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.NoRecommDataNoticeVisibility,
                     () => AnimeDetailsPageReviewsTabEmptyNotice.Visibility)
                     .ConvertSourceToTarget(Converters.BoolToVisibility));
 
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.LoadingRecommendations,
-                    () => AnimeDetailsPageRecomTabLoadingOverlay.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
+            AnimeDetailsPageRecomTabsList.SetLayoutManager(new LinearLayoutManager(Activity));
+            AnimeDetailsPageRecomTabsList.AddOnScrollListener(new CustomScrollListener());
 
             SetUpForOrientation(Activity.Resources.Configuration.Orientation);
         }
 
-        private void DataTemplateBasic(View view, int i, DirectRecommendationData animeRecomData)
+        private void BindRecom(DirectRecommendationData data, RecomHolder holder, int position)
         {
-            view.FindViewById<TextView>(Resource.Id.AnimeRecomItemShowTitle).Text = animeRecomData.Title;
-            view.FindViewById<TextView>(Resource.Id.AnimeRecomItemShowType).Text = animeRecomData.Type.ToString();
+            holder.ShowTitle.Text = data.Title;
+            holder.ShowType.Text = data.Type.ToString();
 
-            //var spannableString = new SpannableString(animeRecomData.Description);
-            //spannableString.SetSpan(new LeadingSpannableString(12, DimensionsHelper.DpToPx(140)), 0, spannableString.Length(), SpanTypes.Paragraph);
-            //view.FindViewById<TextView>(Resource.Id.AnimeRecomItemRecomContent).SetText(spannableString.SubSequenceFormatted(0, spannableString.Length()), TextView.BufferType.Spannable);
-            var txt = view.FindViewById<TextView>(Resource.Id.AnimeRecomItemRecomContent);
-            var txtOverflow = view.FindViewById<TextView>(Resource.Id.AnimeRecomItemRecomContentOverflow);
+            var txt = holder.RecomContent;
+            var txtOverflow = holder.RecomContentOverflow;
             txtOverflow.Text = string.Empty;
-            txt.Text = animeRecomData.Description;
+            txtOverflow.Visibility = ViewStates.Gone;
+            txt.Text = data.Description;
             txt.Post(() =>
             {
                 try
@@ -89,7 +106,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                         int lastSpaceIndex = 0;
                         for (int j = chars - 5; j > 0; j--)
                         {
-                            if (animeRecomData.Description[j] == ' ')
+                            if (data.Description[j] == ' ')
                             {
                                 lastSpaceIndex = j;
                                 break;
@@ -97,46 +114,31 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                         }
                         if (lastSpaceIndex == 0)
                             return;
-                        txt.Text = animeRecomData.Description.Substring(0, lastSpaceIndex);
-                        txtOverflow.Text = animeRecomData.Description.Substring(lastSpaceIndex + 1);
+                        txt.Text = data.Description.Substring(0, lastSpaceIndex);
+                        txtOverflow.Text = data.Description.Substring(lastSpaceIndex + 1);
+                        txtOverflow.Visibility = ViewStates.Visible;
                     }
                 }
                 catch (Exception)
                 {
-                    //TODO Grab the thing from hockey
-                    //ResourceLocator.TelemetryProvider.LogEvent($"Recoms wrpping crash on {ViewModel.Title} - recom {animeRecomData.Title}");
                 }
-
             });
-            
 
-        }
-
-        private View ContainerTemplate(int i)
-        {
-            return Activity.LayoutInflater.Inflate(Resource.Layout.AnimeRecomItem, null);
-        }
-
-        private void DataTemplateFling(View view, int i, DirectRecommendationData animeRecomData)
-        {
-            var img = view.FindViewById<ImageViewAsync>(Resource.Id.AnimeRecomItemImage);
-            if (!img.IntoIfLoaded(animeRecomData.ImageUrl))
-            {
+            var img = holder.Image;
+            if (!img.IntoIfLoaded(data.ImageUrl))
                 img.Visibility = ViewStates.Invisible;
-            }
-           
+
+            holder.ItemView.Click -= OnRecomClick;
+            holder.ItemView.Tag = data.Wrap();
+            holder.ItemView.Click += OnRecomClick;
         }
 
-        private void DataTemplateFull(View view, int i, DirectRecommendationData animeRecomData)
-        {      
-            var img = view.FindViewById<ImageViewAsync>(Resource.Id.AnimeRecomItemImage);
-            img.Into(animeRecomData.ImageUrl);
-        }
-
-        public override void OnConfigurationChanged(Configuration newConfig)
+        private void OnRecomClick(object sender, EventArgs e)
         {
-            //SetUpForOrientation(newConfig.Orientation);
-            base.OnConfigurationChanged(newConfig);
+            var view = sender as View;
+            var tag = view?.Tag?.Unwrap<DirectRecommendationData>();
+            if (tag != null)
+                ViewModel.NavigateDetailsCommand.Execute(tag);
         }
 
         private void SetUpForOrientation(Orientation orientation)
@@ -161,24 +163,49 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             }
         }
 
+        public override void OnConfigurationChanged(Configuration newConfig)
+        {
+            base.OnConfigurationChanged(newConfig);
+        }
+
         public static AnimeDetailsPageRecomsTabFragment Instance => new AnimeDetailsPageRecomsTabFragment();
 
         public override int LayoutResourceId => Resource.Layout.AnimeDetailsPageRecomsTab;
 
         #region Views
 
-        private HeightAdjustingListView _animeDetailsPageRecomTabsList;
+        private RecyclerView _animeDetailsPageRecomTabsList;
         private TextView _animeDetailsPageReviewsTabEmptyNotice;
         private RelativeLayout _animeDetailsPageRecomTabLoadingOverlay;
 
-        public HeightAdjustingListView AnimeDetailsPageRecomTabsList => GetView(ref _animeDetailsPageRecomTabsList, Resource.Id.AnimeDetailsPageRecomTabsList);
+        public RecyclerView AnimeDetailsPageRecomTabsList => GetView(ref _animeDetailsPageRecomTabsList, Resource.Id.AnimeDetailsPageRecomTabsList);
 
         public TextView AnimeDetailsPageReviewsTabEmptyNotice => GetView(ref _animeDetailsPageReviewsTabEmptyNotice, Resource.Id.AnimeDetailsPageReviewsTabEmptyNotice);
 
         public RelativeLayout AnimeDetailsPageRecomTabLoadingOverlay => GetView(ref _animeDetailsPageRecomTabLoadingOverlay, Resource.Id.AnimeDetailsPageRecomTabLoadingOverlay);
 
-
         #endregion
 
+        class RecomHolder : RecyclerView.ViewHolder
+        {
+            private readonly View _view;
+
+            public RecomHolder(View view) : base(view)
+            {
+                _view = view;
+            }
+
+            private TextView _showTitle;
+            private TextView _showType;
+            private TextView _recomContent;
+            private TextView _recomContentOverflow;
+            private ImageViewAsync _image;
+
+            public TextView ShowTitle => _showTitle ?? (_showTitle = _view.FindViewById<TextView>(Resource.Id.AnimeRecomItemShowTitle));
+            public TextView ShowType => _showType ?? (_showType = _view.FindViewById<TextView>(Resource.Id.AnimeRecomItemShowType));
+            public TextView RecomContent => _recomContent ?? (_recomContent = _view.FindViewById<TextView>(Resource.Id.AnimeRecomItemRecomContent));
+            public TextView RecomContentOverflow => _recomContentOverflow ?? (_recomContentOverflow = _view.FindViewById<TextView>(Resource.Id.AnimeRecomItemRecomContentOverflow));
+            public ImageViewAsync Image => _image ?? (_image = _view.FindViewById<ImageViewAsync>(Resource.Id.AnimeRecomItemImage));
+        }
     }
 }

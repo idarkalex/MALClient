@@ -100,16 +100,8 @@ namespace MALClient.Android.Fragments.SettingsFragments
                         img.ImageTintList = ColorStateList.ValueOf(new Color(ResourceExtension.BrushTextSecondary));
                     }
 
-                    var subtitle = view.FindViewById<TextView>(Resource.Id.SettingsPageItemSubtitle);
-                    if (!string.IsNullOrEmpty(entry.Subtitle))
-                    {
-                        subtitle.Text = entry.Subtitle;
-                        subtitle.Visibility = ViewStates.Visible;
-                    }
-                    else
-                    {
-                        subtitle.Visibility = ViewStates.Gone;
-                    }
+                    // Descriptions removed: rows match the More page style
+                    view.FindViewById<TextView>(Resource.Id.SettingsPageItemSubtitle).Visibility = ViewStates.Gone;
 
                     view.Tag = entry.Wrap();
                     view.Click += OnItemClick;

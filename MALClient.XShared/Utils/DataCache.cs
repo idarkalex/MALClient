@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -418,7 +418,7 @@ namespace MALClient.XShared.Utils
                 {
 
                     await
-                        DataCacheService.SaveData(data, $"related_anime_{id}.json",
+                        DataCacheService.SaveData(data, $"related_anime_v2_{id}.json",
                             anime ? "AnimeDetails" : "MangaDetails");
                 });
             }
@@ -434,7 +434,7 @@ namespace MALClient.XShared.Utils
             {
                 return
                     await
-                        DataCacheService.RetrieveData<List<RelatedAnimeData>>($"related_anime_{animeId}.json",
+                        DataCacheService.RetrieveData<List<RelatedAnimeData>>($"related_anime_v2_{animeId}.json",
                             anime ? "AnimeDetails" : "MangaDetails", 14);
             }
             catch (Exception)
@@ -710,3 +710,4 @@ namespace MALClient.XShared.Utils
         #endregion
     }
 }
+

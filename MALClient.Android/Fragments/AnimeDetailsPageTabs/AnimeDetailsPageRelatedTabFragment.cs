@@ -7,14 +7,17 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
 using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
+using MALClient.Android.AoLibsCompat;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Comm.Anime;
@@ -34,86 +37,117 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         protected override void Init(Bundle savedInstanceState)
         {
-           
+
         }
 
         protected override void InitBindings()
         {
-            AnimeDetailsPageRelatedTabsList.InjectFlingAdapter(ViewModel.RelatedAnime, DataTemplateFull,
-                DataTemplateFling, ContainerTemplate, DataTemplateBasic);
+            Bindings.Add(
+                this.SetBinding(() => ViewModel.LoadingRelated,
+                    () => AnimeDetailsPageRelatedTabLoadingOverlay.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
 
+            Bindings.Add(
+                this.SetBinding(() => ViewModel.LoadingRelated).WhenSourceChanges(() =>
+                {
+                    if (ViewModel.LoadingRelated)
+                    {
+                        AnimeDetailsPageRelatedTabsList.SetAdapter(null);
+                    }
+                    else
+                    {
+                        if (ViewModel.RelatedAnime == null || !ViewModel.RelatedAnime.Any())
+                        {
+                            AnimeDetailsPageRelatedTabsList.SetAdapter(null);
+                            return;
+                        }
+                        AnimeDetailsPageRelatedTabsList.SetAdapter(
+                            new ObservableRecyclerAdapter<RelatedAnimeData, RelatedHolder>(
+                                ViewModel.RelatedAnime, BindRelated, LayoutInflater, Resource.Layout.AnimeRelatedItem));
+                    }
+                }));
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.NoRelatedDataNoticeVisibility,
                     () => AnimeDetailsPageRelatedTabEmptyNotice.Visibility)
                     .ConvertSourceToTarget(Converters.BoolToVisibility));
 
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.LoadingRelated,
-                    () => AnimeDetailsPageRelatedTabLoadingOverlay.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
+            AnimeDetailsPageRelatedTabsList.SetLayoutManager(new LinearLayoutManager(Activity));
+            AnimeDetailsPageRelatedTabsList.AddOnScrollListener(new CustomScrollListener());
         }
 
-        private void DataTemplateBasic(View view, int i, RelatedAnimeData relatedAnimeData)
+        private void BindRelated(RelatedAnimeData data, RelatedHolder holder, int position)
         {
-            view.FindViewById<TextView>(Resource.Id.AnimeRelatedItemContent).Text =
-            string.IsNullOrEmpty(relatedAnimeData.WholeRelation)
-                ? relatedAnimeData.Title
-                : $"{relatedAnimeData.WholeRelation.TrimEnd()} · {relatedAnimeData.Title}";
-        }
+            holder.Content.Text =
+                string.IsNullOrEmpty(data.WholeRelation)
+                    ? data.Title
+                    : $"{data.WholeRelation.TrimEnd()} · {data.Title}";
 
-        private View ContainerTemplate(int i)
-        {
-            var view = Activity.LayoutInflater.Inflate(Resource.Layout.AnimeRelatedItem, null);
-            view.FindViewById(Resource.Id.RootContainer).Click += OnClick;
-            return view;
-        }
-
-        private void OnClick(object sender, EventArgs eventArgs)
-        {
-            ViewModel.NavigateDetailsCommand.Execute(((sender as View).Parent as View).Tag.Unwrap<RelatedAnimeData>());
-        }
-
-        private void DataTemplateFling(View view1, int i, RelatedAnimeData arg3)
-        {
-            var img = view1.FindViewById<ImageViewAsync>(Resource.Id.Image);
-            string link = null;
-
-            if (AnimeImageQuery.IsCached(arg3.Id, arg3.Type == RelatedItemType.Anime, ref link))
+            var img = holder.Image;
+            if (!string.IsNullOrEmpty(data.ImgUrl))
             {
-                if (!img.IntoIfLoaded(link))
+                if (!img.IntoIfLoaded(data.ImgUrl))
                     img.Visibility = ViewStates.Invisible;
             }
             else
-                img.Visibility = ViewStates.Invisible;
+            {
+                string link = null;
+                if (AnimeImageQuery.IsCached(data.Id, data.Type == RelatedItemType.Anime, ref link))
+                {
+                    if (!img.IntoIfLoaded(link))
+                        img.Visibility = ViewStates.Invisible;
+                }
+                else
+                {
+                    img.IntoWithTask(AnimeImageQuery.GetImageUrl(data.Id, data.Type == RelatedItemType.Anime));
+                }
+            }
 
+            holder.RootContainer.Click -= OnItemClick;
+            holder.RootContainer.Tag = data.Wrap();
+            holder.RootContainer.Click += OnItemClick;
         }
 
-        private void DataTemplateFull(View view1, int i, RelatedAnimeData arg3)
+        private void OnItemClick(object sender, EventArgs eventArgs)
         {
-            var img = view1.FindViewById<ImageViewAsync>(Resource.Id.Image);
-            string imgUrl = null;
-            if (AnimeImageQuery.IsCached(arg3.Id, arg3.Type == RelatedItemType.Anime, ref imgUrl))
-                img.Into(imgUrl);
-            else
-                img.IntoWithTask(AnimeImageQuery.GetImageUrl(arg3.Id, arg3.Type == RelatedItemType.Anime));
+            var view = sender as View;
+            var tag = view?.Tag?.Unwrap<RelatedAnimeData>();
+            if (tag != null)
+                ViewModel.NavigateDetailsCommand.Execute(tag);
         }
 
-        public static AnimeDetailsPageRelatedTabFragment Instance  => new AnimeDetailsPageRelatedTabFragment();
+        public static AnimeDetailsPageRelatedTabFragment Instance => new AnimeDetailsPageRelatedTabFragment();
 
         public override int LayoutResourceId => Resource.Layout.AnimeDetailsPageRelatedTab;
 
         #region Views
-        private ListView _animeDetailsPageRelatedTabsList;
+        private RecyclerView _animeDetailsPageRelatedTabsList;
         private TextView _animeDetailsPageRelatedTabEmptyNotice;
         private RelativeLayout _animeDetailsPageRelatedTabLoadingOverlay;
 
-        public ListView AnimeDetailsPageRelatedTabsList => GetView(ref _animeDetailsPageRelatedTabsList, Resource.Id.AnimeDetailsPageRelatedTabsList);
+        public RecyclerView AnimeDetailsPageRelatedTabsList => GetView(ref _animeDetailsPageRelatedTabsList, Resource.Id.AnimeDetailsPageRelatedTabsList);
 
         public TextView AnimeDetailsPageRelatedTabEmptyNotice => GetView(ref _animeDetailsPageRelatedTabEmptyNotice, Resource.Id.AnimeDetailsPageRelatedTabEmptyNotice);
 
         public RelativeLayout AnimeDetailsPageRelatedTabLoadingOverlay => GetView(ref _animeDetailsPageRelatedTabLoadingOverlay, Resource.Id.AnimeDetailsPageRelatedTabLoadingOverlay);
 
-
         #endregion
+
+        class RelatedHolder : RecyclerView.ViewHolder
+        {
+            private readonly View _view;
+
+            public RelatedHolder(View view) : base(view)
+            {
+                _view = view;
+            }
+
+            private TextView _content;
+            private ImageViewAsync _image;
+            private View _rootContainer;
+
+            public TextView Content => _content ?? (_content = _view.FindViewById<TextView>(Resource.Id.AnimeRelatedItemContent));
+            public ImageViewAsync Image => _image ?? (_image = _view.FindViewById<ImageViewAsync>(Resource.Id.Image));
+            public View RootContainer => _rootContainer ?? (_rootContainer = _view.FindViewById(Resource.Id.RootContainer));
+        }
     }
 }

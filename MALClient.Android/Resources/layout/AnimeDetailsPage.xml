@@ -22,7 +22,7 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:orientation="vertical"
-          app:layout_scrollFlags="scroll|enterAlways">
+          app:layout_scrollFlags="scroll">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -132,6 +132,23 @@
                   android:textSize="11sp"
                   android:textStyle="bold"
                   tools:text="Anime" />
+
+              <TextView
+                  android:id="@+id/AnimeDetailsPageAiringBadge"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="6dp"
+                  android:background="@drawable/electric_midnight_airing_badge"
+                  android:paddingStart="6dp"
+                  android:paddingEnd="6dp"
+                  android:paddingTop="2dp"
+                  android:paddingBottom="2dp"
+                  android:fontFamily="@font/inter"
+                  android:textColor="#ffffffff"
+                  android:textSize="9sp"
+                  android:textStyle="bold"
+                  android:text="AIRING"
+                  android:visibility="gone" />
 
               <TextView
                   android:layout_width="wrap_content"
@@ -388,92 +405,6 @@
             android:visibility="gone" />
       </LinearLayout>
 
-      <!-- Mini hero: pinned bar shown while the full hero is collapsed -->
-      <LinearLayout
-          android:id="@+id/AnimeDetailsPageCompactBar"
-          android:layout_width="match_parent"
-          android:layout_height="96dp"
-          android:orientation="horizontal"
-          android:gravity="center_vertical"
-          android:background="@color/EmSheet"
-          android:elevation="4dp"
-          android:paddingStart="12dp"
-          android:paddingEnd="12dp"
-          android:visibility="gone">
-
-        <FFImageLoading.Views.ImageViewAsync
-            android:id="@+id/AnimeDetailsPageCompactPoster"
-            android:layout_width="56dp"
-            android:layout_height="84dp"
-            android:scaleType="fitCenter" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical">
-
-          <TextView
-              android:id="@+id/AnimeDetailsPageCompactTitle"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:fontFamily="@font/inter"
-              android:textColor="#ffffff"
-              android:textSize="15sp"
-              android:textStyle="bold"
-              android:maxLines="1"
-              android:ellipsize="end"
-              tools:text="Oshi no Ko" />
-
-          <TextView
-              android:id="@+id/AnimeDetailsPageCompactSubtitle"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_marginTop="2dp"
-              android:fontFamily="@font/inter"
-              android:textColor="#ccffffff"
-              android:textSize="11sp"
-              tools:text="TV • 2023 • 11 Episodes" />
-
-          <LinearLayout
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_marginTop="4dp"
-              android:orientation="horizontal"
-              android:gravity="center_vertical">
-
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:src="@drawable/icon_star_filled"
-                android:tint="#FFD700" />
-
-            <TextView
-                android:id="@+id/AnimeDetailsPageCompactScore"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="12dp"
-                android:fontFamily="@font/inter"
-                android:textColor="#FFD700"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                tools:text="8.74" />
-
-            <TextView
-                android:id="@+id/AnimeDetailsPageCompactStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter"
-                android:textColor="#ffffff"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                tools:text="Watching" />
-          </LinearLayout>
-        </LinearLayout>
-      </LinearLayout>
-
       <!-- Quick Actions: pinned -->
       <LinearLayout
           android:layout_width="match_parent"
@@ -556,6 +487,260 @@
           android:background="@color/EmSheet" />
     </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
   </android.support.design.widget.CoordinatorLayout>
+
+  <!-- Mini hero: overlay shown while the full hero is collapsed.
+       Positioned outside AppBarLayout so it does NOT affect layout heights.
+       marginTop=96dp ≈ quick-actions(~56dp) + tab-strip(40dp). -->
+  <FrameLayout
+      android:id="@+id/AnimeDetailsPageCompactBar"
+      android:layout_width="match_parent"
+      android:layout_height="190dp"
+      android:layout_gravity="top"
+      android:layout_marginTop="96dp"
+      android:background="@color/EmSheet"
+      android:elevation="4dp"
+      android:visibility="gone">
+
+    <FFImageLoading.Views.ImageViewAsync
+        android:id="@+id/AnimeDetailsPageCompactBlurredBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/hero_gradient_overlay" />
+
+    <FrameLayout
+        android:id="@+id/AnimeDetailsPageCompactPosterContainer"
+        android:layout_width="112dp"
+        android:layout_height="164dp"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="12dp">
+
+      <FFImageLoading.Views.ImageViewAsync
+          android:id="@+id/AnimeDetailsPageCompactShowCoverImage"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:scaleType="fitCenter" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="140dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical">
+
+      <TextView
+          android:id="@+id/AnimeDetailsPageCompactTitle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/inter"
+          android:textColor="#ffffff"
+          android:textSize="15sp"
+          android:textStyle="bold"
+          android:maxLines="1"
+          android:ellipsize="end"
+          tools:text="Oshi no Ko" />
+
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="2dp"
+          android:orientation="horizontal"
+          android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/AnimeDetailsPageCompactTypeBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/electric_midnight_type_badge"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:fontFamily="@font/inter"
+            android:textColor="#ffffffff"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            tools:text="TV" />
+
+        <TextView
+            android:id="@+id/AnimeDetailsPageCompactAiringBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/electric_midnight_airing_badge"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:fontFamily="@font/inter"
+            android:textColor="#ffffffff"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:text="AIRING"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:textColor="#80ffffff"
+            android:textSize="10sp"
+            android:text="&#8226;" />
+
+        <TextView
+            android:id="@+id/AnimeDetailsPageCompactYearLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:textColor="#ccffffff"
+            android:textSize="11sp"
+            tools:text="2023" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:textColor="#80ffffff"
+            android:textSize="10sp"
+            android:text="&#8226;" />
+
+        <TextView
+            android:id="@+id/AnimeDetailsPageCompactEpisodesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:textColor="#ccffffff"
+            android:textSize="11sp"
+            tools:text="11 Episodes" />
+      </LinearLayout>
+
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:orientation="horizontal"
+          android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/icon_star_filled"
+            android:tint="#FFD700" />
+
+        <TextView
+            android:id="@+id/AnimeDetailsPageCompactScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="12dp"
+            android:fontFamily="@font/inter"
+            android:textColor="#FFD700"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="8.74" />
+
+        <TextView
+            android:id="@+id/AnimeDetailsPageCompactStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:textColor="#ffffff"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="Watching" />
+      </LinearLayout>
+
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:gravity="center_vertical"
+          android:orientation="horizontal"
+          android:background="@drawable/electric_midnight_pill"
+          android:padding="3dp">
+
+        <FrameLayout
+            android:id="@+id/AnimeDetailsPageCompactDecrementButton"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:selectableItemBackground">
+
+          <ImageView
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/electric_midnight_circle_dark"
+              android:padding="7dp"
+              android:src="@drawable/icon_minus"
+              android:tint="#80ffffff" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:minWidth="44dp"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:text="EP"
+              android:textAllCaps="true"
+              android:letterSpacing="0.08"
+              android:textColor="#80ffffff"
+              android:textSize="8sp" />
+
+          <Button
+              android:id="@+id/AnimeDetailsPageCompactWatchedButton"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:fontFamily="@font/inter"
+              android:textColor="#ffffff"
+              android:textSize="14sp"
+              android:textStyle="bold"
+              android:gravity="center"
+              android:background="@android:color/transparent"
+              android:minWidth="0dp"
+              android:minHeight="0dp"
+              android:paddingStart="2dp"
+              android:paddingEnd="2dp"
+              android:paddingTop="0dp"
+              android:paddingBottom="0dp" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/AnimeDetailsPageCompactIncrementButton"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:selectableItemBackground">
+
+          <ImageView
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/electric_midnight_circle_primary"
+              android:padding="7dp"
+              android:src="@drawable/icon_add"
+              android:tint="@android:color/white" />
+        </FrameLayout>
+      </LinearLayout>
+    </LinearLayout>
+  </FrameLayout>
 
   <RelativeLayout
       android:id="@+id/AnimeDetailsPageLoadingOverlay"

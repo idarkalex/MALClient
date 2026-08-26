@@ -1,27 +1,38 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-                android:layout_height="match_parent">
-  <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+﻿<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/EmSheet"
-    android:padding="5dp">
-    <ListView android:layout_width="match_parent" android:divider="@color/Transparent" android:dividerHeight="15dp"
-              android:layout_height="wrap_content" android:id="@+id/AnimeDetailsPageRelatedTabsList" />
-  </LinearLayout>
-  <TextView android:layout_centerInParent="true" android:visibility="gone"
-      android:layout_width="wrap_content" android:id="@+id/AnimeDetailsPageRelatedTabEmptyNotice"
-      android:layout_height="wrap_content" android:fontFamily="@font/inter" android:text="No related series available..." android:layout_gravity="center_horizontal" android:textColor="?AccentColour"/>
-  <RelativeLayout android:id="@+id/AnimeDetailsPageRelatedTabLoadingOverlay" android:layout_width="match_parent"
-                  android:layout_height="250dp" android:background="?BrushLoading">
-    <ProgressBar android:layout_width="wrap_content" android:indeterminateTint="?AccentColour"
-                 android:indeterminateTintMode="src_in" android:layout_height="wrap_content"
-                 android:indeterminate="true" android:layout_centerInParent="true" />
+    android:layout_height="match_parent">
+
+  <android.support.v7.widget.RecyclerView
+      android:id="@+id/AnimeDetailsPageRelatedTabsList"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@color/EmSheet"
+      android:padding="5dp"
+      android:clipToPadding="false" />
+
+  <TextView
+      android:layout_centerInParent="true"
+      android:visibility="gone"
+      android:layout_width="wrap_content"
+      android:id="@+id/AnimeDetailsPageRelatedTabEmptyNotice"
+      android:layout_height="wrap_content"
+      android:fontFamily="@font/inter"
+      android:text="No related series available..."
+      android:layout_gravity="center_horizontal"
+      android:textColor="?AccentColour" />
+
+  <RelativeLayout
+      android:id="@+id/AnimeDetailsPageRelatedTabLoadingOverlay"
+      android:layout_width="match_parent"
+      android:layout_height="250dp"
+      android:background="?BrushLoading">
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:indeterminateTint="?AccentColour"
+        android:indeterminateTintMode="src_in"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:layout_centerInParent="true" />
   </RelativeLayout>
 </RelativeLayout>
-
-
-
-
-

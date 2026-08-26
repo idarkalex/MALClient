@@ -2,15 +2,17 @@ using System;
 using System.Linq;
 using Android.App;
 using Android.OS;
+using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
+using MALClient.Android.AoLibsCompat;
 using MALClient.Android.BindingConverters;
-using MALClient.Android.CollectionAdapters;
 using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Models.Anime;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -21,12 +23,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
     internal class AnimeDetailsPageEpisodesTabFragment : MalFragmentBase
     {
         private readonly AnimeDetailsPageViewModel ViewModel;
-        private PopupMenu _epPopupMenu;
+        private global::Android.Widget.PopupMenu _epPopupMenu;
 
-        private ListView _animeDetailsPageEpisodesTabList;
+        private RecyclerView _animeDetailsPageEpisodesTabList;
         private RelativeLayout _animeDetailsPageEpisodesTabLoadingOverlay;
 
-        public ListView AnimeDetailsPageEpisodesTabList => GetView(ref _animeDetailsPageEpisodesTabList, Resource.Id.AnimeDetailsPageEpisodesTabList);
+        public RecyclerView AnimeDetailsPageEpisodesTabList => GetView(ref _animeDetailsPageEpisodesTabList, Resource.Id.AnimeDetailsPageEpisodesTabList);
 
         public RelativeLayout AnimeDetailsPageEpisodesTabLoadingOverlay => GetView(ref _animeDetailsPageEpisodesTabLoadingOverlay, Resource.Id.AnimeDetailsPageEpisodesTabLoadingOverlay);
 
@@ -65,6 +67,15 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 }
             }));
 
+            Bindings.Add(this.SetBinding(() => ViewModel.MyEpisodes).WhenSourceChanges(() =>
+            {
+                if (!ViewModel.LoadingDetails)
+                    BindEpisodes();
+            }));
+
+            AnimeDetailsPageEpisodesTabList.SetLayoutManager(new LinearLayoutManager(Activity));
+            AnimeDetailsPageEpisodesTabList.AddOnScrollListener(new CustomScrollListener());
+
             BindEpisodes();
         }
 
@@ -74,38 +85,33 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
             if (!ViewModel.Episodes.Any())
             {
-                AnimeDetailsPageEpisodesTabList.Adapter = null;
+                AnimeDetailsPageEpisodesTabList.SetAdapter(null);
                 return;
             }
 
-            AnimeDetailsPageEpisodesTabList.Adapter =
-                ViewModel.Episodes.GetAdapter(EpisodeItemTemplate);
+            AnimeDetailsPageEpisodesTabList.SetAdapter(
+                new ObservableRecyclerAdapter<AnimeEpisode, EpHolder>(
+                    ViewModel.Episodes, BindEpisode, LayoutInflater, Resource.Layout.DetailAnimeEpisodeView));
         }
 
-        private View EpisodeItemTemplate(int i, AnimeEpisode ep, View arg3)
+        private void BindEpisode(AnimeEpisode ep, EpHolder holder, int position)
         {
-            var view = arg3 ?? Activity.LayoutInflater.Inflate(Resource.Layout.DetailAnimeEpisodeView, null);
+            holder.EpisodeCount.Text = $"Ep. {ep.EpisodeId}";
+            holder.EpisodeName.Text = ep.Title;
 
-            view.FindViewById<TextView>(Resource.Id.EpisodeCount).Text = $"Ep. {ep.EpisodeId}";
-            view.FindViewById<TextView>(Resource.Id.EpisodeName).Text = ep.Title;
-
-            if (ep.EpisodeId <= ViewModel.MyEpisodes)
-                view.FindViewById(Resource.Id.TickIcon).Visibility = ViewStates.Visible;
-            else
-                view.FindViewById(Resource.Id.TickIcon).Visibility = ViewStates.Gone;
+            holder.TickIcon.Visibility = ep.EpisodeId <= ViewModel.MyEpisodes ? ViewStates.Visible : ViewStates.Gone;
 
             if (string.IsNullOrEmpty(ep.TitleJapanese) && string.IsNullOrEmpty(ep.TitleRomanji) &&
                 string.IsNullOrEmpty(ep.ForumUrl) && string.IsNullOrEmpty(ep.VideoUrl))
             {
-                view.FindViewById(Resource.Id.MoreButton).Visibility = ViewStates.Gone;
+                holder.MoreButton.Visibility = ViewStates.Gone;
             }
             else
             {
-                var moreBtn = view.FindViewById(Resource.Id.MoreButton);
-                moreBtn.Visibility = ViewStates.Visible;
-                moreBtn.SetOnClickListener(new OnClickListener(v =>
+                holder.MoreButton.Visibility = ViewStates.Visible;
+                holder.MoreButton.SetOnClickListener(new OnClickListener(v =>
                 {
-                    _epPopupMenu = new PopupMenu(Activity, view.FindViewById(Resource.Id.MoreButton));
+                    _epPopupMenu = new global::Android.Widget.PopupMenu(Activity, holder.MoreButton);
 
                     if (!string.IsNullOrEmpty(ep.VideoUrl))
                         _epPopupMenu.Menu.Add(0, 0, 0, "Open website");
@@ -138,8 +144,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 }));
             }
 
-            // Row itself: forum discussion first, episode page as fallback
-            view.SetOnClickListener(new OnClickListener(v =>
+            holder.ItemView.SetOnClickListener(new OnClickListener(v =>
             {
                 if (!string.IsNullOrEmpty(ep.ForumUrl))
                     ViewModel.NavigateEpDiscussionCommand.Execute(ep);
@@ -149,16 +154,35 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
             if (ep.Filler || ep.Recap)
             {
-                var note = view.FindViewById<TextView>(Resource.Id.EpisodeNote);
-                note.Visibility = ViewStates.Visible;
-                note.Text = $"{(ep.Filler ? "Filler " : "")} {(ep.Recap ? "Recap" : "")}".Trim();
+                holder.EpisodeNote.Visibility = ViewStates.Visible;
+                holder.EpisodeNote.Text = $"{(ep.Filler ? "Filler " : "")} {(ep.Recap ? "Recap" : "")}".Trim();
             }
             else
             {
-                view.FindViewById(Resource.Id.EpisodeNote).Visibility = ViewStates.Gone;
+                holder.EpisodeNote.Visibility = ViewStates.Gone;
+            }
+        }
+
+        class EpHolder : RecyclerView.ViewHolder
+        {
+            private readonly View _view;
+
+            public EpHolder(View view) : base(view)
+            {
+                _view = view;
             }
 
-            return view;
+            private TextView _episodeCount;
+            private TextView _episodeName;
+            private View _tickIcon;
+            private View _moreButton;
+            private TextView _episodeNote;
+
+            public TextView EpisodeCount => _episodeCount ?? (_episodeCount = _view.FindViewById<TextView>(Resource.Id.EpisodeCount));
+            public TextView EpisodeName => _episodeName ?? (_episodeName = _view.FindViewById<TextView>(Resource.Id.EpisodeName));
+            public View TickIcon => _tickIcon ?? (_tickIcon = _view.FindViewById(Resource.Id.TickIcon));
+            public View MoreButton => _moreButton ?? (_moreButton = _view.FindViewById(Resource.Id.MoreButton));
+            public TextView EpisodeNote => _episodeNote ?? (_episodeNote = _view.FindViewById<TextView>(Resource.Id.EpisodeNote));
         }
     }
 }

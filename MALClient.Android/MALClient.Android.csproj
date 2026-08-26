@@ -286,6 +286,7 @@
     <Compile Include="Utilities\CssManager.cs" />
     <Compile Include="Utilities\DimensionsHelper.cs" />
     <Compile Include="Utilities\FlingCollectionsHelper.cs" />
+    <Compile Include="Utilities\IncrementalListHelper.cs" />
     <Compile Include="Web\InlineVideoWebViewClient.cs" />
     <Compile Include="Utilities\FontManager.cs" />
     <Compile Include="Utilities\GridViewColumnHelper.cs" />
@@ -795,6 +796,7 @@
     <AndroidResource Include="Resources\drawable\electric_midnight_primary_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_type_badge.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_airing_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_sheet_top.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -1351,6 +1353,7 @@
     </Target>
   -->
 </Project>
+
 
 
 

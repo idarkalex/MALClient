@@ -103,7 +103,7 @@ namespace MALClient.XShared.ViewModels.Details
 
         public string Title { get; set; }
         public string Type { get; private set; }
-        private string Status { get; set; }
+        public string Status { get; private set; }
         //Dates when show starts or ends airing
         public string StartDate { get; private set; }
         public string EndDate { get; private set; }
@@ -1188,6 +1188,7 @@ namespace MALClient.XShared.ViewModels.Details
 
             RaisePropertyChanged(() => Type);
             RaisePropertyChanged(() => StartYear);
+            RaisePropertyChanged(() => Status);
 
             _synonyms = data.Synonyms;
             _synonyms = _synonyms.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
@@ -1276,6 +1277,23 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 LoadingDetails = false;
             }
+
+            // Prefetch the remaining tabs in the background so they are already
+            // populated when the user reaches them.
+            Task.Run(async () =>
+            {
+                try
+                {
+                    LoadReviews();
+                    LoadRelatedAnime();
+                    LoadRecommendations();
+                    LoadCharacters();
+                }
+                catch
+                {
+                    // prefetch is best-effort; tab selection retries anyway
+                }
+            });
         }
 
         private async Task LoadDetailsCoreAsync(bool force)

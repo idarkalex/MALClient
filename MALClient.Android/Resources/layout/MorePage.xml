@@ -11,7 +11,7 @@
       android:orientation="vertical"
       android:paddingStart="20dp"
       android:paddingEnd="20dp"
-      android:paddingBottom="80dp">
+      android:paddingBottom="24dp">
 
     <!-- Profile Header -->
     <LinearLayout

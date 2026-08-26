@@ -9,5 +9,6 @@ namespace MALClient.Models.Models.AnimeScrapped
         public int Id { get; set; }
         public string Title { get; set; }
         public RelatedItemType Type { get; set; }
+        public string ImgUrl { get; set; }
     }
 }

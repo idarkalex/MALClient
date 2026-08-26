@@ -99,8 +99,12 @@ namespace MALClient.Android.Fragments
                         AnimeDetailsPageCompactStatus.Text = ViewModel.MyStatusBind;
                     }));
             Bindings.Add(
-                this.SetBinding(() => ViewModel.MyEpisodesBind,
-                    () => AnimeDetailsPageWatchedButton.Text));
+                this.SetBinding(() => ViewModel.MyEpisodesBind)
+                    .WhenSourceChanges(() =>
+                    {
+                        AnimeDetailsPageWatchedButton.Text = ViewModel.MyEpisodesBind;
+                        AnimeDetailsPageCompactWatchedButton.Text = ViewModel.MyEpisodesBind;
+                    }));
             Bindings.Add(
                 this.SetBinding(() => ViewModel.MyVolumesBind,
                     () => AnimeDetailsPageReadVolumesButton.Text));
@@ -112,10 +116,12 @@ namespace MALClient.Android.Fragments
             Bindings.Add(this.SetBinding(() => ViewModel.IsIncrementButtonEnabled).WhenSourceChanges(() =>
             {
                 AnimeDetailsPageIncrementButton.Alpha = ViewModel.IsIncrementButtonEnabled ? 1 : .35f;
+                AnimeDetailsPageCompactIncrementButton.Alpha = ViewModel.IsIncrementButtonEnabled ? 1 : .35f;
             }));
             Bindings.Add(this.SetBinding(() => ViewModel.IsDecrementButtonEnabled).WhenSourceChanges(() =>
             {
                 AnimeDetailsPageDecrementButton.Alpha = ViewModel.IsDecrementButtonEnabled ? 1 : .35f;
+                AnimeDetailsPageCompactDecrementButton.Alpha = ViewModel.IsDecrementButtonEnabled ? 1 : .35f;
             }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.AnimeMode).WhenSourceChanges(() =>
@@ -200,7 +206,8 @@ namespace MALClient.Android.Fragments
                 {
                     AnimeDetailsPageBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
                     AnimeDetailsPageShowCoverImage.Into(ViewModel.DetailImage);
-                    AnimeDetailsPageCompactPoster.Into(ViewModel.DetailImage);
+                    AnimeDetailsPageCompactBlurredBackground.Into(ViewModel.DetailImage, new BlurredTransformation(25));
+                    AnimeDetailsPageCompactShowCoverImage.Into(ViewModel.DetailImage);
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Title)
@@ -215,20 +222,29 @@ namespace MALClient.Android.Fragments
                 {
                     // Initial fallback — will be replaced when Type loads from API
                     if (string.IsNullOrEmpty(ViewModel.Type))
-                        AnimeDetailsPageTypeBadge.Text = ViewModel.AnimeMode ? "Anime" : "Manga";
+                    {
+                        var fallbackType = ViewModel.AnimeMode ? "Anime" : "Manga";
+                        AnimeDetailsPageTypeBadge.Text = fallbackType;
+                        AnimeDetailsPageCompactTypeBadge.Text = fallbackType;
+                    }
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Type)
                 .WhenSourceChanges(() =>
                 {
                     if (!string.IsNullOrEmpty(ViewModel.Type))
+                    {
                         AnimeDetailsPageTypeBadge.Text = ViewModel.Type;
+                        AnimeDetailsPageCompactTypeBadge.Text = ViewModel.Type;
+                    }
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.StartYear)
                 .WhenSourceChanges(() =>
                 {
-                    AnimeDetailsPageYearLabel.Text = ViewModel.StartYear ?? "";
+                    var year = ViewModel.StartYear ?? "";
+                    AnimeDetailsPageYearLabel.Text = year;
+                    AnimeDetailsPageCompactYearLabel.Text = year;
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.AllEpisodes)
@@ -238,7 +254,7 @@ namespace MALClient.Android.Fragments
                     var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
                     var subtitle = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
                     AnimeDetailsPageSubtitle.Text = subtitle;
-                    AnimeDetailsPageCompactSubtitle.Text = subtitle;
+                    AnimeDetailsPageCompactEpisodesLabel.Text = subtitle;
                 }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.LoadingGlobal)
@@ -264,6 +280,15 @@ namespace MALClient.Android.Fragments
                     string.IsNullOrEmpty(ViewModel.TrailerUrl) ? ViewStates.Gone : ViewStates.Visible;
             }));
 
+            Bindings.Add(this.SetBinding(() => ViewModel.Status).WhenSourceChanges(() =>
+            {
+                var isAiring = string.Equals(ViewModel.Status, "Currently Airing",
+                    StringComparison.CurrentCultureIgnoreCase);
+                var airingVisibility = isAiring ? ViewStates.Visible : ViewStates.Gone;
+                AnimeDetailsPageAiringBadge.Visibility = airingVisibility;
+                AnimeDetailsPageCompactAiringBadge.Visibility = airingVisibility;
+            }));
+
             AnimeDetailsPageTrailerButton.SetOnClickListener(new OnClickListener(view =>
             {
                 ViewModel.PlayVideoInApp(ViewModel.TrailerUrl);
@@ -283,6 +308,10 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageIncrementButton.SetOnClickListener(
                 new OnClickListener(view => ViewModel.IncrementEpsCommand.Execute(null)));
             AnimeDetailsPageDecrementButton.SetOnClickListener(
+                new OnClickListener(view => ViewModel.DecrementEpsCommand.Execute(null)));
+            AnimeDetailsPageCompactIncrementButton.SetOnClickListener(
+                new OnClickListener(view => ViewModel.IncrementEpsCommand.Execute(null)));
+            AnimeDetailsPageCompactDecrementButton.SetOnClickListener(
                 new OnClickListener(view => ViewModel.DecrementEpsCommand.Execute(null)));
             AnimeDetailsPageAddButton.SetOnClickListener(
                 new OnClickListener(view => ViewModel.AddAnimeCommand.Execute(null)));
@@ -318,7 +347,10 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageTypeBadge.Text = ViewModel.Type ?? (ViewModel.AnimeMode ? "Anime" : "Manga");
             var eps = ViewModel.AnimeItemReference?.AllEpisodes ?? ViewModel.AllEpisodes;
             var unit = ViewModel.AnimeMode ? "Episodes" : "Chapters";
-            AnimeDetailsPageSubtitle.Text = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
+            var epsSubtitle = $"{(eps == 0 ? "?" : eps.ToString())} {unit}";
+            AnimeDetailsPageSubtitle.Text = epsSubtitle;
+            AnimeDetailsPageCompactTypeBadge.Text = ViewModel.Type ?? (ViewModel.AnimeMode ? "Anime" : "Manga");
+            AnimeDetailsPageCompactEpisodesLabel.Text = epsSubtitle;
             if (ViewModel.AnimeItemReference != null)
             {
                 var score = ViewModel.AnimeItemReference.GlobalScore;
@@ -334,6 +366,11 @@ namespace MALClient.Android.Fragments
                     DimensionsHelper.DpToPx(45);
                 AnimeDetailsPageIncrementButton.LayoutParameters.Height =
                     DimensionsHelper.DpToPx(45);
+                AnimeDetailsPageCompactDecrementButton.Visibility = ViewStates.Gone;
+                AnimeDetailsPageCompactIncrementButton.LayoutParameters.Width =
+                    DimensionsHelper.DpToPx(38);
+                AnimeDetailsPageCompactIncrementButton.LayoutParameters.Height =
+                    DimensionsHelper.DpToPx(38);
             }
 
             //Events
@@ -342,6 +379,8 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageScoreButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageScoreButtonOnClick()));
             AnimeDetailsPageWatchedButton.SetOnClickListener(
+                new OnClickListener(view => AnimeDetailsPageWatchedButtonOnClick()));
+            AnimeDetailsPageCompactWatchedButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageWatchedButtonOnClick()));
             AnimeDetailsPageReadVolumesButton.SetOnClickListener(
                 new OnClickListener(view => AnimeDetailsPageVolumesButtonOnClick()));
@@ -354,14 +393,33 @@ namespace MALClient.Android.Fragments
                 return ChildFragmentManager.FindFragmentByTag(tag)?.View;
             };
 
-            // Mini hero appears once the full hero is nearly fully collapsed
+            // Mini hero crossfade: smooth transition over the last 160dp of hero collapse
             AnimeDetailsPageAppBar.AddOnOffsetChangedListener(new AppBarOffsetListener((bar, offset) =>
             {
                 var range = bar.TotalScrollRange;
-                var collapsed = range > 0 && -offset >= range - DimensionsHelper.DpToPx(80);
-                var target = collapsed ? ViewStates.Visible : ViewStates.Gone;
-                if (AnimeDetailsPageCompactBar.Visibility != target)
-                    AnimeDetailsPageCompactBar.Visibility = target;
+                if (range <= 0) return;
+
+                // Transition zone: last 160dp before full collapse
+                var transitionZone = DimensionsHelper.DpToPx(160);
+                var threshold = range - transitionZone;
+                var progress = Math.Max(0f, Math.Min(1f, (-offset - threshold) / (float)transitionZone));
+
+                // Compact bar: fade in as hero collapses
+                if (progress > 0f)
+                {
+                    if (AnimeDetailsPageCompactBar.Visibility != ViewStates.Visible)
+                        AnimeDetailsPageCompactBar.Visibility = ViewStates.Visible;
+                    AnimeDetailsPageCompactBar.Alpha = progress;
+                }
+                else
+                {
+                    if (AnimeDetailsPageCompactBar.Visibility != ViewStates.Gone)
+                        AnimeDetailsPageCompactBar.Visibility = ViewStates.Gone;
+                }
+
+                // Hero content: fade out as compact bar fades in
+                AnimeDetailsPageTitleSection.Alpha = 1f - progress;
+                AnimeDetailsPagePosterContainer.Alpha = 1f - progress;
             }));
             AnimeDetailsPageSwipeRefresh.Refresh += (s, e) =>
             {

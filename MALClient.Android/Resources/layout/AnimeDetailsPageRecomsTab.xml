@@ -1,27 +1,38 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-                android:layout_height="match_parent">
-  <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/EmSheet"
-    android:padding="5dp">
-    <MALClient.Android.UserControls.HeightAdjustingListView android:layout_width="match_parent" android:layout_height="wrap_content"
-              android:id="@+id/AnimeDetailsPageRecomTabsList" />
-  </LinearLayout>
-  <TextView android:layout_centerInParent="true" android:visibility="gone"
-      android:layout_width="wrap_content" android:id="@+id/AnimeDetailsPageReviewsTabEmptyNotice"
-      android:layout_height="wrap_content" android:fontFamily="@font/inter" android:text="No recommendations available..." android:layout_gravity="center_horizontal" android:textColor="?AccentColour"/>
-  <RelativeLayout android:id="@+id/AnimeDetailsPageRecomTabLoadingOverlay" android:layout_width="match_parent"
-                  android:layout_height="250dp" android:background="?BrushLoading">
-    <ProgressBar android:layout_width="wrap_content" android:indeterminateTint="?AccentColour"
-                 android:indeterminateTintMode="src_in" android:layout_height="wrap_content"
-                 android:indeterminate="true" android:layout_centerInParent="true" />
+    android:layout_height="match_parent">
+
+  <android.support.v7.widget.RecyclerView
+      android:id="@+id/AnimeDetailsPageRecomTabsList"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@color/EmSheet"
+      android:padding="5dp"
+      android:clipToPadding="false" />
+
+  <TextView
+      android:layout_centerInParent="true"
+      android:visibility="gone"
+      android:layout_width="wrap_content"
+      android:id="@+id/AnimeDetailsPageReviewsTabEmptyNotice"
+      android:layout_height="wrap_content"
+      android:fontFamily="@font/inter"
+      android:text="No recommendations available..."
+      android:layout_gravity="center_horizontal"
+      android:textColor="?AccentColour" />
+
+  <RelativeLayout
+      android:id="@+id/AnimeDetailsPageRecomTabLoadingOverlay"
+      android:layout_width="match_parent"
+      android:layout_height="250dp"
+      android:background="?BrushLoading">
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:indeterminateTint="?AccentColour"
+        android:indeterminateTintMode="src_in"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:layout_centerInParent="true" />
   </RelativeLayout>
 </RelativeLayout>
-
-
-
-
-

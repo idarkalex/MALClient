@@ -93,11 +93,12 @@ namespace MALClient.Android.Flyouts
 
         public static View BuildBaseItem(Context context, string text,int? background = null, int? foreground = null, bool clickable = true,GravityFlags ? gravity = null, bool wrapContentHeight = false)
         {
-            background = background ?? ResourceExtension.BrushFlyoutBackground;
+            // EM theme: dark sheet background for every flyout item unless overridden
+            background = background ?? (int?)ResourcesCompat.GetColor(context.Resources, Resource.Color.EmSheet, null);
             foreground = foreground ?? ResourceExtension.BrushText;
 
             if (ParamRelativeLayout == null)
-                ParamRelativeLayout = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(150), -2);
+                ParamRelativeLayout = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(180), -2);
             else
                 ParamRelativeLayout.Height = -2;
 
@@ -143,8 +144,6 @@ namespace MALClient.Android.Flyouts
             var droppyBuilder = new DroppyMenuPopup.Builder(context, parent);
             InjectAnimation(droppyBuilder);
 
-            droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(BuildStatusHeader(context, manga)));
-
             var listener = new Action<int>(i => callback.Invoke((AnimeStatus)i));
 
             foreach (AnimeStatus value in Enum.GetValues(typeof(AnimeStatus)))
@@ -158,26 +157,12 @@ namespace MALClient.Android.Flyouts
                         new DroppyMenuCustomItem(BuildItem(context, XShared.Utils.Utilities.StatusToString((int)value,manga), listener, (int) value,
                             gravity: GravityFlags.CenterVertical)));
             }
-            droppyBuilder.SetYOffset(DimensionsHelper.DpToPx(8));
-            AlignRightUnder(droppyBuilder, parent, 140);
-            return droppyBuilder.Build();
-        }
 
-        private static View BuildStatusHeader(Context context, bool manga)
-        {
-            var header = new TextView(context);
-            header.Text = manga ? "READ" : "WATCH";
-            header.SetTextColor(new Color(ResourceExtension.BrushText));
-            header.SetTextSize(ComplexUnitType.Sp, 11);
-            header.SetTypeface(header.Typeface, TypefaceStyle.Bold);
-            header.LetterSpacing = 0.08f;
-            header.Gravity = GravityFlags.Center;
-            var padding = DimensionsHelper.DpToPx(10);
-            header.SetPadding(padding, DimensionsHelper.DpToPx(8), padding, DimensionsHelper.DpToPx(6));
-            header.SetBackgroundColor(new Color(ResourceExtension.BrushFlyoutBackground));
-            var lp = new ViewGroup.LayoutParams(DimensionsHelper.DpToPx(190), ViewGroup.LayoutParams.WrapContent);
-            header.LayoutParameters = lp;
-            return header;
+            // The anchor sits on the bottom nav: drop the popup ABOVE the pressed
+            // button (6 items x 40dp) instead of letting Droppy clamp it off-screen.
+            AlignRightUnder(droppyBuilder, parent, 140);
+            droppyBuilder.SetYOffset(-DimensionsHelper.DpToPx(252));
+            return droppyBuilder.Build();
         }
 
         public static DroppyMenuPopup BuildForAnimeSortingSelection(Context context, View parent,

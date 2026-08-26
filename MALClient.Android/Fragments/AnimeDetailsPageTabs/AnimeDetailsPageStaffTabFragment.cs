@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 using Android.App;
 using Android.Content;
@@ -17,6 +19,7 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Models.Favourites;
 using MALClient.XShared.ViewModels;
@@ -35,6 +38,9 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             ViewModel = ViewModelLocator.AnimeDetails;
         }
 
+        private readonly ObservableCollection<FavouriteViewModel> _localStaff = new ObservableCollection<FavouriteViewModel>();
+        private CancellationTokenSource _drainCts;
+
         protected override void InitBindings()
         {
             //_gridHelper = new GridViewColumnHelper(AnimeDetailsPageCharactersTabGridView,null,2,3);
@@ -49,20 +55,22 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             //_gridHelper = new GridViewColumnHelper(AnimeDetailsPageCharactersTabGridView,340,1);
             Bindings.Add(this.SetBinding(() => ViewModel.AnimeStaffData).WhenSourceChanges(() =>
             {
-                //if (ViewModel.AnimeStaffData == null)
-                //    AnimeDetailsPageCharactersTabGridView.Adapter = null;
-                //else
-                //    AnimeDetailsPageCharactersTabGridView.InjectFlingAdapter(ViewModel.AnimeStaffData.AnimeCharacterPairs, DataTemplateFull, DataTemplateFling, ContainerTemplate);
-
                 if (ViewModel.AnimeStaffData == null)
+                {
+                    _drainCts?.Cancel();
+                    _localStaff.Clear();
                     AnimeDetailsPageCharactersTabGridView.SetAdapter(null);
+                }
                 else
+                {
                     AnimeDetailsPageCharactersTabGridView.SetAdapter(
                         new ObservableRecyclerAdapter<
-                            FavouriteViewModel, 
+                            FavouriteViewModel,
                             Holder>(
-                            ViewModel.AnimeStaffData.AnimeStaff,
+                            _localStaff,
                             DataTemplate, ItemTemplate, HolderFactory));
+                    _drainCts = IncrementalListHelper.Drain(ViewModel.AnimeStaffData.AnimeStaff, _localStaff);
+                }
 
             }));
 

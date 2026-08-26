@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 using Android.App;
 using Android.Content;
@@ -16,6 +18,7 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Models.Favourites;
 using MALClient.XShared.ViewModels;
@@ -33,27 +36,33 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             ViewModel = ViewModelLocator.AnimeDetails;
         }
 
+        private readonly ObservableCollection<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel> _localPairs =
+            new ObservableCollection<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>();
+        private CancellationTokenSource _drainCts;
+
         protected override void InitBindings()
         {
             //_gridHelper = new GridViewColumnHelper(AnimeDetailsPageCharactersTabGridView,340,1);
             Bindings.Add(this.SetBinding(() => ViewModel.AnimeStaffData).WhenSourceChanges(() =>
             {
-                //if (ViewModel.AnimeStaffData == null)
-                //    AnimeDetailsPageCharactersTabGridView.Adapter = null;
-                //else
-                //    AnimeDetailsPageCharactersTabGridView.InjectFlingAdapter(ViewModel.AnimeStaffData.AnimeCharacterPairs, DataTemplateFull, DataTemplateFling, ContainerTemplate);
-
                 if (ViewModel.AnimeStaffData == null)
+                {
+                    _drainCts?.Cancel();
+                    _localPairs.Clear();
                     AnimeDetailsPageCharactersTabGridView.SetAdapter(null);
+                }
                 else
+                {
                     AnimeDetailsPageCharactersTabGridView.SetAdapter(
                         new ObservableRecyclerAdapter<
                             AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel,
                             Holder>(
-                            ViewModel.AnimeStaffData.AnimeCharacterPairs,
+                            _localPairs,
                             DataTemplate,
                             LayoutInflater,
                             Resource.Layout.CharacterActorPairItem));
+                    _drainCts = IncrementalListHelper.Drain(ViewModel.AnimeStaffData.AnimeCharacterPairs, _localPairs);
+                }
 
             }));
 
@@ -142,3 +151,4 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
     }
 }
+

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Android.Content;
 using Android.Support.V7.Widget;
 using Android.Views;
@@ -30,6 +31,7 @@ namespace MALClient.Android.AoLibsCompat
             _layoutResource = layoutResource;
             _itemTemplate = null;
             _holderFactory = null;
+            HookCollectionChanged();
         }
 
         public ObservableRecyclerAdapter(
@@ -43,6 +45,7 @@ namespace MALClient.Android.AoLibsCompat
             _layoutResource = null;
             _itemTemplate = itemTemplate;
             _holderFactory = null;
+            HookCollectionChanged();
         }
 
         public ObservableRecyclerAdapter(
@@ -57,6 +60,19 @@ namespace MALClient.Android.AoLibsCompat
             _layoutResource = null;
             _itemTemplate = itemTemplate;
             _holderFactory = holderFactory;
+            HookCollectionChanged();
+        }
+
+        private void HookCollectionChanged()
+        {
+            if (_source is INotifyCollectionChanged notifyCollection)
+            {
+                notifyCollection.CollectionChanged += (s, e) =>
+                {
+                    if (HasObservers)
+                        NotifyDataSetChanged();
+                };
+            }
         }
 
         public override int ItemCount => _source?.Count ?? 0;

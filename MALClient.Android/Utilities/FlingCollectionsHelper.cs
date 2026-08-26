@@ -191,9 +191,10 @@ namespace MALClient.Android
                 return;
             System.Collections.Specialized.NotifyCollectionChangedEventHandler handler = (s, e) =>
             {
-                (container.Adapter as BaseAdapter)?.NotifyDataSetChanged();
-                var pager = FindViewPager(container);
-                pager?.SetTabHeightForCurrentView(container);
+                container.Post(() =>
+                {
+                    (container.Adapter as BaseAdapter)?.NotifyDataSetChanged();
+                });
             };
             notifying.CollectionChanged += handler;
         }
@@ -217,6 +218,15 @@ namespace MALClient.Android
             }
 
             public override int Count => _items.Count + (_footer != null ? 1 : 0);
+
+            public override int ViewTypeCount => _footer != null ? 2 : 1;
+
+            public override int GetItemViewType(int position)
+            {
+                if (_footer != null && position >= _items.Count)
+                    return 1;
+                return 0;
+            }
 
             public override T this[int position] => position < _items.Count ? _items[position] : null;
 

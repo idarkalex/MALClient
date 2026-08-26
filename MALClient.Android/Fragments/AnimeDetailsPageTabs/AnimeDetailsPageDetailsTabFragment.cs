@@ -44,10 +44,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         protected override void InitBindings()
         {
-            Bindings.Add(
-                this.SetBinding(() => ViewModel.LoadingDetails,
-                    () => AnimeDetailsPageDetailsTabLoadingOverlay.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
-
             Bindings.Add(this.SetBinding(() => ViewModel.LoadingDetails).WhenSourceChanges(() =>
             {
                 if (ViewModel.LoadingDetails)
@@ -156,7 +152,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     global::Android.Util.Log.Info("MALPlus", $"AnimeThemes search: {videos.Count} videos for '{title}'");
                     foreach (var v in videos)
                         global::Android.Util.Log.Info("MALPlus", $"  AT: {v.Type}{v.Sequence} -> {v.Url}");
-                    var match = AnimeThemesHelper.FindMatch(videos, isOp, seq);
+                    var match = AnimeThemesHelper.FindMatch(videos, isOp, seq, searchQuery);
                     DiagnosticsReporter.Info("OP/ED", $"AnimeThemes: {videos.Count} videos, match={(match?.Url ?? "null")}");
 
                     if (!string.IsNullOrEmpty(match?.Url))
@@ -270,7 +266,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private LinearLayout _animeDetailsPageDetailsTabOPsList;
         private TextView _animeDetailsPageDetailsTabEDsListLabel;
         private LinearLayout _animeDetailsPageDetailsTabEDsList;
-        private RelativeLayout _animeDetailsPageDetailsTabLoadingOverlay;
 
 
         public LinearLayout AnimeDetailsPageDetailsTabLeftGenresList => GetView(ref _animeDetailsPageDetailsTabLeftGenresList, Resource.Id.AnimeDetailsPageDetailsTabLeftGenresList);
@@ -281,7 +276,6 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         public LinearLayout AnimeDetailsPageDetailsTabOPsList => GetView(ref _animeDetailsPageDetailsTabOPsList, Resource.Id.AnimeDetailsPageDetailsTabOPsList);
         public TextView AnimeDetailsPageDetailsTabEDsListLabel => GetView(ref _animeDetailsPageDetailsTabEDsListLabel, Resource.Id.AnimeDetailsPageDetailsTabEDsListLabel);
         public LinearLayout AnimeDetailsPageDetailsTabEDsList => GetView(ref _animeDetailsPageDetailsTabEDsList, Resource.Id.AnimeDetailsPageDetailsTabEDsList);
-        public RelativeLayout AnimeDetailsPageDetailsTabLoadingOverlay => GetView(ref _animeDetailsPageDetailsTabLoadingOverlay, Resource.Id.AnimeDetailsPageDetailsTabLoadingOverlay);
 
         #endregion
     }

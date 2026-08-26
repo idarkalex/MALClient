@@ -92,6 +92,17 @@ namespace MALClient.XShared.Comm.Anime
                             : link[3] == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
                         current.Id = Convert.ToInt32(link[4]);
                         current.Title = WebUtility.HtmlDecode(linkNode.InnerText.Trim().Trim('\n'));
+
+                        // The tile carries the entry's real poster: trust it over id scraping
+                        var imgNode = tile.Descendants("img").FirstOrDefault();
+                        var imgSrc = imgNode?.Attributes["data-src"]?.Value ?? imgNode?.Attributes["src"]?.Value;
+                        if (!string.IsNullOrEmpty(imgSrc))
+                        {
+                            if (imgSrc.StartsWith("//"))
+                                imgSrc = "https:" + imgSrc;
+                            current.ImgUrl = imgSrc;
+                        }
+
                         output.Add(current);
                     }
                 }

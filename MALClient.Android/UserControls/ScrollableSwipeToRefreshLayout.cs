@@ -7,6 +7,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V4.View;
 using Android.Support.V4.Widget;
 using Android.Util;
 using Android.Views;
@@ -39,7 +40,10 @@ namespace MALClient.Android.UserControls
 
         public override bool CanChildScrollUp()
         {
-            return CanScrollUpRecursive(CurrentPageViewProvider?.Invoke() ?? ScrollingView);
+            var view = CurrentPageViewProvider?.Invoke();
+            if (view == null && CurrentPageViewProvider != null)
+                return true;
+            return CanScrollUpRecursive(view ?? ScrollingView);
         }
 
         private static bool CanScrollUpRecursive(View view)
@@ -55,6 +59,46 @@ namespace MALClient.Android.UserControls
                 if (CanScrollUpRecursive(group.GetChildAt(i)))
                     return true;
             return false;
+        }
+
+        private bool _forwardingNestedScroll;
+
+        // Forward pre-scroll to parent (CoordinatorLayout → AppBarLayout.Behavior).
+        // Lazy-start nested scrolling with CoordinatorLayout on first scroll event.
+        public override void OnNestedPreScroll(View target, int dx, int dy, int[] consumed)
+        {
+            EnsureNestedScrollingStarted();
+            int[] parentConsumed = new int[2];
+            ViewCompat.DispatchNestedPreScroll(this, dx, dy, parentConsumed, null);
+            if (consumed != null)
+            {
+                consumed[0] += parentConsumed[0];
+                consumed[1] += parentConsumed[1];
+            }
+        }
+
+        // Forward unconsumed scroll to parent
+        public override void OnNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed)
+        {
+            EnsureNestedScrollingStarted();
+            ViewCompat.DispatchNestedScroll(this, 0, 0, dxUnconsumed, dyUnconsumed, null);
+        }
+
+        // Stop nested scrolling with parent
+        public override void OnStopNestedScroll(View target)
+        {
+            if (_forwardingNestedScroll)
+            {
+                ViewCompat.StopNestedScroll(this);
+                _forwardingNestedScroll = false;
+            }
+            base.OnStopNestedScroll(target);
+        }
+
+        private void EnsureNestedScrollingStarted()
+        {
+            if (!_forwardingNestedScroll)
+                _forwardingNestedScroll = ViewCompat.StartNestedScroll(this, (int)ScrollAxis.Vertical);
         }
     }
 }

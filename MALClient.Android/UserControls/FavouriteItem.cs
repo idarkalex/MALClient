@@ -95,7 +95,7 @@ namespace MALClient.Android.UserControls
                 ViewModel = model;
                 _rootContainer.Tag = model.Wrap();
 
-                FavouriteItemImage.Into(model.Data.ImgUrl);
+                FavouriteItemImage.Into(model.Data.ImgUrl, null, null, 300);
                 FavouriteItemFavButton.BindModel(model);
 
                 if (string.IsNullOrWhiteSpace(model.Data.ImgUrl))
