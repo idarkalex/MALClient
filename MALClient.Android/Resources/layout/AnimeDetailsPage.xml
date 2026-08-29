@@ -274,7 +274,7 @@ android:layout_width="340dp"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:orientation="vertical"
-                  android:layout_marginEnd="24dp">
+                  android:layout_marginEnd="12dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -348,7 +348,7 @@ android:layout_width="340dp"
                   android:id="@+id/AnimeDetailsPageLastAiredSection"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:layout_marginStart="24dp"
+                  android:layout_marginStart="12dp"
                   android:orientation="vertical"
                   android:visibility="gone">
 
