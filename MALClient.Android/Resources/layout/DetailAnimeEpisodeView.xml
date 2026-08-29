@@ -95,6 +95,20 @@
         android:textStyle="italic"
         android:visibility="visible"
         tools:text="Filler, Recap" />
+
+    <TextView
+        android:id="@+id/EpisodeDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-5dp"
+        android:layout_gravity="start"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp"
+        android:fontFamily="@font/inter"
+        android:textColor="#80ffffff"
+        android:textSize="10sp"
+        android:visibility="visible"
+        tools:text="Oct 4, 2006" />
   </LinearLayout>
 </FrameLayout>
 

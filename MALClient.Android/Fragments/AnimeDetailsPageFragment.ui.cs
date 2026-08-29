@@ -28,21 +28,10 @@ namespace MALClient.Android.Fragments
         private ImageViewAsync _animeDetailsPageBlurredBackground;
         private FrameLayout _animeDetailsPagePosterContainer;
         private AppBarLayout _animeDetailsPageAppBar;
-        private FrameLayout _animeDetailsPageCompactBar;
-        private ImageViewAsync _animeDetailsPageCompactBlurredBackground;
-        private ImageViewAsync _animeDetailsPageCompactShowCoverImage;
-        private FrameLayout _animeDetailsPageCompactPosterContainer;
-        private TextView _animeDetailsPageCompactTitle;
-        private TextView _animeDetailsPageCompactScore;
-        private TextView _animeDetailsPageCompactTypeBadge;
-        private TextView _animeDetailsPageCompactYearLabel;
-        private TextView _animeDetailsPageCompactEpisodesLabel;
-        private TextView _animeDetailsPageCompactAiringBadge;
-        private TextView _animeDetailsPageCompactStatus;
-        private FrameLayout _animeDetailsPageCompactDecrementButton;
-        private FrameLayout _animeDetailsPageCompactIncrementButton;
-        private Button _animeDetailsPageCompactWatchedButton;
         private TextView _animeDetailsPageAiringBadge;
+        private TextView _animeDetailsPageAiringCountdown;
+        private LinearLayout _animeDetailsPageLastAiredSection;
+        private TextView _animeDetailsPageLastAiredValue;
         private TextView _animeDetailsPageWatchedLabel;
         private TextView _animeDetailsPageReadVolumesLabel;
         private Button _animeDetailsPageScoreButton;
@@ -55,7 +44,6 @@ namespace MALClient.Android.Fragments
         private RelativeLayout _animeDetailsPageIncDecSection;
         private FrameLayout _animeDetailsPageAddButton;
         private ProgressBar _animeDetailsPageLoadingUpdateSpinner;
-        private ImageButton _animeDetailsPageFavouriteButton;
         private ImageButton _animeDetailsPageMoreButton;
         private ImageButton _animeDetailsPageTrailerButton;
         private RelativeLayout _animeDetailsPageVideoOverlay;
@@ -64,7 +52,6 @@ namespace MALClient.Android.Fragments
         private PagerSlidingTabStrip _animeDetailsPageTabStrip;
         private HeightAdjustingViewPager _animeDetailsPagePivot;
         private RelativeLayout _animeDetailsPageLoadingOverlay;
-        private ScrollableSwipeToRefreshLayout _animeDetailsPageSwipeRefresh;
         private TextView _animeDetailsPageTitle;
         private TextView _animeDetailsPageSubtitle;
         private TextView _animeDetailsPageScoreValue;
@@ -72,7 +59,9 @@ namespace MALClient.Android.Fragments
         private TextView _animeDetailsPageYearLabel;
         private Button _animeDetailsPageQuickAddToListButton;
         private Button _animeDetailsPageQuickFavoriteButton;
+        private ImageButton _animeDetailsPageRefreshButton;
         private LinearLayout _animeDetailsPageTitleSection;
+        private View _animeDetailsPageHeroScrim;
 
         public ImageViewAsync AnimeDetailsPageShowCoverImage => GetView(ref _animeDetailsPageShowCoverImage, Resource.Id.AnimeDetailsPageShowCoverImage);
 
@@ -82,35 +71,13 @@ namespace MALClient.Android.Fragments
 
         public AppBarLayout AnimeDetailsPageAppBar => GetView(ref _animeDetailsPageAppBar, Resource.Id.AnimeDetailsPageAppBar);
 
-        public FrameLayout AnimeDetailsPageCompactBar => GetView(ref _animeDetailsPageCompactBar, Resource.Id.AnimeDetailsPageCompactBar);
-
-        public ImageViewAsync AnimeDetailsPageCompactBlurredBackground => GetView(ref _animeDetailsPageCompactBlurredBackground, Resource.Id.AnimeDetailsPageCompactBlurredBackground);
-
-        public ImageViewAsync AnimeDetailsPageCompactShowCoverImage => GetView(ref _animeDetailsPageCompactShowCoverImage, Resource.Id.AnimeDetailsPageCompactShowCoverImage);
-
-        public FrameLayout AnimeDetailsPageCompactPosterContainer => GetView(ref _animeDetailsPageCompactPosterContainer, Resource.Id.AnimeDetailsPageCompactPosterContainer);
-
-        public TextView AnimeDetailsPageCompactTitle => GetView(ref _animeDetailsPageCompactTitle, Resource.Id.AnimeDetailsPageCompactTitle);
-
-        public TextView AnimeDetailsPageCompactScore => GetView(ref _animeDetailsPageCompactScore, Resource.Id.AnimeDetailsPageCompactScore);
-
-        public TextView AnimeDetailsPageCompactTypeBadge => GetView(ref _animeDetailsPageCompactTypeBadge, Resource.Id.AnimeDetailsPageCompactTypeBadge);
-
-        public TextView AnimeDetailsPageCompactYearLabel => GetView(ref _animeDetailsPageCompactYearLabel, Resource.Id.AnimeDetailsPageCompactYearLabel);
-
-        public TextView AnimeDetailsPageCompactEpisodesLabel => GetView(ref _animeDetailsPageCompactEpisodesLabel, Resource.Id.AnimeDetailsPageCompactEpisodesLabel);
-
-        public TextView AnimeDetailsPageCompactAiringBadge => GetView(ref _animeDetailsPageCompactAiringBadge, Resource.Id.AnimeDetailsPageCompactAiringBadge);
-
-        public TextView AnimeDetailsPageCompactStatus => GetView(ref _animeDetailsPageCompactStatus, Resource.Id.AnimeDetailsPageCompactStatus);
-
-        public FrameLayout AnimeDetailsPageCompactDecrementButton => GetView(ref _animeDetailsPageCompactDecrementButton, Resource.Id.AnimeDetailsPageCompactDecrementButton);
-
-        public FrameLayout AnimeDetailsPageCompactIncrementButton => GetView(ref _animeDetailsPageCompactIncrementButton, Resource.Id.AnimeDetailsPageCompactIncrementButton);
-
-        public Button AnimeDetailsPageCompactWatchedButton => GetView(ref _animeDetailsPageCompactWatchedButton, Resource.Id.AnimeDetailsPageCompactWatchedButton);
-
         public TextView AnimeDetailsPageAiringBadge => GetView(ref _animeDetailsPageAiringBadge, Resource.Id.AnimeDetailsPageAiringBadge);
+
+        public TextView AnimeDetailsPageAiringCountdown => GetView(ref _animeDetailsPageAiringCountdown, Resource.Id.AnimeDetailsPageAiringCountdown);
+
+        public LinearLayout AnimeDetailsPageLastAiredSection => GetView(ref _animeDetailsPageLastAiredSection, Resource.Id.AnimeDetailsPageLastAiredSection);
+
+        public TextView AnimeDetailsPageLastAiredValue => GetView(ref _animeDetailsPageLastAiredValue, Resource.Id.AnimeDetailsPageLastAiredValue);
 
         public TextView AnimeDetailsPageWatchedLabel => GetView(ref _animeDetailsPageWatchedLabel, Resource.Id.AnimeDetailsPageWatchedLabel);
 
@@ -136,8 +103,6 @@ namespace MALClient.Android.Fragments
 
         public ProgressBar AnimeDetailsPageLoadingUpdateSpinner => GetView(ref _animeDetailsPageLoadingUpdateSpinner, Resource.Id.AnimeDetailsPageLoadingUpdateSpinner);
 
-        public ImageButton AnimeDetailsPageFavouriteButton => GetView(ref _animeDetailsPageFavouriteButton, Resource.Id.AnimeDetailsPageFavouriteButton);
-
         public ImageButton AnimeDetailsPageMoreButton => GetView(ref _animeDetailsPageMoreButton, Resource.Id.AnimeDetailsPageMoreButton);
         public ImageButton AnimeDetailsPageTrailerButton => GetView(ref _animeDetailsPageTrailerButton, Resource.Id.AnimeDetailsPageTrailerButton);
         public RelativeLayout AnimeDetailsPageVideoOverlay => GetView(ref _animeDetailsPageVideoOverlay, Resource.Id.AnimeDetailsPageVideoOverlay);
@@ -149,8 +114,6 @@ namespace MALClient.Android.Fragments
         public HeightAdjustingViewPager AnimeDetailsPagePivot => GetView(ref _animeDetailsPagePivot, Resource.Id.AnimeDetailsPagePivot);
 
         public RelativeLayout AnimeDetailsPageLoadingOverlay => GetView(ref _animeDetailsPageLoadingOverlay, Resource.Id.AnimeDetailsPageLoadingOverlay);
-
-        public ScrollableSwipeToRefreshLayout AnimeDetailsPageSwipeRefresh => GetView(ref _animeDetailsPageSwipeRefresh, Resource.Id.AnimeDetailsPageSwipeRefresh);
 
         public TextView AnimeDetailsPageTitle => GetView(ref _animeDetailsPageTitle, Resource.Id.AnimeDetailsPageTitle);
 
@@ -166,7 +129,11 @@ namespace MALClient.Android.Fragments
 
         public Button AnimeDetailsPageQuickFavoriteButton => GetView(ref _animeDetailsPageQuickFavoriteButton, Resource.Id.AnimeDetailsPageQuickFavoriteButton);
 
+        public ImageButton AnimeDetailsPageRefreshButton => GetView(ref _animeDetailsPageRefreshButton, Resource.Id.AnimeDetailsPageRefreshButton);
+
         public LinearLayout AnimeDetailsPageTitleSection => GetView(ref _animeDetailsPageTitleSection, Resource.Id.AnimeDetailsPageTitleSection);
+
+        public View AnimeDetailsPageHeroScrim => GetView(ref _animeDetailsPageHeroScrim, Resource.Id.AnimeDetailsPageHeroScrim);
 
         #endregion
 

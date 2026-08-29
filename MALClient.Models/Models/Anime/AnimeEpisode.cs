@@ -18,5 +18,6 @@ namespace MALClient.Models.Models.Anime
         [JsonProperty("recap")] public bool Recap { get; set; }
         [JsonProperty("video_url")] public string VideoUrl { get; set; }
         [JsonProperty("forum_url")] public string ForumUrl { get; set; }
+        [JsonProperty("aired")] public DateTime? AiredDate { get; set; }
     }
 }

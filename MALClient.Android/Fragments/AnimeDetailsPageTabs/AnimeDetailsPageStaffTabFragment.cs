@@ -81,6 +81,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 this.SetBinding(() => ViewModel.LoadingCharactersVisibility,
                     () => AnimeDetailsPageCharactersTabLoadingSpinner.Visibility)
                     .ConvertSourceToTarget(Converters.BoolToVisibility));
+
+            ViewModel.LoadCharacters();
         }
 
         private Holder HolderFactory(ViewGroup parent, int viewtype, View view)

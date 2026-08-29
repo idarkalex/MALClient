@@ -253,7 +253,6 @@ namespace MALClient.Android.Fragments
 
                         AnimeListPageGridView.InjectAnimeListAdapterWithFooter(Context, ViewModel.AnimeGridItems, AnimeListDisplayModes.IndefiniteGrid, _loadMoreFooter, AnimeListPageGridViewOnItemClick);
                         _gridViewColumnHelper = new GridViewColumnHelper(AnimeListPageGridView, null, Settings.SqueezeOneMoreGridItem ? 3 : 2, 3);
-                        //if row is not full we have to make this footer item bigger in order to avoid cutting of last row of items
 
                         SwipeRefreshLayout.ScrollingView = AnimeListPageGridView;
 
@@ -271,11 +270,6 @@ namespace MALClient.Android.Fragments
                             AnimeListPageGridView.SetSelection(pos);
                             AnimeListPageGridView.RequestFocus();
                             _prevArgs = null;
-                        }
-
-                        if (ViewModel.AnimeGridItems.Count % _gridViewColumnHelper.LastColmuns != 0)
-                        {
-                            footerParam.Height = DimensionsHelper.DpToPx(315);
                         }
 
                         _loadMoreFooter.LayoutParameters = footerParam;
@@ -356,7 +350,7 @@ namespace MALClient.Android.Fragments
                     if (ViewModel.CanLoadMore)
                         _loadMoreFooter.Visibility = ViewStates.Visible;
                     else
-                        _loadMoreFooter.Visibility = ViewStates.Invisible;
+                        _loadMoreFooter.Visibility = ViewStates.Gone;
                 }
             });
            

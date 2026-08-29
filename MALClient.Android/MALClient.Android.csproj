@@ -791,12 +791,15 @@
     <AndroidResource Include="Resources\drawable\splash_darkmode.png" />
     <AndroidResource Include="Resources\drawable-night\splash.xml" />
     <AndroidResource Include="Resources\drawable\hero_gradient_overlay.xml" />
+    <AndroidResource Include="Resources\drawable\hero_collapse_scrim.xml" />
+    <AndroidResource Include="Resources\drawable\hero_title_scrim.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_panel.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_primary_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_type_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_airing_badge.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_countdown_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_sheet_top.xml" />
   </ItemGroup>
   <ItemGroup>

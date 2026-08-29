@@ -418,7 +418,7 @@ namespace MALClient.XShared.Utils
                 {
 
                     await
-                        DataCacheService.SaveData(data, $"related_anime_v2_{id}.json",
+                        DataCacheService.SaveData(data, $"related_anime_v3_{id}.json",
                             anime ? "AnimeDetails" : "MangaDetails");
                 });
             }
@@ -434,7 +434,7 @@ namespace MALClient.XShared.Utils
             {
                 return
                     await
-                        DataCacheService.RetrieveData<List<RelatedAnimeData>>($"related_anime_v2_{animeId}.json",
+                        DataCacheService.RetrieveData<List<RelatedAnimeData>>($"related_anime_v3_{animeId}.json",
                             anime ? "AnimeDetails" : "MangaDetails", 14);
             }
             catch (Exception)

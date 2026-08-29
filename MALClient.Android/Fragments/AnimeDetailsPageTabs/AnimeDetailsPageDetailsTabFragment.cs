@@ -15,6 +15,7 @@ using MALClient.Android.BindingConverters;
 using MALClient.Android.CollectionAdapters;
 using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
+using MALClient.Android.Fragments;
 using MALClient.Android.Resources;
 using MALClient.Models.Models.Anime;
 using MALClient.XShared.Utils;
@@ -111,9 +112,9 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                             AnimeDetailsPageDetailsTabOPsListLabel.Visibility = ViewStates.Visible;
 
                 AnimeDetailsPageDetailsTabOPsList.SetAdapter(
-                    ViewModel.OPs.GetAdapter(GetOpEdDetailTemplateDelegate));
+                    ViewModel.OPs.GetAdapter((i, s, v) => GetOpEdDetailTemplateDelegate(i, s, v, true)));
                 AnimeDetailsPageDetailsTabEDsList.SetAdapter(
-                    ViewModel.EDs.GetAdapter(GetOpEdDetailTemplateDelegate));
+                    ViewModel.EDs.GetAdapter((i, s, v) => GetOpEdDetailTemplateDelegate(i, s, v, false)));
             }
             else
             {
@@ -138,8 +139,16 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             var seq = AnimeThemesHelper.ParseSequence(s);
             var title = ViewModelLocator.AnimeDetails.Title;
             var searchQuery = BuildOpEdSearchQuery(s);
-            global::Android.Util.Log.Info("MALPlus", $"PlayOpEdTheme: seq={seq} isOp={isOp} query={searchQuery} title={title}");
+            var songName = ExtractOpEdSong(s);
+            global::Android.Util.Log.Info("MALPlus", $"PlayOpEdTheme: seq={seq} isOp={isOp} query={searchQuery} song={songName} title={title}");
             DiagnosticsReporter.Info("OP/ED", $"click: seq={seq} isOp={isOp} query=\"{searchQuery}\" title=\"{title}\"");
+
+            // Show the video overlay immediately so the tap feels instant while resolving the source
+            Activity?.RunOnUiThread(() =>
+            {
+                if (Activity == null || Activity.IsFinishing) return;
+                (ParentFragment as AnimeDetailsPageFragment)?.ShowVideoLoading();
+            });
 
             Task.Run(async () =>
             {
@@ -152,7 +161,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     global::Android.Util.Log.Info("MALPlus", $"AnimeThemes search: {videos.Count} videos for '{title}'");
                     foreach (var v in videos)
                         global::Android.Util.Log.Info("MALPlus", $"  AT: {v.Type}{v.Sequence} -> {v.Url}");
-                    var match = AnimeThemesHelper.FindMatch(videos, isOp, seq, searchQuery);
+                    var match = AnimeThemesHelper.FindMatch(videos, isOp, seq, searchQuery, songName);
                     DiagnosticsReporter.Info("OP/ED", $"AnimeThemes: {videos.Count} videos, match={(match?.Url ?? "null")}");
 
                     if (!string.IsNullOrEmpty(match?.Url))
@@ -184,8 +193,11 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     DiagnosticsReporter.Warn("OP/ED", "no match, opening external");
                     if (Activity == null || Activity.IsFinishing) return;
                     Activity.RunOnUiThread(() =>
+                    {
+                        (ParentFragment as AnimeDetailsPageFragment)?.HideVideoLoading();
                         ResourceLocator.SystemControlsLauncherService.LaunchUri(
-                            new Uri($"https://www.youtube.com/results?search_query={WebUtility.UrlEncode(searchQuery)}")));
+                            new Uri($"https://www.youtube.com/results?search_query={WebUtility.UrlEncode(searchQuery)}"));
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -211,12 +223,19 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             return Regex.Replace(query, @"\s+", " ");
         }
 
-        private View GetOpEdDetailTemplateDelegate(int i, string s, View arg3)
+        private static string ExtractOpEdSong(string opEdText)
+        {
+            if (string.IsNullOrEmpty(opEdText)) return "";
+            var songMatch = Regex.Match(opEdText, @"""\s*([^""]+?)\s*(?:\([^)]*\))?\s*""");
+            return songMatch.Success ? songMatch.Groups[1].Value.Trim() : "";
+        }
+
+        private View GetOpEdDetailTemplateDelegate(int i, string s, View arg3, bool isOp)
         {
             var view = Activity.LayoutInflater.Inflate(Resource.Layout.OpEdItemView, null);
             view.FindViewById<TextView>(Resource.Id.GenreItemTextView).Text = s;
 
-            view.SetOnClickListener(new OnClickListener(v => PlayOpEdTheme(s, ViewModel.OPs.Contains(s))));
+            view.SetOnClickListener(new OnClickListener(v => PlayOpEdTheme(s, isOp)));
 
             view.FindViewById(Resource.Id.MoreButton).SetOnClickListener(new OnClickListener(v =>
             {
@@ -231,7 +250,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                 {
                     if (item.ItemId == 0)
                     {
-                        PlayOpEdTheme(s, ViewModel.OPs.Contains(s));
+                        PlayOpEdTheme(s, isOp);
                     }
                     else if(item.ItemId == 1)
                     {

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using Android.App;
 using Android.OS;
@@ -24,6 +26,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
     {
         private readonly AnimeDetailsPageViewModel ViewModel;
         private global::Android.Widget.PopupMenu _epPopupMenu;
+        private readonly NotifyCollectionChangedEventHandler _episodesChangedHandler;
 
         private RecyclerView _animeDetailsPageEpisodesTabList;
         private RelativeLayout _animeDetailsPageEpisodesTabLoadingOverlay;
@@ -35,9 +38,30 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private AnimeDetailsPageEpisodesTabFragment()
         {
             ViewModel = ViewModelLocator.AnimeDetails;
+            _episodesChangedHandler = OnEpisodesChanged;
         }
 
         public override int LayoutResourceId => Resource.Layout.AnimeDetailsPageEpisodesTab;
+
+        public override void OnDestroy()
+        {
+            ViewModel.Episodes.CollectionChanged -= _episodesChangedHandler;
+            base.OnDestroy();
+        }
+
+        private void OnEpisodesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (ViewModel.LoadingDetails)
+                return;
+            try
+            {
+                BindEpisodes();
+            }
+            catch (Exception ex)
+            {
+                MainActivity.WriteCrashLog("EpisodesTab bind (Episodes changed)", ex);
+            }
+        }
 
         public static AnimeDetailsPageEpisodesTabFragment Instance => new AnimeDetailsPageEpisodesTabFragment();
 
@@ -66,6 +90,10 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     MainActivity.WriteCrashLog("EpisodesTab bind", ex);
                 }
             }));
+
+            ViewModel.Episodes.CollectionChanged += _episodesChangedHandler;
+
+            ViewModel.LoadEpisodes();
 
             Bindings.Add(this.SetBinding(() => ViewModel.MyEpisodes).WhenSourceChanges(() =>
             {
@@ -161,6 +189,16 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             {
                 holder.EpisodeNote.Visibility = ViewStates.Gone;
             }
+
+            if (ep.AiredDate.HasValue)
+            {
+                holder.EpisodeDate.Visibility = ViewStates.Visible;
+                holder.EpisodeDate.Text = ep.AiredDate.Value.ToString("MMM d, yyyy", CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                holder.EpisodeDate.Visibility = ViewStates.Gone;
+            }
         }
 
         class EpHolder : RecyclerView.ViewHolder
@@ -177,12 +215,14 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             private View _tickIcon;
             private View _moreButton;
             private TextView _episodeNote;
+            private TextView _episodeDate;
 
             public TextView EpisodeCount => _episodeCount ?? (_episodeCount = _view.FindViewById<TextView>(Resource.Id.EpisodeCount));
             public TextView EpisodeName => _episodeName ?? (_episodeName = _view.FindViewById<TextView>(Resource.Id.EpisodeName));
             public View TickIcon => _tickIcon ?? (_tickIcon = _view.FindViewById(Resource.Id.TickIcon));
             public View MoreButton => _moreButton ?? (_moreButton = _view.FindViewById(Resource.Id.MoreButton));
             public TextView EpisodeNote => _episodeNote ?? (_episodeNote = _view.FindViewById<TextView>(Resource.Id.EpisodeNote));
+            public TextView EpisodeDate => _episodeDate ?? (_episodeDate = _view.FindViewById<TextView>(Resource.Id.EpisodeDate));
         }
     }
 }

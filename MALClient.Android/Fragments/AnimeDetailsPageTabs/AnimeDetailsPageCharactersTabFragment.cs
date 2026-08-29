@@ -74,6 +74,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     () => AnimeDetailsPageCharactersTabLoadingSpinner.Visibility)
                     .ConvertSourceToTarget(Converters.BoolToVisibility));
 
+            ViewModel.LoadCharacters();
+
             SetUpForOrientation(Activity.Resources.Configuration.Orientation);
         }
 

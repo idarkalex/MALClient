@@ -260,6 +260,9 @@ namespace MALClient.Android.Activities
             }
             _drawer = builder.Build();
 
+            // Sidebar (hamburger drawer) disabled: don't let it open from the left edge.
+            _drawer.DrawerLayout.SetDrawerLockMode(global::Android.Support.V4.Widget.DrawerLayout.LockModeLockedClosed);
+
             UpdateLogInLabel();
             _drawer.StickyFooter.SetBackgroundColor(new Color(Settings.SelectedTheme == 1
                 ? ResourceExtension.BrushAnimeItemInnerBackground

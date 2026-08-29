@@ -55,12 +55,14 @@ namespace MALClient.XShared.Comm.Anime
                         var current = new DirectRecommendationData();
 
                         var tds = recommNode.Descendants("td").Take(2).ToList();
-                        var img = tds[0].Descendants("img").First().Attributes["data-src"].Value;
-                        if (!img.Contains("questionmark"))
-                        {
-                            img = Regex.Replace(img, @"\/r\/\d+x\d+", "");
-                            current.ImageUrl = img.Substring(0, img.IndexOf('?'));
-                        }
+                         var img = tds[0].Descendants("img").First().Attributes["data-src"].Value;
+                         if (!img.Contains("questionmark"))
+                         {
+                             img = Regex.Replace(img, @"\/r\/\d+x\d+", "");
+                             var qPos = img.IndexOf('?');
+                             if (qPos > 0) img = img.Substring(0, qPos);
+                             current.ImageUrl = img;
+                         }
                         current.Description = WebUtility.HtmlDecode(tds[1].Descendants("div").First(
                             node =>
                                 node.Attributes.Contains("class") &&

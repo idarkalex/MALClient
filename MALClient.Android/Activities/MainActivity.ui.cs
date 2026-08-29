@@ -194,23 +194,68 @@ namespace MALClient.Android.Activities
 
         private void ShowStatusFilterFlyout(bool isManga, View anchorView)
         {
-            var currentStatus = isManga
-                ? (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus
-                : (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus;
+            var currentStatus = (AnimeStatus)ViewModelLocator.AnimeList.CurrentStatus;
 
-            _bottomNavFilterMenu = AnimeListPageFlyoutBuilder.BuildForAnimeStatusSelection(
-                this, anchorView, status =>
+            var container = new LinearLayout(this)
+            {
+                Orientation = Orientation.Vertical,
+                LayoutParameters = new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
+            };
+            container.SetBackgroundResource(Resource.Drawable.electric_midnight_sheet_top);
+            container.SetPadding(0, DimensionsHelper.DpToPx(20), 0, DimensionsHelper.DpToPx(16));
+
+            var title = new TextView(this)
+            {
+                Text = isManga ? "READING STATUS" : "FILTER STATUS",
+                TextSize = 12
+            };
+            title.SetAllCaps(true);
+            title.LetterSpacing = 0.08f;
+            title.Typeface = Typeface.Create("Inter", TypefaceStyle.Bold);
+            title.SetTextColor(new Color(ResourceExtension.BrushText));
+            title.Gravity = GravityFlags.Center;
+            title.SetPadding(DimensionsHelper.DpToPx(24), 0, DimensionsHelper.DpToPx(24), DimensionsHelper.DpToPx(12));
+            container.AddView(title);
+
+            var selectedIdx = Array.IndexOf(System.Enum.GetValues(typeof(AnimeStatus)), currentStatus);
+            int i = 0;
+            foreach (AnimeStatus value in System.Enum.GetValues(typeof(AnimeStatus)))
+            {
+                var statusIndex = i++;
+                bool isSelected = statusIndex == selectedIdx;
+                AnimeListPageFlyoutBuilder.ParamRelativeLayout =
+                    new ViewGroup.LayoutParams(-1, DimensionsHelper.DpToPx(48));
+                var item = AnimeListPageFlyoutBuilder.BuildBaseItem(this,
+                    XShared.Utils.Utilities.StatusToString((int)value, isManga),
+                    background: isSelected ? (int?)ResourceExtension.BrushSelectedDialogItem : null,
+                    foreground: isSelected ? (int?)ResourceExtension.AccentColour : null,
+                    gravity: GravityFlags.Center);
+                item.Click += (sender, args) =>
                 {
-                    if (_bottomNavFilterMenu == null) return;
                     var workMode = isManga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
-                    var statusIndex = Array.IndexOf(System.Enum.GetValues(typeof(AnimeStatus)), status);
                     ViewModel.Navigate(PageIndex.PageAnimeList,
                         new AnimeListPageNavigationArgs(statusIndex, workMode));
-                    _bottomNavFilterMenu.Dismiss(true);
-                    _bottomNavFilterMenu = null;
-                },
-                currentStatus, isManga);
-            _bottomNavFilterMenu.Show();
+                };
+                container.AddView(item);
+            }
+
+            var screenWidth = Resources.DisplayMetrics.WidthPixels;
+            var screenHeight = Resources.DisplayMetrics.HeightPixels;
+            container.Measure(
+                View.MeasureSpec.MakeMeasureSpec(screenWidth, MeasureSpecMode.Exactly),
+                View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+            var popupHeight = container.MeasuredHeight;
+
+            // position the sheet so its bottom edge sits just above the fixed bottom bar
+            var bottomBarHeight = MainPageBottomNav.Height > 0
+                ? MainPageBottomNav.Height
+                : DimensionsHelper.DpToPx(56);
+
+            var popup = new PopupWindow(container, screenWidth, popupHeight, true);
+            popup.SetBackgroundDrawable(null);
+            popup.AnimationStyle = global::Android.Resource.Style.AnimationDialog;
+            popup.ShowAtLocation(MainPageBottomNav, GravityFlags.Bottom, 0, bottomBarHeight);
         }
 
         private void OnUpperFlyoutStatusChanged(AnimeStatus animeStatus)

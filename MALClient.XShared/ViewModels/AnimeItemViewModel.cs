@@ -1323,7 +1323,7 @@ namespace MALClient.XShared.ViewModels
                     return;
                 }
                 ResourceLocator.MessageDialogProvider.ShowMessageDialogWithInput($"From : {MyEpisodesFocused}\nTo : {to}",
-                    $"Would you like to change {(ParentAbstraction.RepresentsAnime ? "watched episodes" : $"{"read " +(Settings.MangaFocusVolumes ? "volumes" : "chapters")}") } value?", "Yes", "No", updateAction);
+                    $"Would you like to change {(ParentAbstraction.RepresentsAnime ? "EPISODES" : $"{"read " +(Settings.MangaFocusVolumes ? "volumes" : "chapters")}") } value?", "Yes", "No", updateAction);
             }
             catch (Exception)
             {

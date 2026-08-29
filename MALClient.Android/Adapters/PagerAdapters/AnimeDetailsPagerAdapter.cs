@@ -112,7 +112,7 @@ namespace MALClient.Android.PagerAdapters
                     _viewModel.LoadDetails();
                     break;
                 case 2:
-                    _viewModel.LoadDetails();
+                    _viewModel.LoadEpisodes();
                     break;
                 case 3:
                     _viewModel.LoadReviews();

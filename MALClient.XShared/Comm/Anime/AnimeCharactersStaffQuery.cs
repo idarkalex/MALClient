@@ -48,16 +48,20 @@ namespace MALClient.XShared.Comm.Anime
                 var structured = await GetCharStaffDataStructuredAsync();
                 if (structured != null && (structured.AnimeCharacterPairs.Count > 0 || structured.AnimeStaff.Count > 0))
                 {
+                    DiagnosticsReporter.Info("Characters", $"structured API: {structured.AnimeCharacterPairs.Count} pairs, {structured.AnimeStaff.Count} staff for anime {_animeId}");
                     DataCache.SaveData(structured, $"staff_{_animeId}", "AnimeDetails");
                     return structured;
                 }
+                DiagnosticsReporter.Warn("Characters", $"structured API returned empty for anime {_animeId}, falling back to HTML");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // fall back to html scraping below
+                DiagnosticsReporter.Error("Characters", $"structured API failed for anime {_animeId}, falling back to HTML", ex);
             }
 
-            return await GetCharStaffDataHtml(output);
+            var htmlResult = await GetCharStaffDataHtml(output);
+            DiagnosticsReporter.Info("Characters", $"HTML scrape: {htmlResult.AnimeCharacterPairs.Count} pairs, {htmlResult.AnimeStaff.Count} staff for anime {_animeId}");
+            return htmlResult;
         }
 
         private async Task<AnimeStaffData> GetCharStaffDataStructuredAsync()
@@ -203,7 +207,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             var notes = role ?? "";
             if (favorites > 0)
-                notes = string.IsNullOrEmpty(notes) ? $"{favorites:N0} favorites" : $"{notes} · {favorites:N0} favorites";
+                notes = string.IsNullOrEmpty(notes) ? $"{favorites:N0} favorites" : $"{notes} ï¿½ {favorites:N0} favorites";
             return notes;
         }
 

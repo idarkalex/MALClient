@@ -73,6 +73,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
             AnimeDetailsPageRelatedTabsList.SetLayoutManager(new LinearLayoutManager(Activity));
             AnimeDetailsPageRelatedTabsList.AddOnScrollListener(new CustomScrollListener());
+
+            ViewModel.LoadRelatedAnime();
         }
 
         private void BindRelated(RelatedAnimeData data, RelatedHolder holder, int position)
@@ -85,16 +87,16 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             var img = holder.Image;
             if (!string.IsNullOrEmpty(data.ImgUrl))
             {
-                if (!img.IntoIfLoaded(data.ImgUrl))
-                    img.Visibility = ViewStates.Invisible;
+                img.Visibility = ViewStates.Visible;
+                img.Into(data.ImgUrl);
             }
             else
             {
                 string link = null;
                 if (AnimeImageQuery.IsCached(data.Id, data.Type == RelatedItemType.Anime, ref link))
                 {
-                    if (!img.IntoIfLoaded(link))
-                        img.Visibility = ViewStates.Invisible;
+                    img.Visibility = ViewStates.Visible;
+                    img.Into(link);
                 }
                 else
                 {

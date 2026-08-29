@@ -67,6 +67,7 @@ namespace MALClient.XShared.ViewModels.Details
 
         //loaded fields
         private bool _loadedDetails;
+        private bool _loadedEpisodes;
         private bool _loadedRecomm;
         private bool _loadedRelated;
         private bool _loadedReviews;
@@ -80,6 +81,7 @@ namespace MALClient.XShared.ViewModels.Details
         private List<string> _synonyms = new List<string>(); //used to increase ann's search reliability
         private bool _animeMode;
         private bool _loadedCharacters;
+        private string _broadcast = "";
 
         public AnimeDetailsPageViewModel(IClipboardProvider clipboardProvider,
             ISystemControlsLauncherService systemControlsLauncherService, IAnimeLibraryDataStorage animeLibraryDataStorage, IAiringNotificationsAdapter airingNotificationsAdapter)
@@ -104,6 +106,70 @@ namespace MALClient.XShared.ViewModels.Details
         public string Title { get; set; }
         public string Type { get; private set; }
         public string Status { get; private set; }
+
+        public string TimeTillNextAir
+        {
+            get
+            {
+                var now = DateTime.UtcNow;
+
+                if (!string.IsNullOrEmpty(_broadcast))
+                {
+                    var nextAir = ComputeNextAirDate(_broadcast, now);
+                    if (nextAir.HasValue)
+                        return FormatAirCountdown(nextAir.Value, now);
+                }
+
+                var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
+                if (nextFromEpisodes.HasValue)
+                    return FormatAirCountdown(nextFromEpisodes.Value, now);
+
+                if (_animeItemReference is AnimeItemViewModel vm)
+                {
+                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(vm.ParentAbstraction.MalId, now, out DateTime airDate) &&
+                        now < airDate)
+                    {
+                        return FormatAirCountdown(airDate, now);
+                    }
+                }
+                return "";
+            }
+        }
+
+        private static string FormatAirCountdown(DateTime airDate, DateTime now)
+        {
+            var diff = airDate - now;
+            if (diff.TotalSeconds <= 0)
+                return "";
+            if (diff.TotalDays >= 1)
+                return $"{(int)diff.TotalDays}D";
+            if (diff.TotalHours >= 1)
+                return $"{(int)diff.TotalHours}H";
+            return $"{(int)diff.TotalMinutes}M";
+        }
+
+        public string LastAired { get; private set; } = "";
+
+        private void UpdateLastAired()
+        {
+            var last = Episodes
+                .Where(ep => ep.AiredDate.HasValue)
+                .OrderBy(ep => ep.AiredDate.Value)
+                .LastOrDefault();
+            if (last == null)
+            {
+                LastAired = "";
+            }
+            else
+            {
+                var ep = last.EpisodeId > 0
+                    ? last.EpisodeId
+                    : Episodes.IndexOf(last) + 1;
+                LastAired = $"EP {ep} - {last.AiredDate.Value.ToString("d MMM", CultureInfo.InvariantCulture)}";
+            }
+            RaisePropertyChanged(() => LastAired);
+        }
+
         //Dates when show starts or ends airing
         public string StartDate { get; private set; }
         public string EndDate { get; private set; }
@@ -260,10 +326,15 @@ namespace MALClient.XShared.ViewModels.Details
             var sameEntry = _animeItemReference != null && param.AnimeItem != null &&
                             _animeItemReference.Id == param.AnimeItem.Id && AnimeMode == param.AnimeMode;
             if (!sameEntry)
-                _loadedDetails = _loadedReviews = _loadedRecomm = _loadedRelated = _loadedVideos = _loadedCharacters = false;
+            {
+                _loadedDetails = _loadedEpisodes = _loadedReviews = _loadedRecomm = _loadedRelated = _loadedVideos = _loadedCharacters = false;
+                LastAired = "";
+                RaisePropertyChanged(() => LastAired);
+            }
 
             //basic init assignment
             _animeItemReference = param.AnimeItem;
+            RaisePropertyChanged(() => TimeTillNextAir);
             AnimeMode = param.AnimeMode;
             Id = param.Id;
             Title = param.Title;
@@ -289,11 +360,15 @@ namespace MALClient.XShared.ViewModels.Details
             //favs
             IsFavourite = FavouritesManager.IsFavourite(AnimeMode ? FavouriteType.Anime : FavouriteType.Manga,
                 Id.ToString());
-            //staff
-            CharactersGridVisibility = MangaCharacterGridVisibility = false;
-            LoadCharactersButtonVisibility = true;
-            AnimeStaffData = null;
-            MangaCharacterData = null;
+            //staff - only wipe for a DIFFERENT entry; back-nav to the same entry keeps
+            //the already-loaded data so the Characters/Staff tabs don't go blank.
+            if (!sameEntry)
+            {
+                CharactersGridVisibility = MangaCharacterGridVisibility = false;
+                LoadCharactersButtonVisibility = true;
+                AnimeStaffData = null;
+                MangaCharacterData = null;
+            }
             //so there will be no floting start/end dates
             MyDetailsVisibility = false;
             StartDateValid = false;
@@ -304,8 +379,8 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 Status1Label = "Watching";
                 Status5Label = "Plan to watch";
-                WatchedEpsLabel = "Watched\nepisodes";
-                UpdateEpsUpperLabel = "Watched\nepisodes";
+                WatchedEpsLabel = "EPISODES";
+                UpdateEpsUpperLabel = "EPISODES";
                 if (_animeItemReference is AnimeItemViewModel vm)
                 {
                     if (!vm.Auth || !vm.Airing || vm.AllEpisodes <= 0)
@@ -380,7 +455,7 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 case PageIndex.PageSearch:
                 case PageIndex.PageMangaSearch:
-                    await FetchData(false, param.Source);
+                    await FetchData(false, param.Source, !sameEntry);
                     if (PrevArgs != null)
                         ViewModelLocator.NavMgr.RegisterBackNav(PrevArgs);
                     ViewModelLocator.NavMgr.RegisterBackNav(param.Source, param.PrevPageSetup);
@@ -399,14 +474,14 @@ namespace MALClient.XShared.ViewModels.Details
                 case PageIndex.PageClubDetails:
                 case PageIndex.PageSearchEverywhere:
                 case PageIndex.PageDiscover:
-                    await FetchData(false, param.Source);
+                    await FetchData(false, param.Source, !sameEntry);
                     if (PrevArgs != null)
                         ViewModelLocator.NavMgr.RegisterBackNav(PrevArgs);
                     if (ViewModelLocator.Mobile || (!ViewModelLocator.Mobile && param.Source != PageIndex.PageProfile && param.Source != PageIndex.PageClubDetails))
                         ViewModelLocator.NavMgr.RegisterBackNav(param.Source, param.PrevPageSetup);
                     break;
                 case PageIndex.PageAnimeDetails:
-                    await FetchData();
+                    await FetchData(false, param.Source, clearEnrichment: !sameEntry);
                     if (param.RegisterBackNav) //we are already going back
                     {
                         ViewModelLocator.NavMgr.RegisterBackNav(param.PrevPageSetup as AnimeDetailsPageNavigationArgs);
@@ -415,11 +490,11 @@ namespace MALClient.XShared.ViewModels.Details
                 case PageIndex.PageRecomendations:
                     if (param.AnimeElement != null)
                     {
-                        ExtractData(param.AnimeElement);
+                        ExtractData(param.AnimeElement, !sameEntry);
                     }
                     else
                     {
-                        await FetchData();
+                        await FetchData(false, param.Source, clearEnrichment: !sameEntry);
                     }
 
                     if (PrevArgs != null)
@@ -430,7 +505,7 @@ namespace MALClient.XShared.ViewModels.Details
                 case PageIndex.PageFeeds:
                     if (PrevArgs != null)
                         ViewModelLocator.NavMgr.RegisterBackNav(PrevArgs);
-                    await FetchData(false, param.Source);
+                    await FetchData(false, param.Source, !sameEntry);
                     break;
             }
 
@@ -1031,7 +1106,7 @@ namespace MALClient.XShared.ViewModels.Details
 
         #region FetchAndPopulate
 
-        private void PopulateData()
+        private void PopulateData(bool clearEnrichment = true)
         {
             //purge scraped data possibly left over from the previously viewed entry
             LeftGenres.Clear();
@@ -1040,10 +1115,13 @@ namespace MALClient.XShared.ViewModels.Details
             Stats.Clear();
             OPs.Clear();
             EDs.Clear();
-            Episodes.Clear();
-            Reviews.Clear();
-            Recommendations.Clear();
-            RelatedAnime.Clear();
+
+            if (clearEnrichment)
+            {
+                Reviews.Clear();
+                Recommendations.Clear();
+                RelatedAnime.Clear();
+            }
 
             var model = _animeItemReference as AnimeItemViewModel;
             if (model != null && AnimeMode)
@@ -1166,7 +1244,7 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        private void ExtractData(AnimeGeneralDetailsData data)
+        private void ExtractData(AnimeGeneralDetailsData data, bool clearEnrichment = true)
         {
             Title = _animeItemReference?.Title ?? data.Title;
             Type = NormalizeMediaType(data.Type);
@@ -1185,6 +1263,8 @@ namespace MALClient.XShared.ViewModels.Details
             _imgUrl = NormalizeImageUrl((_animeItemReference as AnimeItemViewModel)?.ImgUrl ?? data.ImgUrl);
             if (Settings.SelectedApiType == ApiType.Hummingbird)
                 MalId = data.MalId;
+
+            _broadcast = data.Broadcast ?? "";
 
             RaisePropertyChanged(() => Type);
             RaisePropertyChanged(() => StartYear);
@@ -1208,10 +1288,10 @@ namespace MALClient.XShared.ViewModels.Details
 
 
 
-            PopulateData();
+            PopulateData(clearEnrichment);
         }
 
-        private async Task FetchData(bool force = false, PageIndex? sourcePage = null)
+        private async Task FetchData(bool force = false, PageIndex? sourcePage = null, bool clearEnrichment = true)
         {
 
             LoadingGlobal = true;
@@ -1226,7 +1306,7 @@ namespace MALClient.XShared.ViewModels.Details
                                     ? (ApiType?) ApiType.Mal
                                     : null
                                 : null);
-                ExtractData(data);
+                ExtractData(data, clearEnrichment);
             }
             catch (Exception e)
             {
@@ -1234,17 +1314,21 @@ namespace MALClient.XShared.ViewModels.Details
                 LoadingGlobal = false;
                 // no internet?              
             }
+
         }
 
         public async void RefreshData()
         {
             await FetchData(true);
             LoadDetails(true);
-            LoadReviews(true);
-            LoadRecommendations(true);
-            LoadRelatedAnime(true);
-            if(_loadedCharacters)
-                LoadCharacters(true);
+            // Reload the decoupled tabs serialized so the global Tenrai rate limiter
+            // (1 request at a time) is not saturated.
+            try { await LoadEpisodes(true); } catch { }
+            try { await LoadRecommendations(true); } catch { }
+            try { await LoadRelatedAnime(true); } catch { }
+            try { await LoadReviews(true); } catch { }
+            if (_loadedCharacters)
+                try { await LoadCharacters(true); } catch { }
         }
 
         public event EmptyEventHander OnDetailsLoaded;
@@ -1278,22 +1362,30 @@ namespace MALClient.XShared.ViewModels.Details
                 LoadingDetails = false;
             }
 
-            // Prefetch the remaining tabs in the background so they are already
-            // populated when the user reaches them.
-            Task.Run(async () =>
-            {
-                try
-                {
-                    LoadReviews();
-                    LoadRelatedAnime();
-                    LoadRecommendations();
-                    LoadCharacters();
-                }
-                catch
-                {
-                    // prefetch is best-effort; tab selection retries anyway
-                }
-            });
+            // Prefetch the remaining tabs in the background, serialized so the
+            // global Tenrai rate limiter (1 request at a time) is not saturated.
+            // Priority order: Episodes > Recomms > Related > Reviews > Characters(+Staff).
+            // Selecting a tab forces its own load (TabSelected) independently.
+            // NOTE: runs on the UI thread (LoadDetails is invoked from the UI thread),
+            // NOT inside Task.Run. The tab fragments re-bind via MvvmLight
+            // WhenSourceChanges(LoadingX) / CollectionChanged, which only work when the
+            // LoadingX/collection notifications fire on the UI thread. A background
+            // prefetch left every post-Details tab blank because those handlers then
+            // touched the UI from a pool thread.
+            _ = PrefetchRemainingTabs();
+        }
+
+        private async Task PrefetchRemainingTabs()
+        {
+            // Each load is wrapped in its own try/catch so one failure (e.g. a Tenrai
+            // 429/timeout throwing out of the query) does not abort the remaining
+            // serialized loads. Serialization keeps the global rate limiter from being
+            // saturated; the awaits yield the UI thread between each tab.
+            try { await LoadEpisodes(); } catch { }
+            try { await LoadRecommendations(); } catch { }
+            try { await LoadRelatedAnime(); } catch { }
+            try { await LoadReviews(); } catch { }
+            try { await LoadCharacters(); } catch { }
         }
 
         private async Task LoadDetailsCoreAsync(bool force)
@@ -1304,7 +1396,6 @@ namespace MALClient.XShared.ViewModels.Details
             Stats.Clear();
             OPs.Clear();
             EDs.Clear();
-            Episodes.Clear();
             var data = await new AnimeDetailsMalQuery(MalId, AnimeMode).GetDetails(force);
             if (data == null)
             {
@@ -1466,21 +1557,40 @@ namespace MALClient.XShared.ViewModels.Details
             }
 
 
-            if (AnimeMode)
-            {
-                var episodes = await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
-
-                if (episodes?.Any() ?? false)
-                    Episodes.AddRange(episodes);
-            }
-
             RaisePropertyChanged(() => AnimeMode);
             OnDetailsLoaded?.Invoke();
         }
 
-        public async void LoadReviews(bool force = false)
+        public async Task LoadEpisodes(bool force = false)
         {
-            if (LoadingReviews == true || (_loadedReviews && !force))
+            if (!AnimeMode) return;
+            if (LoadingEpisodes || (_loadedEpisodes && !force && Episodes.Count > 0)) return;
+            LoadingEpisodes = true;
+            try
+            {
+                var episodes = await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
+                if (episodes != null)
+                {
+                    Episodes.Clear();
+                    Episodes.AddRange(episodes);
+                    _loadedEpisodes = true;
+                    UpdateLastAired();
+                    RaisePropertyChanged(() => TimeTillNextAir);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("Details", $"LoadEpisodes failed for anime {MalId} (animeMode={AnimeMode})", ex);
+            }
+            finally
+            {
+                LoadingEpisodes = false;
+            }
+        }
+
+        public async Task LoadReviews(bool force = false)
+        {
+            if (LoadingReviews == true || (_loadedReviews && !force && Reviews.Any()))
                 return;
             LoadingReviews = true;
             try
@@ -1490,13 +1600,19 @@ namespace MALClient.XShared.ViewModels.Details
                 await Task.Run(async () => revs = await new AnimeReviewsQuery(MalId, AnimeMode).GetAnimeReviews(force));
                 if (revs == null)
                 {
+                    DiagnosticsReporter.Warn("Details", $"reviews: null result for anime {MalId}");
                     NoReviewsDataNoticeVisibility = true;
                     return;
                 }
                 _loadedReviews = true;
                 foreach (var rev in revs)
                     Reviews.Add(rev);
+                DiagnosticsReporter.Info("Details", $"reviews: loaded {revs.Count} items for anime {MalId}");
                 NoReviewsDataNoticeVisibility = Reviews.Count <= 0;
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("Details", $"LoadReviews failed for anime {MalId} (animeMode={AnimeMode})", ex);
             }
             finally
             {
@@ -1504,9 +1620,9 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        public async void LoadRecommendations(bool force = false)
+        public async Task LoadRecommendations(bool force = false)
         {
-            if (LoadingRecommendations || (_loadedRecomm && !force))
+            if (LoadingRecommendations || (_loadedRecomm && !force && Recommendations.Any()))
                 return;
             LoadingRecommendations = true;
             try
@@ -1520,12 +1636,18 @@ namespace MALClient.XShared.ViewModels.Details
                                 await new AnimeDirectRecommendationsQuery(MalId, AnimeMode).GetDirectRecommendations(force));
                 if (recomm == null)
                 {
+                    DiagnosticsReporter.Warn("Details", $"recommendations: null result for anime {MalId}");
                     NoRecommDataNoticeVisibility = true;
                     return;
                 }
                 _loadedRecomm = true;
                 Recommendations.AddRange(recomm);
+                DiagnosticsReporter.Info("Details", $"recommendations: loaded {recomm.Count} items for anime {MalId}");
                 NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("Details", $"LoadRecommendations failed for anime {MalId} (animeMode={AnimeMode})", ex);
             }
             finally
             {
@@ -1533,9 +1655,9 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        public async void LoadRelatedAnime(bool force = false)
+        public async Task LoadRelatedAnime(bool force = false)
         {
-            if (LoadingRelated || (_loadedRelated && !force))
+            if (LoadingRelated || (_loadedRelated && !force && RelatedAnime.Any()))
                 return;
             LoadingRelated = true;
             try
@@ -1545,13 +1667,19 @@ namespace MALClient.XShared.ViewModels.Details
                 await Task.Run(async () => related = await new AnimeRelatedQuery(MalId, AnimeMode).GetRelatedAnime(force));
                 if (related == null)
                 {
+                    DiagnosticsReporter.Warn("Details", $"related: null result for anime {MalId} (animeMode={AnimeMode})");
                     NoRelatedDataNoticeVisibility = true;
                     return;
                 }
                 _loadedRelated = true;
                 foreach (var item in related)
                     RelatedAnime.Add(item);
+                DiagnosticsReporter.Info("Details", $"related: loaded {related.Count} items for anime {MalId}");
                 NoRelatedDataNoticeVisibility = RelatedAnime.Count <= 0;
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("Details", $"LoadRelatedAnime failed for anime {MalId} (animeMode={AnimeMode})", ex);
             }
             finally
             {
@@ -1560,8 +1688,10 @@ namespace MALClient.XShared.ViewModels.Details
         }
    
 
-        public async void LoadCharacters(bool force = false)
+        public async Task LoadCharacters(bool force = false)
         {
+            if (_loadedCharacters && !force && MalId > 0 && AnimeStaffData != null)
+                return;
             LoadingCharactersVisibility = true;
             LoadCharactersButtonVisibility = false;
             try
@@ -1572,6 +1702,9 @@ namespace MALClient.XShared.ViewModels.Details
                         new AnimeStaffDataViewModels(
                             await new AnimeCharactersStaffQuery(MalId, AnimeMode).GetCharStaffData(force));
                     _loadedCharacters = true;
+                    var pairCount = AnimeStaffData?.AnimeCharacterPairs?.Count ?? 0;
+                    var staffCount = AnimeStaffData?.AnimeStaff?.Count ?? 0;
+                    DiagnosticsReporter.Info("Details", $"characters loaded: {pairCount} pairs, {staffCount} staff for anime {MalId}");
                     CharactersGridVisibility = true;
                 }
                 else
@@ -1584,9 +1717,9 @@ namespace MALClient.XShared.ViewModels.Details
                 }
                 LoadingCharactersVisibility = false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //no iternet most probably
+                DiagnosticsReporter.Error("Details", $"LoadCharacters failed for anime {MalId} (animeMode={AnimeMode})", ex);
                 LoadingCharactersVisibility = false;
             }
         }
@@ -1669,6 +1802,78 @@ namespace MALClient.XShared.ViewModels.Details
             if (string.IsNullOrEmpty(synopsis)) return synopsis;
             return Regex.Replace(synopsis, @"[\[\(]?\s*Written by MAL[ _]Rewrite\s*[\]\)]?",
                 string.Empty, RegexOptions.IgnoreCase).TrimEnd();
+        }
+
+        private static readonly TimeSpan JstOffset = TimeSpan.FromHours(9);
+
+        private static readonly string[] DayNames = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
+        private static DateTime? ComputeNextAirFromEpisodes(IEnumerable<AnimeEpisode> episodes, DateTime nowUtc)
+        {
+            var aired = episodes
+                .Where(ep => ep.AiredDate.HasValue)
+                .Select(ep => ep.AiredDate.Value)
+                .Where(d => d <= nowUtc)
+                .OrderBy(d => d)
+                .ToList();
+            if (aired.Count == 0) return null;
+
+            double gap = 7;
+            if (aired.Count >= 2)
+            {
+                var gaps = new List<double>();
+                for (int i = 1; i < aired.Count; i++)
+                    gaps.Add((aired[i] - aired[i - 1]).TotalDays);
+                gaps.Sort();
+                gap = gaps[gaps.Count / 2];
+                if (gap < 1 || gap > 30)
+                    gap = 7;
+            }
+
+            var next = aired[aired.Count - 1].AddDays(gap);
+            while (next <= nowUtc)
+                next = next.AddDays(gap);
+            return next;
+        }
+
+        private static DateTime? ComputeNextAirDate(string broadcast, DateTime nowUtc)
+        {
+            if (string.IsNullOrEmpty(broadcast)) return null;
+
+            var match = Regex.Match(broadcast, @"(?<day>[A-Za-z]+?day)[^0-9]*(?<time>\d{1,2}:\d{2})");
+            if (!match.Success) return null;
+
+            var dayStr = match.Groups["day"].Value;
+            var timeStr = match.Groups["time"].Value;
+
+            var timeParts = timeStr.Split(':');
+            if (timeParts.Length != 2 ||
+                !int.TryParse(timeParts[0], out var hours) ||
+                !int.TryParse(timeParts[1], out var minutes))
+                return null;
+
+            var timeOfDay = TimeSpan.FromMinutes(hours * 60 + minutes);
+
+            var dayIndex = -1;
+            for (int i = 0; i < DayNames.Length; i++)
+            {
+                if (dayStr.StartsWith(DayNames[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    dayIndex = i;
+                    break;
+                }
+            }
+            if (dayIndex < 0) return null;
+
+            var nowJst = nowUtc + JstOffset;
+            var targetJst = new DateTime(nowJst.Year, nowJst.Month, nowJst.Day, 0, 0, 0).Add(timeOfDay);
+            var dayNet = (dayIndex + 1) % 7;
+            var daysToAdd = ((dayNet - (int)nowJst.DayOfWeek) + 7) % 7;
+            targetJst = targetJst.AddDays(daysToAdd);
+            if (targetJst <= nowJst)
+                targetJst = targetJst.AddDays(7);
+
+            return targetJst - JstOffset;
         }
     }
 }

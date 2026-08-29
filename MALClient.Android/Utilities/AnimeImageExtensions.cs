@@ -161,7 +161,7 @@ namespace MALClient.Android
             if (string.IsNullOrEmpty(originUrl) || image == null)
                 return;
 
-            if (image.Tag != null && (string)image.Tag == originUrl)
+            if (image.Tag != null && image.Tag.ToString() == originUrl)
             {
                 image.Visibility = ViewStates.Visible;
                 return;
@@ -255,7 +255,17 @@ namespace MALClient.Android
         {
             try
             {
+                // remember this load by a token so a completing task can't overwrite
+                // an image that was already re-bound to a different item meanwhile.
+                var token = Guid.NewGuid().ToString();
+                image.Tag = token;
+
                 var originUrl = await originUrlTask;
+
+                // the holder was recycled / re-bound while we awaited -> skip, the
+                // current bind already kicked off its own load.
+                if (!Equals(image.Tag, token))
+                    return;
 
                 Into(image, originUrl, transformation);
             }

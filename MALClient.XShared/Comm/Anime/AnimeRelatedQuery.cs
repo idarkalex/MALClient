@@ -93,14 +93,17 @@ namespace MALClient.XShared.Comm.Anime
                         current.Id = Convert.ToInt32(link[4]);
                         current.Title = WebUtility.HtmlDecode(linkNode.InnerText.Trim().Trim('\n'));
 
-                        // The tile carries the entry's real poster: trust it over id scraping
-                        var imgNode = tile.Descendants("img").FirstOrDefault();
+                        // The entry's real poster lives in the sibling div.image of
+                        // this entry (not the whole tile) - scope by the current entry
+                        // so each related title gets its own poster.
+                        var entry = content.ParentNode;
+                        var imgNode = entry.Descendants("img").FirstOrDefault();
                         var imgSrc = imgNode?.Attributes["data-src"]?.Value ?? imgNode?.Attributes["src"]?.Value;
                         if (!string.IsNullOrEmpty(imgSrc))
                         {
                             if (imgSrc.StartsWith("//"))
                                 imgSrc = "https:" + imgSrc;
-                            current.ImgUrl = imgSrc;
+                            current.ImgUrl = NormalizeImageUrl(imgSrc);
                         }
 
                         output.Add(current);
@@ -140,13 +143,34 @@ namespace MALClient.XShared.Comm.Anime
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //no recom
+                DiagnosticsReporter.Error("Related", $"parse failed for anime {_animeId}", ex);
             }
-            DataCache.SaveRelatedAnimeData(_animeId, output, _animeMode);
+
+            if (output.Count > 0)
+                DataCache.SaveRelatedAnimeData(_animeId, output, _animeMode);
+            else
+                DiagnosticsReporter.Warn("Related", $"no related entries found for anime {_animeId}");
 
             return output;
+        }
+
+        private static string NormalizeImageUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return url;
+            url = Regex.Replace(url, @"\/r\/\d+x\d+\/", "/");
+            var qPos = url.IndexOf('?');
+            if (qPos > 0) url = url.Substring(0, qPos);
+            var dotPos = url.LastIndexOf('.');
+            if (dotPos > 0)
+            {
+                var beforeDot = url.Substring(0, dotPos);
+                var lastChar = beforeDot[beforeDot.Length - 1];
+                if (lastChar != 'l' && lastChar != 'm' && lastChar != 's')
+                    url = beforeDot + "l" + url.Substring(dotPos);
+            }
+            return url;
         }
     }
 }

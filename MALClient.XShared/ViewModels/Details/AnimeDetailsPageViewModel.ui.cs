@@ -202,6 +202,18 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
+        private bool _loadingEpisodes = false;
+
+        public bool LoadingEpisodes
+        {
+            get { return _loadingEpisodes; }
+            set
+            {
+                _loadingEpisodes = value;
+                RaisePropertyChanged(() => LoadingEpisodes);
+            }
+        }
+
         private bool _loadingReviews = false;
 
         public bool LoadingReviews

@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using MALClient.Adapters;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.Comm.Articles;
+using MALClient.XShared.Utils;
 
 namespace MALClient.XShared.ViewModels.Main
 {
@@ -195,7 +197,7 @@ namespace MALClient.XShared.ViewModels.Main
                 html = await Comm.Articles.AnnNewsQuery.GetAnnArticleHtml(data.Url, data.Id);
             else
                 html = await new MalArticleQuery(data.Url, data.Title, data.Type).GetArticleHtml();
-            if (string.IsNullOrEmpty(html))
+             if (string.IsNullOrEmpty(html))
             {
                 LoadingVisibility = false;
                 ArticleIndexVisibility = true;
@@ -203,6 +205,9 @@ namespace MALClient.XShared.ViewModels.Main
                     "Could not load this article. Please try again later.", "Load error");
                 return;
             }
+            var themeColor = Settings.SelectedTheme == 1 ? "#d4e4f7" : "#051522";
+            var titleHtml = $"<h1 style=\"color:{themeColor};font-family:Inter,sans-serif;font-size:24px;font-weight:700;margin:16px 0 12px 0\">{System.Net.WebUtility.HtmlEncode(data.Title)}</h1>";
+            html = titleHtml + html;
             OpenWebView?.Invoke(html, data);
         }
     }

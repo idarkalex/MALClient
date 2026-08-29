@@ -34,7 +34,10 @@ namespace MALClient.XShared.Comm.Articles
                 ? null
                 : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index_v6.json", "Articles", 1);
             if (cached != null && cached.Count > 0)
+            {
+                DiagnosticsReporter.Info("ANN", $"cache hit: {cached.Count} articles");
                 return cached;
+            }
 
             string raw = null;
             for (var attempt = 1; attempt <= 3 && raw == null; attempt++)
@@ -52,17 +55,25 @@ namespace MALClient.XShared.Comm.Articles
                 }
             }
             if (string.IsNullOrEmpty(raw))
+            {
+                DiagnosticsReporter.Warn("ANN", "RSS fetch returned null/empty after 3 attempts");
                 return new List<MalNewsUnitModel>();
+            }
 
             var output = ParseRss(raw);
             if (output.Count > 0)
             {
                 var thumbs = await FetchThumbMap();
+                var filled = 0;
                 foreach (var entry in output)
                 {
                     if (string.IsNullOrEmpty(entry.ImgUrl) && thumbs.TryGetValue(entry.Id, out var thumb))
+                    {
                         entry.ImgUrl = thumb;
+                        filled++;
+                    }
                 }
+                DiagnosticsReporter.Info("ANN", $"thumb map filled {filled}/{output.Count - output.Count(o => !string.IsNullOrEmpty(o.ImgUrl))} entries from listing scrape");
                 DataCache.SaveData(output, "ann_news_index_v6.json", "Articles");
             }
             return output;
@@ -237,7 +248,7 @@ namespace MALClient.XShared.Comm.Articles
         /// ANN feeds carry no images; scrape the /news/ listing once and map
         /// article id -> thumbnail (data-src="/thumbnails/.../{id}/x.jpg").
         /// </summary>
-        public static async Task<Dictionary<string, string>> FetchThumbMap()
+public static async Task<Dictionary<string, string>> FetchThumbMap()
         {
             try
             {
@@ -249,30 +260,39 @@ namespace MALClient.XShared.Comm.Articles
                     using (var response = await AnnClient.SendAsync(request))
                     {
                         if (!response.IsSuccessStatusCode)
-                            return new Dictionary<string, string>();
-                        var html = await response.Content.ReadAsStringAsync();
-                        var map = new Dictionary<string, string>();
-                        // Split per card: each data-src segment pairs ONLY with the first
-                        // /news/ link found before the next thumbnail (prevents mispairing)
-                        var segments = Regex.Split(html, "(?=<img[^>]+data-src=)");
-                        foreach (var segment in segments)
                         {
-                            var thumb = Regex.Match(segment, "data-src=\"(/thumbnails/[^\"]+)\"");
-                            if (!thumb.Success)
-                                continue;
-                            var link = Regex.Match(segment, "href=\"/news/[^\"]*/\\.(\\d+)\"");
-                            if (!link.Success)
-                                continue;
-                            var id = link.Groups[1].Value;
-                            if (!map.ContainsKey(id))
-                                map[id] = "https://www.animenewsnetwork.com" + thumb.Groups[1].Value;
+                            DiagnosticsReporter.Warn("ANN", $"thumb map fetch failed: {response.StatusCode}");
+                            return new Dictionary<string, string>();
                         }
+                        var html = await response.Content.ReadAsStringAsync();
+                        var doc = new HtmlDocument();
+                        doc.LoadHtml(html);
+                        var map = new Dictionary<string, string>();
+                        // Find all elements with data-src attribute (img or div)
+                        foreach (var node in doc.DocumentNode.Descendants().Where(n => n.Attributes["data-src"] != null))
+                        {
+                            var dataSrc = node.Attributes["data-src"].Value;
+                            var thumbUrl = SanitizeUrl(dataSrc);
+                            if (string.IsNullOrEmpty(thumbUrl) || !thumbUrl.Contains("/thumbnails/"))
+                                continue;
+                            // Find the nearest parent <a> with href containing article ID
+                            var parentLink = node.Ancestors("a").FirstOrDefault(a => a.Attributes["href"] != null);
+                            if (parentLink == null) continue;
+                            var href = parentLink.Attributes["href"].Value;
+                            var idMatch = Regex.Match(href, @"(\d+)(?=/|$|\.html|\?)");
+                            if (!idMatch.Success) continue;
+                            var id = idMatch.Groups[1].Value;
+                            if (!map.ContainsKey(id))
+                                map[id] = thumbUrl;
+                        }
+                        DiagnosticsReporter.Info("ANN", $"thumb map: {map.Count} entries from listing scrape");
                         return map;
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                DiagnosticsReporter.Error("ANN", "FetchThumbMap exception", ex);
                 return new Dictionary<string, string>();
             }
         }
@@ -328,12 +348,14 @@ namespace MALClient.XShared.Comm.Articles
                         Id = ExtractAnnId(link) ?? ExtractAnnId(guid) ?? Guid.NewGuid().ToString("N"),
                     });
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //
+                    DiagnosticsReporter.Error("ANN", $"ParseRss item parse failed: {ex.Message}");
                 }
             }
 
+            var withImages = output.Count(o => !string.IsNullOrEmpty(o.ImgUrl));
+            DiagnosticsReporter.Info("ANN", $"RSS parsed: {output.Count} entries, {withImages} with images, {output.Count - withImages} without");
             return output;
         }
 
@@ -360,7 +382,12 @@ namespace MALClient.XShared.Comm.Articles
         {
             if (string.IsNullOrEmpty(html))
                 return null;
-            var match = Regex.Match(html, "<img[^>]+src=\"([^\"]+)\"");
+            var match = Regex.Match(html, "<img[^>]+(?:src|data-src)=[\"']([^\"']+)\"");
+            if (!match.Success)
+            {
+                // Try data-src without src
+                match = Regex.Match(html, "data-src=[\"']([^\"']+)\"");
+            }
             if (!match.Success)
                 return null;
             var src = WebUtility.HtmlDecode(match.Groups[1].Value);
@@ -376,7 +403,9 @@ namespace MALClient.XShared.Comm.Articles
         {
             if (string.IsNullOrEmpty(url))
                 return null;
-            var match = Regex.Match(url, @"\.(\d+)");
+            // ANN article URLs end with /.{id} (e.g. /news/.../.241011)
+            // Capture digits after the final dot at end of path
+            var match = Regex.Match(url, @"\.(\d+)(?=/|$|\.html|\?)");
             return match.Success ? match.Groups[1].Value : null;
         }
     }

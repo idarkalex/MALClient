@@ -79,6 +79,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             AnimeDetailsPageRecomTabsList.SetLayoutManager(new LinearLayoutManager(Activity));
             AnimeDetailsPageRecomTabsList.AddOnScrollListener(new CustomScrollListener());
 
+            ViewModel.LoadRecommendations();
+
             SetUpForOrientation(Activity.Resources.Configuration.Orientation);
         }
 
@@ -125,8 +127,11 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             });
 
             var img = holder.Image;
-            if (!img.IntoIfLoaded(data.ImageUrl))
-                img.Visibility = ViewStates.Invisible;
+            if (!string.IsNullOrEmpty(data.ImageUrl))
+            {
+                img.Visibility = ViewStates.Visible;
+                img.Into(data.ImageUrl);
+            }
 
             holder.ItemView.Click -= OnRecomClick;
             holder.ItemView.Tag = data.Wrap();

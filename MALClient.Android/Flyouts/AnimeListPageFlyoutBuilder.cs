@@ -158,10 +158,9 @@ namespace MALClient.Android.Flyouts
                             gravity: GravityFlags.CenterVertical)));
             }
 
-            // The anchor sits on the bottom nav: drop the popup ABOVE the pressed
-            // button (6 items x 40dp) instead of letting Droppy clamp it off-screen.
+            // AlignRightUnder sets a small positive Y offset and lets Droppy's
+            // clamping drop the popup flush against the pressed bottom-nav button.
             AlignRightUnder(droppyBuilder, parent, 140);
-            droppyBuilder.SetYOffset(-DimensionsHelper.DpToPx(252));
             return droppyBuilder.Build();
         }
 

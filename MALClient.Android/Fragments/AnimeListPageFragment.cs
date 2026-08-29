@@ -92,9 +92,6 @@ namespace MALClient.Android.Fragments
             var footerParam = _loadMoreFooter.LayoutParameters;
             if (ViewModel.AnimeGridItems != null)
             {
-                if (_gridViewColumnHelper != null
-                    && ViewModel.AnimeGridItems.Count % _gridViewColumnHelper.LastColmuns != 0)
-                    footerParam.Height = DimensionsHelper.DpToPx(315);
                 AnimeListPageGridView.SetSelection(prevPosition);
             }
             else

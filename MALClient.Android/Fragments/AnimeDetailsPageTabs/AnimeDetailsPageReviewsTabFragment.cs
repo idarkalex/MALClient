@@ -81,6 +81,8 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
             AnimeDetailsPageReviewsTabsList.SetLayoutManager(new LinearLayoutManager(Activity));
             AnimeDetailsPageReviewsTabsList.AddOnScrollListener(new CustomScrollListener());
+
+            ViewModel.LoadReviews();
         }
 
         private void BindReview(AnimeReviewData review, ReviewHolder holder, int position)

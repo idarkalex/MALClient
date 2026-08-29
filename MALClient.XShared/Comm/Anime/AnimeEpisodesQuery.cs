@@ -33,10 +33,11 @@ namespace MALClient.XShared.Comm.Anime
                                 Filler = GetBool(ep, "filler"),
                                 ForumUrl = GetString(ep, "forum_url"),
                                 Recap = GetBool(ep, "recap"),
-                Title = GetString(ep, "title"),
-                TitleJapanese = GetString(ep, "title_japanese"),
-                TitleRomanji = GetString(ep, "title_romanji"),
+                                Title = GetString(ep, "title"),
+                                TitleJapanese = GetString(ep, "title_japanese"),
+                                TitleRomanji = GetString(ep, "title_romanji"),
                                 VideoUrl = GetString(ep, "url"),
+                                AiredDate = GetDateTime(ep, "aired"),
                             });
                         }
 
@@ -70,5 +71,15 @@ namespace MALClient.XShared.Comm.Anime
 
         private static bool GetBool(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.True;
+
+        private static DateTime? GetDateTime(JsonElement el, string prop)
+        {
+            if (el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String)
+            {
+                if (DateTime.TryParse(p.GetString(), out var result))
+                    return result;
+            }
+            return null;
+        }
     }
 }
