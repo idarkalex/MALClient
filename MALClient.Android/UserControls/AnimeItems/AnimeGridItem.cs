@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Android.Content;
+using Android.OS;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
@@ -58,7 +60,7 @@ namespace MALClient.Android.UserControls
             }
         }
 
-        protected override void BindModelFull()
+        protected override async void BindModelFull()
         {
             if ((string)AnimeGridItemImage.Tag != ViewModel.ImgUrl)
             {
@@ -70,6 +72,7 @@ namespace MALClient.Android.UserControls
             }
 
             AnimeGridItemTitle.Text = ViewModel.Title;
+            await ViewModel.UpdateAirDateDisplay();
             UpdateBadge();
 
             var airTime = ViewModel.TimeTillNextAirCache;
@@ -93,12 +96,46 @@ namespace MALClient.Android.UserControls
         private void UpdateBadge()
         {
             if (AnimeGridItemBadgeContainer == null) return;
+
+            var countdown = ViewModel.AirDayTillBind;
+            if (string.IsNullOrEmpty(countdown))
+                countdown = ViewModel.TimeTillNextAirCache;
+            if (countdown == "Aired!") countdown = "";
+
+            var hasCountdown = !string.IsNullOrEmpty(countdown);
+
             if (ViewModel.Auth)
             {
                 AnimeGridItemBadgeContainer.Visibility = ViewStates.Visible;
                 AnimeGridItemStatus.Text = ViewModel.MyStatusBindShort;
                 AnimeGridItemEpisodes.Text = ViewModel.MyEpisodesBindShort;
                 AnimeGridItemScore.Text = ViewModel.MyScoreBindShort;
+                AnimeGridItemScore.Visibility = ViewModel.MyScore <= 0 ? ViewStates.Gone : ViewStates.Visible;
+
+                var statusVisible = true;
+                var episodesVisible = true;
+                var scoreVisible = ViewModel.MyScore > 0;
+
+                AnimeGridItemStatus.Visibility = statusVisible ? ViewStates.Visible : ViewStates.Gone;
+
+                var rightSectionVisible = episodesVisible || scoreVisible;
+                var rightSection = AnimeGridItemEpisodes.Parent as LinearLayout;
+                if (rightSection != null)
+                    rightSection.Visibility = rightSectionVisible ? ViewStates.Visible : ViewStates.Gone;
+
+                if (hasCountdown)
+                {
+                    AnimeGridItemCountdown.Text = countdown;
+                    AnimeGridItemCountdown.Visibility = ViewStates.Visible;
+                    AnimeGridItemCountdownDivider.Visibility = rightSectionVisible ? ViewStates.Visible : ViewStates.Gone;
+                }
+                else
+                {
+                    AnimeGridItemCountdown.Visibility = ViewStates.Gone;
+                    AnimeGridItemCountdownDivider.Visibility = ViewStates.Gone;
+                }
+
+                AnimeGridItemDivider1.Visibility = statusVisible && rightSectionVisible ? ViewStates.Visible : ViewStates.Gone;
 
                 int statusColor;
                 switch (ViewModel.MyStatus)
@@ -123,7 +160,22 @@ namespace MALClient.Android.UserControls
             }
             else
             {
-                AnimeGridItemBadgeContainer.Visibility = ViewStates.Gone;
+                if (hasCountdown)
+                {
+                    AnimeGridItemBadgeContainer.Visibility = ViewStates.Visible;
+                    AnimeGridItemCountdown.Text = countdown;
+                    AnimeGridItemCountdown.Visibility = ViewStates.Visible;
+                    AnimeGridItemCountdownDivider.Visibility = ViewStates.Gone;
+                    AnimeGridItemDivider1.Visibility = ViewStates.Gone;
+                    var rightSection = AnimeGridItemEpisodes.Parent as LinearLayout;
+                    if (rightSection != null)
+                        rightSection.Visibility = ViewStates.Gone;
+                    AnimeGridItemStatus.Visibility = ViewStates.Gone;
+                }
+                else
+                {
+                    AnimeGridItemBadgeContainer.Visibility = ViewStates.Gone;
+                }
             }
         }
 
@@ -141,6 +193,9 @@ namespace MALClient.Android.UserControls
                 case nameof(ViewModel.MyStatus):
                 case nameof(ViewModel.MyEpisodesBindShort):
                 case nameof(ViewModel.MyScoreBindShort):
+                case nameof(ViewModel.AirDayTillBind):
+                case nameof(ViewModel.Airing):
+                case nameof(ViewModel.TimeTillNextAirCache):
                     UpdateBadge();
                     break;
             }
@@ -187,6 +242,9 @@ namespace MALClient.Android.UserControls
         private TextView _animeGridItemEpisodes;
         private TextView _animeGridItemScore;
         private TextView _animeGridItemAirTime;
+        private TextView _animeGridItemCountdown;
+        private View _animeGridItemCountdownDivider;
+        private View _animeGridItemDivider1;
 
         public ImageViewAsync AnimeGridItemImage => _animeGridItemImage ?? (_animeGridItemImage = FindViewById<ImageViewAsync>(Resource.Id.AnimeGridItemImage));
         public ProgressBar AnimeGridItemImgPlaceholder => _animeGridItemImgPlaceholder ?? (_animeGridItemImgPlaceholder = FindViewById<ProgressBar>(Resource.Id.AnimeGridItemImgPlaceholder));
@@ -196,6 +254,9 @@ namespace MALClient.Android.UserControls
         public TextView AnimeGridItemEpisodes => _animeGridItemEpisodes ?? (_animeGridItemEpisodes = FindViewById<TextView>(Resource.Id.AnimeGridItemEpisodes));
         public TextView AnimeGridItemScore => _animeGridItemScore ?? (_animeGridItemScore = FindViewById<TextView>(Resource.Id.AnimeGridItemScore));
         public TextView AnimeGridItemAirTime => _animeGridItemAirTime ?? (_animeGridItemAirTime = FindViewById<TextView>(Resource.Id.AnimeGridItemAirTime));
+        public TextView AnimeGridItemCountdown => _animeGridItemCountdown ?? (_animeGridItemCountdown = FindViewById<TextView>(Resource.Id.AnimeGridItemCountdown));
+        public View AnimeGridItemCountdownDivider => _animeGridItemCountdownDivider ?? (_animeGridItemCountdownDivider = FindViewById<View>(Resource.Id.AnimeGridItemCountdownDivider));
+        public View AnimeGridItemDivider1 => _animeGridItemDivider1 ?? (_animeGridItemDivider1 = FindViewById<View>(Resource.Id.AnimeGridItemDivider1));
 
         #endregion
     }

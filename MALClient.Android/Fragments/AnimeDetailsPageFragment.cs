@@ -77,7 +77,7 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageTabStrip.SetViewPager(AnimeDetailsPagePivot);
             AnimeDetailsPageTabStrip.CenterTabs();
             AnimeDetailsPagePivot.OffscreenPageLimit = 7;
-            var maxTabs = ViewModelLocator.AnimeDetails.AnimeMode ? 8 : 6;
+            var maxTabs = ViewModelLocator.AnimeDetails.AnimeMode ? 8 : 5;
             var initialTab = Math.Max(0, Math.Min(_navArgs.SourceTabIndex, maxTabs - 1));
             AnimeDetailsPagePivot.SetCurrentItem(initialTab, false);
 
@@ -117,6 +117,9 @@ namespace MALClient.Android.Fragments
                 this.SetBinding(() => ViewModel.MyScoreBind,
                     () => AnimeDetailsPageScoreButton.Text));
             Bindings.Add(
+                this.SetBinding(() => ViewModel.MyScoreBind,
+                    () => AnimeDetailsPageQuickScoreButton.Text));
+            Bindings.Add(
                 this.SetBinding(() => ViewModel.MyStatusBind)
                     .WhenSourceChanges(() =>
                     {
@@ -145,16 +148,7 @@ namespace MALClient.Android.Fragments
                 AnimeDetailsPageDecrementButton.Alpha = ViewModel.IsDecrementButtonEnabled ? 1 : .35f;
             }));
 
-            Bindings.Add(this.SetBinding(() => ViewModel.AnimeMode).WhenSourceChanges(() =>
-            {
-                // pager Count changes 8<->6; a stale CurrentItem (e.g. Staff=6/Episodes=7 on manga)
-                // explodes inside ViewPager's Java internals with no managed trace
-                var maxIndex = ViewModelLocator.AnimeDetails.AnimeMode ? 7 : 5;
-                if (AnimeDetailsPagePivot.CurrentItem > maxIndex)
-                    AnimeDetailsPagePivot.SetCurrentItem(0, false);
-                AnimeDetailsPagePivot.ClearTabHeights();
-                AnimeDetailsPagePivot.Adapter.NotifyDataSetChanged();
-            }));
+            ViewModel.PropertyChanged += OnAnimeDetailsPivotPropertyChanged;
 
             Bindings.Add(this.SetBinding(() => ViewModel.AddAnimeVisibility)
                 .WhenSourceChanges(() =>
@@ -162,6 +156,9 @@ namespace MALClient.Android.Fragments
                     AnimeDetailsPageQuickAddToListButton.Visibility = ViewModel.AddAnimeVisibility
                         ? ViewStates.Visible
                         : ViewStates.Gone;
+                    AnimeDetailsPageQuickScoreButton.Visibility = ViewModel.AddAnimeVisibility
+                        ? ViewStates.Gone
+                        : ViewStates.Visible;
 
                 if (ViewModel.AddAnimeVisibility)
                 {
@@ -278,11 +275,8 @@ namespace MALClient.Android.Fragments
                     () => AnimeDetailsPageLoadingUpdateSpinner.Visibility)
                     .ConvertSourceToTarget(Converters.BoolToVisibility));
 
-            Bindings.Add(this.SetBinding(() => ViewModel.TrailerUrl).WhenSourceChanges(() =>
-            {
-                AnimeDetailsPageTrailerButton.Visibility =
-                    string.IsNullOrEmpty(ViewModel.TrailerUrl) ? ViewStates.Gone : ViewStates.Visible;
-            }));
+            Bindings.Add(this.SetBinding(() => ViewModel.TrailerUrl).WhenSourceChanges(UpdateTrailerButtonVisibility));
+            Bindings.Add(this.SetBinding(() => ViewModel.AddAnimeVisibility).WhenSourceChanges(UpdateTrailerButtonVisibility));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Status).WhenSourceChanges(() =>
             {
@@ -298,7 +292,10 @@ namespace MALClient.Android.Fragments
 
             AnimeDetailsPageTrailerButton.SetOnClickListener(new OnClickListener(view =>
             {
-                ViewModel.PlayVideoInApp(ViewModel.TrailerUrl);
+                if (ViewModel.AddAnimeVisibility)
+                    AnimeDetailsPageDialogBuilder.BuildPromotionalVideoDialog(ViewModel);
+                else
+                    ViewModel.PlayVideoInApp(ViewModel.TrailerUrl);
             }));
 
             ViewModel.RequestVideoPlayback += ShowVideoOverlay;
@@ -329,6 +326,8 @@ namespace MALClient.Android.Fragments
                     if (ViewModel.AddAnimeVisibility)
                         ViewModel.AddAnimeCommand.Execute(null);
                 }));
+            AnimeDetailsPageQuickScoreButton.SetOnClickListener(
+                new OnClickListener(view => AnimeDetailsPageScoreButtonOnClick()));
             AnimeDetailsPageQuickFavoriteButton.SetOnClickListener(
                 new OnClickListener(view =>
                 {
@@ -343,6 +342,9 @@ namespace MALClient.Android.Fragments
             AnimeDetailsPageQuickAddToListButton.Visibility = ViewModel.AddAnimeVisibility
                 ? ViewStates.Visible
                 : ViewStates.Gone;
+            AnimeDetailsPageQuickScoreButton.Visibility = ViewModel.AddAnimeVisibility
+                ? ViewStates.Gone
+                : ViewStates.Visible;
 
             AnimeDetailsPageWatchedLabel.Text = "EPISODES";
 
@@ -648,6 +650,15 @@ namespace MALClient.Android.Fragments
             });
         }
 
+        private void UpdateTrailerButtonVisibility()
+        {
+            var hasTrailer = !string.IsNullOrEmpty(ViewModel.TrailerUrl);
+            AnimeDetailsPageTrailerButton.Visibility =
+                ViewModel.AnimeMode && (ViewModel.AddAnimeVisibility || hasTrailer)
+                    ? ViewStates.Visible
+                    : ViewStates.Gone;
+        }
+
         private void AnimeDetailsPageStatusButtonOnClick()
         {
             AnimeUpdateDialogBuilder.BuildStatusDialog(ViewModel.AnimeItemReference, ViewModel.AnimeMode, status =>
@@ -682,10 +693,33 @@ namespace MALClient.Android.Fragments
             base.OnPause();
         }
 
+        private void OnAnimeDetailsPivotPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModel.PivotVersion)
+                || e.PropertyName == nameof(ViewModel.AnimeMode)
+                || e.PropertyName == nameof(ViewModel.Type))
+            {
+                var vm = ViewModelLocator.AnimeDetails;
+                var episodesIncluded = vm.AnimeMode && vm.Type != "Movie";
+                var maxIndex = vm.AnimeMode ? (episodesIncluded ? 7 : 6) : 4;
+                var targetItem = AnimeDetailsPagePivot.CurrentItem <= maxIndex ? AnimeDetailsPagePivot.CurrentItem : 0;
+
+                AnimeDetailsPagePivot.ClearTabHeights();
+                var newAdapter = new AnimeDetailsPagerAdapter(ChildFragmentManager);
+                newAdapter.ResetForAnimeChange();
+                AnimeDetailsPagePivot.Adapter = newAdapter;
+                AnimeDetailsPagePivot.SetCurrentItem(0, false);
+                newAdapter.NotifyDataSetChanged();
+                AnimeDetailsPagePivot.SetCurrentItem(targetItem, false);
+                AnimeDetailsPageTabStrip.SetViewPager(AnimeDetailsPagePivot);
+            }
+        }
+
         public override void DetachBindings()
         {
             ViewModel.RequestVideoPlayback -= ShowVideoOverlay;
             ViewModel.RequestWebNavigation -= ShowWebOverlay;
+            ViewModel.PropertyChanged -= OnAnimeDetailsPivotPropertyChanged;
             base.DetachBindings();
         }
     }

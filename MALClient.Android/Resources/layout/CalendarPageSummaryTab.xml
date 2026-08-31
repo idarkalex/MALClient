@@ -4,13 +4,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="?BrushDeepBackground">
-  <ListView
+  <android.support.v7.widget.RecyclerView
     android:id="@+id/CalendarPageSummaryTabList"
     android:layout_width="match_parent"
-    android:layout_gravity="center_horizontal"
-    android:layout_height="match_parent"
-    android:choiceMode="singleChoice"
-    android:stretchMode="columnWidth"
-    android:dividerHeight="5dp"
-    android:divider="@color/Transparent" />
+    android:layout_height="match_parent" />
 </RelativeLayout>

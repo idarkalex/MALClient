@@ -29,6 +29,9 @@ namespace MALClient.XShared.Utils
         public DateTime? LastFailedAiringTimeFetchAttempt { get; set; }
         public List<string> Genres { get; set; }
         public string AirStartDate { get; set; }
+        public string TimeTillNextAir { get; set; }
+        public DateTime? NextAirUtc { get; set; }
+        public DateTime? NextAirFetchedAtUtc { get; set; }
     }
 
     public static class DataCache
@@ -277,6 +280,35 @@ namespace MALClient.XShared.Utils
             }
         }
 
+        public static void UpdateVolatileDataWithTimeTillNextAir(int id, string timeTillNextAir)
+        {
+            if (_volatileDataCache.ContainsKey(id))
+            {
+                _volatileDataCache[id].TimeTillNextAir = timeTillNextAir;
+            }
+            else
+            {
+                _volatileDataCache[id] = new VolatileDataCache { TimeTillNextAir = timeTillNextAir };
+            }
+        }
+
+        public static void UpdateVolatileDataWithNextAir(int id, DateTime? nextAirUtc)
+        {
+            if (_volatileDataCache.ContainsKey(id))
+            {
+                _volatileDataCache[id].NextAirUtc = nextAirUtc;
+                _volatileDataCache[id].NextAirFetchedAtUtc = DateTime.UtcNow;
+            }
+            else
+            {
+                _volatileDataCache[id] = new VolatileDataCache
+                {
+                    NextAirUtc = nextAirUtc,
+                    NextAirFetchedAtUtc = DateTime.UtcNow
+                };
+            }
+        }
+
         public static void RegisterVolatileDataAiringTimeFetchFailure(int id)
         {
             if (_volatileDataCache.ContainsKey(id))
@@ -325,8 +357,110 @@ namespace MALClient.XShared.Utils
         {
             try
             {
+                var final = await DataCacheService.RetrieveData<AnimeDetailsData>($"{source}_final_{id}.json",
+                    anime ? "AnimeDetails" : "MangaDetails", 0);
+                if (final != null)
+                    return final;
                 return await DataCacheService.RetrieveData<AnimeDetailsData>($"{source}_{id}.json",
                     anime ? "AnimeDetails" : "MangaDetails", 1);
+            }
+            catch (Exception)
+            {
+                //No file
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region Episodes
+
+        public static async Task SaveAnimeEpisodes(int id, List<AnimeEpisode> data)
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    await DataCacheService.SaveData(data, $"episodes_{id}.json", "AnimeDetails");
+                });
+            }
+            catch (Exception)
+            {
+                //magic
+            }
+        }
+
+        public static async Task<List<AnimeEpisode>> RetrieveAnimeEpisodes(int id, bool airing)
+        {
+            try
+            {
+                return await DataCacheService.RetrieveData<List<AnimeEpisode>>($"episodes_{id}.json", "AnimeDetails",
+                    airing ? 1 : 0);
+            }
+            catch (Exception)
+            {
+                //No file
+            }
+            return null;
+        }
+
+        public static async Task<List<AnimeEpisode>> RetrieveAnimeEpisodesStale(int id)
+        {
+            try
+            {
+                return await DataCacheService.RetrieveData<List<AnimeEpisode>>($"episodes_{id}.json", "AnimeDetails", 0);
+            }
+            catch (Exception)
+            {
+                //No file
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region DetailsScrapped
+
+        public static async void SaveAnimeDetailsScrappedByStatus(int id, AnimeScrappedDetails data, bool airing)
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    await DataCacheService.SaveData(data, airing ? $"{id}.json" : $"{id}_final.json",
+                        "anime_details_scrapped");
+                });
+            }
+            catch (Exception)
+            {
+                //magic
+            }
+        }
+
+        public static async Task<AnimeScrappedDetails> RetrieveAnimeDetailsScrapped(int id, bool airing)
+        {
+            try
+            {
+                var final = await DataCacheService.RetrieveData<AnimeScrappedDetails>($"{id}_final.json",
+                    "anime_details_scrapped", 0);
+                if (final != null)
+                    return final;
+                return await DataCacheService.RetrieveData<AnimeScrappedDetails>($"{id}.json",
+                    "anime_details_scrapped", airing ? 1 : 0);
+            }
+            catch (Exception)
+            {
+                //No file
+            }
+            return null;
+        }
+
+        public static async Task<AnimeScrappedDetails> RetrieveAnimeDetailsScrappedStale(int id)
+        {
+            try
+            {
+                return await DataCacheService.RetrieveData<AnimeScrappedDetails>($"{id}.json",
+                    "anime_details_scrapped", 0);
             }
             catch (Exception)
             {
@@ -448,7 +582,7 @@ namespace MALClient.XShared.Utils
 
         #region AnimeSerachResults
 
-        public static async void SaveAnimeSearchResultsData(string id, AnimeGeneralDetailsData data, bool anime)
+        public static async Task SaveAnimeSearchResultsData(string id, AnimeGeneralDetailsData data, bool anime)
         {
             try
             {
@@ -465,14 +599,55 @@ namespace MALClient.XShared.Utils
             }
         }
 
+        public static async Task SaveAnimeSearchResultsDataFinal(string id, AnimeGeneralDetailsData data, bool anime)
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    await
+                        DataCacheService.SaveData(data, $"mal_details_final_{id}.json",
+                            anime ? "AnimeDetails" : "MangaDetails");
+                });
+            }
+            catch (Exception)
+            {
+                //magic
+            }
+        }
+
+        public static async Task SaveGeneralDetailsByStatus(string id, AnimeGeneralDetailsData data, bool anime)
+        {
+            if (string.Equals(data.Status, "Finished Airing", StringComparison.CurrentCultureIgnoreCase))
+                await SaveAnimeSearchResultsDataFinal(id, data, anime);
+            else
+                await SaveAnimeSearchResultsData(id, data, anime);
+        }
+
         public static async Task<AnimeGeneralDetailsData> RetrieveAnimeSearchResultsData(string animeId, bool anime)
         {
             try
             {
-                return
-                    await
-                        DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v3_{animeId}.json",
-                            anime ? "AnimeDetails" : "MangaDetails", 14);
+                var final = await DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_final_{animeId}.json",
+                    anime ? "AnimeDetails" : "MangaDetails", 0);
+                if (final != null)
+                    return final;
+                return await DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v3_{animeId}.json",
+                    anime ? "AnimeDetails" : "MangaDetails", 14);
+            }
+            catch (Exception)
+            {
+                //No file
+            }
+            return null;
+        }
+
+        public static async Task<AnimeGeneralDetailsData> RetrieveAnimeSearchResultsDataStale(string animeId, bool anime)
+        {
+            try
+            {
+                return await DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v3_{animeId}.json",
+                    anime ? "AnimeDetails" : "MangaDetails", 0);
             }
             catch (Exception)
             {

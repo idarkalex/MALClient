@@ -1,21 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
-using Android.Runtime;
+using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
-using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
-using MALClient.Android.CollectionAdapters;
-using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
+using MALClient.Android.UserControls.AnimeItems;
 using MALClient.Models.Enums;
+using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
 
@@ -23,9 +20,14 @@ namespace MALClient.Android.Fragments.CalendarFragments
 {
     public class CalendarPageSummaryTabFragment : MalFragmentBase
     {
+        private const int ViewTypeHeader = 0;
+        private const int ViewTypeCard = 1;
+
         private readonly List<Tuple<string, List<AnimeItemViewModel>>> _items;
-        private readonly GridViewColumnHelper _gridViewColumnHelper = new GridViewColumnHelper {MinColumnsLandscape = 3, MinColumnsPortrait = 2};
-        private static readonly TimeZoneInfo _jstTimeZone = TimeZoneInfo.CreateCustomTimeZone("JST", TimeSpan.FromHours(9), "JST", "JST");
+        private readonly GridViewColumnHelper _gridViewColumnHelper = new GridViewColumnHelper((int?)null) { MinColumnsPortrait = 2, MinColumnsLandscape = 3 };
+        private CalendarSummaryAdapter _adapter;
+        private GridLayoutManager _layoutManager;
+        private int _spanCount;
 
         public CalendarPageSummaryTabFragment(List<Tuple<string, List<AnimeItemViewModel>>> items)
         {
@@ -35,53 +37,150 @@ namespace MALClient.Android.Fragments.CalendarFragments
         protected override void Init(Bundle savedInstanceState)
         {
             foreach (var animeItemViewModel in _items.SelectMany(tuple => tuple.Item2))
-                animeItemViewModel.TimeTillNextAirCache = animeItemViewModel.GetTimeTillNextAir(_jstTimeZone);
+                animeItemViewModel.RefreshTimeTillNextAirInBackground();
             _gridViewColumnHelper.OnConfigurationChanged(Resources.Configuration);
+            _spanCount = _gridViewColumnHelper.LastColmuns;
         }
 
         protected override void InitBindings()
         {
-            CalendarPageSummaryTabList.Adapter = _items.GetAdapter(GetTemplateDelegate);
+            _layoutManager = new GridLayoutManager(Activity, _spanCount);
+            CalendarPageSummaryTabList.SetLayoutManager(_layoutManager);
+
+            _adapter = new CalendarSummaryAdapter(BuildFlatList(), OnItemClick);
+            CalendarPageSummaryTabList.SetAdapter(_adapter);
+
+            _layoutManager.SetSpanSizeLookup(new CalendarSummarySpanLookup(_adapter, _spanCount));
         }
 
-        private View GetTemplateDelegate(int i, Tuple<string, List<AnimeItemViewModel>> tuple, View convertView)
+        private List<SummaryItem> BuildFlatList()
         {
-            var view = convertView;
-            if (view == null)
+            var flat = new List<SummaryItem>();
+            foreach (var tuple in _items)
             {
-                view = MainActivity.CurrentContext.LayoutInflater.Inflate(
-                    Resource.Layout.CalendarPageSummaryTabContent, null);
-
+                flat.Add(new SummaryHeaderItem { DayName = tuple.Item1 });
+                foreach (var vm in tuple.Item2)
+                    flat.Add(new SummaryCardItem { ViewModel = vm });
             }
-
-            view.FindViewById<TextView>(Resource.Id.CalendarPageSummaryTabContentHeader).Text = tuple.Item1;
-            var grid = view.FindViewById<HeightAdjustingGridView>(Resource.Id.CalendarPageSummaryTabContentList);
-            grid.AlwaysAdjust = true;
-            grid.InjectAnimeListAdapter(Context,tuple.Item2,AnimeListDisplayModes.IndefiniteGrid,OnItemClick);
-            _gridViewColumnHelper.RegisterGrid(grid);
-
-            return view;
+            return flat;
         }
 
         private void OnItemClick(AnimeItemViewModel animeItemViewModel)
         {
-           animeItemViewModel.NavigateDetails(PageIndex.PageCalendar);
+            animeItemViewModel.NavigateDetails(PageIndex.PageCalendar);
         }
-
-        public override int LayoutResourceId => Resource.Layout.CalendarPageSummaryTab;
 
         public override void OnConfigurationChanged(Configuration newConfig)
         {
             _gridViewColumnHelper.OnConfigurationChanged(newConfig);
+            var newSpan = _gridViewColumnHelper.LastColmuns;
+            if (newSpan != _spanCount)
+            {
+                _spanCount = newSpan;
+                _layoutManager.SpanCount = _spanCount;
+                _layoutManager.SetSpanSizeLookup(new CalendarSummarySpanLookup(_adapter, _spanCount));
+            }
             base.OnConfigurationChanged(newConfig);
         }
 
+        public override int LayoutResourceId => Resource.Layout.CalendarPageSummaryTab;
+
         #region View
 
-        private ListView _calendarPageSummaryTabList;
+        private RecyclerView _calendarPageSummaryTabList;
 
-        public ListView CalendarPageSummaryTabList => GetView(ref _calendarPageSummaryTabList, Resource.Id.CalendarPageSummaryTabList);
+        public RecyclerView CalendarPageSummaryTabList => GetView(ref _calendarPageSummaryTabList, Resource.Id.CalendarPageSummaryTabList);
 
         #endregion
+
+        private abstract class SummaryItem
+        {
+        }
+
+        private class SummaryHeaderItem : SummaryItem
+        {
+            public string DayName { get; set; }
+        }
+
+        private class SummaryCardItem : SummaryItem
+        {
+            public AnimeItemViewModel ViewModel { get; set; }
+        }
+
+        private class CalendarSummaryAdapter : RecyclerView.Adapter
+        {
+            private readonly List<SummaryItem> _items;
+            private readonly Action<AnimeItemViewModel> _onItemClick;
+            private readonly global::Android.Views.LayoutInflater _inflater;
+
+            public CalendarSummaryAdapter(List<SummaryItem> items, Action<AnimeItemViewModel> onItemClick)
+            {
+                _items = items;
+                _onItemClick = onItemClick;
+                _inflater = MainActivity.CurrentContext.LayoutInflater;
+            }
+
+            public override int ItemCount => _items.Count;
+
+            public override int GetItemViewType(int position)
+                => _items[position] is SummaryHeaderItem ? ViewTypeHeader : ViewTypeCard;
+
+            public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
+            {
+                if (viewType == ViewTypeHeader)
+                {
+                    var view = _inflater.Inflate(Resource.Layout.CalendarSummaryDayHeader, parent, false);
+                    return new HeaderHolder(view);
+                }
+                return new CardHolder(new AnimeGridItem(parent.Context, _onItemClick));
+            }
+
+            public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
+            {
+                if (holder is HeaderHolder headerHolder)
+                    headerHolder.Text.Text = ((SummaryHeaderItem) _items[position]).DayName;
+                else if (holder is CardHolder cardHolder)
+                    cardHolder.GridItem.BindModel(((SummaryCardItem) _items[position]).ViewModel, false);
+            }
+        }
+
+        private class HeaderHolder : RecyclerView.ViewHolder
+        {
+            private readonly View _view;
+            private TextView _text;
+
+            public TextView Text => _text ?? (_text = _view.FindViewById<TextView>(Resource.Id.CalendarSummaryDayHeaderText));
+
+            public HeaderHolder(View view) : base(view)
+            {
+                _view = view;
+            }
+        }
+
+        private class CardHolder : RecyclerView.ViewHolder
+        {
+            public AnimeGridItem GridItem { get; }
+
+            public CardHolder(AnimeGridItem itemView) : base(itemView)
+            {
+                GridItem = itemView;
+            }
+        }
+
+        private class CalendarSummarySpanLookup : GridLayoutManager.SpanSizeLookup
+        {
+            private readonly CalendarSummaryAdapter _adapter;
+            private readonly int _spanCount;
+
+            public CalendarSummarySpanLookup(CalendarSummaryAdapter adapter, int spanCount)
+            {
+                _adapter = adapter;
+                _spanCount = spanCount;
+                SpanIndexCacheEnabled = true;
+            }
+
+            public override int GetSpanSize(int position)
+                => _adapter.GetItemViewType(position) == ViewTypeHeader ? _spanCount : 1;
+        }
     }
 }

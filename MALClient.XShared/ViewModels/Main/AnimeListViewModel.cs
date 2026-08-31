@@ -177,7 +177,7 @@ namespace MALClient.XShared.ViewModels.Main
                 _randomedIds = new List<int>();
                 _fetching = _fetchingSeasonal = false;
 
-                if (args != null && args.ResetBackNav)
+                if (args != null && args.ResetBackNav && !args.FromMore)
                     ViewModelLocator.NavMgr.ResetMainBackNav();
 
                 if (!_queryHandler)
@@ -307,7 +307,8 @@ namespace MALClient.XShared.ViewModels.Main
                         BtnSetSourceVisibility = false;
 
                         ViewModelLocator.NavMgr.DeregisterBackNav();
-                        ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
+                        ViewModelLocator.NavMgr.RegisterBackNav(
+                            args?.FromMore == true ? PageIndex.PageMore : PageIndex.PageAnimeList, null);
 
 
                         if (!gotArgs)
@@ -745,7 +746,6 @@ namespace MALClient.XShared.ViewModels.Main
             var prevCount = AnimeItems.Count + _animeItemsSet.Count;
 
             CurrentPage++;
-            CurrentIndexPosition = prevCount - 2;
             await FetchSeasonalData(true, CurrentPage);
             if (prevCount == AnimeItems.Count + _animeItemsSet.Count)
             {
@@ -816,6 +816,7 @@ namespace MALClient.XShared.ViewModels.Main
             }
             RaisePropertyChanged(() => AnimeItems);
             AddScrollHandler();
+            _ = PrefetchAirTimesAsync();
             if (CurrentIndexPosition != -1)
             {
                 try
@@ -838,6 +839,18 @@ namespace MALClient.XShared.ViewModels.Main
             _randomedIds = new List<int>();
         }
 
+        private async System.Threading.Tasks.Task PrefetchAirTimesAsync()
+        {
+            foreach (var item in AnimeItems)
+            {
+                if (item.ParentAbstraction.RepresentsAnime && string.IsNullOrEmpty(item.TimeTillNextAirCache))
+                {
+                    var nextAir = await item.GetTimeTillNextAirAsync(null);
+                    if (nextAir.HasValue)
+                        item.TimeTillNextAirCache = AirTimeUtils.FormatAirCountdown(nextAir.Value, DateTime.UtcNow);
+                }
+            }
+        }
 
         private int GetGridItemsToLoad()
         {

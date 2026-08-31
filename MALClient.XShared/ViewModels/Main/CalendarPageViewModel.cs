@@ -9,6 +9,7 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Ioc;
 using MALClient.Adapters;
 using MALClient.Models.Enums;
+using MALClient.Models.Models.Library;
 using MALClient.XShared.Comm;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Delegates;
@@ -164,36 +165,22 @@ namespace MALClient.XShared.ViewModels.Main
             }
             InitPages();
             _initialized = true;
+            CalendarBuildingVisibility = true;
 
-            var abstractions = _animeLibraryDataStorage.AllLoadedAuthAnimeItems.Where(abstraction =>
-                ResourceLocator.AiringInfoProvider.HasAiringEntry(abstraction.Id)).Where(
-                abstraction => abstraction.Type == (int)AnimeType.TV && (
-                    (Settings.CalendarIncludePlanned &&
-                     abstraction.MyStatus == AnimeStatus.PlanToWatch) ||
-                    (Settings.CalendarIncludeWatching && abstraction.MyStatus == AnimeStatus.Watching))).ToList();
-            
-            //Limit items to at most the configured amount
-            var maxItems = Math.Max(1, Settings.CalendarMaxItems);
-            if (abstractions.Count() > maxItems)
-            {
-                var watchingCount = abstractions.Count(abstraction => abstraction.MyStatus == AnimeStatus.Watching);
-                //with currently watched ones having most priority
-                if (watchingCount > maxItems)
-                    abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching).Take(maxItems).ToList();
-                else
-                {
-                    //take all watching and add ptw to make at most maxItems entries
-                    abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching)
-                        .Concat(abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.PlanToWatch)
-                            .Take(maxItems - watchingCount)).ToList();
-                }
-            }
-
+            List<AnimeItemAbstraction> abstractions;
+            if (Settings.CalendarShowAllAiring)
+                abstractions = await BuildAllAiringAbstractionsAsync();
+            else
+                abstractions = await Task.Run(() => BuildMyListAbstractions());
 
             foreach (var abstraction in abstractions)
             {
                 try
                 {
+                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(abstraction.Id, DateTime.UtcNow, out var nextAirDate) &&
+                        (nextAirDate - DateTime.UtcNow).TotalDays >= 7)
+                        continue;
+
                     if (ResourceLocator.AiringInfoProvider.TryGetAiringDay(abstraction.Id, out DayOfWeek dayOfWeek))
                     {
                         int day = (int) dayOfWeek;
@@ -259,6 +246,69 @@ namespace MALClient.XShared.ViewModels.Main
             CalendarBuildingVisibility = false;
             CalendarVisibility = true;
 
+        }
+
+        private List<AnimeItemAbstraction> BuildMyListAbstractions()
+        {
+            var abstractions = _animeLibraryDataStorage.AllLoadedAuthAnimeItems.Where(abstraction =>
+                ResourceLocator.AiringInfoProvider.HasAiringEntry(abstraction.Id)).Where(
+                abstraction => abstraction.Type == (int)AnimeType.TV && (
+                    (Settings.CalendarIncludePlanned &&
+                     abstraction.MyStatus == AnimeStatus.PlanToWatch) ||
+                    (Settings.CalendarIncludeWatching && abstraction.MyStatus == AnimeStatus.Watching))).ToList();
+
+            //Limit items to at most the configured amount
+            var maxItems = Math.Max(1, Settings.CalendarMaxItems);
+            if (abstractions.Count > maxItems)
+            {
+                var watchingCount = abstractions.Count(abstraction => abstraction.MyStatus == AnimeStatus.Watching);
+                //with currently watched ones having most priority
+                if (watchingCount > maxItems)
+                    abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching).Take(maxItems).ToList();
+                else
+                {
+                    //take all watching and add ptw to make at most maxItems entries
+                    abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching)
+                        .Concat(abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.PlanToWatch)
+                            .Take(maxItems - watchingCount)).ToList();
+                }
+            }
+
+            return abstractions;
+        }
+
+        private async Task<List<AnimeItemAbstraction>> BuildAllAiringAbstractionsAsync()
+        {
+            return await Task.Run(async () =>
+            {
+                var result = new List<AnimeItemAbstraction>();
+                var maxItems = Math.Max(1, Settings.CalendarMaxItems);
+                var ids = ResourceLocator.AiringInfoProvider.GetAllAiringIds().Take(maxItems).ToList();
+                foreach (var id in ids)
+                {
+                    try
+                    {
+                        var details = await new AnimeGeneralDetailsQuery().GetAnimeDetails(false, id.ToString(), "", true);
+                        if (details == null)
+                            continue;
+                        result.Add(new AnimeItemAbstraction(false, new AnimeLibraryItemData
+                        {
+                            Id = details.Id,
+                            MalId = details.MalId,
+                            Title = details.Title,
+                            ImgUrl = details.ImgUrl,
+                            AllEpisodes = details.AllEpisodes,
+                            Type = (int)MalTypeParser.ParseAnimeType(details.Type),
+                            AlternateTitle = details.AlternateTitle
+                        }));
+                    }
+                    catch (Exception)
+                    {
+                        //skip failed resolutions
+                    }
+                }
+                return result;
+            });
         }
 
         public async Task GoToDesiredTab()

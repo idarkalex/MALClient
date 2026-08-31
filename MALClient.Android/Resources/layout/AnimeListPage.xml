@@ -14,7 +14,7 @@
       android:layout_gravity="top"
       android:layout_height="match_parent"
       android:numColumns="auto_fit"
-      android:paddingBottom="90dp"
+      android:paddingBottom="8dp"
       android:clipToPadding="false"
       android:scrollbarStyle="outsideInset"
       android:gravity="center"
@@ -24,9 +24,9 @@
       android:id="@+id/AnimeListPageListView"
       android:layout_width="match_parent"
       android:layout_gravity="top"
-      android:paddingBottom="90dp"
-      android:clipToPadding="false"
       android:layout_height="match_parent"
+      android:paddingBottom="8dp"
+      android:clipToPadding="false"
       android:choiceMode="singleChoice"
       android:dividerHeight="5dp" android:divider="@color/Transparent" />
     <ListView
@@ -34,7 +34,7 @@
       android:layout_width="match_parent"
       android:layout_gravity="top"
       android:layout_height="match_parent"
-      android:paddingBottom="90dp"
+      android:paddingBottom="8dp"
       android:clipToPadding="false"
       android:choiceMode="singleChoice"
       android:dividerHeight="5dp" android:divider="@color/Transparent" />

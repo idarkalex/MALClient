@@ -203,40 +203,50 @@ namespace MALClient.Android.Activities
                     ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
             };
             container.SetBackgroundResource(Resource.Drawable.electric_midnight_sheet_top);
-            container.SetPadding(0, DimensionsHelper.DpToPx(20), 0, DimensionsHelper.DpToPx(16));
-
-            var title = new TextView(this)
-            {
-                Text = isManga ? "READING STATUS" : "FILTER STATUS",
-                TextSize = 12
-            };
-            title.SetAllCaps(true);
-            title.LetterSpacing = 0.08f;
-            title.Typeface = Typeface.Create("Inter", TypefaceStyle.Bold);
-            title.SetTextColor(new Color(ResourceExtension.BrushText));
-            title.Gravity = GravityFlags.Center;
-            title.SetPadding(DimensionsHelper.DpToPx(24), 0, DimensionsHelper.DpToPx(24), DimensionsHelper.DpToPx(12));
-            container.AddView(title);
+            container.SetPadding(0, DimensionsHelper.DpToPx(8), 0, DimensionsHelper.DpToPx(16));
 
             var selectedIdx = Array.IndexOf(System.Enum.GetValues(typeof(AnimeStatus)), currentStatus);
-            int i = 0;
-            foreach (AnimeStatus value in System.Enum.GetValues(typeof(AnimeStatus)))
+
+            var statusValues = System.Enum.GetValues(typeof(AnimeStatus)).Cast<AnimeStatus>().ToList();
+            var itemViews = new System.Collections.Generic.List<View>();
+            PopupWindow popup = null;
+            var buildView = new System.Func<int, View>(index =>
+                AnimeListPageFlyoutBuilder.BuildBaseItem(this,
+                    XShared.Utils.Utilities.StatusToString((int)statusValues[index], isManga),
+                    background: index == selectedIdx ? (int?)ResourceExtension.BrushSelectedDialogItem : null,
+                    foreground: index == selectedIdx ? (int?)ResourceExtension.AccentColour : null,
+                    gravity: GravityFlags.Center));
+            void Highlight(int index)
             {
-                var statusIndex = i++;
-                bool isSelected = statusIndex == selectedIdx;
-                AnimeListPageFlyoutBuilder.ParamRelativeLayout =
-                    new ViewGroup.LayoutParams(-1, DimensionsHelper.DpToPx(48));
-                var item = AnimeListPageFlyoutBuilder.BuildBaseItem(this,
-                    XShared.Utils.Utilities.StatusToString((int)value, isManga),
-                    background: isSelected ? (int?)ResourceExtension.BrushSelectedDialogItem : null,
-                    foreground: isSelected ? (int?)ResourceExtension.AccentColour : null,
-                    gravity: GravityFlags.Center);
+                for (int h = 0; h < itemViews.Count; h++)
+                {
+                    var isSel = h == index;
+                    var top = itemViews[h];
+                    top.SetBackgroundColor(isSel
+                        ? new Color(ResourceExtension.BrushSelectedDialogItem)
+                        : Color.Transparent);
+                    var holder = (top as ViewGroup)?.GetChildAt(0) as ViewGroup;
+                    var txt = holder?.FindViewById<TextView>(AnimeListPageFlyoutBuilder.TextViewTag);
+                    if (txt != null)
+                        txt.SetTextColor(new Color(isSel
+                            ? ResourceExtension.AccentColour
+                            : ResourceExtension.BrushText));
+                }
+            }
+
+            for (int statusIndex = 0; statusIndex < statusValues.Count; statusIndex++)
+            {
+                var index = statusIndex;
+                var item = buildView(index);
                 item.Click += (sender, args) =>
                 {
+                    Highlight(index);
+                    popup?.Dismiss();
                     var workMode = isManga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
                     ViewModel.Navigate(PageIndex.PageAnimeList,
-                        new AnimeListPageNavigationArgs(statusIndex, workMode));
+                        new AnimeListPageNavigationArgs(index, workMode));
                 };
+                itemViews.Add(item);
                 container.AddView(item);
             }
 
@@ -252,7 +262,7 @@ namespace MALClient.Android.Activities
                 ? MainPageBottomNav.Height
                 : DimensionsHelper.DpToPx(56);
 
-            var popup = new PopupWindow(container, screenWidth, popupHeight, true);
+            popup = new PopupWindow(container, screenWidth, popupHeight, true);
             popup.SetBackgroundDrawable(null);
             popup.AnimationStyle = global::Android.Resource.Style.AnimationDialog;
             popup.ShowAtLocation(MainPageBottomNav, GravityFlags.Bottom, 0, bottomBarHeight);

@@ -573,6 +573,12 @@ namespace MALClient.XShared.Utils
             set => ApplicationDataService[nameof(CalendarMaxItems)] = value;
         }
 
+        public static bool CalendarShowAllAiring
+        {
+            get => (bool)(ApplicationDataService[nameof(CalendarShowAllAiring)] ?? false);
+            set => ApplicationDataService[nameof(CalendarShowAllAiring)] = value;
+        }
+
         #endregion Calendar
 
         #region Articles

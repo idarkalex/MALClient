@@ -75,7 +75,7 @@ namespace MALClient.XShared.ViewModels
         //three constructors depending on original init
         public AnimeItemAbstraction(SeasonalAnimeData data, bool anime) : this(null, data.Id)
         {
-            _seasonalData = data;           
+            _seasonalData = data;
             Index = data.Index;
             RepresentsAnime = anime;
             if (!int.TryParse(data.Episodes, out var eps))

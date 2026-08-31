@@ -374,6 +374,12 @@ namespace MALClient.XShared.ViewModels
             set => Settings.CalendarIncludePlanned = value;
         }
 
+        public bool CalendarShowAllAiring
+        {
+            get => Settings.CalendarShowAllAiring;
+            set => Settings.CalendarShowAllAiring = value;
+        }
+
         public bool IsCachingEnabled
         {
             get => Settings.IsCachingEnabled;

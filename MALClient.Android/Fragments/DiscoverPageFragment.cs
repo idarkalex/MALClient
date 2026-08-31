@@ -124,7 +124,7 @@ namespace MALClient.Android.Fragments
             DiscoverPageLoadingSpinner.Visibility = ViewStates.Gone;
         }
 
-        private async Task LoadSectionAsync<T>(TextView header, LinearLayout row, Func<Task<List<T>>> fetch, Action<List<T>> populate)
+        private async Task LoadSectionAsync<T>(TextView header, LinearLayout row, Func<Task<List<T>>> fetch, Func<List<T>, Task> populate)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace MALClient.Android.Fragments
                     SetSectionVisibility(header, row, false);
                     return;
                 }
-                populate(data);
+                await populate(data);
             }
             catch (Exception)
             {
@@ -223,7 +223,7 @@ namespace MALClient.Android.Fragments
                 if (!Credentials.Authenticated)
                     return new List<AnimeItemAbstraction>();
                 return await GetReadingMangaAsync();
-            }, data => PopulateReadingRow(data.Take(12).ToList()));
+            }, async data => { await PopulateReadingRow(data.Take(12).ToList()); });
         }
 
         private Task LoadCompletedAsync(bool force = false)
@@ -233,7 +233,7 @@ namespace MALClient.Android.Fragments
                 if (!Credentials.Authenticated)
                     return new List<AnimeItemAbstraction>();
                 return await GetCompletedAnimeAsync();
-            }, data => PopulateCompletedRow(data.Take(12).ToList()));
+            }, async data => { await PopulateCompletedRow(data.Take(12).ToList()); });
         }
 
         private Task LoadSuggestionsAsync()
@@ -252,7 +252,7 @@ namespace MALClient.Android.Fragments
                     MalId = rec.Id,
                     MyStatus = AnimeStatus.PlanToWatch,
                 }).Cast<AnimeLibraryItemData>().ToList();
-            }, data => PopulateLibraryCardRow(DiscoverSuggestionsRow, data));
+            }, data => { PopulateLibraryCardRow(DiscoverSuggestionsRow, data); return Task.CompletedTask; });
         }
 
         private static async Task<List<AnimeItemAbstraction>> GetReadingMangaAsync()
@@ -300,49 +300,49 @@ namespace MALClient.Android.Fragments
         {
             return LoadSectionAsync(DiscoverSeasonalHeader, DiscoverSeasonalRow,
                 async () => await new AnimeSeasonalQuery(GetCurrentSeason()).GetSeasonalAnime(force),
-                data => PopulateAnimeRow(DiscoverSeasonalRow, data.Take(12).ToList(), true));
+                data => { PopulateAnimeRow(DiscoverSeasonalRow, data.Take(12).ToList(), true); return Task.CompletedTask; });
         }
 
         private Task LoadUpcomingAsync(bool force = false)
         {
             return LoadSectionAsync(DiscoverUpcomingHeader, DiscoverUpcomingRow,
                 async () => await new AnimeSeasonalQuery(GetNextSeason()).GetSeasonalAnime(force),
-                data => PopulateAnimeRow(DiscoverUpcomingRow, data.Take(12).ToList(), true));
+                data => { PopulateAnimeRow(DiscoverUpcomingRow, data.Take(12).ToList(), true); return Task.CompletedTask; });
         }
 
         private Task LoadTopAnimeAsync(bool force = false)
         {
             return LoadSectionAsync(DiscoverTopAnimeHeader, DiscoverTopAnimeRow,
                 async () => await new AnimeTopQuery(TopAnimeType.General).GetTopAnimeData(force),
-                data => PopulateAnimeRow(DiscoverTopAnimeRow, data.Take(12).ToList(), true));
+                data => { PopulateAnimeRow(DiscoverTopAnimeRow, data.Take(12).ToList(), true); return Task.CompletedTask; });
         }
 
         private Task LoadTopMangaAsync(bool force = false)
         {
             return LoadSectionAsync(DiscoverTopMangaHeader, DiscoverTopMangaRow,
                 async () => await new AnimeTopQuery(MangaTopType.All).GetTopAnimeData(force),
-                data => PopulateAnimeRow(DiscoverTopMangaRow, data.Take(12).ToList(), false));
+                data => { PopulateAnimeRow(DiscoverTopMangaRow, data.Take(12).ToList(), false); return Task.CompletedTask; });
         }
 
         private Task LoadAdaptedAsync(bool force = false)
         {
             return LoadSectionAsync(DiscoverAdaptedHeader, DiscoverAdaptedRow,
                 async () => await new AnimeAdaptedToAnimeQuery(MangaAdaptedType.AiringNow).GetAdaptedToAnimeData(force),
-                data => PopulateAnimeRow(DiscoverAdaptedRow, data.Take(12).ToList(), false));
+                data => { PopulateAnimeRow(DiscoverAdaptedRow, data.Take(12).ToList(), false); return Task.CompletedTask; });
         }
 
         private Task LoadFeaturedAsync(bool force = false)
         {
             return LoadSectionAsync(DiscoverFeaturedHeader, DiscoverFeaturedRow,
                 async () => await new MalArticlesIndexQuery(ArticlePageWorkMode.Articles).GetArticlesIndex(force),
-                data => PopulateNewsRow(DiscoverFeaturedRow, data.Take(10).ToList()));
+                data => { PopulateNewsRow(DiscoverFeaturedRow, data.Take(10).ToList()); return Task.CompletedTask; });
         }
 
         private Task LoadNewsAsync(bool force = false)
         {
             return LoadSectionAsync(DiscoverNewsHeader, DiscoverNewsRow,
                 async () => await new MalArticlesIndexQuery(ArticlePageWorkMode.News).GetArticlesIndex(force),
-                data => PopulateNewsRow(DiscoverNewsRow, data.Take(10).ToList()));
+                data => { PopulateNewsRow(DiscoverNewsRow, data.Take(10).ToList()); return Task.CompletedTask; });
         }
 
         private void PopulateLibraryCardRow(LinearLayout row, List<AnimeLibraryItemData> data)
@@ -376,26 +376,28 @@ namespace MALClient.Android.Fragments
                 AddGridCardToRow(row, new AnimeItemAbstraction(item, isAnime).ViewModel);
         }
 
-        private void PopulateWatchingRow(IList<AnimeItemAbstraction> data)
+        private async Task PopulateWatchingRow(IList<AnimeItemAbstraction> data)
         {
             foreach (var item in data)
             {
                 var viewModel = item.ViewModel;
-                viewModel.TimeTillNextAirCache = viewModel.GetTimeTillNextAir(JstTimeZone);
+                viewModel.SetNextAirCache(await viewModel.GetTimeTillNextAirAsync(JstTimeZone));
                 AddGridCardToRow(DiscoverWatchingRow, viewModel);
             }
         }
 
-        private void PopulateReadingRow(IList<AnimeItemAbstraction> data)
+        private Task PopulateReadingRow(IList<AnimeItemAbstraction> data)
         {
             foreach (var item in data)
                 AddGridCardToRow(DiscoverReadingRow, item.ViewModel);
+            return Task.CompletedTask;
         }
 
-        private void PopulateCompletedRow(IList<AnimeItemAbstraction> data)
+        private Task PopulateCompletedRow(IList<AnimeItemAbstraction> data)
         {
             foreach (var item in data)
                 AddGridCardToRow(DiscoverCompletedRow, item.ViewModel);
+            return Task.CompletedTask;
         }
 
         private void PopulateNewsRow(LinearLayout row, IList<MalNewsUnitModel> data)

@@ -200,9 +200,21 @@ namespace MALClient.XShared.BL
             if (data == null || !data.Episodes.Any())
                 return false;
 
-            day = Utilities.ConvertFromUnixTimestamp(data.Episodes[0].Timestamp).ToLocalTime().DayOfWeek;
+            var jst = DateTimeOffset.FromUnixTimeSeconds(data.Episodes[0].Timestamp).ToOffset(TimeSpan.FromHours(9));
+            day = jst.DayOfWeek;
 
             return true;
+        }
+
+        public IEnumerable<int> GetAllAiringIds()
+        {
+            if (_airingData == null)
+                yield break;
+            foreach (var data in _airingData)
+            {
+                if (data != null && data.Episodes != null && data.Episodes.Any())
+                    yield return data.MalId;
+            }
         }
 
         public bool HasAiringEntry(int id)

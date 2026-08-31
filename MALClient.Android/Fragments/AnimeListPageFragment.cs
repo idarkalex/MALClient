@@ -89,16 +89,10 @@ namespace MALClient.Android.Fragments
             _gridViewColumnHelper?.OnConfigurationChanged(newConfig);
             base.OnConfigurationChanged(newConfig);
 
-            var footerParam = _loadMoreFooter.LayoutParameters;
             if (ViewModel.AnimeGridItems != null)
             {
                 AnimeListPageGridView.SetSelection(prevPosition);
             }
-            else
-            {
-                footerParam.Height = -2;
-            }
-            _loadMoreFooter.LayoutParameters = footerParam;
             InitActionMenu();
         }
 
@@ -319,26 +313,43 @@ namespace MALClient.Android.Fragments
 
         private void OpenTopTypeDrawer()
         {
+            var isManga = ViewModel.WorkMode == AnimeListWorkModes.TopManga;
             var items = new List<IDrawerItem>();
-            foreach (TopAnimeType sortOption in Enum.GetValues(typeof(TopAnimeType)))
+            if (isManga)
             {
-                var btn = HamburgerUtilities.GetBaseSecondaryItem();
-                btn.WithName(sortOption.ToString());
-                btn.WithIdentifier((int)sortOption);
-                items.Add(btn);
+                foreach (MangaTopType sortOption in Enum.GetValues(typeof(MangaTopType)))
+                {
+                    var btn = HamburgerUtilities.GetBaseSecondaryItem();
+                    btn.WithName(sortOption.ToString());
+                    btn.WithIdentifier((int)sortOption);
+                    items.Add(btn);
+                }
+            }
+            else
+            {
+                foreach (TopAnimeType sortOption in Enum.GetValues(typeof(TopAnimeType)))
+                {
+                    var btn = HamburgerUtilities.GetBaseSecondaryItem();
+                    btn.WithName(sortOption.ToString());
+                    btn.WithIdentifier((int)sortOption);
+                    items.Add(btn);
+                }
             }
 
             RightDrawer.SetItems(items);
-            RightDrawer.SetSelection((int)ViewModel.TopAnimeWorkMode);
+            RightDrawer.SetSelection(isManga ? (int)ViewModel.MangaTopWorkMode : (int)ViewModel.TopAnimeWorkMode);
 
             RightDrawer.StickyHeader.FindViewById<TextView>(Resource.Id.AnimeListPageDrawerHeaderText).Text = "Top Types";
             RightDrawer.StickyHeader.FindViewById<ImageView>(Resource.Id.AnimeListPageDrawerHeaderIcon).SetImageResource(
-                Resource.Drawable.icon_fav_outline);
+                Resource.Drawable.icon_arrow_down);
             RightDrawer.OnDrawerItemClickListener = new HamburgerItemClickListener((view, i, arg3) =>
             {
                 if (view == null)
                     return;
-                ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, AnimeListPageNavigationArgs.TopAnime((TopAnimeType)i));
+                if (isManga)
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, AnimeListPageNavigationArgs.TopMangaCategory((MangaTopType)arg3.Identifier));
+                else
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, AnimeListPageNavigationArgs.TopAnime((TopAnimeType)arg3.Identifier));
                 RightDrawer.OnDrawerItemClickListener = null;
                 RightDrawer.CloseDrawer();
             });

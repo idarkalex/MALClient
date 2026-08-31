@@ -14,6 +14,7 @@ namespace MALClient.XShared.Interfaces
         bool TryGetNextAirDate(int id, DateTime forDay, out DateTime date);
         bool TryGetAiringDay(int id,out DayOfWeek day);
         bool HasAiringEntry(int id);
+        IEnumerable<int> GetAllAiringIds();
 
         bool InitializationSuccess { get; }
 

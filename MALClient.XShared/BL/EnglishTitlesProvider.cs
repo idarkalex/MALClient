@@ -30,7 +30,7 @@ namespace MALClient.XShared.BL
 
         public void AddOrUpdate(int id, bool isAnime, string title)
         {
-            if(string.IsNullOrEmpty(title))
+            if(string.IsNullOrEmpty(title) || _englishTitles == null)
                 return;
 
             var sId = FormatId(id, isAnime);
@@ -51,7 +51,7 @@ namespace MALClient.XShared.BL
         {
             var sId = FormatId(id, isAnime);
 
-            if (_englishTitles.ContainsKey(sId))
+            if (_englishTitles != null && _englishTitles.ContainsKey(sId))
             {
                 title = _englishTitles[sId];
                 return true;

@@ -122,6 +122,45 @@ namespace MALClient.XShared.Comm
             return doc.RootElement.GetProperty("data").Clone();
         }
 
+        public static async Task<JsonElement> GetDataAsync(string endpoint, TimeSpan timeout)
+        {
+            var json = await GetStringAsync(endpoint, timeout);
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.GetProperty("data").Clone();
+        }
+
+        private static async Task<string> GetStringAsync(string endpoint, TimeSpan timeout)
+        {
+            var client = new HttpClient { Timeout = timeout };
+            client.DefaultRequestHeaders.Add("User-Agent", "MALClient/3.0");
+            try
+            {
+                await RateLimiter.WaitAsync();
+                try
+                {
+                    var sinceLast = DateTime.UtcNow - _lastRequest;
+                    if (sinceLast.TotalMilliseconds < RequestSpacingMs)
+                        await Task.Delay(RequestSpacingMs - (int)sinceLast.TotalMilliseconds);
+
+                    _lastRequest = DateTime.UtcNow;
+                    using (var response = await client.GetAsync($"{BaseUrls[0]}/{endpoint}"))
+                    {
+                        if (!response.IsSuccessStatusCode)
+                            throw new HttpRequestException($"Tenrai request failed: {(int)response.StatusCode}");
+                        return await response.Content.ReadAsStringAsync();
+                    }
+                }
+                finally
+                {
+                    RateLimiter.Release();
+                }
+            }
+            finally
+            {
+                client.Dispose();
+            }
+        }
+
         public static async Task<(List<JsonElement> Items, bool HasNextPage)> GetPaginatedAsync(string endpoint)
         {
             var json = await GetStringAsync(endpoint);

@@ -71,6 +71,20 @@ namespace MALClient.Android.Flyouts
             builder.SetYOffset(DimensionsHelper.DpToPx(yOffsetDp));
         }
 
+        public static void AlignLeftUnder(DroppyMenuPopup.Builder builder, View anchor, int popupWidthDp, int yOffsetDp = 8)
+        {
+            // popup sits fully to the LEFT of the anchor (right edge = anchor left - gap)
+            var popupWidthPx = DimensionsHelper.DpToPx(popupWidthDp);
+            var anchorLoc = new int[2];
+            anchor.GetLocationOnScreen(anchorLoc);
+            var margin = DimensionsHelper.DpToPx(8);
+            var xOffset = -popupWidthPx - DimensionsHelper.DpToPx(2);
+            if (anchorLoc[0] + xOffset < margin)
+                xOffset = margin - anchorLoc[0];
+            builder.SetXOffset(xOffset);
+            builder.SetYOffset(DimensionsHelper.DpToPx(yOffsetDp));
+        }
+
         public static View BuildItem(Context context,string text,Action<int> callback,int id,int? background = null,int? foreground = null,bool clickable = true,GravityFlags? gravity = null,bool wrapContentHeight = false)
         {
             var holder = BuildBaseItem(context, text,background,foreground,clickable,gravity,wrapContentHeight);

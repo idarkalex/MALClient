@@ -72,12 +72,12 @@
             android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
 
-      <ImageView
-          android:layout_width="24dp"
-          android:layout_height="24dp"
-          android:src="@drawable/icon_go"
-          android:tint="?BrushTextSecondary" />
-    </LinearLayout>
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/icon_go"
+            android:tint="?BrushTextSecondary" />
+      </LinearLayout>
 
     <!-- Anime Section -->
     <LinearLayout
@@ -116,7 +116,7 @@
       <LinearLayout
           android:id="@+id/MorePageAnimeListItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -131,21 +131,39 @@
             android:src="@drawable/icon_list"
             android:tint="?BrushTextSecondary" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:fontFamily="@font/inter"
-            android:text="Anime list"
-            android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+          <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="16dp"
+              android:layout_weight="1"
+              android:fontFamily="@font/inter"
+              android:text="Anime list"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/EmBodyMd" />
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/icon_more_vertical"
+            android:id="@+id/MorePageAnimeListMoreButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/icon_arrow_down"
             android:tint="?BrushTextSecondary" />
+      </LinearLayout>
+
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
+      <LinearLayout
+          android:id="@+id/MorePageAnimeListPanel"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="36dp"
+          android:orientation="vertical"
+          android:visibility="gone">
       </LinearLayout>
 
       <View
@@ -157,7 +175,7 @@
       <LinearLayout
           android:id="@+id/MorePageSeasonalItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -180,7 +198,7 @@
             android:fontFamily="@font/inter"
             android:text="Seasonal anime"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
 
       <View
@@ -192,7 +210,7 @@
       <LinearLayout
           android:id="@+id/MorePageTopAnimeItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -207,21 +225,33 @@
             android:src="@drawable/icon_fav_outline"
             android:tint="?BrushTextSecondary" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:fontFamily="@font/inter"
-            android:text="Top anime"
-            android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+          <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="16dp"
+              android:layout_weight="1"
+              android:fontFamily="@font/inter"
+              android:text="Top anime"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/EmBodyMd" />
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/icon_more_vertical"
+            android:id="@+id/MorePageTopAnimeMoreButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/icon_arrow_down"
             android:tint="?BrushTextSecondary" />
+      </LinearLayout>
+
+      <LinearLayout
+          android:id="@+id/MorePageTopAnimeTypesPanel"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="36dp"
+          android:orientation="vertical"
+          android:visibility="gone">
       </LinearLayout>
 
       <View
@@ -233,7 +263,7 @@
       <LinearLayout
           android:id="@+id/MorePageSearchItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -256,7 +286,7 @@
             android:fontFamily="@font/inter"
             android:text="Search"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
 
       <View
@@ -268,7 +298,7 @@
       <LinearLayout
           android:id="@+id/MorePageRecommendationsItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -291,7 +321,7 @@
             android:fontFamily="@font/inter"
             android:text="Recommendations"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
 
       <View
@@ -303,7 +333,7 @@
       <LinearLayout
           android:id="@+id/MorePageCalendarItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -326,7 +356,7 @@
             android:fontFamily="@font/inter"
             android:text="Calendar"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
     </LinearLayout>
 
@@ -367,7 +397,7 @@
       <LinearLayout
           android:id="@+id/MorePageMangaListItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -382,21 +412,39 @@
             android:src="@drawable/icon_list"
             android:tint="?BrushTextSecondary" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:fontFamily="@font/inter"
-            android:text="Manga list"
-            android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+          <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="16dp"
+              android:layout_weight="1"
+              android:fontFamily="@font/inter"
+              android:text="Manga list"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/EmBodyMd" />
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/icon_more_vertical"
+            android:id="@+id/MorePageMangaListMoreButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/icon_arrow_down"
             android:tint="?BrushTextSecondary" />
+      </LinearLayout>
+
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="56dp"
+          android:background="#1affffff" />
+
+      <LinearLayout
+          android:id="@+id/MorePageMangaListPanel"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="36dp"
+          android:orientation="vertical"
+          android:visibility="gone">
       </LinearLayout>
 
       <View
@@ -408,7 +456,7 @@
       <LinearLayout
           android:id="@+id/MorePageTopMangaItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -423,21 +471,33 @@
             android:src="@drawable/icon_fav_outline"
             android:tint="?BrushTextSecondary" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:fontFamily="@font/inter"
-            android:text="Top manga"
-            android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+          <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="16dp"
+              android:layout_weight="1"
+              android:fontFamily="@font/inter"
+              android:text="Top manga"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/EmBodyMd" />
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/icon_more_vertical"
+            android:id="@+id/MorePageTopMangaMoreButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/icon_arrow_down"
             android:tint="?BrushTextSecondary" />
+      </LinearLayout>
+
+      <LinearLayout
+          android:id="@+id/MorePageTopMangaTypesPanel"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="36dp"
+          android:orientation="vertical"
+          android:visibility="gone">
       </LinearLayout>
 
       <View
@@ -449,7 +509,7 @@
       <LinearLayout
           android:id="@+id/MorePageAdaptedItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -464,21 +524,33 @@
             android:src="@drawable/icon_books"
             android:tint="?BrushTextSecondary" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:fontFamily="@font/inter"
-            android:text="Adapted to anime"
-            android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+          <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="16dp"
+              android:layout_weight="1"
+              android:fontFamily="@font/inter"
+              android:text="Adapted to anime"
+              android:textColor="?BrushText"
+              android:textSize="@dimen/EmBodyMd" />
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/icon_more_vertical"
+            android:id="@+id/MorePageAdaptedMoreButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/icon_arrow_down"
             android:tint="?BrushTextSecondary" />
+      </LinearLayout>
+
+      <LinearLayout
+          android:id="@+id/MorePageAdaptedTypesPanel"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="36dp"
+          android:orientation="vertical"
+          android:visibility="gone">
       </LinearLayout>
     </LinearLayout>
 
@@ -518,7 +590,7 @@
       <LinearLayout
           android:id="@+id/MorePageArticlesItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -541,7 +613,7 @@
             android:fontFamily="@font/inter"
             android:text="Articles &amp; News"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
 
       <View
@@ -553,7 +625,7 @@
       <LinearLayout
           android:id="@+id/MorePageVideosItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -576,7 +648,7 @@
             android:fontFamily="@font/inter"
             android:text="Promotional Videos"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
 
       <View
@@ -588,7 +660,7 @@
       <LinearLayout
           android:id="@+id/MorePageForumsItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -611,7 +683,7 @@
             android:fontFamily="@font/inter"
             android:text="Forums"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
 
       <View
@@ -623,7 +695,7 @@
       <LinearLayout
           android:id="@+id/MorePageSettingsItem"
           android:layout_width="match_parent"
-          android:layout_height="48dp"
+          android:layout_height="44dp"
           android:clickable="true"
           android:focusable="true"
           android:foreground="?selectableItemBackground"
@@ -646,7 +718,7 @@
             android:fontFamily="@font/inter"
             android:text="Settings &amp; more"
             android:textColor="?BrushText"
-            android:textSize="@dimen/EmBodyLg" />
+            android:textSize="@dimen/EmBodyMd" />
       </LinearLayout>
     </LinearLayout>
 

@@ -45,7 +45,7 @@ namespace MALClient.Android.Flyouts
             if (!viewModel.AddAnimeVisibility)
                 droppyBuilder.AddMenuItem(new DroppyMenuCustomItem(AnimeListPageFlyoutBuilder.BuildItem(context, "Remove from my list", listener, 5)));
 
-            AnimeListPageFlyoutBuilder.AlignRightUnder(droppyBuilder, parent, 150);
+            AnimeListPageFlyoutBuilder.AlignLeftUnder(droppyBuilder, parent, 150);
             return droppyBuilder.Build();
         }
     }

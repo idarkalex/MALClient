@@ -49,17 +49,21 @@ namespace MALClient.Android
         public static bool AnimeIntoIfLoaded(this ImageView image, string originUrl, ITransformation transformation = null)
         {
             var url = GetImgUrl(originUrl);
-            if (LoadedImgs.ContainsKey(url))
-            {
-                LoadImage(image, originUrl, url, true, null, transformation);
-                return true;
-            }
-            return false;
+            if (string.IsNullOrEmpty(url) || !LoadedImgs.ContainsKey(url))
+                return false;
+            LoadImage(image, originUrl, url, true, null, transformation);
+            return true;
         }
 
         public static void AnimeInto(this ImageView image, string originUrl, View loader = null, ITransformation transformation = null)
         {
             var url = GetImgUrl(originUrl);
+            if (string.IsNullOrEmpty(url))
+            {
+                image.Visibility = ViewStates.Gone;
+                if (loader != null) loader.Visibility = ViewStates.Visible;
+                return;
+            }
             LoadImage(image, originUrl, url, LoadedImgs.ContainsKey(url), loader, transformation);
         }
 
@@ -142,12 +146,10 @@ namespace MALClient.Android
         public static bool IntoIfLoaded(this ImageView image, string originUrl, ITransformation transformation = null,
             Action<ImageView> onCompleted = null, int? maxHeight = null)
         {
-            if (LoadedImgs.ContainsKey(originUrl))
-            {
-                LoadImage(image, originUrl, transformation, onCompleted, maxHeight, true);
-                return true;
-            }
-            return false;
+            if (string.IsNullOrEmpty(originUrl) || !LoadedImgs.ContainsKey(originUrl))
+                return false;
+            LoadImage(image, originUrl, transformation, onCompleted, maxHeight, true);
+            return true;
         }
 
         public static void Into(this ImageView image, string originUrl, ITransformation transformation = null, Action<ImageView> onCompleted = null, int? maxHeight = null)

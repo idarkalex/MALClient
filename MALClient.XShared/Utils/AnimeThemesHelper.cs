@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -148,7 +148,7 @@ namespace MALClient.XShared.Utils
                     variants.Add(partMatch.Groups[1].Value.Trim());
             }
 
-            // PHASE 1 — structured /anime resolution for EVERY variant. The legacy search
+            // PHASE 1 â€” structured /anime resolution for EVERY variant. The legacy search
             // is season-ambiguous (e.g. "KonoSuba" returns Season 1 videos), so a structured
             // hit from a later variant (romaji "Kono Subarashii Sekai ni Shukufuku wo! 3")
             // must never be masked by legacy garbage cached from an earlier one. Only cache
@@ -161,7 +161,7 @@ namespace MALClient.XShared.Utils
                     return cached;
 
                 // Persisted cache: the AnimeThemes server intermittently serves EMPTY theme
-                // relations (Konosuba S3 is a real case) for minutes at a time — an in-memory
+                // relations (Konosuba S3 is a real case) for minutes at a time â€” an in-memory
                 // cache cannot survive that. Once a structured resolve succeeds, store it so
                 // future sessions/taps stay immune to the flap.
                 try
@@ -205,11 +205,16 @@ namespace MALClient.XShared.Utils
                 }
                 catch (Exception ex)
                 {
-                    DiagnosticsReporter.Error("AnimeThemes", $"SearchViaAnimeApi failed for '{variant}'", ex);
+                    if (ex is OperationCanceledException)
+                    {
+                        DiagnosticsReporter.Warn("AnimeThemes", $"SearchViaAnimeApi cancelled for '{variant}'");
+                    }
+                    else
+                        DiagnosticsReporter.Error("AnimeThemes", $"SearchViaAnimeApi failed for '{variant}'", ex);
                 }
             }
 
-            // PHASE 2 — legacy fuzzy endpoint, only when no variant resolved a structured anime
+            // PHASE 2 â€” legacy fuzzy endpoint, only when no variant resolved a structured anime
             foreach (var variant in variants)
             {
                 var cacheKey = variant.ToLowerInvariant();
@@ -231,6 +236,11 @@ namespace MALClient.XShared.Utils
                 }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException)
+                    {
+                        DiagnosticsReporter.Warn("AnimeThemes", $"SearchViaLegacySearch cancelled for '{variant}'");
+                        return new List<ThemeVideo>();
+                    }
                     DiagnosticsReporter.Error("AnimeThemes", $"SearchViaLegacySearch failed for '{variant}'", ex);
                 }
             }
@@ -277,8 +287,8 @@ namespace MALClient.XShared.Utils
         /// <summary>
         /// Structured /anime API: resolves the exact series (sequels included) and
         /// returns every theme with its real sequence number. The /anime endpoint returns
-        /// a FLAT document under the top-level "anime" key (anime → animethemes →
-        /// song / animethemeentries → videos), NOT a JSON:API sideloaded "included" array.
+        /// a FLAT document under the top-level "anime" key (anime â†’ animethemes â†’
+        /// song / animethemeentries â†’ videos), NOT a JSON:API sideloaded "included" array.
         /// </summary>
         private static async Task<List<ThemeVideo>> SearchViaAnimeApi(string variant, bool guessKeyedSlug = false)
         {
@@ -286,7 +296,7 @@ namespace MALClient.XShared.Utils
             // (Konosuba S3: filter[name]= returns empty/anime=[] or even cross-aliased bodies
             // from /search). The KEYED route /anime/{slug} is a DIFFERENT path with its own
             // cache key and stays healthy. Kageetai slugs are just the lowercased title with
-            // spaces→underscores, so we can GUESS the slug and hit the healthy route first
+            // spacesâ†’underscores, so we can GUESS the slug and hit the healthy route first
             // for the romaji title.
             if (guessKeyedSlug)
             {
@@ -296,7 +306,7 @@ namespace MALClient.XShared.Utils
             }
 
             // The AnimeThemes CDN edge caches EMPTY theme relations (or empty results) per
-            // IP/POP for a long time — KonoSuba S3 is a textbook case: healthy from a PC on
+            // IP/POP for a long time â€” KonoSuba S3 is a textbook case: healthy from a PC on
             // another edge, permanently EMPTY from the phone's edge. A random query param
             // busts the cache key and forces a fresh origin fetch.
             var videos = await FetchByVariant(variant, null);
@@ -381,7 +391,7 @@ namespace MALClient.XShared.Utils
 
             // The /anime LIST endpoint (filter[name]=) may ship an empty animetheme relation for
             // valid records (Konosuba S3) while the themes exist. The KEYED route /anime/{slug}
-            // is more reliable — rescue with it, retrying with a fresh cache-buster each attempt.
+            // is more reliable â€” rescue with it, retrying with a fresh cache-buster each attempt.
             var keyedBase =
                 $"https://api.animethemes.moe/anime/{Uri.EscapeDataString(exact.slug)}?include=animethemes.animethemeentries.videos,animethemes.song";
             for (var attempt = 0; attempt < 2 && videos.Count == 0; attempt++)

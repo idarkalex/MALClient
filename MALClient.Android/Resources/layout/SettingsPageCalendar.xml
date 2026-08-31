@@ -23,6 +23,9 @@
         <CheckBox android:id="@+id/SettingsPageCalendarBuildOptionsPlanToWatchCheckBox"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content" android:text="Include plan to watch" />
+        <Switch android:id="@+id/SettingsPageCalendarBuildOptionsAllAiringSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="Show all airing series (ignore my list)" />
       </LinearLayout>
     </LinearLayout>
 

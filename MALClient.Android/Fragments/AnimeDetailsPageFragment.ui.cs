@@ -58,6 +58,7 @@ namespace MALClient.Android.Fragments
         private TextView _animeDetailsPageTypeBadge;
         private TextView _animeDetailsPageYearLabel;
         private Button _animeDetailsPageQuickAddToListButton;
+        private Button _animeDetailsPageQuickScoreButton;
         private Button _animeDetailsPageQuickFavoriteButton;
         private ImageButton _animeDetailsPageRefreshButton;
         private LinearLayout _animeDetailsPageTitleSection;
@@ -126,6 +127,8 @@ namespace MALClient.Android.Fragments
         public TextView AnimeDetailsPageYearLabel => GetView(ref _animeDetailsPageYearLabel, Resource.Id.AnimeDetailsPageYearLabel);
 
         public Button AnimeDetailsPageQuickAddToListButton => GetView(ref _animeDetailsPageQuickAddToListButton, Resource.Id.AnimeDetailsPageQuickAddToListButton);
+
+        public Button AnimeDetailsPageQuickScoreButton => GetView(ref _animeDetailsPageQuickScoreButton, Resource.Id.AnimeDetailsPageQuickScoreButton);
 
         public Button AnimeDetailsPageQuickFavoriteButton => GetView(ref _animeDetailsPageQuickFavoriteButton, Resource.Id.AnimeDetailsPageQuickFavoriteButton);
 

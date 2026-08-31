@@ -205,8 +205,12 @@ namespace MALClient.XShared.Comm.Anime
                     //
                 }
             }
-            if (_page != 0) //merge data
-                output = (_isManga ? _prevMangaQueriesCache[_mangaType] : _prevQueriesCache[_type]).Union(output).Distinct().ToList();
+            if (_page != 0)
+                output = (_isManga ? _prevMangaQueriesCache[_mangaType] : _prevQueriesCache[_type])
+                    .Concat(output)
+                    .GroupBy(item => item.Id)
+                    .Select(group => group.First())
+                    .ToList();
 
             if (_isManga)
             {

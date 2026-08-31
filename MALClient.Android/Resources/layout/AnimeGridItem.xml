@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="@dimen/GridCardWidth"
+    android:layout_width="match_parent"
     android:layout_height="@dimen/GridCardHeight"
-    android:layout_gravity="center_horizontal"
-    android:layout_margin="@dimen/GridCardMargin"
     android:foreground="?android:selectableItemBackground">
 
   <!-- Poster image fills the entire card -->
@@ -12,8 +10,7 @@
       android:id="@+id/AnimeGridItemImage"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:adjustViewBounds="true"
-      android:scaleType="fitCenter"
+      android:scaleType="centerCrop"
       android:background="?BrushAppBars"
       tools:src="@drawable/annak" />
 
@@ -34,12 +31,12 @@
       android:layout_height="wrap_content"
       android:layout_gravity="top|end"
       android:layout_margin="6dp"
-      android:background="@drawable/electric_midnight_badge"
+      android:background="@drawable/electric_midnight_grid_badge"
       android:orientation="horizontal"
-      android:paddingStart="8dp"
-      android:paddingEnd="8dp"
-      android:paddingTop="4dp"
-      android:paddingBottom="4dp"
+      android:paddingStart="6dp"
+      android:paddingEnd="6dp"
+      android:paddingTop="3dp"
+      android:paddingBottom="3dp"
       android:gravity="center_vertical"
       android:visibility="gone"
       tools:visibility="visible">
@@ -50,7 +47,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:fontFamily="@font/inter"
-          android:textSize="11sp"
+          android:textSize="9sp"
           android:textStyle="bold"
           android:textColor="?AccentColour"
           android:textAllCaps="true"
@@ -59,8 +56,9 @@
 
       <!-- Divider line -->
       <View
+          android:id="@+id/AnimeGridItemDivider1"
           android:layout_width="1dp"
-          android:layout_height="12dp"
+          android:layout_height="10dp"
           android:background="#33ffffff"
           android:layout_marginEnd="6dp" />
 
@@ -76,7 +74,7 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:fontFamily="@font/inter"
-              android:textSize="10sp"
+              android:textSize="9sp"
               android:textStyle="bold"
               android:textColor="#ffffff"
               tools:text="3/11" />
@@ -90,6 +88,28 @@
               android:textColor="?BrushTextSecondary"
               tools:text="8.68" />
       </LinearLayout>
+
+      <!-- Divider before countdown -->
+      <View
+          android:id="@+id/AnimeGridItemCountdownDivider"
+          android:layout_width="1dp"
+          android:layout_height="10dp"
+          android:background="#33ffffff"
+          android:layout_marginStart="6dp"
+          android:layout_marginEnd="6dp"
+          android:visibility="gone" />
+
+      <!-- Next-airing countdown (airing series) -->
+      <TextView
+          android:id="@+id/AnimeGridItemCountdown"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/inter"
+          android:textSize="8sp"
+          android:textStyle="bold"
+          android:textColor="#ffffff"
+          android:visibility="gone"
+          tools:text="2d" />
   </LinearLayout>
 
   <!-- Air countdown pill (watching cards) -->

@@ -5,9 +5,63 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:background="?BrushDeepBackground">
+  <LinearLayout android:id="@+id/CalendarPageModeSegmentedBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:orientation="horizontal"
+                android:background="?BrushPivotHeaderBackground">
+    <LinearLayout android:layout_width="0dp"
+                  android:layout_weight="1"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:id="@+id/CalendarPageModePersonalSection">
+      <TextView android:id="@+id/CalendarPageModePersonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/inter"
+                android:textSize="@dimen/EmBodyMd"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:text="Personal Calendar"
+                android:textColor="?BrushText" />
+      <View android:id="@+id/CalendarPageModePersonalIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@android:color/transparent" />
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="0dp"
+                  android:layout_weight="1"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:id="@+id/CalendarPageModeAiringNowSection">
+      <TextView android:id="@+id/CalendarPageModeAiringNowButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/inter"
+                android:textSize="@dimen/EmBodyMd"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:text="Airing Now Calendar"
+                android:textColor="?BrushText" />
+      <View android:id="@+id/CalendarPageModeAiringNowIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@android:color/transparent" />
+    </LinearLayout>
+  </LinearLayout>
+
   <LinearLayout android:layout_width="match_parent"
                 android:orientation="vertical"
                 android:layout_height="match_parent"
+                android:layout_below="@id/CalendarPageModeSegmentedBar"
                 android:id="@+id/CalendarPageContentGrid">
     <MALClient.Android.UserControls.PagerSlidingTabStrip
       android:id="@+id/CalendarPageTabStrip"
@@ -30,7 +84,7 @@
                 android:layout_centerVertical="true">
     <ProgressBar android:layout_width="match_parent"
                  android:layout_height="wrap_content"
-                 android:indeterminate="false"
+                 android:indeterminate="true"
                  style="?android:attr/progressBarStyleHorizontal"
                  android:id="@+id/CalendarPageProgressBar" />
     <TextView android:layout_width="wrap_content"

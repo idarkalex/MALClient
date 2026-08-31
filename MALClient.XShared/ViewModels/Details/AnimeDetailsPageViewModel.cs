@@ -36,6 +36,7 @@ namespace MALClient.XShared.ViewModels.Details
         private readonly IAnimeLibraryDataStorage _animeLibraryDataStorage;
 
         private readonly IAiringNotificationsAdapter _airingNotificationsAdapter;
+        private string _timeTillNextAirCache;
 
         //additional fields
         private int _allEpisodes;
@@ -107,46 +108,67 @@ namespace MALClient.XShared.ViewModels.Details
         public string Type { get; private set; }
         public string Status { get; private set; }
 
+        private int _pivotVersion;
+        public int PivotVersion
+        {
+            get => _pivotVersion;
+            private set
+            {
+                _pivotVersion = value;
+                RaisePropertyChanged(() => PivotVersion);
+            }
+        }
+
         public string TimeTillNextAir
         {
             get
             {
+                if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                    return _timeTillNextAirCache;
+
                 var now = DateTime.UtcNow;
+                string result = "";
 
                 if (!string.IsNullOrEmpty(_broadcast))
                 {
                     var nextAir = ComputeNextAirDate(_broadcast, now);
                     if (nextAir.HasValue)
-                        return FormatAirCountdown(nextAir.Value, now);
+                        result = FormatAirCountdown(nextAir.Value, now);
                 }
 
-                var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
-                if (nextFromEpisodes.HasValue)
-                    return FormatAirCountdown(nextFromEpisodes.Value, now);
+                if (string.IsNullOrEmpty(result))
+                {
+                    var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
+                    if (nextFromEpisodes.HasValue)
+                        result = FormatAirCountdown(nextFromEpisodes.Value, now);
+                }
 
-                if (_animeItemReference is AnimeItemViewModel vm)
+                if (string.IsNullOrEmpty(result) && _animeItemReference is AnimeItemViewModel vm)
                 {
                     if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(vm.ParentAbstraction.MalId, now, out DateTime airDate) &&
                         now < airDate)
                     {
-                        return FormatAirCountdown(airDate, now);
+                        result = FormatAirCountdown(airDate, now);
                     }
                 }
-                return "";
+
+                _timeTillNextAirCache = result;
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    DataCache.UpdateVolatileDataWithTimeTillNextAir(Id, result);
+                    if (_animeItemReference is AnimeItemViewModel itemVm)
+                    {
+                        itemVm.TimeTillNextAirCache = result;
+                    }
+                }
+
+                return result;
             }
         }
 
         private static string FormatAirCountdown(DateTime airDate, DateTime now)
-        {
-            var diff = airDate - now;
-            if (diff.TotalSeconds <= 0)
-                return "";
-            if (diff.TotalDays >= 1)
-                return $"{(int)diff.TotalDays}D";
-            if (diff.TotalHours >= 1)
-                return $"{(int)diff.TotalHours}H";
-            return $"{(int)diff.TotalMinutes}M";
-        }
+            => AirTimeUtils.FormatAirCountdown(airDate, now);
 
         public string LastAired { get; private set; } = "";
 
@@ -1045,8 +1067,9 @@ namespace MALClient.XShared.ViewModels.Details
             MyStatus = Settings.DefaultStatusAfterAdding;
             MyEpisodes = 0;
             RaisePropertyChanged(() => GlobalScore); //trigger setter of anime item
-            if (string.Equals(Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase))
-                (_animeItemReference as AnimeItemViewModel).Airing = true;
+            var itemVm = _animeItemReference as AnimeItemViewModel;
+            if (string.Equals(Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase) && itemVm != null)
+                itemVm.Airing = true;
             ResourceLocator.AnimeLibraryDataStorage.AddAnimeEntry(animeItem);
             MyDetailsVisibility = true;
             PopulateStartEndDates();
@@ -1146,9 +1169,17 @@ namespace MALClient.XShared.ViewModels.Details
                     GlobalScore = GlobalScore,
                     AirStartDate = StartDate == AnimeItemViewModel.InvalidStartEndDate ? null : StartDate
                 });
-                model.Airing = day != -1;
+                if (model != null)
+                    model.Airing = day != -1;
                 if (model.ParentAbstraction.TryRetrieveVolatileData())
                     model.UpdateVolatileDataBindings();
+
+                var timeTillNextAir = TimeTillNextAir;
+                if (!string.IsNullOrEmpty(timeTillNextAir))
+                {
+                    DataCache.UpdateVolatileDataWithTimeTillNextAir(MalId, timeTillNextAir);
+                    DiagnosticsReporter.Info("Countdown", $"Saved MalId={MalId}, value={timeTillNextAir}");
+                }
             }
 
             LeftDetailsRow = new List<Tuple<string, string>>();
@@ -1190,19 +1221,6 @@ namespace MALClient.XShared.ViewModels.Details
             RaisePropertyChanged(() => RightDetailsRow);
             RaisePropertyChanged(() => StartYear);
             ViewModelLocator.GeneralMain.CurrentOffStatus = Title;
-
-            // Pre-cache AnimeThemes themes for this entry (fire-and-forget)
-            if (!string.IsNullOrEmpty(Title))
-            {
-                var atTitle = Title;
-                var atId = Id;
-                var atAnime = AnimeMode;
-                Task.Run(async () =>
-                {
-                    ResourceLocator.EnglishTitlesProvider.TryGetEnglishTitleForSeries(atId, atAnime, out var english);
-                    await AnimeThemesHelper.SearchAsync(atTitle, english);
-                });
-            }
 
             DetailImage = _imgUrl;
             LoadingGlobal = false;
@@ -1361,31 +1379,13 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 LoadingDetails = false;
             }
+            ++PivotVersion;
 
-            // Prefetch the remaining tabs in the background, serialized so the
-            // global Tenrai rate limiter (1 request at a time) is not saturated.
-            // Priority order: Episodes > Recomms > Related > Reviews > Characters(+Staff).
-            // Selecting a tab forces its own load (TabSelected) independently.
-            // NOTE: runs on the UI thread (LoadDetails is invoked from the UI thread),
-            // NOT inside Task.Run. The tab fragments re-bind via MvvmLight
-            // WhenSourceChanges(LoadingX) / CollectionChanged, which only work when the
-            // LoadingX/collection notifications fire on the UI thread. A background
-            // prefetch left every post-Details tab blank because those handlers then
-            // touched the UI from a pool thread.
-            _ = PrefetchRemainingTabs();
-        }
-
-        private async Task PrefetchRemainingTabs()
-        {
-            // Each load is wrapped in its own try/catch so one failure (e.g. a Tenrai
-            // 429/timeout throwing out of the query) does not abort the remaining
-            // serialized loads. Serialization keeps the global rate limiter from being
-            // saturated; the awaits yield the UI thread between each tab.
-            try { await LoadEpisodes(); } catch { }
-            try { await LoadRecommendations(); } catch { }
-            try { await LoadRelatedAnime(); } catch { }
-            try { await LoadReviews(); } catch { }
-            try { await LoadCharacters(); } catch { }
+            // No open-time prefetch of the network tabs (Reviews/Recomms/Related/
+            // Characters/Staff): each tab self-loads on selection via TabSelected, and
+            // prefetching here made every open fire ~5 extra network/Tenrai calls,
+            // turning the whole app laggy on slow circuits. Pull-to-refresh
+            // (RefreshData) still reloads everything explicitly.
         }
 
         private async Task LoadDetailsCoreAsync(bool force)
@@ -1396,7 +1396,10 @@ namespace MALClient.XShared.ViewModels.Details
             Stats.Clear();
             OPs.Clear();
             EDs.Clear();
-            var data = await new AnimeDetailsMalQuery(MalId, AnimeMode).GetDetails(force);
+            var isAiring = AnimeMode
+                ? !string.Equals(Status, "Finished Airing", StringComparison.CurrentCultureIgnoreCase)
+                : !string.Equals(Status, "Finished", StringComparison.CurrentCultureIgnoreCase);
+            var data = await new AnimeDetailsMalQuery(MalId, AnimeMode).GetDetails(force, isAiring);
             if (data == null)
             {
                 DetailedDataVisibility = false;
@@ -1470,17 +1473,18 @@ namespace MALClient.XShared.ViewModels.Details
                     {
                         if (_animeItemReference is AnimeItemViewModel vm)
                         {
-                            if (vm.ParentAbstraction.LoadedVolatile)
+                            var time = data.ExtractAiringTime();
+                            if (time != null)
                             {
-                                var time = data.ExtractAiringTime();
-                                if (time != null)
+                                if (!DataCache.TryRetrieveDataForId(Id, out _))
                                 {
-                                    DataCache.UpdateVolatileDataWithExactDate(Id, time);
-                                    vm.ParentAbstraction.ExactAiringTime = time;
+                                    DataCache.RegisterVolatileData(Id, new VolatileDataCache());
                                 }
-                                else
-                                    DataCache.RegisterVolatileDataAiringTimeFetchFailure(Id);
+                                DataCache.UpdateVolatileDataWithExactDate(Id, time);
+                                vm.ParentAbstraction.ExactAiringTime = time;
                             }
+                            else
+                                DataCache.RegisterVolatileDataAiringTimeFetchFailure(Id);
                         }
                     }
 
@@ -1559,6 +1563,20 @@ namespace MALClient.XShared.ViewModels.Details
 
             RaisePropertyChanged(() => AnimeMode);
             OnDetailsLoaded?.Invoke();
+
+            // Pre-cache AnimeThemes only when this entry actually has OP/ED songs to
+            // play, avoiding a pointless background network search on every open.
+            if ((OPs.Count > 0 || EDs.Count > 0) && !string.IsNullOrEmpty(Title))
+            {
+                var atTitle = Title;
+                var atId = Id;
+                var atAnime = AnimeMode;
+                Task.Run(async () =>
+                {
+                    ResourceLocator.EnglishTitlesProvider.TryGetEnglishTitleForSeries(atId, atAnime, out var english);
+                    await AnimeThemesHelper.SearchAsync(atTitle, english);
+                });
+            }
         }
 
         public async Task LoadEpisodes(bool force = false)
@@ -1568,14 +1586,53 @@ namespace MALClient.XShared.ViewModels.Details
             LoadingEpisodes = true;
             try
             {
-                var episodes = await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
-                if (episodes != null)
+                var isAiring = string.Equals(Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase);
+                var cached = force ? null : await DataCache.RetrieveAnimeEpisodes(MalId, isAiring);
+                var episodes = cached != null && cached.Count > 0
+                    ? cached
+                    : await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
+                var fromStale = false;
+
+                // serve the expired cache when the network failed, rather than a blank tab
+                // (never re-save it: resaving would reset the timestamp and break the daily refetch)
+                if (episodes == null || episodes.Count == 0)
                 {
-                    Episodes.Clear();
-                    Episodes.AddRange(episodes);
-                    _loadedEpisodes = true;
-                    UpdateLastAired();
-                    RaisePropertyChanged(() => TimeTillNextAir);
+                    var stale = await DataCache.RetrieveAnimeEpisodesStale(MalId);
+                    if (stale != null && stale.Count > 0)
+                    {
+                        episodes = stale;
+                        fromStale = true;
+                    }
+                }
+
+                if (episodes == null || episodes.Count == 0)
+                {
+                    if (Episodes.Count > 0)
+                    {
+                        UpdateLastAired();
+                        RaisePropertyChanged(() => TimeTillNextAir);
+                    }
+                    return;
+                }
+
+                if (!fromStale && !ReferenceEquals(episodes, cached))
+                    await DataCache.SaveAnimeEpisodes(MalId, episodes);
+
+                var display = episodes;
+                var isCurrentlyAiring = string.Equals(Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase);
+                if (isCurrentlyAiring)
+                    display = episodes
+                        .OrderByDescending(ep => ep.AiredDate ?? DateTime.MaxValue)
+                        .ToList();
+                Episodes.Clear();
+                Episodes.AddRange(display);
+                _loadedEpisodes = true;
+                UpdateLastAired();
+                RaisePropertyChanged(() => TimeTillNextAir);
+
+                if (!string.IsNullOrEmpty(TimeTillNextAir) && _animeItemReference is AnimeItemViewModel itemVm)
+                {
+                    itemVm.TimeTillNextAirCache = TimeTillNextAir;
                 }
             }
             catch (Exception ex)
@@ -1804,77 +1861,11 @@ namespace MALClient.XShared.ViewModels.Details
                 string.Empty, RegexOptions.IgnoreCase).TrimEnd();
         }
 
-        private static readonly TimeSpan JstOffset = TimeSpan.FromHours(9);
-
-        private static readonly string[] DayNames = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-
         private static DateTime? ComputeNextAirFromEpisodes(IEnumerable<AnimeEpisode> episodes, DateTime nowUtc)
-        {
-            var aired = episodes
-                .Where(ep => ep.AiredDate.HasValue)
-                .Select(ep => ep.AiredDate.Value)
-                .Where(d => d <= nowUtc)
-                .OrderBy(d => d)
-                .ToList();
-            if (aired.Count == 0) return null;
-
-            double gap = 7;
-            if (aired.Count >= 2)
-            {
-                var gaps = new List<double>();
-                for (int i = 1; i < aired.Count; i++)
-                    gaps.Add((aired[i] - aired[i - 1]).TotalDays);
-                gaps.Sort();
-                gap = gaps[gaps.Count / 2];
-                if (gap < 1 || gap > 30)
-                    gap = 7;
-            }
-
-            var next = aired[aired.Count - 1].AddDays(gap);
-            while (next <= nowUtc)
-                next = next.AddDays(gap);
-            return next;
-        }
+            => AirTimeUtils.ComputeNextAirFromEpisodes(episodes, nowUtc);
 
         private static DateTime? ComputeNextAirDate(string broadcast, DateTime nowUtc)
-        {
-            if (string.IsNullOrEmpty(broadcast)) return null;
-
-            var match = Regex.Match(broadcast, @"(?<day>[A-Za-z]+?day)[^0-9]*(?<time>\d{1,2}:\d{2})");
-            if (!match.Success) return null;
-
-            var dayStr = match.Groups["day"].Value;
-            var timeStr = match.Groups["time"].Value;
-
-            var timeParts = timeStr.Split(':');
-            if (timeParts.Length != 2 ||
-                !int.TryParse(timeParts[0], out var hours) ||
-                !int.TryParse(timeParts[1], out var minutes))
-                return null;
-
-            var timeOfDay = TimeSpan.FromMinutes(hours * 60 + minutes);
-
-            var dayIndex = -1;
-            for (int i = 0; i < DayNames.Length; i++)
-            {
-                if (dayStr.StartsWith(DayNames[i], StringComparison.OrdinalIgnoreCase))
-                {
-                    dayIndex = i;
-                    break;
-                }
-            }
-            if (dayIndex < 0) return null;
-
-            var nowJst = nowUtc + JstOffset;
-            var targetJst = new DateTime(nowJst.Year, nowJst.Month, nowJst.Day, 0, 0, 0).Add(timeOfDay);
-            var dayNet = (dayIndex + 1) % 7;
-            var daysToAdd = ((dayNet - (int)nowJst.DayOfWeek) + 7) % 7;
-            targetJst = targetJst.AddDays(daysToAdd);
-            if (targetJst <= nowJst)
-                targetJst = targetJst.AddDays(7);
-
-            return targetJst - JstOffset;
-        }
+            => AirTimeUtils.ComputeNextAirDate(broadcast, nowUtc);
     }
 }
 

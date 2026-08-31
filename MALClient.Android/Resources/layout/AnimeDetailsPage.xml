@@ -276,6 +276,19 @@ android:layout_width="340dp"
                   android:orientation="vertical"
                   android:layout_marginEnd="12dp">
 
+                <LinearLayout
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="9dp"
+                    android:layout_height="9dp"
+                    android:layout_marginEnd="3dp"
+                    android:src="@drawable/icon_star_filled"
+                    android:tint="#FFD700" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -285,31 +298,18 @@ android:layout_width="340dp"
                     android:letterSpacing="0.08"
                     android:textColor="#80ffffff"
                     android:textSize="10sp" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                  <ImageView
-                      android:layout_width="14dp"
-                      android:layout_height="14dp"
-                      android:layout_marginEnd="4dp"
-                      android:src="@drawable/icon_star_filled"
-                      android:tint="#FFD700" />
-
-                  <TextView
-                      android:id="@+id/AnimeDetailsPageScoreValue"
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:fontFamily="@font/inter"
-                      android:textColor="#ffffff"
-                      android:textSize="15sp"
-                      android:textStyle="bold"
-                      tools:text="8.74" />
-                </LinearLayout>
               </LinearLayout>
+
+              <TextView
+                  android:id="@+id/AnimeDetailsPageScoreValue"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:fontFamily="@font/inter"
+                  android:textColor="#ffffff"
+                  android:textSize="14sp"
+                  android:textStyle="bold"
+                  tools:text="8.74" />
+            </LinearLayout>
 
               <LinearLayout
                   android:layout_width="wrap_content"
@@ -340,7 +340,7 @@ android:layout_width="340dp"
                     android:paddingBottom="0dp"
                     android:textAllCaps="false"
                     android:textColor="#ffffff"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
               </LinearLayout>
 
@@ -368,7 +368,7 @@ android:layout_width="340dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
                     android:textColor="#ffffff"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:maxLines="1"
                     android:ellipsize="end"
@@ -382,12 +382,12 @@ android:layout_width="340dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:background="@drawable/electric_midnight_pill"
-                android:padding="3dp">
+                android:padding="0dp">
 
               <FrameLayout
                   android:id="@+id/AnimeDetailsPageDecrementButton"
-                  android:layout_width="34dp"
-                  android:layout_height="34dp"
+                  android:layout_width="28dp"
+                  android:layout_height="28dp"
                   android:clickable="true"
                   android:focusable="true"
                   android:foreground="?android:selectableItemBackground">
@@ -396,7 +396,7 @@ android:layout_width="340dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/electric_midnight_circle_dark"
-                    android:padding="7dp"
+                    android:padding="6dp"
                     android:src="@drawable/icon_minus"
                     android:tint="#80ffffff" />
               </FrameLayout>
@@ -406,9 +406,9 @@ android:layout_width="340dp"
                   android:layout_height="wrap_content"
                   android:orientation="vertical"
                   android:gravity="center"
-                  android:minWidth="52dp"
-                  android:paddingStart="4dp"
-                  android:paddingEnd="4dp">
+                  android:minWidth="40dp"
+                  android:paddingStart="3dp"
+                  android:paddingEnd="3dp">
 
                 <TextView
                     android:id="@+id/AnimeDetailsPageWatchedLabel"
@@ -417,7 +417,8 @@ android:layout_width="340dp"
                     android:fontFamily="@font/inter"
                     android:text="Episodes"
                     android:textColor="#80ffffff"
-                    android:textSize="10sp" />
+                    android:textSize="8sp"
+                    android:includeFontPadding="false" />
 
                 <Button
                     android:id="@+id/AnimeDetailsPageWatchedButton"
@@ -425,7 +426,7 @@ android:layout_width="340dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
                     android:textColor="#ffffff"
-                    android:textSize="15sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:background="@android:color/transparent"
@@ -434,13 +435,14 @@ android:layout_width="340dp"
                     android:paddingStart="4dp"
                     android:paddingEnd="4dp"
                     android:paddingTop="0dp"
-                    android:paddingBottom="0dp" />
+                    android:paddingBottom="0dp"
+                    android:includeFontPadding="false" />
               </LinearLayout>
 
               <FrameLayout
                   android:id="@+id/AnimeDetailsPageIncrementButton"
-                  android:layout_width="34dp"
-                  android:layout_height="34dp"
+                  android:layout_width="28dp"
+                  android:layout_height="28dp"
                   android:clickable="true"
                   android:focusable="true"
                   android:foreground="?android:selectableItemBackground">
@@ -449,7 +451,7 @@ android:layout_width="340dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/electric_midnight_circle_primary"
-                    android:padding="7dp"
+                    android:padding="6dp"
                     android:src="@drawable/icon_add"
                     android:tint="@android:color/white" />
               </FrameLayout>
@@ -481,6 +483,25 @@ android:layout_width="340dp"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
             android:text="Add to List"
+            android:textAllCaps="false"
+            android:textColor="#ffffff"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/AnimeDetailsPageQuickScoreButton"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/electric_midnight_action_button"
+            android:drawableStart="@drawable/icon_star_filled"
+            android:drawablePadding="8dp"
+            android:fontFamily="@font/inter"
+            android:gravity="center"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="Unranked"
             android:textAllCaps="false"
             android:textColor="#ffffff"
             android:textSize="12sp" />

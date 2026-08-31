@@ -24,6 +24,7 @@ namespace MALClient.Android
         public int? MinColumnsLandscape { get; set; }
         public int MinColumnsPortrait { get; set; }
         public int PrefferedItemWidth { get; set; }
+        public int? ForceColumns { get; set; }
 
         public GridViewColumnHelper(bool ignoreSmallerSizeSetting)
         {
@@ -72,6 +73,11 @@ namespace MALClient.Android
 
         private int GetColumns(Configuration newConfig)
         {
+            if (ForceColumns.HasValue)
+            {
+                LastColmuns = ForceColumns.Value;
+                return ForceColumns.Value;
+            }
             var width = newConfig.ScreenWidthDp;
             var columns = width / PrefferedItemWidth;
             columns = columns < MinColumns ? MinColumns : columns;
@@ -83,6 +89,12 @@ namespace MALClient.Android
         {
             grid.SetNumColumns(columns);
             var param = grid.LayoutParameters;
+            if (ForceColumns.HasValue)
+            {
+                param.Width = ViewGroup.LayoutParams.MatchParent;
+                grid.LayoutParameters = param;
+                return;
+            }
             param.Width = DimensionsHelper.DpToPx(PrefferedItemWidth) * columns;
             if (param.Width < 0)
                 param.Width = ViewGroup.LayoutParams.MatchParent;

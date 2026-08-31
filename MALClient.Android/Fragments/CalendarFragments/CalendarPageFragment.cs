@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Graphics;
 using Android.OS;
+using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
+using MALClient.Android.Listeners;
 using MALClient.Android.PagerAdapters;
 using MALClient.Android.Resources;
 using MALClient.Models.Enums;
@@ -54,14 +57,49 @@ namespace MALClient.Android.Fragments.CalendarFragments
                 CalendarPageViewPager.SetCurrentItem(ViewModel.CalendarPivotIndex,false);
             }));
 
-            CalendarPageViewPager.OffscreenPageLimit = 7;
+            CalendarPageViewPager.OffscreenPageLimit = 1;
 
             Bindings.Add(
                 this.SetBinding(() => ViewModel.CalendarVisibility,
                     () => CalendarPageContentGrid.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
+
+            UpdateModeToggleButton();
+            CalendarPageModePersonalButton.SetOnClickListener(new OnClickListener(v => SetCalendarMode(false)));
+            CalendarPageModeAiringNowButton.SetOnClickListener(new OnClickListener(v => SetCalendarMode(true)));
         }
 
         public override int LayoutResourceId => Resource.Layout.CalendarPage;
+
+        private void UpdateModeToggleButton()
+        {
+            bool allAiring = Settings.CalendarShowAllAiring;
+            SetSectionActive(CalendarPageModePersonalButton, CalendarPageModePersonalIndicator, !allAiring);
+            SetSectionActive(CalendarPageModeAiringNowButton, CalendarPageModeAiringNowIndicator, allAiring);
+        }
+
+        private void SetSectionActive(TextView label, global::Android.Views.View indicator, bool active)
+        {
+            var accent = new Color(ResourceExtension.AccentColour);
+            if (active)
+            {
+                label.SetTextColor(accent);
+                indicator.SetBackgroundColor(accent);
+            }
+            else
+            {
+                label.SetTextColor(new Color(ResourceExtension.BrushText));
+                indicator.SetBackgroundColor(new Color(global::Android.Graphics.Color.Transparent));
+            }
+        }
+
+        private void SetCalendarMode(bool allAiring)
+        {
+            if (Settings.CalendarShowAllAiring == allAiring)
+                return;
+            Settings.CalendarShowAllAiring = allAiring;
+            UpdateModeToggleButton();
+            ViewModel.Init(true);
+        }
 
         public static CalendarPageFragment Instance => new CalendarPageFragment();
     }

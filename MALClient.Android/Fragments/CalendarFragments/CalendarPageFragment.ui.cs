@@ -13,6 +13,27 @@ namespace MALClient.Android.Fragments.CalendarFragments
         private LinearLayout _calendarPageContentGrid;
         private ProgressBar _calendarPageProgressBar;
         private LinearLayout _calendarPageProgressBarGrid;
+        private LinearLayout _calendarPageModeSegmentedBar;
+        private LinearLayout _calendarPageModePersonalSection;
+        private LinearLayout _calendarPageModeAiringNowSection;
+        private TextView _calendarPageModePersonalButton;
+        private TextView _calendarPageModeAiringNowButton;
+        private global::Android.Views.View _calendarPageModePersonalIndicator;
+        private global::Android.Views.View _calendarPageModeAiringNowIndicator;
+
+        public LinearLayout CalendarPageModeSegmentedBar => GetView(ref _calendarPageModeSegmentedBar, Resource.Id.CalendarPageModeSegmentedBar);
+
+        public LinearLayout CalendarPageModePersonalSection => GetView(ref _calendarPageModePersonalSection, Resource.Id.CalendarPageModePersonalSection);
+
+        public LinearLayout CalendarPageModeAiringNowSection => GetView(ref _calendarPageModeAiringNowSection, Resource.Id.CalendarPageModeAiringNowSection);
+
+        public TextView CalendarPageModePersonalButton => GetView(ref _calendarPageModePersonalButton, Resource.Id.CalendarPageModePersonalButton);
+
+        public TextView CalendarPageModeAiringNowButton => GetView(ref _calendarPageModeAiringNowButton, Resource.Id.CalendarPageModeAiringNowButton);
+
+        public global::Android.Views.View CalendarPageModePersonalIndicator => GetView(ref _calendarPageModePersonalIndicator, Resource.Id.CalendarPageModePersonalIndicator);
+
+        public global::Android.Views.View CalendarPageModeAiringNowIndicator => GetView(ref _calendarPageModeAiringNowIndicator, Resource.Id.CalendarPageModeAiringNowIndicator);
 
         public UserControls.PagerSlidingTabStrip CalendarPageTabStrip => GetView(ref _calendarPageTabStrip, Resource.Id.CalendarPageTabStrip);
 

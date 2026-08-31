@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
@@ -76,13 +77,29 @@ namespace MALClient.XShared.ViewModels
             //Assign properties
             Title = name;
             ShowMoreVisibility = false;
-            //We are not seasonal so it's already on list            
+            //We are not seasonal so it's already on list
             AddToListVisibility = false;
             SetAuthStatus(auth, setEpsAuth);
             AdjustIncrementButtonsVisibility();
             //There may be additional data available
             GlobalScore = ParentAbstraction.GlobalScore;
             Airing = ParentAbstraction.AirDay >= 0;
+
+            if (string.IsNullOrEmpty(_timeTillNextAirCache) && ParentAbstraction?.ExactAiringTime != null)
+            {
+                var nextAir = AirTimeUtils.ComputeNextAirDate(ParentAbstraction.ExactAiringTime, DateTime.UtcNow);
+                if (nextAir.HasValue)
+                {
+                    var diff = nextAir.Value - DateTime.UtcNow;
+                    if (diff.TotalDays > 0)
+                    {
+                        _timeTillNextAirCache = diff.TotalDays < 1
+                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
+                            : (int)diff.TotalDays + "D";
+                        RaisePropertyChanged(() => TimeTillNextAirCache);
+                    }
+                }
+            }
         }
 
         //manga
@@ -116,6 +133,22 @@ namespace MALClient.XShared.ViewModels
             SetAuthStatus(false, true);
             AdjustIncrementButtonsVisibility();
             ShowMoreVisibility = false;
+
+            if (string.IsNullOrEmpty(_timeTillNextAirCache) && ParentAbstraction?.ExactAiringTime != null)
+            {
+                var nextAir = AirTimeUtils.ComputeNextAirDate(ParentAbstraction.ExactAiringTime, DateTime.UtcNow);
+                if (nextAir.HasValue)
+                {
+                    var diff = nextAir.Value - DateTime.UtcNow;
+                    if (diff.TotalDays > 0)
+                    {
+                        _timeTillNextAirCache = diff.TotalDays < 1
+                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
+                            : (int)diff.TotalDays + "D";
+                        RaisePropertyChanged(() => TimeTillNextAirCache);
+                    }
+                }
+            }
         }
 
         #endregion
@@ -186,8 +219,6 @@ namespace MALClient.XShared.ViewModels
                     ? ParentAbstraction?.Index.ToString()
                     : Utils.Utilities.DayToString((DayOfWeek) (ParentAbstraction.AirDay - 1));
 
-        private bool _airing;
-
         private bool? _airDayBrush;
         public bool? AirDayBrush
         {
@@ -203,16 +234,14 @@ namespace MALClient.XShared.ViewModels
                     if (diff.TotalDays > 0)
                     {
                         _airDayTillBind = diff.TotalDays < 1
-                            ? _airDayTillBind = diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
-                            : diff.TotalDays.ToString("N0") + "d";
-                        RaisePropertyChanged(() => AirDayTillBind);
+                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
+                            : (int)diff.TotalDays + "D";
                     }
-                    else if(diff.TotalDays < 0)
+                    else if (diff.TotalDays < 0)
                     {
                         _airDayTillBind = "Aired!";
                     }
 
-                    //make day grayed if it's not airing yet
                     _airDayBrush = diff.TotalDays > 7;
                 }
                 else
@@ -238,10 +267,88 @@ namespace MALClient.XShared.ViewModels
         }
 
 
+        public async Task UpdateAirDateDisplay()
+        {
+            var brush = AirDayBrush;
+            RaisePropertyChanged(() => AirDayTillBind);
+
+            if (string.IsNullOrEmpty(_airDayTillBind) && (Airing || brush == true))
+            {
+                RefreshTimeTillNextAirInBackground();
+            }
+        }
+
+        public void RefreshTimeTillNextAirInBackground()
+        {
+            if (_airFetchInFlight)
+                return;
+
+            var malId = ParentAbstraction?.MalId ?? Id;
+            if (DataCache.TryRetrieveDataForId(malId, out var cached))
+            {
+                if (!AirTimeUtils.NeedsRefresh(cached.NextAirUtc, cached.NextAirFetchedAtUtc, DateTime.UtcNow))
+                    return;
+                if (cached.LastFailedAiringTimeFetchAttempt.HasValue &&
+                    DateTime.UtcNow - cached.LastFailedAiringTimeFetchAttempt.Value < TimeSpan.FromMinutes(5))
+                    return;
+            }
+
+            _airFetchInFlight = true;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await AirFetchGate.WaitAsync();
+                    try
+                    {
+                        var nextAir = await GetTimeTillNextAirAsync(null);
+                        ResourceLocator.DispatcherAdapter.Run(() => ApplyNextAir(nextAir));
+                    }
+                    finally
+                    {
+                        AirFetchGate.Release();
+                    }
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    _airFetchInFlight = false;
+                }
+            });
+        }
+
+        private void ApplyNextAir(DateTime? nextAirUtc)
+        {
+            if (nextAirUtc.HasValue && nextAirUtc.Value > DateTime.UtcNow)
+            {
+                DataCache.UpdateVolatileDataWithNextAir(ParentAbstraction?.MalId ?? Id, nextAirUtc.Value);
+                TimeTillNextAirCache = AirTimeUtils.FormatAirCountdown(nextAirUtc.Value, DateTime.UtcNow);
+            }
+            else
+            {
+                var malId = ParentAbstraction?.MalId ?? Id;
+                DataCache.RegisterVolatileDataAiringTimeFetchFailure(malId);
+                TimeTillNextAirCache = "";
+            }
+        }
+
+        public void SetNextAirCache(DateTime? nextAirUtc) => ApplyNextAir(nextAirUtc);
+
         private string _airDayTillBind;
 
-        public string AirDayTillBind => _airDayTillBind;
+        public string AirDayTillBind
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_airDayTillBind))
+                    return _airDayTillBind;
+                return TimeTillNextAirCache;
+            }
+        }
 
+        private bool _airing;
         public bool Airing
         {
             get { return _airing; }
@@ -748,53 +855,136 @@ namespace MALClient.XShared.ViewModels
                 return _navigateDetailsCommand ?? (_navigateDetailsCommand = new RelayCommand(() => NavigateDetails()));
             }
         }
+        private string _timeTillNextAirCache;
+        private bool _airFetchInFlight;
+        private static readonly SemaphoreSlim AirFetchGate = new SemaphoreSlim(4);
+        public string TimeTillNextAirCache
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                    return _timeTillNextAirCache;
 
-        public string TimeTillNextAirCache { get; set; }
-        public string GetTimeTillNextAir(TimeZoneInfo zoneInfo)
+                var now = DateTime.UtcNow;
+                bool calculated = false;
+                if (DataCache.TryRetrieveDataForId(ParentAbstraction?.MalId ?? Id, out var volatileData) &&
+                    volatileData.NextAirUtc.HasValue && volatileData.NextAirUtc.Value > now)
+                {
+                    _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(volatileData.NextAirUtc.Value, now);
+                    calculated = true;
+                }
+                else if (ParentAbstraction?.ExactAiringTime != null)
+                {
+                    var nextAir = AirTimeUtils.ComputeNextAirDate(ParentAbstraction.ExactAiringTime, now);
+                    if (nextAir.HasValue)
+                    {
+                        var diff = nextAir.Value - now;
+                        if (diff.TotalDays > 0)
+                        {
+                            _timeTillNextAirCache = diff.TotalDays < 1
+                                ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
+                                : (int)diff.TotalDays + "D";
+                            calculated = true;
+                        }
+                    }
+                }
+
+                if (string.IsNullOrEmpty(_timeTillNextAirCache))
+                {
+                    var malId = ParentAbstraction?.MalId ?? Id;
+                    if (DataCache.TryRetrieveDataForId(malId, out var data) && !string.IsNullOrEmpty(data.TimeTillNextAir))
+                    {
+                        _timeTillNextAirCache = data.TimeTillNextAir;
+                        calculated = true;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(_timeTillNextAirCache))
+                {
+                    var malId = ParentAbstraction?.MalId ?? Id;
+                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, now, out DateTime airDate) && now < airDate)
+                    {
+                        var diff = airDate - now;
+                        _timeTillNextAirCache = diff.TotalDays < 1
+                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
+                            : (int)diff.TotalDays + "D";
+                        calculated = true;
+                    }
+                }
+
+                if (calculated)
+                {
+                    RaisePropertyChanged(() => TimeTillNextAirCache);
+                    RaisePropertyChanged(() => AirDayTillBind);
+                }
+
+                return _timeTillNextAirCache ?? "";
+            }
+            set
+            {
+                _timeTillNextAirCache = value;
+                if (!string.IsNullOrEmpty(value))
+                    DataCache.UpdateVolatileDataWithTimeTillNextAir(ParentAbstraction?.MalId ?? Id, value);
+                RaisePropertyChanged(() => TimeTillNextAirCache);
+                RaisePropertyChanged(() => AirDayTillBind);
+            }
+        }
+        public async Task<DateTime?> GetTimeTillNextAirAsync(TimeZoneInfo zoneInfo)
         {
             if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(Id, DateTime.UtcNow, out DateTime airDate))
             {
                 if (DateTime.UtcNow > airDate)
-                    return "Aired today!";
-
-                var diff = airDate - DateTime.UtcNow;
-                if (diff.TotalDays > 1)
-                    return $"{diff.Days}d {diff.Hours}h {diff.Minutes}m";
-                if(diff.TotalHours > 1)
-                    return $"{diff.Hours}h {diff.Minutes}m";
-                return $"{diff.Minutes}m";
-
+                    return null;
+                return airDate;
             }
-            //if (ParentAbstraction.ExactAiringTime != null && Airing)
-            //{
-            //    if (ParentAbstraction.AirStartDate == InvalidStartEndDate)
-            //        return "";
-                
-            //    DateTime jst = TimeZoneInfo.ConvertTime(DateTime.Now, zoneInfo);
-            //    DateTime jstTarget = TimeZoneInfo.ConvertTime(DateTime.Today, zoneInfo);
-            //    var time = ParentAbstraction.ExactAiringTime;
-            //    var dayDiff = (7 +((int)time.DayOfWeek - (int)jst.DayOfWeek)) % 7;
-            //    jstTarget = jstTarget.AddDays(dayDiff);
-            //    jstTarget = jstTarget.Add(time.Time);
 
-            //    //make sure that it's after start date
-            //    DateTime date;
-            //    if (!DateTime.TryParse(ParentAbstraction.AirStartDate, out date))
-            //        return "";
-            //    if (jstTarget < date)
-            //        return "";
+            var fromEpisodes = await GetEpisodesStalenessFallbackAsync();
+            if (fromEpisodes.HasValue)
+                return fromEpisodes;
 
-            //    var diff = jstTarget - jst;
+            return await GetBroadcastFallbackAsync();
+        }
 
-            //    if (diff.TotalDays < 0) //TODO : Find Reason
-            //        return "";
+        private async Task<DateTime?> GetEpisodesStalenessFallbackAsync()
+        {
+            try
+            {
+                var malId = ParentAbstraction?.MalId ?? Id;
+                var episodes = await DataCache.RetrieveAnimeEpisodesStale(malId);
+                if (episodes == null || episodes.Count == 0)
+                    episodes = await new AnimeEpisodesQuery().GetLastEpisodesAsync(malId);
 
-            //    if (diff.TotalDays > 1)
-            //        return $"{diff.Days}d {diff.Hours}h {diff.Minutes}m";
-            //    return $"{diff.Hours}h {diff.Minutes}m";
-            //}
-            return "";
+                if (episodes == null || episodes.Count == 0)
+                    return null;
 
+                return AirTimeUtils.ComputeNextAirFromEpisodes(episodes, DateTime.UtcNow);
+            }
+            catch
+            {
+            }
+            return null;
+        }
+
+        private async Task<DateTime?> GetBroadcastFallbackAsync()
+        {
+            try
+            {
+                var malId = ParentAbstraction?.MalId ?? Id;
+                var data = await DataCache.RetrieveAnimeSearchResultsDataStale(malId.ToString(), true);
+                if (data == null || string.IsNullOrEmpty(data.Broadcast))
+                    data = await new AnimeGeneralDetailsQuery().GetAnimeDetails(true, malId.ToString(), "", true);
+
+                if (data?.Broadcast == null)
+                    return null;
+                if (!string.Equals(data.Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase))
+                    return null;
+
+                return AirTimeUtils.ComputeNextAirDate(data.Broadcast, DateTime.UtcNow);
+            }
+            catch
+            {
+            }
+            return null;
         }
 
         #endregion
@@ -1235,7 +1425,6 @@ namespace MALClient.XShared.ViewModels
         {
             if (updateScore)
                 GlobalScore = data.Score;
-            Airing = data.AirDay >= 0;
             if (!Auth)
             {
                 UpdateButtonsVisibility = false;

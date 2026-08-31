@@ -27,7 +27,7 @@ namespace MALClient.XShared.Comm.Anime
                 output = await TryGetDetailsFromOfficialMalApi(id, animeMode);
                 if (output != null)
                 {
-                    DataCache.SaveAnimeSearchResultsData(id, output, animeMode);
+                    await DataCache.SaveGeneralDetailsByStatus(id, output, animeMode);
                     return output;
                 }
             }
@@ -39,83 +39,91 @@ namespace MALClient.XShared.Comm.Anime
             {
                 var data = await TenraiClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}/full");
 
-                if (animeMode)
-                {
-                    output = new AnimeGeneralDetailsData
-                    {
-                        AllEpisodes = GetInt(data, "episodes"),
-                        Status = GetString(data, "status"),
-                        Type = GetString(data, "type"),
-                        AlternateTitle = GetString(data, "title_japanese"),
-                        StartDate = ParseDateFromIso(GetNestedString(data, "aired", "from")),
-                        EndDate = ParseDateFromIso(GetNestedString(data, "aired", "to")),
-                        ImgUrl = GetNestedString(data, "images", "jpg", "image_url"),
-                        GlobalScore = (float)GetDouble(data, "score"),
-                        Id = GetInt(data, "mal_id"),
-                        MalId = GetInt(data, "mal_id"),
-                        Rank = GetInt(data, "rank"),
-                        Popularity = GetInt(data, "popularity"),
-                        FavoritesCount = GetInt(data, "favorites"),
-                        MembersCount = GetInt(data, "members"),
-                        Season = FormatSeason(GetString(data, "season"), GetInt(data, "year")),
-                        Broadcast = GetBroadcastString(data),
-                        TrailerUrl = GetTrailerUrl(data),
-                        Studios = GetNameList(data, "studios"),
-                        Genres = GetNameList(data, "genres"),
-                        Themes = GetNameList(data, "themes"),
-                        Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
-                        Title = WebUtility.HtmlDecode(GetString(data, "title")),
-                        Synonyms = GetStringList(data, "title_synonyms"),
-                    };
+                output = BuildFromFullData(data, animeMode, int.Parse(id));
 
-                    if ((output.Type == "Movie" || output.AllEpisodes == 1) && output.EndDate == "N/A" &&
-                        output.Status == "Finished Airing")
-                    {
-                        output.EndDate = output.StartDate;
-                    }
-
-                    ResourceLocator.EnglishTitlesProvider.AddOrUpdate(int.Parse(id), true,
-                        GetString(data, "title_english"));
-                }
-                else
-                {
-                    output = new AnimeGeneralDetailsData
-                    {
-                        AllEpisodes = GetInt(data, "chapters"),
-                        AllVolumes = GetInt(data, "volumes"),
-                        Status = GetString(data, "status"),
-                        Type = GetString(data, "type"),
-                        AlternateTitle = GetString(data, "title_japanese"),
-                        StartDate = ParseDateFromIso(GetNestedString(data, "published", "from")),
-                        EndDate = ParseDateFromIso(GetNestedString(data, "published", "to")),
-                        ImgUrl = GetNestedString(data, "images", "jpg", "image_url"),
-                        GlobalScore = (float)GetDouble(data, "score"),
-                        Id = GetInt(data, "mal_id"),
-                        MalId = GetInt(data, "mal_id"),
-                        Rank = GetInt(data, "rank"),
-                        Popularity = GetInt(data, "popularity"),
-                        FavoritesCount = GetInt(data, "favorites"),
-                        MembersCount = GetInt(data, "members"),
-                        Studios = GetNameList(data, "serializations"),
-                        Genres = GetNameList(data, "genres"),
-                        Themes = GetNameList(data, "themes"),
-                        Authors = GetJikanAuthors(data),
-                        Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
-                        Title = WebUtility.HtmlDecode(GetString(data, "title")),
-                        Synonyms = GetStringList(data, "title_synonyms"),
-                    };
-
-                    ResourceLocator.EnglishTitlesProvider.AddOrUpdate(int.Parse(id), false,
-                        GetString(data, "title_english"));
-                }
-
-                DataCache.SaveAnimeSearchResultsData(id, output, animeMode);
+                await DataCache.SaveGeneralDetailsByStatus(id, output, animeMode);
             }
             catch (Exception)
             {
             }
 
+            // both online sources failed: serve the expired v3 cache rather than blank data
+            // (not re-saved, so the next open still retries the network first)
+            if (output == null)
+                output = await DataCache.RetrieveAnimeSearchResultsDataStale(id, animeMode);
+
             return output;
+        }
+
+        public static AnimeGeneralDetailsData BuildFromFullData(JsonElement data, bool animeMode, int id)
+        {
+            if (animeMode)
+            {
+                var output = new AnimeGeneralDetailsData
+                {
+                    AllEpisodes = GetInt(data, "episodes"),
+                    Status = GetString(data, "status"),
+                    Type = GetString(data, "type"),
+                    AlternateTitle = GetString(data, "title_japanese"),
+                    StartDate = ParseDateFromIso(GetNestedString(data, "aired", "from")),
+                    EndDate = ParseDateFromIso(GetNestedString(data, "aired", "to")),
+                    ImgUrl = GetNestedString(data, "images", "jpg", "image_url"),
+                    GlobalScore = (float)GetDouble(data, "score"),
+                    Id = GetInt(data, "mal_id"),
+                    MalId = GetInt(data, "mal_id"),
+                    Rank = GetInt(data, "rank"),
+                    Popularity = GetInt(data, "popularity"),
+                    FavoritesCount = GetInt(data, "favorites"),
+                    MembersCount = GetInt(data, "members"),
+                    Season = FormatSeason(GetString(data, "season"), GetInt(data, "year")),
+                    Broadcast = GetBroadcastString(data),
+                    TrailerUrl = GetTrailerUrl(data),
+                    Studios = GetNameList(data, "studios"),
+                    Genres = GetNameList(data, "genres"),
+                    Themes = GetNameList(data, "themes"),
+                    Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
+                    Title = WebUtility.HtmlDecode(GetString(data, "title")),
+                    Synonyms = GetStringList(data, "title_synonyms"),
+                };
+
+                if ((output.Type == "Movie" || output.AllEpisodes == 1) && output.EndDate == "N/A" &&
+                    output.Status == "Finished Airing")
+                {
+                    output.EndDate = output.StartDate;
+                }
+
+                ResourceLocator.EnglishTitlesProvider.AddOrUpdate(id, true, GetString(data, "title_english"));
+                return output;
+            }
+
+            var manga = new AnimeGeneralDetailsData
+            {
+                AllEpisodes = GetInt(data, "chapters"),
+                AllVolumes = GetInt(data, "volumes"),
+                Status = GetString(data, "status"),
+                Type = GetString(data, "type"),
+                AlternateTitle = GetString(data, "title_japanese"),
+                StartDate = ParseDateFromIso(GetNestedString(data, "published", "from")),
+                EndDate = ParseDateFromIso(GetNestedString(data, "published", "to")),
+                ImgUrl = GetNestedString(data, "images", "jpg", "image_url"),
+                GlobalScore = (float)GetDouble(data, "score"),
+                Id = GetInt(data, "mal_id"),
+                MalId = GetInt(data, "mal_id"),
+                Rank = GetInt(data, "rank"),
+                Popularity = GetInt(data, "popularity"),
+                FavoritesCount = GetInt(data, "favorites"),
+                MembersCount = GetInt(data, "members"),
+                Studios = GetNameList(data, "serializations"),
+                Genres = GetNameList(data, "genres"),
+                Themes = GetNameList(data, "themes"),
+                Authors = GetJikanAuthors(data),
+                Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
+                Title = WebUtility.HtmlDecode(GetString(data, "title")),
+                Synonyms = GetStringList(data, "title_synonyms"),
+            };
+
+            ResourceLocator.EnglishTitlesProvider.AddOrUpdate(id, false, GetString(data, "title_english"));
+            return manga;
         }
 
         private static async Task<AnimeGeneralDetailsData> TryGetDetailsFromOfficialMalApi(string id, bool animeMode)
@@ -231,18 +239,18 @@ namespace MALClient.XShared.Comm.Anime
         private static List<JsonElement> GetNameArray(JsonElement el, string prop)
         {
             var list = new List<JsonElement>();
-            if (el.TryGetProperty(prop, out var arr) && arr.ValueKind == JsonValueKind.Array)
+            if (el.ValueKind == JsonValueKind.Object && el.TryGetProperty(prop, out var arr) && arr.ValueKind == JsonValueKind.Array)
                 foreach (var item in arr.EnumerateArray())
                     list.Add(item.Clone());
             return list;
         }
 
         private static string GetBroadcastString(JsonElement data) =>
-            data.TryGetProperty("broadcast", out var bc) ? GetString(bc, "string") : "";
+            data.TryGetProperty("broadcast", out var bc) && bc.ValueKind == JsonValueKind.Object ? GetString(bc, "string") : "";
 
         private static string GetTrailerUrl(JsonElement data)
         {
-            if (!data.TryGetProperty("trailer", out var trailer))
+            if (data.ValueKind != JsonValueKind.Object || !data.TryGetProperty("trailer", out var trailer) || trailer.ValueKind != JsonValueKind.Object)
                 return "";
             var embed = GetString(trailer, "embed_url");
             return !string.IsNullOrEmpty(embed) ? embed : GetString(trailer, "url");
@@ -251,8 +259,9 @@ namespace MALClient.XShared.Comm.Anime
         private static List<string> GetJikanAuthors(JsonElement data)
         {
             var list = new List<string>();
-            if (data.TryGetProperty("authors", out var arr) && arr.ValueKind == JsonValueKind.Array)
-                foreach (var item in arr.EnumerateArray())
+            if (data.ValueKind != JsonValueKind.Object || !data.TryGetProperty("authors", out var arr) || arr.ValueKind != JsonValueKind.Array)
+                return list;
+            foreach (var item in arr.EnumerateArray())
                 {
                     var name = GetNestedString(item, "author", "name");
                     if (!string.IsNullOrEmpty(name))
@@ -291,7 +300,7 @@ namespace MALClient.XShared.Comm.Anime
 
         private static List<string> GetNameList(JsonElement el, string prop)
         {
-            if (!el.TryGetProperty(prop, out var arr) || arr.ValueKind != JsonValueKind.Array)
+            if (el.ValueKind != JsonValueKind.Object || !el.TryGetProperty(prop, out var arr) || arr.ValueKind != JsonValueKind.Array)
                 return new List<string>();
             var list = new List<string>();
             foreach (var item in arr.EnumerateArray())
@@ -304,19 +313,19 @@ namespace MALClient.XShared.Comm.Anime
         }
 
         private static string GetString(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+            el.ValueKind == JsonValueKind.Object && el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
 
         private static int GetInt(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+            el.ValueKind == JsonValueKind.Object && el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
 
         private static double GetDouble(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDouble() : 0;
+            el.ValueKind == JsonValueKind.Object && el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDouble() : 0;
 
         private static string GetNestedString(JsonElement el, params string[] props)
         {
             foreach (var prop in props.Take(props.Length - 1))
             {
-                if (!el.TryGetProperty(prop, out el)) return "";
+                if (el.ValueKind != JsonValueKind.Object || !el.TryGetProperty(prop, out el)) return "";
             }
             return GetString(el, props.Last());
         }
@@ -325,14 +334,14 @@ namespace MALClient.XShared.Comm.Anime
         {
             foreach (var prop in props.Take(props.Length - 1))
             {
-                if (!el.TryGetProperty(prop, out el)) return 0;
+                if (el.ValueKind != JsonValueKind.Object || !el.TryGetProperty(prop, out el)) return 0;
             }
             return GetInt(el, props.Last());
         }
 
         private static List<string> GetStringList(JsonElement el, string prop)
         {
-            if (!el.TryGetProperty(prop, out var arr) || arr.ValueKind != JsonValueKind.Array)
+            if (el.ValueKind != JsonValueKind.Object || !el.TryGetProperty(prop, out var arr) || arr.ValueKind != JsonValueKind.Array)
                 return new List<string>();
             var list = new List<string>();
             foreach (var item in arr.EnumerateArray())
@@ -344,7 +353,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             foreach (var prop in props.Take(props.Length - 1))
             {
-                if (!el.TryGetProperty(prop, out el)) return new List<string>();
+                if (el.ValueKind != JsonValueKind.Object || !el.TryGetProperty(prop, out el)) return new List<string>();
             }
             return GetStringList(el, props.Last());
         }

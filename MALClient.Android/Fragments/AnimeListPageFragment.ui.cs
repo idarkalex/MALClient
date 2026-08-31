@@ -29,6 +29,7 @@ using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
 using MALClient.Models.Enums;
+using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using static MALClient.Android.Flyouts.AnimeListPageFlyoutBuilder;
@@ -46,23 +47,40 @@ namespace MALClient.Android.Fragments
         private DroppyMenuPopup _fabMenu;
         private FloatingActionMenu _actionMenu;
 
-        private View _loadMoreFooter;
+        private bool _autoLoadingMore;
+        private LoadMoreScrollListener _loadMoreScrollListener;
+
+        private class LoadMoreScrollListener : Java.Lang.Object, AbsListView.IOnScrollListener
+        {
+            private readonly Action _onApproachingEnd;
+
+            public LoadMoreScrollListener(Action onApproachingEnd)
+            {
+                _onApproachingEnd = onApproachingEnd;
+            }
+
+            public void OnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
+            {
+                if (totalItemCount > 0 && firstVisibleItem + visibleItemCount >= totalItemCount - 4)
+                    _onApproachingEnd?.Invoke();
+            }
+
+            public void OnScrollStateChanged(AbsListView view, ScrollState scrollState)
+            {
+            }
+        }
+
+        private void LoadMoreOnScrollApproachedEnd()
+        {
+            if (_autoLoadingMore || ViewModel.Loading || !ViewModel.CanLoadMore)
+                return;
+            _autoLoadingMore = true;
+            ViewModel.LoadMoreCommand.Execute(null);
+        }
 
         protected override void InitBindings()
         {
             var swipeRefresh = RootView as SwipeRefreshLayout;
-            var footerHolder = new FrameLayout(Context) { LayoutParameters = new AbsListView.LayoutParams(-1, -2), Tag = "Footer" };
-            var footer = new Button(Context)
-            {
-                Text = "Load more",
-                LayoutParameters = new ViewGroup.LayoutParams(-1, -2)
-            };
-            footer.SetAllCaps(false);
-            footer.BackgroundTintList = ColorStateList.ValueOf(new Color(ResourceExtension.AccentColourDark));
-            footer.SetOnClickListener(new OnClickListener(view => ViewModel.LoadMoreCommand.Execute(null)));
-            footer.SetTextColor(Color.White);
-            footerHolder.AddView(footer);
-            _loadMoreFooter = footerHolder;
 
             RootView.ViewTreeObserver.GlobalLayout += (sender, args) =>
             {
@@ -92,6 +110,11 @@ namespace MALClient.Android.Fragments
 
             ViewModel.PropertyChanged += AnimeListOnPropertyChanged;
             ViewModel.ScrollIntoViewRequested += ViewModelOnScrollIntoViewRequested;
+
+            _loadMoreScrollListener = new LoadMoreScrollListener(LoadMoreOnScrollApproachedEnd);
+            AnimeListPageGridView.SetOnScrollListener(_loadMoreScrollListener);
+            AnimeListPageListView.SetOnScrollListener(_loadMoreScrollListener);
+            AnimeListPageCompactListView.SetOnScrollListener(_loadMoreScrollListener);
 
             AnimeListPageActionButton.LongClickable = true;
             AnimeListPageActionButton.SetOnLongClickListener(new OnLongClickListener(view =>
@@ -139,7 +162,8 @@ namespace MALClient.Android.Fragments
                     break;
 
                 case AnimeListWorkModes.TopAnime:
-                    builder.AddSubActionView(BuildFabActionButton(param, Resource.Drawable.icon_fav_outline));
+                case AnimeListWorkModes.TopManga:
+                    builder.AddSubActionView(BuildFabActionButton(param, Resource.Drawable.icon_arrow_down));
                     builder.SetRadius(DimensionsHelper.DpToPx(95));
                     break;
 
@@ -198,7 +222,7 @@ namespace MALClient.Android.Fragments
                     OpenSeasonalSelectionDrawer();
                     break;
 
-                case Resource.Drawable.icon_fav_outline:
+                case Resource.Drawable.icon_arrow_down:
                     OpenTopTypeDrawer();
                     break;
             }
@@ -244,15 +268,16 @@ namespace MALClient.Android.Fragments
         {
             MainActivity.CurrentContext.RunOnUiThread(async () =>
             {
+                if (propertyChangedEventArgs.PropertyName == nameof(ViewModel.Loading) && !ViewModel.Loading)
+                    _autoLoadingMore = false;
                 if (propertyChangedEventArgs.PropertyName == nameof(ViewModelLocator.AnimeList.AnimeGridItems))
                 {
                     if (ViewModel.AnimeGridItems != null)
                     {
-                        var footerParam = _loadMoreFooter.LayoutParameters;
-                        footerParam.Height = ViewGroup.LayoutParams.WrapContent;
 
-                        AnimeListPageGridView.InjectAnimeListAdapterWithFooter(Context, ViewModel.AnimeGridItems, AnimeListDisplayModes.IndefiniteGrid, _loadMoreFooter, AnimeListPageGridViewOnItemClick);
+                        AnimeListPageGridView.InjectAnimeListAdapter(Context, ViewModel.AnimeGridItems, AnimeListDisplayModes.IndefiniteGrid, AnimeListPageGridViewOnItemClick);
                         _gridViewColumnHelper = new GridViewColumnHelper(AnimeListPageGridView, null, Settings.SqueezeOneMoreGridItem ? 3 : 2, 3);
+                        _gridViewColumnHelper.ForceColumns = 3;
 
                         SwipeRefreshLayout.ScrollingView = AnimeListPageGridView;
 
@@ -272,19 +297,15 @@ namespace MALClient.Android.Fragments
                             _prevArgs = null;
                         }
 
-                        _loadMoreFooter.LayoutParameters = footerParam;
                     }
                 }
                 else if (propertyChangedEventArgs.PropertyName == nameof(ViewModelLocator.AnimeList.AnimeListItems))
                 {
                     if (ViewModel.AnimeListItems != null)
                     {
-                        var footerParam = _loadMoreFooter.LayoutParameters;
-                        footerParam.Height = ViewGroup.LayoutParams.WrapContent;
-                        _loadMoreFooter.LayoutParameters = footerParam;
 
-                        AnimeListPageListView.InjectAnimeListAdapterWithFooter(Context, ViewModel.AnimeListItems,
-                            AnimeListDisplayModes.IndefiniteList, _loadMoreFooter, AnimeListPageGridViewOnItemClick);
+                        AnimeListPageListView.InjectAnimeListAdapter(Context, ViewModel.AnimeListItems,
+                            AnimeListDisplayModes.IndefiniteList, AnimeListPageGridViewOnItemClick);
 
                         if (_prevArgs != null)
                         {
@@ -302,10 +323,8 @@ namespace MALClient.Android.Fragments
                 {
                     if (ViewModel.AnimeCompactItems != null)
                     {
-                        var footerParam = _loadMoreFooter.LayoutParameters;
-                        footerParam.Height = ViewGroup.LayoutParams.WrapContent;
-                        _loadMoreFooter.LayoutParameters = footerParam;
-                        AnimeListPageCompactListView.InjectAnimeListAdapterWithFooter(Context, ViewModel.AnimeCompactItems, AnimeListDisplayModes.IndefiniteCompactList, _loadMoreFooter, AnimeListPageGridViewOnItemClick);
+
+                        AnimeListPageCompactListView.InjectAnimeListAdapter(Context, ViewModel.AnimeCompactItems, AnimeListDisplayModes.IndefiniteCompactList, AnimeListPageGridViewOnItemClick);
 
                         if (_prevArgs != null)
                         {
@@ -344,13 +363,6 @@ namespace MALClient.Android.Fragments
                             AnimeListPageGridView.Visibility = ViewStates.Gone;
                             break;
                     }
-                }
-                else if (propertyChangedEventArgs.PropertyName == nameof(ViewModel.CanLoadMore))
-                {
-                    if (ViewModel.CanLoadMore)
-                        _loadMoreFooter.Visibility = ViewStates.Visible;
-                    else
-                        _loadMoreFooter.Visibility = ViewStates.Gone;
                 }
             });
            

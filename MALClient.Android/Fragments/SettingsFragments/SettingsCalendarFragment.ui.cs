@@ -16,6 +16,7 @@ namespace MALClient.Android.Fragments.SettingsFragments
     {
         private CheckBox _settingsPageCalendarBuildOptionsWatchingCheckBox;
         private CheckBox _settingsPageCalendarBuildOptionsPlanToWatchCheckBox;
+        private Switch _settingsPageCalendarBuildOptionsAllAiringSwitch;
         private RadioButton _settingsPageCalendarStartPageRadioSummary;
         private RadioButton _settingsPageCalendarStartPageRadioToday;
         private RadioGroup _settingsPageCalendarStartPageRadioGroup;
@@ -27,6 +28,8 @@ namespace MALClient.Android.Fragments.SettingsFragments
         public CheckBox SettingsPageCalendarBuildOptionsWatchingCheckBox => GetView(ref _settingsPageCalendarBuildOptionsWatchingCheckBox, Resource.Id.SettingsPageCalendarBuildOptionsWatchingCheckBox);
 
         public CheckBox SettingsPageCalendarBuildOptionsPlanToWatchCheckBox => GetView(ref _settingsPageCalendarBuildOptionsPlanToWatchCheckBox, Resource.Id.SettingsPageCalendarBuildOptionsPlanToWatchCheckBox);
+
+        public Switch SettingsPageCalendarBuildOptionsAllAiringSwitch => GetView(ref _settingsPageCalendarBuildOptionsAllAiringSwitch, Resource.Id.SettingsPageCalendarBuildOptionsAllAiringSwitch);
 
         public RadioButton SettingsPageCalendarStartPageRadioSummary => GetView(ref _settingsPageCalendarStartPageRadioSummary, Resource.Id.SettingsPageCalendarStartPageRadioSummary);
 

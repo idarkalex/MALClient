@@ -26,7 +26,8 @@ namespace MALClient.Android.PagerAdapters
         {
             get
             {
-                var newCount = _viewModel.AnimeMode ? 8 : 6;
+                var episodesIncluded = _viewModel.AnimeMode && _viewModel.Type != "Movie";
+                var newCount = _viewModel.AnimeMode ? (episodesIncluded ? 8 : 7) : 5;
                 return newCount;
             }
         }
@@ -40,26 +41,88 @@ namespace MALClient.Android.PagerAdapters
         private AnimeDetailsPageStaffTabFragment _staffFragment;
         private AnimeDetailsPageEpisodesTabFragment _episodesFragment;
 
+        public void ClearFragmentCache()
+        {
+            _generalFragment = null;
+            _detailsFragment = null;
+            _reviewsFragment = null;
+            _recomsFragment = null;
+            _relatedFragment = null;
+            _charactersFragment = null;
+            _staffFragment = null;
+            _episodesFragment = null;
+        }
+
+        public void ResetForAnimeChange()
+        {
+            _generalFragment = null;
+            _detailsFragment = null;
+            _reviewsFragment = null;
+            _recomsFragment = null;
+            _relatedFragment = null;
+            _episodesFragment = null;
+            _charactersFragment = null;
+            _staffFragment = null;
+        }
+
         public override Fragment GetItem(int position)
         {
+            var episodesIncluded = _viewModel.AnimeMode && _viewModel.Type != "Movie";
+
             switch (position)
             {
                 case 0:
                     return _generalFragment ?? (_generalFragment = AnimeDetailsPageGeneralTabFragment.Instance);
                 case 1:
                     return _detailsFragment ?? (_detailsFragment = AnimeDetailsPageDetailsTabFragment.Instance);
-                case 2:
-                    return _episodesFragment ?? (_episodesFragment = AnimeDetailsPageEpisodesTabFragment.Instance);
-                case 3:
-                    return _reviewsFragment ?? (_reviewsFragment = AnimeDetailsPageReviewsTabFragment.Instance);
-                case 4:
-                    return _recomsFragment ?? (_recomsFragment = AnimeDetailsPageRecomsTabFragment.Instance);
-                case 5:
-                    return _relatedFragment ?? (_relatedFragment = AnimeDetailsPageRelatedTabFragment.Instance);
-                case 6:
-                    return _charactersFragment ?? (_charactersFragment = new AnimeDetailsPageCharactersTabFragment());
-                case 7:
-                    return _staffFragment ?? (_staffFragment = new AnimeDetailsPageStaffTabFragment());
+            }
+            if (!_viewModel.AnimeMode)
+            {
+                switch (position)
+                {
+                    case 2:
+                        return _reviewsFragment ?? (_reviewsFragment = AnimeDetailsPageReviewsTabFragment.Instance);
+                    case 3:
+                        return _recomsFragment ?? (_recomsFragment = AnimeDetailsPageRecomsTabFragment.Instance);
+                    case 4:
+                        return _relatedFragment ?? (_relatedFragment = AnimeDetailsPageRelatedTabFragment.Instance);
+                }
+                throw new Exception("Emm we've run out of fragments?");
+            }
+            // anime mode
+            if (episodesIncluded)
+            {
+                switch (position)
+                {
+                    case 2:
+                        return _episodesFragment ?? (_episodesFragment = AnimeDetailsPageEpisodesTabFragment.Instance);
+                    case 3:
+                        return _reviewsFragment ?? (_reviewsFragment = AnimeDetailsPageReviewsTabFragment.Instance);
+                    case 4:
+                        return _recomsFragment ?? (_recomsFragment = AnimeDetailsPageRecomsTabFragment.Instance);
+                    case 5:
+                        return _relatedFragment ?? (_relatedFragment = AnimeDetailsPageRelatedTabFragment.Instance);
+                    case 6:
+                        return _charactersFragment ?? (_charactersFragment = new AnimeDetailsPageCharactersTabFragment());
+                    case 7:
+                        return _staffFragment ?? (_staffFragment = new AnimeDetailsPageStaffTabFragment());
+                }
+            }
+            else
+            {
+                switch (position)
+                {
+                    case 2:
+                        return _reviewsFragment ?? (_reviewsFragment = AnimeDetailsPageReviewsTabFragment.Instance);
+                    case 3:
+                        return _recomsFragment ?? (_recomsFragment = AnimeDetailsPageRecomsTabFragment.Instance);
+                    case 4:
+                        return _relatedFragment ?? (_relatedFragment = AnimeDetailsPageRelatedTabFragment.Instance);
+                    case 5:
+                        return _charactersFragment ?? (_charactersFragment = new AnimeDetailsPageCharactersTabFragment());
+                    case 6:
+                        return _staffFragment ?? (_staffFragment = new AnimeDetailsPageStaffTabFragment());
+                }
             }
             throw new Exception("Emm we've run out of fragments?");
         }
@@ -79,26 +142,70 @@ namespace MALClient.Android.PagerAdapters
                 case 1:
                     txt.Text = "Details";
                     break;
-                case 2:
-                    txt.Text = "Episodes";
-                    break;
-                case 3:
-                    txt.Text = "Reviews";
-                    break;
-                case 4:
-                    txt.Text = "Recoms";
-                    break;
-                case 5:
-                    txt.Text = "Related";
-                    break;
-                case 6:
-                    txt.Text = "Characters";
-                    break;
-                case 7:
-                    txt.Text = "Staff";
-                    break;
             }
-            
+            if (!_viewModel.AnimeMode)
+            {
+                switch (p1)
+                {
+                    case 2:
+                        txt.Text = "Reviews";
+                        break;
+                    case 3:
+                        txt.Text = "Recoms";
+                        break;
+                    case 4:
+                        txt.Text = "Related";
+                        break;
+                }
+                return txt;
+            }
+            var episodesIncluded = _viewModel.Type != "Movie";
+            if (episodesIncluded)
+            {
+                switch (p1)
+                {
+                    case 2:
+                        txt.Text = "Episodes";
+                        break;
+                    case 3:
+                        txt.Text = "Reviews";
+                        break;
+                    case 4:
+                        txt.Text = "Recoms";
+                        break;
+                    case 5:
+                        txt.Text = "Related";
+                        break;
+                    case 6:
+                        txt.Text = "Characters";
+                        break;
+                    case 7:
+                        txt.Text = "Staff";
+                        break;
+                }
+            }
+            else
+            {
+                switch (p1)
+                {
+                    case 2:
+                        txt.Text = "Reviews";
+                        break;
+                    case 3:
+                        txt.Text = "Recoms";
+                        break;
+                    case 4:
+                        txt.Text = "Related";
+                        break;
+                    case 5:
+                        txt.Text = "Characters";
+                        break;
+                    case 6:
+                        txt.Text = "Staff";
+                        break;
+                }
+            }
+
             return txt;
         }
 
@@ -111,22 +218,64 @@ namespace MALClient.Android.PagerAdapters
                 case 1:
                     _viewModel.LoadDetails();
                     break;
-                case 2:
-                    _viewModel.LoadEpisodes();
-                    break;
-                case 3:
-                    _viewModel.LoadReviews();
-                    break;
-                case 4:
-                    _viewModel.LoadRecommendations();
-                    break;
-                case 5:
-                    _viewModel.LoadRelatedAnime();
-                    break;
-                case 6:
-                case 7:
-                    _viewModel.LoadCharacters();
-                    break;
+            }
+            if (!_viewModel.AnimeMode)
+            {
+                switch ((int)p0.Tag)
+                {
+                    case 2:
+                        _viewModel.LoadReviews();
+                        break;
+                    case 3:
+                        _viewModel.LoadRecommendations();
+                        break;
+                    case 4:
+                        _viewModel.LoadRelatedAnime();
+                        break;
+                }
+                return;
+            }
+            var episodesIncluded = _viewModel.Type != "Movie";
+            if (episodesIncluded)
+            {
+                switch ((int)p0.Tag)
+                {
+                    case 2:
+                        _viewModel.LoadEpisodes();
+                        break;
+                    case 3:
+                        _viewModel.LoadReviews();
+                        break;
+                    case 4:
+                        _viewModel.LoadRecommendations();
+                        break;
+                    case 5:
+                        _viewModel.LoadRelatedAnime();
+                        break;
+                    case 6:
+                    case 7:
+                        _viewModel.LoadCharacters();
+                        break;
+                }
+            }
+            else
+            {
+                switch ((int)p0.Tag)
+                {
+                    case 2:
+                        _viewModel.LoadReviews();
+                        break;
+                    case 3:
+                        _viewModel.LoadRecommendations();
+                        break;
+                    case 4:
+                        _viewModel.LoadRelatedAnime();
+                        break;
+                    case 5:
+                    case 6:
+                        _viewModel.LoadCharacters();
+                        break;
+                }
             }
         }
 

@@ -33,6 +33,9 @@ namespace MALClient.Android.Fragments.SettingsFragments
             Bindings.Add(
                 this.SetBinding(() => ViewModel.CalendarIncludePlanned,
                     () => SettingsPageCalendarBuildOptionsPlanToWatchCheckBox.Checked, BindingMode.TwoWay));
+            Bindings.Add(
+                this.SetBinding(() => ViewModel.CalendarShowAllAiring,
+                    () => SettingsPageCalendarBuildOptionsAllAiringSwitch.Checked, BindingMode.TwoWay));
             //
             SettingsPageCalendarStartPageRadioGroup.Check(Settings.CalendarStartOnToday
                 ? SettingsPageCalendarStartPageRadioToday.Id
