@@ -85,19 +85,15 @@ namespace MALClient.XShared.ViewModels
             GlobalScore = ParentAbstraction.GlobalScore;
             Airing = ParentAbstraction.AirDay >= 0;
 
-            if (string.IsNullOrEmpty(_timeTillNextAirCache) && ParentAbstraction?.ExactAiringTime != null)
+            if (string.IsNullOrEmpty(_timeTillNextAirCache) && Airing &&
+                ResourceLocator.AiringInfoProvider.InitializationSuccess)
             {
-                var nextAir = AirTimeUtils.ComputeNextAirDate(ParentAbstraction.ExactAiringTime, DateTime.UtcNow);
-                if (nextAir.HasValue)
+                var malId = ParentAbstraction?.MalId ?? Id;
+                if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, DateTime.UtcNow, out var airDate) &&
+                    airDate > DateTime.UtcNow)
                 {
-                    var diff = nextAir.Value - DateTime.UtcNow;
-                    if (diff.TotalDays > 0)
-                    {
-                        _timeTillNextAirCache = diff.TotalDays < 1
-                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
-                            : (int)diff.TotalDays + "D";
-                        RaisePropertyChanged(() => TimeTillNextAirCache);
-                    }
+                    _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(airDate, DateTime.UtcNow);
+                    RaisePropertyChanged(() => TimeTillNextAirCache);
                 }
             }
         }
@@ -134,19 +130,15 @@ namespace MALClient.XShared.ViewModels
             AdjustIncrementButtonsVisibility();
             ShowMoreVisibility = false;
 
-            if (string.IsNullOrEmpty(_timeTillNextAirCache) && ParentAbstraction?.ExactAiringTime != null)
+            if (string.IsNullOrEmpty(_timeTillNextAirCache) && Airing &&
+                ResourceLocator.AiringInfoProvider.InitializationSuccess)
             {
-                var nextAir = AirTimeUtils.ComputeNextAirDate(ParentAbstraction.ExactAiringTime, DateTime.UtcNow);
-                if (nextAir.HasValue)
+                var malId = ParentAbstraction?.MalId ?? Id;
+                if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, DateTime.UtcNow, out var airDate) &&
+                    airDate > DateTime.UtcNow)
                 {
-                    var diff = nextAir.Value - DateTime.UtcNow;
-                    if (diff.TotalDays > 0)
-                    {
-                        _timeTillNextAirCache = diff.TotalDays < 1
-                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
-                            : (int)diff.TotalDays + "D";
-                        RaisePropertyChanged(() => TimeTillNextAirCache);
-                    }
+                    _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(airDate, DateTime.UtcNow);
+                    RaisePropertyChanged(() => TimeTillNextAirCache);
                 }
             }
         }
@@ -863,49 +855,20 @@ namespace MALClient.XShared.ViewModels
 
                 var now = DateTime.UtcNow;
                 bool calculated = false;
-                if (DataCache.TryRetrieveDataForId(ParentAbstraction?.MalId ?? Id, out var volatileData) &&
+                var malId = ParentAbstraction?.MalId ?? Id;
+                if (DataCache.TryRetrieveDataForId(malId, out var volatileData) &&
                     volatileData.NextAirUtc.HasValue && volatileData.NextAirUtc.Value > now)
                 {
                     _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(volatileData.NextAirUtc.Value, now);
                     calculated = true;
                 }
-                else if (ParentAbstraction?.ExactAiringTime != null)
-                {
-                    var nextAir = AirTimeUtils.ComputeNextAirDate(ParentAbstraction.ExactAiringTime, now);
-                    if (nextAir.HasValue)
-                    {
-                        var diff = nextAir.Value - now;
-                        if (diff.TotalDays > 0)
-                        {
-                            _timeTillNextAirCache = diff.TotalDays < 1
-                                ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
-                                : (int)diff.TotalDays + "D";
-                            calculated = true;
-                        }
-                    }
-                }
 
-                if (string.IsNullOrEmpty(_timeTillNextAirCache))
+                if (string.IsNullOrEmpty(_timeTillNextAirCache) &&
+                    ResourceLocator.AiringInfoProvider.InitializationSuccess &&
+                    ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, now, out DateTime airDate) && now < airDate)
                 {
-                    var malId = ParentAbstraction?.MalId ?? Id;
-                    if (DataCache.TryRetrieveDataForId(malId, out var data) && !string.IsNullOrEmpty(data.TimeTillNextAir))
-                    {
-                        _timeTillNextAirCache = data.TimeTillNextAir;
-                        calculated = true;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(_timeTillNextAirCache))
-                {
-                    var malId = ParentAbstraction?.MalId ?? Id;
-                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, now, out DateTime airDate) && now < airDate)
-                    {
-                        var diff = airDate - now;
-                        _timeTillNextAirCache = diff.TotalDays < 1
-                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
-                            : (int)diff.TotalDays + "D";
-                        calculated = true;
-                    }
+                    _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(airDate, now);
+                    calculated = true;
                 }
 
                 if (calculated)
@@ -935,10 +898,30 @@ namespace MALClient.XShared.ViewModels
             }
 
             var fromEpisodes = await GetEpisodesStalenessFallbackAsync();
-            if (fromEpisodes.HasValue)
+            if (fromEpisodes.HasValue && await IsCurrentlyAiringAsync())
                 return fromEpisodes;
 
             return await GetBroadcastFallbackAsync();
+        }
+
+        private async Task<bool> IsCurrentlyAiringAsync()
+        {
+            try
+            {
+                var malId = ParentAbstraction?.MalId ?? Id;
+                var data = await DataCache.RetrieveAnimeSearchResultsDataStale(malId.ToString(), true);
+                if (data == null || string.IsNullOrEmpty(data.Status))
+                    data = await new AnimeGeneralDetailsQuery().GetAnimeDetails(true, malId.ToString(), "", true);
+
+                if (data == null)
+                    return false;
+
+                return AirTimeUtils.IsCurrentlyAiringStatus(data.Status);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private async Task<DateTime?> GetEpisodesStalenessFallbackAsync()

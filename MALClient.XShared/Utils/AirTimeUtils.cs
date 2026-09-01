@@ -10,6 +10,19 @@ namespace MALClient.XShared.Utils
         private static readonly TimeSpan JstOffset = TimeSpan.FromHours(9);
         private static readonly string[] DayNames = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 
+        public static bool IsCurrentlyAiringStatus(string status)
+        {
+            if (string.IsNullOrEmpty(status))
+                return false;
+            if (string.Equals(status, "Currently Airing", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (string.Equals(status, "Airing", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (string.Equals(status, "currently_airing", StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
+
         public static DateTime? ComputeNextAirDate(string broadcast, DateTime nowUtc)
         {
             if (string.IsNullOrEmpty(broadcast)) return null;

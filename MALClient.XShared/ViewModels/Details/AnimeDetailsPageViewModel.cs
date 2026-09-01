@@ -37,6 +37,31 @@ namespace MALClient.XShared.ViewModels.Details
 
         private readonly IAiringNotificationsAdapter _airingNotificationsAdapter;
         private string _timeTillNextAirCache;
+        private AnimeItemViewModel _airItem;
+        private System.ComponentModel.PropertyChangedEventHandler _airItemHandler;
+
+        private void EnsureAirItemSubscription()
+        {
+            if (_animeItemReference is AnimeItemViewModel itemVm && !ReferenceEquals(_airItem, itemVm))
+            {
+                if (_airItem != null && _airItemHandler != null)
+                    _airItem.PropertyChanged -= _airItemHandler;
+                _airItem = itemVm;
+                if (_airItemHandler == null)
+                {
+                    _airItemHandler = (sender, args) =>
+                    {
+                        if (args.PropertyName == nameof(AnimeItemViewModel.TimeTillNextAirCache) &&
+                            sender is AnimeItemViewModel changedVm)
+                        {
+                            _timeTillNextAirCache = changedVm.TimeTillNextAirCache;
+                            RaisePropertyChanged(() => TimeTillNextAir);
+                        }
+                    };
+                }
+                _airItem.PropertyChanged += _airItemHandler;
+            }
+        }
 
         //additional fields
         private int _allEpisodes;
@@ -128,40 +153,40 @@ namespace MALClient.XShared.ViewModels.Details
 
                 var now = DateTime.UtcNow;
                 string result = "";
+                var malId = (_animeItemReference as AnimeItemViewModel)?.ParentAbstraction?.MalId ?? Id;
 
-                if (!string.IsNullOrEmpty(_broadcast))
+                if (string.IsNullOrEmpty(result) &&
+                    DataCache.TryRetrieveDataForId(malId, out var volatileData) &&
+                    volatileData.NextAirUtc.HasValue && volatileData.NextAirUtc.Value > now)
                 {
-                    var nextAir = ComputeNextAirDate(_broadcast, now);
-                    if (nextAir.HasValue)
-                        result = FormatAirCountdown(nextAir.Value, now);
+                    result = FormatAirCountdown(volatileData.NextAirUtc.Value, now);
                 }
 
-                if (string.IsNullOrEmpty(result))
+                if (string.IsNullOrEmpty(result) &&
+                    ResourceLocator.AiringInfoProvider.InitializationSuccess &&
+                    ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, now, out DateTime airDate) && now < airDate)
+                {
+                    result = FormatAirCountdown(airDate, now);
+                }
+
+                if (string.IsNullOrEmpty(result) && AirTimeUtils.IsCurrentlyAiringStatus(Status))
                 {
                     var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
                     if (nextFromEpisodes.HasValue)
                         result = FormatAirCountdown(nextFromEpisodes.Value, now);
-                }
 
-                if (string.IsNullOrEmpty(result) && _animeItemReference is AnimeItemViewModel vm)
-                {
-                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(vm.ParentAbstraction.MalId, now, out DateTime airDate) &&
-                        now < airDate)
+                    if (string.IsNullOrEmpty(result))
                     {
-                        result = FormatAirCountdown(airDate, now);
+                        var nextAirFromBroadcast = ComputeNextAirDate(_broadcast, now);
+                        if (nextAirFromBroadcast.HasValue)
+                            result = FormatAirCountdown(nextAirFromBroadcast.Value, now);
                     }
                 }
 
                 _timeTillNextAirCache = result;
 
-                if (!string.IsNullOrEmpty(result))
-                {
-                    DataCache.UpdateVolatileDataWithTimeTillNextAir(Id, result);
-                    if (_animeItemReference is AnimeItemViewModel itemVm)
-                    {
-                        itemVm.TimeTillNextAirCache = result;
-                    }
-                }
+                if (_animeItemReference is AnimeItemViewModel itemVm)
+                    itemVm.RefreshTimeTillNextAirInBackground();
 
                 return result;
             }
@@ -351,11 +376,13 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 _loadedDetails = _loadedEpisodes = _loadedReviews = _loadedRecomm = _loadedRelated = _loadedVideos = _loadedCharacters = false;
                 LastAired = "";
+                _timeTillNextAirCache = "";
                 RaisePropertyChanged(() => LastAired);
             }
 
             //basic init assignment
             _animeItemReference = param.AnimeItem;
+            EnsureAirItemSubscription();
             RaisePropertyChanged(() => TimeTillNextAir);
             AnimeMode = param.AnimeMode;
             Id = param.Id;
@@ -443,6 +470,7 @@ namespace MALClient.XShared.ViewModels.Details
                 }
                 else
                     _animeItemReference = possibleRef;
+                EnsureAirItemSubscription();
             } // else we already have it
 
             if ((_animeItemReference as AnimeItemViewModel)?.Auth ?? false)
@@ -1062,6 +1090,7 @@ namespace MALClient.XShared.ViewModels.Details
                     MyVolumes = MyVolumes
                 });
             _animeItemReference = animeItem.ViewModel;
+            EnsureAirItemSubscription();
 
             MyScore = 0;
             MyStatus = Settings.DefaultStatusAfterAdding;
@@ -1088,6 +1117,7 @@ namespace MALClient.XShared.ViewModels.Details
         public void CurrentAnimeHasBeenAddedToList(IAnimeData reference)
         {
             _animeItemReference = reference;
+            EnsureAirItemSubscription();
             MyDetailsVisibility = true;
             AddAnimeVisibility = false;
             RaisePropertyChanged(() => IsIncrementButtonEnabled);
