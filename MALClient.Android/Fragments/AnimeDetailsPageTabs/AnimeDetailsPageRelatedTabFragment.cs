@@ -41,6 +41,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             RetainInstance = true;
         }
 
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            DetachBindings();
+        }
+
         protected override void Init(Bundle savedInstanceState)
         {
 
@@ -55,20 +61,34 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             Bindings.Add(
                 this.SetBinding(() => ViewModel.LoadingRelated).WhenSourceChanges(() =>
                 {
-                    if (ViewModel.LoadingRelated)
+                    try
                     {
-                        AnimeDetailsPageRelatedTabsList.SetAdapter(null);
-                    }
-                    else
-                    {
-                        if (ViewModel.RelatedAnime == null || !ViewModel.RelatedAnime.Any())
-                        {
-                            AnimeDetailsPageRelatedTabsList.SetAdapter(null);
+                        if (RootView == null)
                             return;
+                        var list = AnimeDetailsPageRelatedTabsList;
+                        if (ViewModel.LoadingRelated)
+                        {
+                            list?.SetAdapter(null);
                         }
-                        AnimeDetailsPageRelatedTabsList.SetAdapter(
-                            new ObservableRecyclerAdapter<RelatedAnimeData, RelatedHolder>(
-                                ViewModel.RelatedAnime, BindRelated, Activity.LayoutInflater, Resource.Layout.AnimeRelatedItem));
+                        else
+                        {
+                            if (ViewModel.RelatedAnime == null || !ViewModel.RelatedAnime.Any())
+                            {
+                                list?.SetAdapter(null);
+                                return;
+                            }
+                            var context = Activity ?? RootView.Context;
+                            if (context != null)
+                            {
+                                list?.SetAdapter(
+                                    new ObservableRecyclerAdapter<RelatedAnimeData, RelatedHolder>(
+                                        ViewModel.RelatedAnime, BindRelated, LayoutInflater.From(context), Resource.Layout.AnimeRelatedItem));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MALClient.XShared.Utils.DiagnosticsReporter.Error("Details", "related tab bind failed", ex);
                     }
                 }));
 

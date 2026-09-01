@@ -46,6 +46,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             RetainInstance = true;
         }
 
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            DetachBindings();
+        }
+
         protected override void Init(Bundle savedInstanceState)
         {
 
@@ -60,20 +66,34 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             Bindings.Add(
                 this.SetBinding(() => ViewModel.LoadingRecommendations).WhenSourceChanges(() =>
                 {
-                    if (ViewModel.LoadingRecommendations)
+                    try
                     {
-                        AnimeDetailsPageRecomTabsList.SetAdapter(null);
-                    }
-                    else
-                    {
-                        if (ViewModel.Recommendations == null || !ViewModel.Recommendations.Any())
-                        {
-                            AnimeDetailsPageRecomTabsList.SetAdapter(null);
+                        if (RootView == null)
                             return;
+                        var list = AnimeDetailsPageRecomTabsList;
+                        if (ViewModel.LoadingRecommendations)
+                        {
+                            list?.SetAdapter(null);
                         }
-                        AnimeDetailsPageRecomTabsList.SetAdapter(
-                            new ObservableRecyclerAdapter<DirectRecommendationData, RecomHolder>(
-                                ViewModel.Recommendations, BindRecom, Activity.LayoutInflater, Resource.Layout.AnimeRecomItem));
+                        else
+                        {
+                            if (ViewModel.Recommendations == null || !ViewModel.Recommendations.Any())
+                            {
+                                list?.SetAdapter(null);
+                                return;
+                            }
+                            var context = Activity ?? RootView.Context;
+                            if (context != null)
+                            {
+                                list?.SetAdapter(
+                                    new ObservableRecyclerAdapter<DirectRecommendationData, RecomHolder>(
+                                        ViewModel.Recommendations, BindRecom, LayoutInflater.From(context), Resource.Layout.AnimeRecomItem));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MALClient.XShared.Utils.DiagnosticsReporter.Error("Details", "recoms tab bind failed", ex);
                     }
                 }));
 

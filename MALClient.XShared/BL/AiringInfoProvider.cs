@@ -48,47 +48,69 @@ namespace MALClient.XShared.BL
             if(_airingData != null)
                 return;
 
+            List<AiringData> data = null;
             try
             {
-                List<AiringData> data = null;
-                var lastUpdate = _applicationDataService[UpdateStorakeKey];
-                if (lastUpdate != null)
-                {
-                    var date = DateTime.FromBinary((long) lastUpdate);
-                    if(DateTime.Now - date < TimeSpan.FromHours(8))
-                        data = await _dataCache.RetrieveData<List<AiringData>>(CacheFileName, null, 0);
-                }
+                data = await _dataCache.RetrieveData<List<AiringData>>(CacheFileName, null, 0);
+            }
+            catch (Exception)
+            {
+                data = null;
+            }
 
-                
-                if ((data == null || !data.Any()) && !cacheOnly)
-                {
-                    var schedulesData = await new AnimeSchedulesQuery().GetScheduleAsync();
-                    if (schedulesData != null && schedulesData.Any())
-                    {
-                        data = schedulesData;
-                        _applicationDataService[UpdateStorakeKey] = DateTime.Now.ToBinary();
-                        _dataCache.SaveData(data, CacheFileName, null);
-                    }
-                }
+            var lastUpdate = _applicationDataService[UpdateStorakeKey];
+            var fresh = lastUpdate != null &&
+                        DateTime.Now - DateTime.FromBinary((long) lastUpdate) < TimeSpan.FromHours(8);
 
-                if (data == null)
+            try
+            {
+                if (data != null && data.Any() && fresh)
                 {
-                    AiringShows = new List<AiringData>();
-                    InitializationSuccess = false;
+                    ApplyData(data);
                     return;
                 }
 
-                InitializationSuccess = true;
-                foreach (var airingData in data)
+                if (!cacheOnly)
                 {
-                    airingData.Episodes = airingData.Episodes.OrderBy(episode => episode.Timestamp).ToList();
+                    var schedulesTask = new AnimeSchedulesQuery().GetScheduleAsync();
+                    var completed = await Task.WhenAny(schedulesTask, Task.Delay(8000));
+                    if (completed == schedulesTask)
+                    {
+                        var schedulesData = await schedulesTask;
+                        if (schedulesData != null && schedulesData.Any())
+                        {
+                            data = schedulesData;
+                            _applicationDataService[UpdateStorakeKey] = DateTime.Now.ToBinary();
+                            try { _dataCache.SaveData(data, CacheFileName, null); } catch (Exception) { }
+                        }
+                    }
+                    // timeout or empty/failed refetch -> keep the stale cache we read above
                 }
-                AiringShows = data;
             }
-            catch (Exception e)
+            catch (Exception)
+            {
+                // network/refetch failure -> keep whatever cache we already read (stale-not-blank)
+            }
+
+            if (data == null || !data.Any())
             {
                 AiringShows = new List<AiringData>();
+                InitializationSuccess = false;
+                return;
             }
+
+            ApplyData(data);
+        }
+
+        private void ApplyData(List<AiringData> data)
+        {
+            foreach (var airingData in data)
+            {
+                if (airingData.Episodes != null)
+                    airingData.Episodes = airingData.Episodes.OrderBy(episode => episode.Timestamp).ToList();
+            }
+            AiringShows = data.GroupBy(x => x.MalId).Select(g => g.First()).ToList();
+            InitializationSuccess = true;
         }
 
         public bool TryGetCurrentEpisode(int id, out int episode, DateTime? forDay = null)

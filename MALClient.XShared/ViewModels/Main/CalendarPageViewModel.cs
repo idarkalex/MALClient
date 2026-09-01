@@ -171,87 +171,95 @@ namespace MALClient.XShared.ViewModels.Main
             _initialized = true;
             CalendarBuildingVisibility = true;
 
-            List<AnimeItemAbstraction> abstractions;
-            if (Settings.CalendarShowAllAiring)
-                abstractions = await BuildAllAiringAbstractionsAsync();
-            else
-                abstractions = await Task.Run(() => BuildMyListAbstractions());
-
-            foreach (var abstraction in abstractions)
+            try
             {
-                try
+                List<AnimeItemAbstraction> abstractions;
+                if (Settings.CalendarShowAllAiring)
+                    abstractions = await BuildAllAiringAbstractionsAsync();
+                else
+                    abstractions = await Task.Run(() => BuildMyListAbstractions());
+
+                foreach (var abstraction in abstractions)
                 {
-                    var nowUtc = DateTime.UtcNow;
-
-                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(abstraction.Id, nowUtc, out var nextAirDate) &&
-                        (nextAirDate - nowUtc).TotalDays >= 7)
-                        continue;
-
-                    if (ResourceLocator.AiringInfoProvider.TryGetAiringDay(abstraction.Id, out DayOfWeek dayOfWeek))
+                    try
                     {
-                        int day = (int) dayOfWeek;
-                        if (day >= 0 && day <= 7)
-                            CalendarData[day].Items.Add(abstraction.ViewModel);
+                        var nowUtc = DateTime.UtcNow;
+
+                        if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(abstraction.Id, nowUtc, out var nextAirDate) &&
+                            (nextAirDate - nowUtc).TotalDays >= 7)
+                            continue;
+
+                        if (ResourceLocator.AiringInfoProvider.TryGetAiringDay(abstraction.Id, out DayOfWeek dayOfWeek))
+                        {
+                            int day = (int) dayOfWeek;
+                            if (day >= 0 && day <= 7)
+                                CalendarData[day].Items.Add(abstraction.ViewModel);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        //there are some numm ref crashes and I don't know really know where
+                        // probably MAL returns some odd stuff and we cannot get details
                     }
                 }
-                catch (Exception e)
-                {
-                    //there are some numm ref crashes and I don't know really know where
-                    // probably MAL returns some odd stuff and we cannot get details
-                }
 
-            }
-           
-            if (Settings.CalendarSwitchMonSun)
-            {
-                CalendarData.Move(0, 6);
-                CalendarData[0].Header = Utilities.DayToString(DayOfWeek.Monday, true);
-                CalendarData[0].DayOfWeek = DayOfWeek.Monday;
-                CalendarData[6].Header = Utilities.DayToString(DayOfWeek.Sunday, true);
-                CalendarData[6].DayOfWeek = DayOfWeek.Sunday;
-                for (int i = 1; i < 6; i++)
+                if (Settings.CalendarSwitchMonSun)
                 {
-                    CalendarData[i].Header = Utilities.DayToString((DayOfWeek) i + 1, true);
-                    CalendarData[i].DayOfWeek = (DayOfWeek) i + 1;
+                    CalendarData.Move(0, 6);
+                    CalendarData[0].Header = Utilities.DayToString(DayOfWeek.Monday, true);
+                    CalendarData[0].DayOfWeek = DayOfWeek.Monday;
+                    CalendarData[6].Header = Utilities.DayToString(DayOfWeek.Sunday, true);
+                    CalendarData[6].DayOfWeek = DayOfWeek.Sunday;
+                    for (int i = 1; i < 6; i++)
+                    {
+                        CalendarData[i].Header = Utilities.DayToString((DayOfWeek) i + 1, true);
+                        CalendarData[i].DayOfWeek = (DayOfWeek) i + 1;
+                    }
                 }
-            }
-            else
-            {
-                for (int i = 0; i < 7; i++)
-                {
-                    CalendarData[i].Header = Utilities.DayToString((DayOfWeek) i, true);
-                    CalendarData[i].DayOfWeek = (DayOfWeek) i;
-                }
-            }
-
-            var emptyPages = new List<CalendarPivotPage>();
-            foreach (var calendarPivotPage in CalendarData.Take(CalendarData.Count - 1))
-            {
-                if (calendarPivotPage.Items.Count > 0)
-                    calendarPivotPage.Sub = calendarPivotPage.Items.Count.ToString();
                 else
                 {
-                    if (Settings.CalendarRemoveEmptyDays)
-                        emptyPages.Add(calendarPivotPage);
-                    else
-                        calendarPivotPage.Sub = "-";
+                    for (int i = 0; i < 7; i++)
+                    {
+                        CalendarData[i].Header = Utilities.DayToString((DayOfWeek) i, true);
+                        CalendarData[i].DayOfWeek = (DayOfWeek) i;
+                    }
                 }
-                if (calendarPivotPage.Items.Count != 0)
-                    (CalendarData[7] as CalendarSummaryPivotPage).Data.Add(
-                        new Tuple<string, List<AnimeItemViewModel>>(calendarPivotPage.FullHeader,
-                            calendarPivotPage.Items));
+
+                var emptyPages = new List<CalendarPivotPage>();
+                foreach (var calendarPivotPage in CalendarData.Take(CalendarData.Count - 1))
+                {
+                    if (calendarPivotPage.Items.Count > 0)
+                        calendarPivotPage.Sub = calendarPivotPage.Items.Count.ToString();
+                    else
+                    {
+                        if (Settings.CalendarRemoveEmptyDays)
+                            emptyPages.Add(calendarPivotPage);
+                        else
+                            calendarPivotPage.Sub = "-";
+                    }
+                    if (calendarPivotPage.Items.Count != 0)
+                        (CalendarData[7] as CalendarSummaryPivotPage).Data.Add(
+                            new Tuple<string, List<AnimeItemViewModel>>(calendarPivotPage.FullHeader,
+                                calendarPivotPage.Items));
+                }
+                foreach (var emptyPage in emptyPages)
+                    CalendarData.Remove(emptyPage);
+
+                DiagnosticsReporter.Info("Calendar",
+                    $"calendar build: allAiring={Settings.CalendarShowAllAiring} providerOk={ResourceLocator.AiringInfoProvider.InitializationSuccess}");
+
+                RaisePropertyChanged(() => CalendarData);
+                await GoToDesiredTab();
             }
-            foreach (var emptyPage in emptyPages)
-                CalendarData.Remove(emptyPage);
-
-
-
-            RaisePropertyChanged(() => CalendarData);
-            await GoToDesiredTab();
-
-            CalendarBuildingVisibility = false;
-            CalendarVisibility = true;
-
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("Calendar", "Calendar Init failed", ex);
+            }
+            finally
+            {
+                CalendarBuildingVisibility = false;
+                CalendarVisibility = true;
+            }
         }
 
         private List<AnimeItemAbstraction> BuildMyListAbstractions()
@@ -289,13 +297,22 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 var result = new List<AnimeItemAbstraction>();
                 var nowUtc = DateTime.UtcNow;
-                var ids = ResourceLocator.AiringInfoProvider.GetAllAiringIds()
-                    .Select(id => (Id: id, Next: ResourceLocator.AiringInfoProvider.TryGetNextAirDate(id, nowUtc, out var d) ? (DateTime?)d : null))
-                    .Where(x => x.Next.HasValue && (x.Next.Value - nowUtc).TotalDays < 7)
-                    .OrderBy(x => x.Next.Value)
-                    .Select(x => x.Id)
-                    .Distinct()
-                    .ToList();
+                List<int> ids;
+                try
+                {
+                    ids = ResourceLocator.AiringInfoProvider.GetAllAiringIds()
+                        .Select(id => (Id: id, Next: ResourceLocator.AiringInfoProvider.TryGetNextAirDate(id, nowUtc, out var d) ? (DateTime?)d : null))
+                        .Where(x => x.Next.HasValue && (x.Next.Value - nowUtc).TotalDays < 7)
+                        .OrderBy(x => x.Next.Value)
+                        .Select(x => x.Id)
+                        .Distinct()
+                        .ToList();
+                }
+                catch (Exception e)
+                {
+                    DiagnosticsReporter.Error("Calendar", "airing ids enumeration failed", e);
+                    ids = new List<int>();
+                }
 
                 foreach (var id in ids)
                 {
@@ -320,6 +337,7 @@ namespace MALClient.XShared.ViewModels.Main
                         // skip failed entry
                     }
                 }
+                DiagnosticsReporter.Info("Calendar", $"airing build: ids={ids.Count} items={result.Count}");
                 return result;
             });
         }

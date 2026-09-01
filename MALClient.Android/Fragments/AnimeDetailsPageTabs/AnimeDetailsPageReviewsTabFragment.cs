@@ -48,6 +48,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             RetainInstance = true;
         }
 
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            DetachBindings();
+        }
+
         protected override void Init(Bundle savedInstanceState)
         {
 
@@ -65,18 +71,31 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             Bindings.Add(
                 this.SetBinding(() => ViewModel.LoadingReviews).WhenSourceChanges(() =>
                 {
-                    if (ViewModel.LoadingReviews)
+                    try
                     {
-                        _drainCts?.Cancel();
-                        _localReviews.Clear();
-                        AnimeDetailsPageReviewsTabsList.SetAdapter(null);
+                        if (RootView == null)
+                            return;
+                        if (ViewModel.LoadingReviews)
+                        {
+                            _drainCts?.Cancel();
+                            _localReviews.Clear();
+                            AnimeDetailsPageReviewsTabsList?.SetAdapter(null);
+                        }
+                        else
+                        {
+                            var context = Activity ?? RootView.Context;
+                            if (context != null && ViewModel.Reviews != null)
+                            {
+                                AnimeDetailsPageReviewsTabsList?.SetAdapter(
+                                    new ObservableRecyclerAdapter<AnimeReviewData, ReviewHolder>(
+                                        _localReviews, BindReview, LayoutInflater.From(context), Resource.Layout.AnimeReviewItemLayout));
+                                _drainCts = IncrementalListHelper.Drain(ViewModel.Reviews, _localReviews);
+                            }
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        AnimeDetailsPageReviewsTabsList.SetAdapter(
-                            new ObservableRecyclerAdapter<AnimeReviewData, ReviewHolder>(
-                                _localReviews, BindReview, Activity.LayoutInflater, Resource.Layout.AnimeReviewItemLayout));
-                        _drainCts = IncrementalListHelper.Drain(ViewModel.Reviews, _localReviews);
+                        MALClient.XShared.Utils.DiagnosticsReporter.Error("Details", "reviews tab bind failed", ex);
                     }
                 }));
 
