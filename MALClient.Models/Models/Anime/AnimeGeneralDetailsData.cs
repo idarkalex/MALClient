@@ -42,6 +42,13 @@ namespace MALClient.Models.Models.Anime
         public List<string> Genres { get; set; } = new List<string>();
         public List<string> Themes { get; set; } = new List<string>();
         public List<string> Authors { get; set; } = new List<string>();
+        public string Background { get; set; }
+        public string Source { get; set; }
+        public string Duration { get; set; }
+        public string Rating { get; set; }
+        public List<string> ExplicitGenres { get; set; } = new List<string>();
+        public List<string> Demographics { get; set; } = new List<string>();
+        public string MoreInfo { get; set; }
 
         public void ParseXElement(XElement xmlObj, bool anime,bool preferEnglishTitle)
         {

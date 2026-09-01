@@ -219,17 +219,15 @@ namespace MALClient.XShared.ViewModels
                     ? ParentAbstraction?.Index.ToString()
                     : Utils.Utilities.DayToString((DayOfWeek) (ParentAbstraction.AirDay - 1));
 
-        private bool? _airDayBrush;
         public bool? AirDayBrush
         {
             get
             {
-                if (_airDayBrush != null)
-                    return _airDayBrush.Value;
-
-                if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(Id, DateTime.Today, out DateTime airingDate))
+                var malId = ParentAbstraction?.MalId ?? Id;
+                var nowUtc = DateTime.UtcNow;
+                if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, nowUtc, out DateTime airingDate))
                 {
-                    var diff = airingDate - DateTime.UtcNow;
+                    var diff = airingDate - nowUtc;
 
                     if (diff.TotalDays > 0)
                     {
@@ -242,12 +240,10 @@ namespace MALClient.XShared.ViewModels
                         _airDayTillBind = "Aired!";
                     }
 
-                    _airDayBrush = diff.TotalDays > 7;
+                    return diff.TotalDays > 7;
                 }
                 else
-                    _airDayBrush = true;
-
-                return _airDayBrush;
+                    return true;
             }
         }
 

@@ -589,7 +589,7 @@ namespace MALClient.XShared.Utils
                 await Task.Run(async () =>
                 {
                     await
-                        DataCacheService.SaveData(data, $"mal_details_v3_{id}.json",
+                        DataCacheService.SaveData(data, $"mal_details_v4_{id}.json",
                             anime ? "AnimeDetails" : "MangaDetails");
                 });
             }
@@ -632,7 +632,7 @@ namespace MALClient.XShared.Utils
                     anime ? "AnimeDetails" : "MangaDetails", 0);
                 if (final != null)
                     return final;
-                return await DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v3_{animeId}.json",
+                return await DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v4_{animeId}.json",
                     anime ? "AnimeDetails" : "MangaDetails", 14);
             }
             catch (Exception)
@@ -646,7 +646,7 @@ namespace MALClient.XShared.Utils
         {
             try
             {
-                return await DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v3_{animeId}.json",
+                return await DataCacheService.RetrieveData<AnimeGeneralDetailsData>($"mal_details_v4_{animeId}.json",
                     anime ? "AnimeDetails" : "MangaDetails", 0);
             }
             catch (Exception)

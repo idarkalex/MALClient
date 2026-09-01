@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -148,6 +149,24 @@ namespace MALClient.XShared.Comm.Anime
                     _prevQueriesCache[_type] = output;
                 return output;
             }
+
+            output = await FetchFromTenraiAsync();
+            if (output != null && output.Count > 0)
+            {
+                MergeWithPreviousPage(output);
+                if (_isManga)
+                {
+                    DataCache.SaveTopMangaData(output, _mangaType);
+                    _prevMangaQueriesCache[_mangaType] = output;
+                }
+                else
+                {
+                    DataCache.SaveTopAnimeData(output, _type);
+                    _prevQueriesCache[_type] = output;
+                }
+                return output;
+            }
+
             var raw = await GetRequestResponse();
             if (string.IsNullOrEmpty(raw))
                 return new List<TopAnimeData>();
@@ -223,6 +242,162 @@ namespace MALClient.XShared.Comm.Anime
                 _prevQueriesCache[_type] = output;
             }
             return output;
+        }
+
+        private async Task<List<TopAnimeData>> FetchFromTenraiAsync()
+        {
+            try
+            {
+                var api = _isManga ? "top/manga" : "top/anime";
+                var query = _isManga ? GetMangaApiQuery(_mangaType) : GetAnimeApiQuery(_type);
+                if (string.IsNullOrEmpty(query))
+                    return null;
+
+                var endpoint = $"{api}?{query}&page={Math.Max(_page + 1, 1)}";
+                var data = await TenraiClient.GetDataAsync(endpoint);
+                if (!data.TryGetProperty("data", out var items) || items.ValueKind != JsonValueKind.Array)
+                    return null;
+
+                var output = new List<TopAnimeData>();
+                var topIndex = 50 * _page;
+                foreach (var item in items.EnumerateArray())
+                {
+                    try
+                    {
+                        if (item.ValueKind != JsonValueKind.Object)
+                            continue;
+                        var malId = item.TryGetProperty("mal_id", out var idProp) && idProp.ValueKind == JsonValueKind.Number
+                            ? idProp.GetInt32()
+                            : 0;
+                        if (malId <= 0 && !item.TryGetProperty("title", out _))
+                            continue;
+
+                        var current = new TopAnimeData();
+                        current.Id = malId;
+                        current.Title = WebUtility.HtmlDecode(
+                            item.TryGetProperty("title", out var titleProp) && titleProp.ValueKind == JsonValueKind.String
+                                ? titleProp.GetString()
+                                : "");
+
+                        if (item.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object &&
+                            images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object &&
+                            jpg.TryGetProperty("image_url", out var imgProp) && imgProp.ValueKind == JsonValueKind.String)
+                        {
+                            current.ImgUrl = NormalizeImageUrl(imgProp.GetString());
+                        }
+
+                        if (item.TryGetProperty("score", out var scoreProp) && scoreProp.ValueKind == JsonValueKind.Number)
+                            current.Score = (float)scoreProp.GetDouble();
+                        else
+                            current.Score = 0;
+
+                        if (item.TryGetProperty("episodes", out var epsProp) && epsProp.ValueKind == JsonValueKind.Number)
+                            current.Episodes = epsProp.GetInt32().ToString();
+
+                        current.Index = ++topIndex;
+                        output.Add(current);
+                    }
+                    catch (Exception)
+                    {
+                        // skip malformed entry
+                    }
+                }
+
+                return output.Count > 0 ? output : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private void MergeWithPreviousPage(List<TopAnimeData> output)
+        {
+            if (_page == 0)
+                return;
+            var previous = _isManga
+                ? (_prevMangaQueriesCache.ContainsKey(_mangaType) ? _prevMangaQueriesCache[_mangaType] : null)
+                : (_prevQueriesCache.ContainsKey(_type) ? _prevQueriesCache[_type] : null);
+            if (previous == null || previous.Count == 0)
+                return;
+            output.InsertRange(0, previous);
+            var deduped = output
+                .GroupBy(item => item.Id)
+                .Select(group => group.First())
+                .ToList();
+            output.Clear();
+            output.AddRange(deduped);
+        }
+
+        private static string GetAnimeApiQuery(TopAnimeType type)
+        {
+            switch (type)
+            {
+                case TopAnimeType.General:
+                    return "sfw";
+                case TopAnimeType.Airing:
+                    return "filter=airing&sfw";
+                case TopAnimeType.Upcoming:
+                    return "filter=upcoming&sfw";
+                case TopAnimeType.Tv:
+                    return "type=tv&sfw";
+                case TopAnimeType.Movies:
+                    return "type=movie&sfw";
+                case TopAnimeType.Ovas:
+                    return "type=ova&sfw";
+                case TopAnimeType.Popular:
+                    return "filter=bypopularity&sfw";
+                case TopAnimeType.Favourited:
+                    return "filter=favorite&sfw";
+                default:
+                    return null;
+            }
+        }
+
+        private static string GetMangaApiQuery(MangaTopType type)
+        {
+            switch (type)
+            {
+                case MangaTopType.All:
+                    return "sfw";
+                case MangaTopType.Manga:
+                    return "type=manga&sfw";
+                case MangaTopType.Novels:
+                    return "type=novel&sfw";
+                case MangaTopType.LightNovels:
+                    return "type=lightnovel&sfw";
+                case MangaTopType.OneShots:
+                    return "type=oneshot&sfw";
+                case MangaTopType.Doujinshi:
+                    return "type=doujin&sfw";
+                case MangaTopType.Manhwa:
+                    return "type=manhwa&sfw";
+                case MangaTopType.Manhua:
+                    return "type=manhua&sfw";
+                case MangaTopType.Popular:
+                    return "filter=bypopularity&sfw";
+                case MangaTopType.Favourited:
+                    return "filter=favorite&sfw";
+                default:
+                    return null;
+            }
+        }
+
+        private static string NormalizeImageUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return url;
+            url = Regex.Replace(url, @"\/r\/\d+x\d+\/", "/");
+            var qPos = url.IndexOf('?');
+            if (qPos > 0) url = url.Substring(0, qPos);
+            var dotPos = url.LastIndexOf('.');
+            if (dotPos > 0)
+            {
+                var beforeDot = url.Substring(0, dotPos);
+                var lastChar = beforeDot[beforeDot.Length - 1];
+                if (lastChar != 'l' && lastChar != 'm' && lastChar != 's')
+                    url = beforeDot + "l" + url.Substring(dotPos);
+            }
+            return url;
         }
     }
 }

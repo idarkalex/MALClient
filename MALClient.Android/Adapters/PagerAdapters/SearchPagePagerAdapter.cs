@@ -14,7 +14,7 @@ using PagerSlidingTab;
 
 namespace MALClient.Android.PagerAdapters
 {
-    public class SearchPagePagerAdapter : FragmentStatePagerAdapter, ICustomTabProvider
+    public class SearchPagePagerAdapter : FragmentPagerAdapter, ICustomTabProvider
     {
 
         public SearchPagePagerAdapter(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)

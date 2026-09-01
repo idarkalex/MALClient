@@ -23,11 +23,19 @@ namespace MALClient.Android.Fragments.CalendarFragments
     public class CalendarPageTabFragment : MalFragmentBase
     {
         private readonly List<AnimeItemViewModel> _items;
+        private readonly int _pageIndex;
         private GridViewColumnHelper _gridViewColumnHelper;
 
-        public CalendarPageTabFragment(List<AnimeItemViewModel> items)
+        public CalendarPageTabFragment(List<AnimeItemViewModel> items, int pageIndex)
         {
             _items = items;
+            _pageIndex = pageIndex;
+        }
+
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            RetainInstance = true;
         }
 
         protected override void Init(Bundle savedInstanceState)
@@ -38,8 +46,8 @@ namespace MALClient.Android.Fragments.CalendarFragments
 
         protected override void InitBindings()
         {
-            CalendarPageTabContentList.InjectAnimeListAdapter(Context,_items,AnimeListDisplayModes.IndefiniteGrid,OnItemClick);
-            _gridViewColumnHelper = new GridViewColumnHelper(CalendarPageTabContentList,null,2,3);
+            CalendarPageTabContentList.InjectAnimeListAdapter(Context, _items, AnimeListDisplayModes.IndefiniteGrid, OnItemClick);
+            _gridViewColumnHelper = new GridViewColumnHelper(CalendarPageTabContentList, null, 2, 3);
         }
 
         private void OnItemClick(AnimeItemViewModel animeItemViewModel)
@@ -51,6 +59,38 @@ namespace MALClient.Android.Fragments.CalendarFragments
         {
             _gridViewColumnHelper.OnConfigurationChanged(newConfig);
             base.OnConfigurationChanged(newConfig);
+        }
+
+        public override void OnPause()
+        {
+            base.OnPause();
+            SaveScrollState();
+        }
+
+        private void SaveScrollState()
+        {
+            var viewModel = ViewModelLocator.CalendarPage;
+            var pos = CalendarPageTabContentList.FirstVisiblePosition;
+            var offset = 0;
+            var child = CalendarPageTabContentList.GetChildAt(0);
+            if (child != null)
+                offset = -child.Top;
+            viewModel.UiState["CalendarTab_" + _pageIndex] = (pos, offset);
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            RestoreScrollState();
+        }
+
+        private void RestoreScrollState()
+        {
+            var viewModel = ViewModelLocator.CalendarPage;
+            if (viewModel.UiState.TryGetValue("CalendarTab_" + _pageIndex, out var stateObj) && stateObj is (int pos, int offset))
+            {
+                CalendarPageTabContentList.Post(() => CalendarPageTabContentList.SetSelectionFromTop(pos, offset));
+            }
         }
 
         public override int LayoutResourceId => Resource.Layout.CalenarPageTabContent;

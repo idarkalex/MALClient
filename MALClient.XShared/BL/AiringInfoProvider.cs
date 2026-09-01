@@ -62,10 +62,10 @@ namespace MALClient.XShared.BL
                 
                 if ((data == null || !data.Any()) && !cacheOnly)
                 {
-                    var json = await new AnimeAiringDataQuery().GetRequestResponse();
-                    if (!string.IsNullOrEmpty(json))
-                    {          
-                        data = JsonConvert.DeserializeObject<List<AiringData>>(json);
+                    var schedulesData = await new AnimeSchedulesQuery().GetScheduleAsync();
+                    if (schedulesData != null && schedulesData.Any())
+                    {
+                        data = schedulesData;
                         _applicationDataService[UpdateStorakeKey] = DateTime.Now.ToBinary();
                         _dataCache.SaveData(data, CacheFileName, null);
                     }
@@ -225,7 +225,7 @@ namespace MALClient.XShared.BL
         public bool InitializationSuccess { get; set; }
 
         [Preserve(AllMembers = true)]
-        class Episode
+        public class Episode
         {
             [JsonProperty("t")]
             public int Timestamp { get; set; }
@@ -234,7 +234,7 @@ namespace MALClient.XShared.BL
         }
 
         [Preserve(AllMembers = true)]
-        class AiringData
+        public class AiringData
         {
             [JsonProperty("mal_id")]
             public int MalId { get; set; }

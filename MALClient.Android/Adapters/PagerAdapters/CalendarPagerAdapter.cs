@@ -16,7 +16,7 @@ using Orientation = Android.Widget.Orientation;
 
 namespace MALClient.Android.PagerAdapters
 {
-    public class CalendarPagerAdapter : FragmentStatePagerAdapter, ICustomTabProvider
+    public class CalendarPagerAdapter : FragmentPagerAdapter, ICustomTabProvider
     {
         private readonly List<CalendarPivotPage> _pages;
         private readonly List<Fragment> _fragments;
@@ -25,11 +25,12 @@ namespace MALClient.Android.PagerAdapters
         {
         }
 
-        public CalendarPagerAdapter(FragmentManager fm,IEnumerable<CalendarPivotPage> pages) : base(fm)
+        public CalendarPagerAdapter(FragmentManager fm, IEnumerable<CalendarPivotPage> pages) : base(fm)
         {
             _pages = pages.ToList();
-            _fragments = _pages.Take(_pages.Count - 1).Select(page => new CalendarPageTabFragment(page.Items) as Fragment).ToList();
-            _fragments.Add(new CalendarPageSummaryTabFragment((_pages.Last() as CalendarSummaryPivotPage).Data));
+            _fragments = _pages.Take(_pages.Count - 1)
+                .Select((page, i) => new CalendarPageTabFragment(page.Items, i) as Fragment).ToList();
+            _fragments.Add(new CalendarPageSummaryTabFragment((_pages.Last() as CalendarSummaryPivotPage).Data, _pages.Count - 1));
         }
 
         public override int Count => _pages.Count;

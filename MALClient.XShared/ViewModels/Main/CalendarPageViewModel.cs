@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
@@ -45,6 +46,9 @@ namespace MALClient.XShared.ViewModels.Main
 
         public ObservableCollection<CalendarPivotPage> CalendarData { get; set; } =
             new ObservableCollection<CalendarPivotPage>();
+
+        // UI state preservation (scroll positions, expanded panels, etc.) per session
+        public Dictionary<string, object> UiState { get; } = new Dictionary<string, object>();
 
         public static double ItemWidth { get; private set; }
 
@@ -177,8 +181,12 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 try
                 {
-                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(abstraction.Id, DateTime.UtcNow, out var nextAirDate) &&
-                        (nextAirDate - DateTime.UtcNow).TotalDays >= 7)
+                    var jstZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
+                    var nowUtc = DateTime.UtcNow;
+                    var nowJst = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, jstZone);
+
+                    if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(abstraction.Id, nowUtc, out var nextAirDate) &&
+                        (nextAirDate - nowUtc).TotalDays >= 7)
                         continue;
 
                     if (ResourceLocator.AiringInfoProvider.TryGetAiringDay(abstraction.Id, out DayOfWeek dayOfWeek))
@@ -282,31 +290,55 @@ namespace MALClient.XShared.ViewModels.Main
             return await Task.Run(async () =>
             {
                 var result = new List<AnimeItemAbstraction>();
-                var maxItems = Math.Max(1, Settings.CalendarMaxItems);
-                var ids = ResourceLocator.AiringInfoProvider.GetAllAiringIds().Take(maxItems).ToList();
-                foreach (var id in ids)
+                var jstZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
+                var nowJst = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jstZone);
+                var nowUtc = DateTime.UtcNow;
+                var ids = ResourceLocator.AiringInfoProvider.GetAllAiringIds()
+                    .Select(id => (Id: id, Next: ResourceLocator.AiringInfoProvider.TryGetNextAirDate(id, nowUtc, out var d) ? (DateTime?)d : null))
+                    .Where(x => x.Next.HasValue && (x.Next.Value - nowUtc).TotalDays < 7)
+                    .OrderBy(x => x.Next.Value)
+                    .Select(x => x.Id)
+                    .Distinct()
+                    .ToList();
+
+                const int MaxConcurrency = 4;
+                using var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency);
+                var tasks = ids.Select(async id =>
                 {
+                    await semaphore.WaitAsync();
                     try
                     {
                         var details = await new AnimeGeneralDetailsQuery().GetAnimeDetails(false, id.ToString(), "", true);
-                        if (details == null)
-                            continue;
-                        result.Add(new AnimeItemAbstraction(false, new AnimeLibraryItemData
+                        if (details != null)
                         {
-                            Id = details.Id,
-                            MalId = details.MalId,
-                            Title = details.Title,
-                            ImgUrl = details.ImgUrl,
-                            AllEpisodes = details.AllEpisodes,
-                            Type = (int)MalTypeParser.ParseAnimeType(details.Type),
-                            AlternateTitle = details.AlternateTitle
-                        }));
+                            lock (result)
+                            {
+                                if (!result.Any(r => r.MalId == details.MalId))
+                                {
+                                    result.Add(new AnimeItemAbstraction(false, new AnimeLibraryItemData
+                                    {
+                                        Id = details.Id,
+                                        MalId = details.MalId,
+                                        Title = details.Title,
+                                        ImgUrl = details.ImgUrl,
+                                        AllEpisodes = details.AllEpisodes,
+                                        Type = (int)MalTypeParser.ParseAnimeType(details.Type),
+                                        AlternateTitle = details.AlternateTitle
+                                    }));
+                                }
+                            }
+                        }
                     }
                     catch (Exception)
                     {
-                        //skip failed resolutions
+                        // skip failed resolutions
                     }
-                }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                });
+                await Task.WhenAll(tasks);
                 return result;
             });
         }

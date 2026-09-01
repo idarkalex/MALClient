@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
+using MALClient.XShared.Comm.Anime;
 
 namespace MALClient.XShared.Comm.Anime
 {
@@ -31,6 +33,78 @@ namespace MALClient.XShared.Comm.Anime
                 ? new List<RelatedAnimeData>()
                 : await DataCache.RetrieveRelatedAnimeData(_animeId, _animeMode) ?? new List<RelatedAnimeData>();
             if (output.Count != 0) return output;
+
+            output = await FetchFromTenraiAsync();
+            if (output != null && output.Count > 0)
+            {
+                DataCache.SaveRelatedAnimeData(_animeId, output, _animeMode);
+                return output;
+            }
+
+            return await FetchFromHtmlScraperAsync();
+        }
+
+        private async Task<List<RelatedAnimeData>> FetchFromTenraiAsync()
+        {
+            try
+            {
+                var endpoint = _animeMode ? $"anime/{_animeId}/full" : $"manga/{_animeId}/full";
+                var data = await TenraiClient.GetDataAsync(endpoint);
+                if (!data.TryGetProperty("relations", out var relations) || relations.ValueKind != JsonValueKind.Array)
+                    return null;
+
+                var output = new List<RelatedAnimeData>();
+                foreach (var rel in relations.EnumerateArray())
+                {
+                    try
+                    {
+                        if (rel.ValueKind != JsonValueKind.Object)
+                            continue;
+                        if (!rel.TryGetProperty("relation", out var relationProp) || relationProp.ValueKind != JsonValueKind.String)
+                            continue;
+                        if (!rel.TryGetProperty("entry", out var entry) || entry.ValueKind != JsonValueKind.Object)
+                            continue;
+
+                        var malId = entry.TryGetProperty("mal_id", out var idProp) && idProp.ValueKind == JsonValueKind.Number
+                            ? idProp.GetInt32()
+                            : 0;
+                        if (malId <= 0)
+                            continue;
+
+                        var typeStr = entry.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String
+                            ? typeProp.GetString()
+                            : null;
+
+                        var current = new RelatedAnimeData();
+                        current.WholeRelation = WebUtility.HtmlDecode(relationProp.GetString());
+                        current.Type = typeStr == "anime"
+                            ? RelatedItemType.Anime
+                            : typeStr == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
+                        current.Id = malId;
+                        current.Title = WebUtility.HtmlDecode(
+                            entry.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
+                                ? nameProp.GetString()
+                                : "");
+
+                        output.Add(current);
+                    }
+                    catch (Exception)
+                    {
+                        // skip malformed relation
+                    }
+                }
+
+                return output.Count > 0 ? output : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private async Task<List<RelatedAnimeData>> FetchFromHtmlScraperAsync()
+        {
+            var output = new List<RelatedAnimeData>();
 
             var raw = await GetRequestResponse();
             if (string.IsNullOrEmpty(raw))

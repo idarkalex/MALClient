@@ -112,7 +112,7 @@ namespace MALClient.XShared.Comm.Anime
             try
             {
                 var timeout = bounded ? (TimeSpan?)TimeSpan.FromSeconds(7) : null;
-                var endpoint = _anime ? $"anime/{_id}" : $"manga/{_id}";
+                var endpoint = _anime ? $"anime/{_id}/full" : $"manga/{_id}/full";
                 var data = timeout.HasValue
                     ? await TenraiClient.GetDataAsync(endpoint, timeout.Value)
                     : await TenraiClient.GetDataAsync(endpoint);
@@ -225,18 +225,18 @@ namespace MALClient.XShared.Comm.Anime
                 {
                     try
                     {
-                        var themesData = timeout.HasValue
-                            ? await TenraiClient.GetDataAsync($"anime/{_id}/themes", timeout.Value)
-                            : await TenraiClient.GetDataAsync($"anime/{_id}/themes");
-                        if (themesData.TryGetProperty("openings", out var ops))
+                        if (data.TryGetProperty("theme", out var themeObj) && themeObj.ValueKind == JsonValueKind.Object)
                         {
-                            foreach (var op in ops.EnumerateArray())
-                                output.Openings.Add(op.GetString() ?? "");
-                        }
-                        if (themesData.TryGetProperty("endings", out var eds))
-                        {
-                            foreach (var ed in eds.EnumerateArray())
-                                output.Endings.Add(ed.GetString() ?? "");
+                            if (themeObj.TryGetProperty("openings", out var ops))
+                            {
+                                foreach (var op in ops.EnumerateArray())
+                                    output.Openings.Add(op.GetString() ?? "");
+                            }
+                            if (themeObj.TryGetProperty("endings", out var eds))
+                            {
+                                foreach (var ed in eds.EnumerateArray())
+                                    output.Endings.Add(ed.GetString() ?? "");
+                            }
                         }
                     }
                     catch

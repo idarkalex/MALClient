@@ -41,6 +41,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             _episodesChangedHandler = OnEpisodesChanged;
         }
 
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            RetainInstance = true;
+        }
+
         public override int LayoutResourceId => Resource.Layout.AnimeDetailsPageEpisodesTab;
 
         public override void OnDestroy()
@@ -119,7 +125,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
             AnimeDetailsPageEpisodesTabList.SetAdapter(
                 new ObservableRecyclerAdapter<AnimeEpisode, EpHolder>(
-                    ViewModel.Episodes, BindEpisode, LayoutInflater, Resource.Layout.DetailAnimeEpisodeView));
+                    ViewModel.Episodes, BindEpisode, Activity.LayoutInflater, Resource.Layout.DetailAnimeEpisodeView));
         }
 
         private void BindEpisode(AnimeEpisode ep, EpHolder holder, int position)

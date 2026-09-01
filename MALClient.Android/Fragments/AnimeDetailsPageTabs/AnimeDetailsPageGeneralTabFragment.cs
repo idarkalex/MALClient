@@ -27,6 +27,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             ViewModel = ViewModelLocator.AnimeDetails;
         }
 
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            RetainInstance = true;
+        }
+
         protected override void Init(Bundle savedInstanceState)
         {
         }

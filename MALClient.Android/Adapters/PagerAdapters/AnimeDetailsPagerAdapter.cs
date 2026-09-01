@@ -13,7 +13,7 @@ using PagerSlidingTab;
 
 namespace MALClient.Android.PagerAdapters
 {
-    public class AnimeDetailsPagerAdapter : FragmentStatePagerAdapter , ICustomTabProvider
+    public class AnimeDetailsPagerAdapter : FragmentPagerAdapter , ICustomTabProvider
     {
         private AnimeDetailsPageViewModel _viewModel;
 

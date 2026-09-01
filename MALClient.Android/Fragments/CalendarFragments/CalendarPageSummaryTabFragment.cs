@@ -24,14 +24,22 @@ namespace MALClient.Android.Fragments.CalendarFragments
         private const int ViewTypeCard = 1;
 
         private readonly List<Tuple<string, List<AnimeItemViewModel>>> _items;
+        private readonly int _pageIndex;
         private readonly GridViewColumnHelper _gridViewColumnHelper = new GridViewColumnHelper((int?)null) { MinColumnsPortrait = 2, MinColumnsLandscape = 3 };
         private CalendarSummaryAdapter _adapter;
         private GridLayoutManager _layoutManager;
         private int _spanCount;
 
-        public CalendarPageSummaryTabFragment(List<Tuple<string, List<AnimeItemViewModel>>> items)
+        public CalendarPageSummaryTabFragment(List<Tuple<string, List<AnimeItemViewModel>>> items, int pageIndex)
         {
             _items = items;
+            _pageIndex = pageIndex;
+        }
+
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            RetainInstance = true;
         }
 
         protected override void Init(Bundle savedInstanceState)
@@ -51,6 +59,8 @@ namespace MALClient.Android.Fragments.CalendarFragments
             CalendarPageSummaryTabList.SetAdapter(_adapter);
 
             _layoutManager.SetSpanSizeLookup(new CalendarSummarySpanLookup(_adapter, _spanCount));
+
+            RestoreScrollState();
         }
 
         private List<SummaryItem> BuildFlatList()
@@ -81,6 +91,32 @@ namespace MALClient.Android.Fragments.CalendarFragments
                 _layoutManager.SetSpanSizeLookup(new CalendarSummarySpanLookup(_adapter, _spanCount));
             }
             base.OnConfigurationChanged(newConfig);
+        }
+
+        public override void OnPause()
+        {
+            base.OnPause();
+            SaveScrollState();
+        }
+
+        private void SaveScrollState()
+        {
+            if (_layoutManager == null) return;
+            var viewModel = ViewModelLocator.CalendarPage;
+            var pos = _layoutManager.FindFirstVisibleItemPosition();
+            var child = _layoutManager.FindViewByPosition(pos);
+            var offset = child != null ? child.Top : 0;
+            viewModel.UiState["CalendarTab_" + _pageIndex] = (pos, offset);
+        }
+
+        private void RestoreScrollState()
+        {
+            if (_layoutManager == null) return;
+            var viewModel = ViewModelLocator.CalendarPage;
+            if (viewModel.UiState.TryGetValue("CalendarTab_" + _pageIndex, out var stateObj) && stateObj is (int pos, int offset))
+            {
+                CalendarPageSummaryTabList.Post(() => _layoutManager.ScrollToPositionWithOffset(pos, offset));
+            }
         }
 
         public override int LayoutResourceId => Resource.Layout.CalendarPageSummaryTab;

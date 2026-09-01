@@ -31,6 +31,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
     {
         private AnimeDetailsPageViewModel ViewModel;
 
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            RetainInstance = true;
+        }
+
         protected override void Init(Bundle savedInstanceState)
         {
             ViewModel = ViewModelLocator.AnimeDetails;
@@ -43,7 +49,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         protected override void InitBindings()
         {
             //_gridHelper = new GridViewColumnHelper(AnimeDetailsPageCharactersTabGridView,340,1);
-            Bindings.Add(this.SetBinding(() => ViewModel.AnimeStaffData).WhenSourceChanges(() =>
+Bindings.Add(this.SetBinding(() => ViewModel.AnimeStaffData).WhenSourceChanges(() =>
             {
                 if (ViewModel.AnimeStaffData == null)
                 {
@@ -57,10 +63,10 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                         new ObservableRecyclerAdapter<
                             AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel,
                             Holder>(
-                            _localPairs,
-                            DataTemplate,
-                            LayoutInflater,
-                            Resource.Layout.CharacterActorPairItem));
+                        _localPairs,
+                        DataTemplate,
+                        Activity.LayoutInflater,
+                        Resource.Layout.CharacterActorPairItem));
                     _drainCts = IncrementalListHelper.Drain(ViewModel.AnimeStaffData.AnimeCharacterPairs, _localPairs);
                 }
 

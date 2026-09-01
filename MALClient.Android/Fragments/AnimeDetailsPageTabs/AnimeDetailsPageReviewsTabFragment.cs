@@ -42,6 +42,12 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             ViewModel = ViewModelLocator.AnimeDetails;
         }
 
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            RetainInstance = true;
+        }
+
         protected override void Init(Bundle savedInstanceState)
         {
 
@@ -69,7 +75,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
                     {
                         AnimeDetailsPageReviewsTabsList.SetAdapter(
                             new ObservableRecyclerAdapter<AnimeReviewData, ReviewHolder>(
-                                _localReviews, BindReview, LayoutInflater, Resource.Layout.AnimeReviewItemLayout));
+                                _localReviews, BindReview, Activity.LayoutInflater, Resource.Layout.AnimeReviewItemLayout));
                         _drainCts = IncrementalListHelper.Drain(ViewModel.Reviews, _localReviews);
                     }
                 }));

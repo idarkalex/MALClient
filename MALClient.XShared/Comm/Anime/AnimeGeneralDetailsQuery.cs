@@ -84,6 +84,13 @@ namespace MALClient.XShared.Comm.Anime
                     Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
                     Title = WebUtility.HtmlDecode(GetString(data, "title")),
                     Synonyms = GetStringList(data, "title_synonyms"),
+                    Background = WebUtility.HtmlDecode(GetString(data, "background")),
+                    Source = GetString(data, "source"),
+                    Duration = GetString(data, "duration"),
+                    Rating = GetString(data, "rating"),
+                    ExplicitGenres = GetNameList(data, "explicit_genres"),
+                    Demographics = GetNameList(data, "demographics"),
+                    MoreInfo = WebUtility.HtmlDecode(GetString(data, "moreinfo")),
                 };
 
                 if ((output.Type == "Movie" || output.AllEpisodes == 1) && output.EndDate == "N/A" &&
@@ -120,6 +127,13 @@ namespace MALClient.XShared.Comm.Anime
                 Synopsis = WebUtility.HtmlDecode(GetString(data, "synopsis")),
                 Title = WebUtility.HtmlDecode(GetString(data, "title")),
                 Synonyms = GetStringList(data, "title_synonyms"),
+                Background = WebUtility.HtmlDecode(GetString(data, "background")),
+                Source = GetString(data, "source"),
+                Duration = GetString(data, "duration"),
+                Rating = GetString(data, "rating"),
+                ExplicitGenres = GetNameList(data, "explicit_genres"),
+                Demographics = GetNameList(data, "demographics"),
+                MoreInfo = WebUtility.HtmlDecode(GetString(data, "moreinfo")),
             };
 
             ResourceLocator.EnglishTitlesProvider.AddOrUpdate(id, false, GetString(data, "title_english"));

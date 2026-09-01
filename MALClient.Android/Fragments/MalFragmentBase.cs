@@ -64,7 +64,7 @@ namespace MALClient.Android.Fragments
 
         public sealed override void OnStop()
         {
-            if(_detachBindingOnDestroy)
+            if(_detachBindingOnDestroy && !RetainInstance)
                 DetachBindings();
             base.OnStop();
         }
