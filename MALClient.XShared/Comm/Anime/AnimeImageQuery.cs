@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using HtmlAgilityPack;
 using MALClient.XShared.Utils;
 
@@ -127,14 +128,31 @@ namespace MALClient.XShared.Comm.Anime
 
         private async Task<string> FetchImageUrl()
         {
-            Request =
-                new Uri(
-                    Uri.EscapeUriString($"https://myanimelist.net/{(_anime ? "anime" : "manga")}/{_id}/what/pics"));
-
-            var raw = await GetRequestResponse();
-            var doc = new HtmlDocument();
             try
             {
+                var data = await TenraiClient.GetDataAsync($"{( _anime ? "anime" : "manga")}/{_id}");
+                if (data.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object &&
+                    images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object)
+                {
+                    if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
+                        return large.GetString();
+                    if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
+                        return img.GetString();
+                }
+            }
+            catch (Exception)
+            {
+                // fall through to HTML
+            }
+
+            try
+            {
+                Request =
+                    new Uri(
+                        Uri.EscapeUriString($"https://myanimelist.net/{(_anime ? "anime" : "manga")}/{_id}/what/pics"));
+
+                var raw = await GetRequestResponse();
+                var doc = new HtmlDocument();
                 doc.LoadHtml(raw);
                 return doc.FirstOfDescendantsWithClass("img", "ac").Attributes["data-src"].Value;
             }

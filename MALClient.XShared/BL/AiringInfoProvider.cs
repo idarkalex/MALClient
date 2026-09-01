@@ -222,6 +222,12 @@ namespace MALClient.XShared.BL
             return _lookupDictionary.ContainsKey(id);
         }
 
+        public bool TryGetEntry(int id, out AiringData entry)
+        {
+            entry = _lookupDictionary[id];
+            return entry != null;
+        }
+
         public bool InitializationSuccess { get; set; }
 
         [Preserve(AllMembers = true)]
@@ -240,6 +246,14 @@ namespace MALClient.XShared.BL
             public int MalId { get; set; }
             [JsonProperty("airing")]
             public List<Episode> Episodes { get; set; }
+            [JsonProperty("title")]
+            public string Title { get; set; }
+            [JsonProperty("img_url")]
+            public string ImgUrl { get; set; }
+            [JsonProperty("type")]
+            public int Type { get; set; }
+            [JsonProperty("all_episodes")]
+            public int AllEpisodes { get; set; }
         }
 
         class NullDictionary<TKey, TVal> : Dictionary<TKey, TVal>

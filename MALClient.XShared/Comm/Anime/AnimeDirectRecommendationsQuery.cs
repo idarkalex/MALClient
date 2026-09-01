@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -33,9 +34,107 @@ namespace MALClient.XShared.Comm.Anime
                   new List<DirectRecommendationData>();
             if (output.Count != 0) return output;
 
+            output = await FetchFromTenraiAsync();
+            if (output != null && output.Count > 0)
+            {
+                EnrichWithDescriptionsFromMal(output);
+                DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
+                return output;
+            }
+
+            output = await FetchDescriptionsFromMalAsync();
+            if (output != null && output.Count > 0)
+                DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
+            return output ?? new List<DirectRecommendationData>();
+        }
+
+        private async Task<List<DirectRecommendationData>> FetchFromTenraiAsync()
+        {
+            try
+            {
+                var endpoint = _animeMode ? $"anime/{_animeId}/recommendations" : $"manga/{_animeId}/recommendations";
+                var data = await TenraiClient.GetDataAsync(endpoint);
+                if (data.ValueKind != JsonValueKind.Array)
+                    return null;
+
+                var output = new List<DirectRecommendationData>();
+                foreach (var item in data.EnumerateArray())
+                {
+                    try
+                    {
+                        var current = new DirectRecommendationData();
+                        if (!item.TryGetProperty("entry", out var entry) || entry.ValueKind != JsonValueKind.Object)
+                            continue;
+
+                        var malId = entry.TryGetProperty("mal_id", out var idProp) && idProp.ValueKind == JsonValueKind.Number
+                            ? idProp.GetInt32()
+                            : 0;
+                        if (malId <= 0)
+                            continue;
+                        current.Id = malId;
+                        current.Title = WebUtility.HtmlDecode(
+                            entry.TryGetProperty("title", out var titleProp) && titleProp.ValueKind == JsonValueKind.String
+                                ? titleProp.GetString()
+                                : "");
+
+                        var entryUrl = entry.TryGetProperty("url", out var urlProp) && urlProp.ValueKind == JsonValueKind.String
+                            ? urlProp.GetString()
+                            : "";
+                        if (entryUrl.Contains("/manga/"))
+                            current.Type = RelatedItemType.Manga;
+                        else if (entryUrl.Contains("/anime/"))
+                            current.Type = RelatedItemType.Anime;
+                        else
+                            current.Type = RelatedItemType.Unknown;
+
+                        if (entry.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object &&
+                            images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object &&
+                            jpg.TryGetProperty("image_url", out var imgUrl) && imgUrl.ValueKind == JsonValueKind.String)
+                            current.ImageUrl = NormalizeImageUrl(imgUrl.GetString());
+
+                        output.Add(current);
+                    }
+                    catch (Exception)
+                    {
+                        // skip malformed recommendation
+                    }
+                }
+                return output.Count > 0 ? output : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private void EnrichWithDescriptionsFromMal(List<DirectRecommendationData> output)
+        {
+            if (output == null || output.Count == 0)
+                return;
+            try
+            {
+                var scraped = FetchDescriptionsFromMalAsync().GetAwaiter().GetResult();
+                if (scraped == null || scraped.Count == 0)
+                    return;
+                var byId = scraped.Where(r => r.Id > 0).ToDictionary(r => r.Id, r => r.Description);
+                foreach (var item in output)
+                {
+                    if (byId.TryGetValue(item.Id, out var desc) && !string.IsNullOrEmpty(desc))
+                        item.Description = desc;
+                }
+            }
+            catch (Exception)
+            {
+                // enrichment is best-effort
+            }
+        }
+
+        private async Task<List<DirectRecommendationData>> FetchDescriptionsFromMalAsync()
+        {
+            var output = new List<DirectRecommendationData>();
             var raw = await GetRequestResponse();
             if (string.IsNullOrEmpty(raw))
-                return null;
+                return output;
 
             var doc = new HtmlDocument();
             doc.LoadHtml(raw);
@@ -91,9 +190,15 @@ namespace MALClient.XShared.Comm.Anime
                 //something we wrong
             }
 
-            DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
-
             return output;
+        }
+
+        private static string NormalizeImageUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return url;
+            url = Regex.Replace(url, @"\/r\/\d+x\d+", "");
+            var qPos = url.IndexOf('?');
+            return qPos > 0 ? url.Substring(0, qPos) : url;
         }
     }
 }

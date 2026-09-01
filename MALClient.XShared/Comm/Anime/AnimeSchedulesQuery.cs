@@ -40,7 +40,11 @@ namespace MALClient.XShared.Comm.Anime
                         var airingData = new AiringInfoProvider.AiringData
                         {
                             MalId = malId,
-                            Episodes = new List<AiringInfoProvider.Episode>()
+                            Episodes = new List<AiringInfoProvider.Episode>(),
+                            Title = GetString(entry, "title"),
+                            ImgUrl = GetNestedImageUrl(entry),
+                            Type = (int)MalTypeParser.ParseAnimeType(GetString(entry, "type")),
+                            AllEpisodes = GetInt(entry, "episodes")
                         };
 
                         for (int i = 0; i < 52; i++)
@@ -110,5 +114,23 @@ namespace MALClient.XShared.Comm.Anime
 
         private static int GetInt(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+
+        private static string GetString(JsonElement el, string prop)
+        {
+            if (el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String)
+                return p.GetString();
+            return "";
+        }
+
+        private static string GetNestedImageUrl(JsonElement entry)
+        {
+            if (!entry.TryGetProperty("images", out var images) || images.ValueKind != JsonValueKind.Object)
+                return null;
+            if (!images.TryGetProperty("jpg", out var jpg) || jpg.ValueKind != JsonValueKind.Object)
+                return null;
+            if (!jpg.TryGetProperty("image_url", out var url) || url.ValueKind != JsonValueKind.String)
+                return null;
+            return url.GetString();
+        }
     }
 }

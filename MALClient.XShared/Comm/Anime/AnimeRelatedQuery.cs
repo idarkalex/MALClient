@@ -62,31 +62,56 @@ namespace MALClient.XShared.Comm.Anime
                             continue;
                         if (!rel.TryGetProperty("relation", out var relationProp) || relationProp.ValueKind != JsonValueKind.String)
                             continue;
-                        if (!rel.TryGetProperty("entry", out var entry) || entry.ValueKind != JsonValueKind.Object)
+                        if (!rel.TryGetProperty("entry", out var entry))
                             continue;
 
-                        var malId = entry.TryGetProperty("mal_id", out var idProp) && idProp.ValueKind == JsonValueKind.Number
-                            ? idProp.GetInt32()
-                            : 0;
-                        if (malId <= 0)
+                        var relation = WebUtility.HtmlDecode(relationProp.GetString());
+                        IEnumerable<JsonElement> entries;
+                        if (entry.ValueKind == JsonValueKind.Array)
+                            entries = entry.EnumerateArray().ToList();
+                        else if (entry.ValueKind == JsonValueKind.Object)
+                            entries = new[] { entry };
+                        else
                             continue;
 
-                        var typeStr = entry.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String
-                            ? typeProp.GetString()
-                            : null;
+                        foreach (var ent in entries)
+                        {
+                            try
+                            {
+                                if (ent.ValueKind != JsonValueKind.Object)
+                                    continue;
+                                var malId = ent.TryGetProperty("mal_id", out var idProp) && idProp.ValueKind == JsonValueKind.Number
+                                    ? idProp.GetInt32()
+                                    : 0;
+                                if (malId <= 0)
+                                    continue;
 
-                        var current = new RelatedAnimeData();
-                        current.WholeRelation = WebUtility.HtmlDecode(relationProp.GetString());
-                        current.Type = typeStr == "anime"
-                            ? RelatedItemType.Anime
-                            : typeStr == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
-                        current.Id = malId;
-                        current.Title = WebUtility.HtmlDecode(
-                            entry.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
-                                ? nameProp.GetString()
-                                : "");
+                                var typeStr = ent.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String
+                                    ? typeProp.GetString()
+                                    : null;
 
-                        output.Add(current);
+                                var current = new RelatedAnimeData();
+                                current.WholeRelation = relation;
+                                current.Type = typeStr == "anime"
+                                    ? RelatedItemType.Anime
+                                    : typeStr == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
+                                current.Id = malId;
+                                current.Title = WebUtility.HtmlDecode(
+                                    ent.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
+                                        ? nameProp.GetString()
+                                        : "");
+
+                                var imgUrl = GetNestedImageUrl(ent);
+                                if (!string.IsNullOrEmpty(imgUrl))
+                                    current.ImgUrl = NormalizeImageUrl(imgUrl);
+
+                                output.Add(current);
+                            }
+                            catch (Exception)
+                            {
+                                // skip malformed relation entry
+                            }
+                        }
                     }
                     catch (Exception)
                     {
@@ -228,6 +253,17 @@ namespace MALClient.XShared.Comm.Anime
                 DiagnosticsReporter.Warn("Related", $"no related entries found for anime {_animeId}");
 
             return output;
+        }
+
+        private static string GetNestedImageUrl(JsonElement entry)
+        {
+            if (!entry.TryGetProperty("images", out var images) || images.ValueKind != JsonValueKind.Object)
+                return null;
+            if (!images.TryGetProperty("jpg", out var jpg) || jpg.ValueKind != JsonValueKind.Object)
+                return null;
+            if (!jpg.TryGetProperty("image_url", out var url) || url.ValueKind != JsonValueKind.String)
+                return null;
+            return url.GetString();
         }
 
         private static string NormalizeImageUrl(string url)

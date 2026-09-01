@@ -181,9 +181,7 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 try
                 {
-                    var jstZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
                     var nowUtc = DateTime.UtcNow;
-                    var nowJst = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, jstZone);
 
                     if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(abstraction.Id, nowUtc, out var nextAirDate) &&
                         (nextAirDate - nowUtc).TotalDays >= 7)
@@ -287,11 +285,9 @@ namespace MALClient.XShared.ViewModels.Main
 
         private async Task<List<AnimeItemAbstraction>> BuildAllAiringAbstractionsAsync()
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
             {
                 var result = new List<AnimeItemAbstraction>();
-                var jstZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
-                var nowJst = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jstZone);
                 var nowUtc = DateTime.UtcNow;
                 var ids = ResourceLocator.AiringInfoProvider.GetAllAiringIds()
                     .Select(id => (Id: id, Next: ResourceLocator.AiringInfoProvider.TryGetNextAirDate(id, nowUtc, out var d) ? (DateTime?)d : null))
@@ -301,44 +297,29 @@ namespace MALClient.XShared.ViewModels.Main
                     .Distinct()
                     .ToList();
 
-                const int MaxConcurrency = 4;
-                using var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency);
-                var tasks = ids.Select(async id =>
+                foreach (var id in ids)
                 {
-                    await semaphore.WaitAsync();
                     try
                     {
-                        var details = await new AnimeGeneralDetailsQuery().GetAnimeDetails(false, id.ToString(), "", true);
-                        if (details != null)
+                        if (!ResourceLocator.AiringInfoProvider.TryGetEntry(id, out var entry))
+                            continue;
+
+                        result.Add(new AnimeItemAbstraction(false, new AnimeLibraryItemData
                         {
-                            lock (result)
-                            {
-                                if (!result.Any(r => r.MalId == details.MalId))
-                                {
-                                    result.Add(new AnimeItemAbstraction(false, new AnimeLibraryItemData
-                                    {
-                                        Id = details.Id,
-                                        MalId = details.MalId,
-                                        Title = details.Title,
-                                        ImgUrl = details.ImgUrl,
-                                        AllEpisodes = details.AllEpisodes,
-                                        Type = (int)MalTypeParser.ParseAnimeType(details.Type),
-                                        AlternateTitle = details.AlternateTitle
-                                    }));
-                                }
-                            }
-                        }
+                            Id = entry.MalId,
+                            MalId = entry.MalId,
+                            Title = entry.Title,
+                            ImgUrl = entry.ImgUrl,
+                            AllEpisodes = entry.AllEpisodes,
+                            Type = entry.Type,
+                            AlternateTitle = entry.Title
+                        }));
                     }
                     catch (Exception)
                     {
-                        // skip failed resolutions
+                        // skip failed entry
                     }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                });
-                await Task.WhenAll(tasks);
+                }
                 return result;
             });
         }

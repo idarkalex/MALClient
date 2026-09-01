@@ -39,9 +39,9 @@ namespace MALClient.XShared.Comm.Anime
 
             try
             {
-                output = await FetchReviewsFromMalAsync();
+                output = await FetchReviewsFromTenraiAsync();
                 if (output.Count == 0)
-                    output = await FetchReviewsFromTenraiAsync();
+                    output = await FetchReviewsFromMalAsync();
 
                 if (output.Count != 0)
                     DataCache.SaveAnimeReviews(_targetId, output, _anime);

@@ -25,6 +25,17 @@ namespace MALClient.XShared.Comm.Anime
 
         private async Task<string> GetTitle()
         {
+            try
+            {
+                var data = await TenraiClient.GetDataAsync($"{( _anime ? "anime" : "manga")}/{_id}");
+                if (data.TryGetProperty("title", out var title) && title.ValueKind == System.Text.Json.JsonValueKind.String)
+                    return WebUtility.HtmlDecode(title.GetString());
+            }
+            catch (Exception)
+            {
+                // fall through to HTML
+            }
+
             var raw = await GetRequestResponse();
             var doc = new HtmlDocument();
             doc.LoadHtml(raw);
