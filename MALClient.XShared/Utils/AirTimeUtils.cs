@@ -56,11 +56,42 @@ namespace MALClient.XShared.Utils
             var targetJst = new DateTime(nowJst.Year, nowJst.Month, nowJst.Day, 0, 0, 0).Add(timeOfDay);
             var dayNet = (dayIndex + 1) % 7;
             var daysToAdd = ((dayNet - (int)nowJst.DayOfWeek) + 7) % 7;
-            targetJst = targetJst.AddDays(daysToAdd);
-            if (targetJst <= nowJst)
-                targetJst = targetJst.AddDays(7);
+            var slotUtc = targetJst.AddDays(daysToAdd) - JstOffset;
+            if (slotUtc > nowUtc)
+                return slotUtc;
+            return slotUtc.AddDays(7);
+        }
 
-            return targetJst - JstOffset;
+        public static DateTime? ComputeNextAirDate(string broadcast, DateTime nowUtc, bool allowAiringNow)
+        {
+            if (string.IsNullOrEmpty(broadcast)) return null;
+
+            var match = Regex.Match(broadcast, @"(?<day>[A-Za-z]+?day)[^0-9]*(?<time>\d{1,2}:\d{2})");
+            if (!match.Success) return null;
+
+            var dayStr = match.Groups["day"].Value;
+            var timeStr = match.Groups["time"].Value;
+
+            var timeParts = timeStr.Split(':');
+            if (timeParts.Length != 2 ||
+                !int.TryParse(timeParts[0], out var hours) ||
+                !int.TryParse(timeParts[1], out var minutes))
+                return null;
+
+            var timeOfDay = TimeSpan.FromMinutes(hours * 60 + minutes);
+
+            var dayIndex = -1;
+            for (int i = 0; i < DayNames.Length; i++)
+            {
+                if (dayStr.StartsWith(DayNames[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    dayIndex = i;
+                    break;
+                }
+            }
+            if (dayIndex < 0) return null;
+
+            return ComputeNextAirDate((DayOfWeek)dayIndex, timeOfDay, nowUtc, allowAiringNow);
         }
 
         public static DateTime? ComputeNextAirFromEpisodes(IEnumerable<Models.Models.Anime.AnimeEpisode> episodes, DateTime nowUtc)
@@ -90,22 +121,32 @@ namespace MALClient.XShared.Utils
             if ((nowUtc - aired[aired.Count - 1]).TotalDays > gap * 3)
                 return null;
 
-            var next = aired[aired.Count - 1].AddDays(gap);
+            var latest = aired[aired.Count - 1];
+            // currently airing: during the airing hour the latest episode is the airing reference
+            if (IsInAiringWindow(latest, nowUtc))
+                return latest;
+
+            var next = latest.AddDays(gap);
             while (next <= nowUtc)
                 next = next.AddDays(gap);
             return next;
         }
 
         public static DateTime? ComputeNextAirDate(System.DayOfWeek day, TimeSpan time, DateTime nowUtc)
+            => ComputeNextAirDate(day, time, nowUtc, false);
+
+        public static DateTime? ComputeNextAirDate(System.DayOfWeek day, TimeSpan time, DateTime nowUtc, bool allowAiringNow)
         {
             var nowJst = nowUtc + JstOffset;
             var targetJst = new DateTime(nowJst.Year, nowJst.Month, nowJst.Day, 0, 0, 0).Add(time);
             var dayNet = (int)day + 1;
             var daysToAdd = ((dayNet - (int)nowJst.DayOfWeek) + 7) % 7;
-            targetJst = targetJst.AddDays(daysToAdd);
-            if (targetJst <= nowJst)
-                targetJst = targetJst.AddDays(7);
-            return targetJst - JstOffset;
+            var slotUtc = targetJst.AddDays(daysToAdd) - JstOffset;
+            if (slotUtc > nowUtc)
+                return slotUtc;
+            if (allowAiringNow && IsInAiringWindow(slotUtc, nowUtc))
+                return slotUtc;
+            return slotUtc.AddDays(7);
         }
 
         public static DateTime? ComputeNextAirDate(Models.Models.Misc.ExactAiringTimeData exactTime, DateTime nowUtc)
@@ -118,7 +159,7 @@ namespace MALClient.XShared.Utils
         {
             var diff = airDate - now;
             if (diff.TotalSeconds <= 0)
-                return "";
+                return IsInAiringWindow(airDate, now) ? "Airing now" : "";
             if (diff.TotalDays >= 1)
                 return $"{(int)diff.TotalDays}D";
             if (diff.TotalHours >= 1)
@@ -126,27 +167,45 @@ namespace MALClient.XShared.Utils
             return $"{(int)diff.TotalMinutes}M";
         }
 
+        //True while the series is on air: the reference date is in the past but
+        //the full one-hour airing block hasn't finished yet.
+        public static bool IsInAiringWindow(DateTime airDateUtc, DateTime nowUtc)
+        {
+            var diff = airDateUtc - nowUtc;
+            return diff.TotalSeconds <= 0 && diff.TotalSeconds > -3600;
+        }
+
         //How long a cached next-air value stays valid, based on how far away it is
         //(days -> re-fetch daily, hours -> hourly, minutes -> every 15 min).
+        //A value inside the airing window stays fresh until the hour passes.
         public static TimeSpan CacheTtl(DateTime? nextAirUtc, DateTime nowUtc)
         {
-            if (!nextAirUtc.HasValue || nextAirUtc.Value <= nowUtc)
+            if (!nextAirUtc.HasValue)
                 return TimeSpan.Zero;
             var remaining = nextAirUtc.Value - nowUtc;
-            if (remaining.TotalDays >= 1)
+            if (remaining.TotalSeconds > 0 && remaining.TotalDays >= 1)
                 return TimeSpan.FromHours(24);
-            if (remaining.TotalHours >= 1)
+            if (remaining.TotalSeconds > 0 && remaining.TotalHours >= 1)
                 return TimeSpan.FromHours(1);
-            return TimeSpan.FromMinutes(15);
+            if (remaining.TotalSeconds > 0)
+                return TimeSpan.FromMinutes(15);
+            if (IsInAiringWindow(nextAirUtc.Value, nowUtc))
+                return nextAirUtc.Value.AddHours(1) - nowUtc;
+            return TimeSpan.Zero;
         }
 
         public static bool NeedsRefresh(DateTime? nextAirUtc, DateTime? fetchedAtUtc, DateTime nowUtc)
         {
-            if (!nextAirUtc.HasValue || nextAirUtc.Value <= nowUtc)
-                return true;
             if (!fetchedAtUtc.HasValue)
+                return true;
+            if (IsInAiringWindow(nextAirUtc, nowUtc))
+                return nowUtc - fetchedAtUtc.Value > CacheTtl(nextAirUtc, nowUtc);
+            if (!nextAirUtc.HasValue || nextAirUtc.Value <= nowUtc)
                 return true;
             return nowUtc - fetchedAtUtc.Value > CacheTtl(nextAirUtc, nowUtc);
         }
+
+        public static bool IsInAiringWindow(DateTime? airDateUtc, DateTime nowUtc)
+            => airDateUtc.HasValue && IsInAiringWindow(airDateUtc.Value, nowUtc);
     }
 }

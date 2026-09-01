@@ -71,6 +71,9 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         private void BindDetailsTab()
         {
+            if (Activity == null || RootView == null)
+                return;
+
             MainActivity.WriteCrashLog(
                 $"DetailsTab bind: Info={ViewModel.Information.Count} Stats={ViewModel.Stats.Count} " +
                 $"OP={ViewModel.OPs.Count} ED={ViewModel.EDs.Count} EP={ViewModel.Episodes.Count} " +

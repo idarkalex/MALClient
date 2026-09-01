@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -19,6 +20,7 @@ namespace MALClient.Android.Fragments.CalendarFragments
     {
 
         private CalendarPageViewModel ViewModel;
+        private Task _initTask;
 
         private CalendarPageFragment()
         {
@@ -29,7 +31,40 @@ namespace MALClient.Android.Fragments.CalendarFragments
         {
             ViewModelLocator.AnimeList.AnimeItemsDisplayContext = AnimeItemDisplayContext.AirDay;
             ViewModel = ViewModelLocator.CalendarPage;
-            ViewModel.Init();
+            _initTask = ViewModel.Init();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            //Heal any undelivered visibility change whenever the page comes back to foreground
+            SyncCalendarOverlay();
+        }
+
+        /// <summary>
+        /// Binding-independent resolution of the build overlay: whenever the VM has finished
+        /// building, the overlay is forced off and the content shown. Reports a warning when
+        /// the overlay was visible although the VM was already done (i.e. a lost PropertyChanged).
+        /// </summary>
+        private void SyncCalendarOverlay()
+        {
+            if (Activity == null || RootView == null) return;
+            try
+            {
+                if (CalendarPageProgressBarGrid.Visibility != global::Android.Views.ViewStates.Visible)
+                    return;
+                if (ViewModel.CalendarBuildingVisibility)
+                    return;
+
+                //Overlay visible while the VM is done - the binding never delivered the change
+                MALClient.XShared.Utils.DiagnosticsReporter.Warn("Calendar", "overlay was visible while VM was done - forcibly cleared");
+                CalendarPageProgressBarGrid.Visibility = global::Android.Views.ViewStates.Gone;
+                CalendarPageContentGrid.Visibility = global::Android.Views.ViewStates.Visible;
+            }
+            catch (Exception ex)
+            {
+                MALClient.XShared.Utils.DiagnosticsReporter.Error("Calendar", "SyncCalendarOverlay exception", ex);
+            }
         }
 
         protected override void InitBindings()
@@ -45,6 +80,39 @@ namespace MALClient.Android.Fragments.CalendarFragments
             Bindings.Add(
                 this.SetBinding(() => ViewModel.CalendarBuildingVisibility,
                     () => CalendarPageProgressBarGrid.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
+
+            //Explicit initial-state sync - do not rely on binding delivery alone
+            CalendarPageProgressBarGrid.Visibility = ViewModel.CalendarBuildingVisibility
+                ? global::Android.Views.ViewStates.Visible
+                : global::Android.Views.ViewStates.Gone;
+            CalendarPageContentGrid.Visibility = ViewModel.CalendarVisibility
+                ? global::Android.Views.ViewStates.Visible
+                : global::Android.Views.ViewStates.Gone;
+
+            //Once a view exists, complete the Init-driven resolution even if Init finished before inflation
+            if (_initTask != null)
+                _initTask.ContinueWith(_ => RootView?.Post(SyncCalendarOverlay));
+
+            //Self-healing watchdog: unconditionally clear a staled overlay after 10s
+            CalendarPageProgressBarGrid.PostDelayed(() =>
+            {
+                try
+                {
+                    if (Activity == null || IsDetached) return;
+                    if (CalendarPageProgressBarGrid.Visibility != global::Android.Views.ViewStates.Visible)
+                        return;
+                    if (ViewModel.CalendarBuildingVisibility)
+                        MALClient.XShared.Utils.DiagnosticsReporter.Error("Calendar", "watchdog fired: still building after 10s", null);
+                    else
+                        MALClient.XShared.Utils.DiagnosticsReporter.Warn("Calendar", "watchdog fired: overlay visible although VM done");
+                    CalendarPageProgressBarGrid.Visibility = global::Android.Views.ViewStates.Gone;
+                    CalendarPageContentGrid.Visibility = global::Android.Views.ViewStates.Visible;
+                }
+                catch (Exception ex)
+                {
+                    MALClient.XShared.Utils.DiagnosticsReporter.Error("Calendar", "watchdog exception", ex);
+                }
+            }, 10000);
 
             
             Bindings.Add(this.SetBinding(() => ViewModel.CalendarData).WhenSourceChanges( async () =>

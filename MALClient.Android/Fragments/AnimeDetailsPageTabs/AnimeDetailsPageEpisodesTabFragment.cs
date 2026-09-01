@@ -115,6 +115,9 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         private void BindEpisodes()
         {
+            if (Activity == null || RootView == null)
+                return;
+
             MainActivity.WriteCrashLog($"EpisodesTab bind: EP={ViewModel.Episodes.Count}", null);
 
             if (!ViewModel.Episodes.Any())

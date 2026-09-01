@@ -49,7 +49,9 @@ namespace MALClient.Android
         public static bool AnimeIntoIfLoaded(this ImageView image, string originUrl, ITransformation transformation = null)
         {
             var url = GetImgUrl(originUrl);
-            if (string.IsNullOrEmpty(url) || !LoadedImgs.ContainsKey(url))
+            if (string.IsNullOrEmpty(url))
+                return true; //nothing to load - callers must not show an eternal spinner
+            if (!LoadedImgs.ContainsKey(url))
                 return false;
             LoadImage(image, originUrl, url, true, null, transformation);
             return true;
@@ -61,7 +63,7 @@ namespace MALClient.Android
             if (string.IsNullOrEmpty(url))
             {
                 image.Visibility = ViewStates.Gone;
-                if (loader != null) loader.Visibility = ViewStates.Visible;
+                if (loader != null) loader.Visibility = ViewStates.Gone;
                 return;
             }
             LoadImage(image, originUrl, url, LoadedImgs.ContainsKey(url), loader, transformation);

@@ -173,11 +173,35 @@ namespace MALClient.XShared.ViewModels.Main
 
             try
             {
+                DiagnosticsReporter.Info("Calendar", "calendar init: awaiting provider init");
+                await ResourceLocator.AiringInfoProvider.Init(false);
                 List<AnimeItemAbstraction> abstractions;
+                DiagnosticsReporter.Info("Calendar",
+                    $"calendar init: providerReady={ResourceLocator.AiringInfoProvider.InitializationSuccess} allAiring={Settings.CalendarShowAllAiring} force={force} initialized={_initialized}");
                 if (Settings.CalendarShowAllAiring)
-                    abstractions = await BuildAllAiringAbstractionsAsync();
+                {
+                    var buildTask = BuildAllAiringAbstractionsAsync();
+                    var completed = await Task.WhenAny(buildTask, Task.Delay(25000));
+                    if (completed != buildTask)
+                    {
+                        DiagnosticsReporter.Error("Calendar", "airing build: TIMEOUT 25s - proceeding with fallback", null);
+                        abstractions = new List<AnimeItemAbstraction>();
+                    }
+                    else
+                        abstractions = buildTask.Result;
+                }
                 else
-                    abstractions = await Task.Run(() => BuildMyListAbstractions());
+                {
+                    var buildTask = BuildMyListAbstractionsAsync();
+                    var completed = await Task.WhenAny(buildTask, Task.Delay(25000));
+                    if (completed != buildTask)
+                    {
+                        DiagnosticsReporter.Error("Calendar", "my list build: TIMEOUT 25s - proceeding with provider entries", null);
+                        abstractions = await Task.Run(() => ProviderMyListAbstractions());
+                    }
+                    else
+                        abstractions = buildTask.Result;
+                }
 
                 foreach (var abstraction in abstractions)
                 {
@@ -195,6 +219,16 @@ namespace MALClient.XShared.ViewModels.Main
                             if (day >= 0 && day <= 7)
                                 CalendarData[day].Items.Add(abstraction.ViewModel);
                         }
+                        else if (abstraction.RepresentsAnime &&
+                                 DataCache.TryRetrieveDataForId(abstraction.Id, out var volatileData) &&
+                                 volatileData.NextAirUtc.HasValue &&
+                                 (volatileData.NextAirUtc.Value > nowUtc || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, nowUtc)) &&
+                                 (volatileData.NextAirUtc.Value - nowUtc).TotalDays < 7)
+                        {
+                            int day = (int) volatileData.NextAirUtc.Value.DayOfWeek;
+                            if (day >= 0 && day <= 7)
+                                CalendarData[day].Items.Add(abstraction.ViewModel);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -202,6 +236,8 @@ namespace MALClient.XShared.ViewModels.Main
                         // probably MAL returns some odd stuff and we cannot get details
                     }
                 }
+
+                DiagnosticsReporter.Info("Calendar", $"calendar init: items assigned={CalendarData.Sum(p => p.Items.Count)}");
 
                 if (Settings.CalendarSwitchMonSun)
                 {
@@ -259,10 +295,11 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 CalendarBuildingVisibility = false;
                 CalendarVisibility = true;
+                DiagnosticsReporter.Info("Calendar", "calendar init: overlay cleared");
             }
         }
 
-        private List<AnimeItemAbstraction> BuildMyListAbstractions()
+        private List<AnimeItemAbstraction> ProviderMyListAbstractions()
         {
             var abstractions = _animeLibraryDataStorage.AllLoadedAuthAnimeItems.Where(abstraction =>
                 ResourceLocator.AiringInfoProvider.HasAiringEntry(abstraction.Id)).Where(
@@ -285,6 +322,49 @@ namespace MALClient.XShared.ViewModels.Main
                     abstractions = abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.Watching)
                         .Concat(abstractions.Where(abstraction => abstraction.MyStatus == AnimeStatus.PlanToWatch)
                             .Take(maxItems - watchingCount)).ToList();
+                }
+            }
+
+            return abstractions;
+        }
+
+        private async Task<List<AnimeItemAbstraction>> BuildMyListAbstractionsAsync()
+        {
+            var abstractions = await Task.Run(() => ProviderMyListAbstractions());
+            var watched = _animeLibraryDataStorage.AllLoadedAuthAnimeItems;
+            var nowUtc = DateTime.UtcNow;
+
+            //defensive: currently-airing library entries NOT in the provider (e.g. partial cache)
+            //are resolved through the exact same countdown chain so the calendar never drops them.
+            var missing = watched.Where(abstraction =>
+                    abstraction.RepresentsAnime &&
+                    !ResourceLocator.AiringInfoProvider.HasAiringEntry(abstraction.Id) &&
+                    abstraction.Type == (int) AnimeType.TV &&
+                    ((Settings.CalendarIncludePlanned &&
+                      abstraction.MyStatus == AnimeStatus.PlanToWatch) ||
+                     (Settings.CalendarIncludeWatching && abstraction.MyStatus == AnimeStatus.Watching)))
+                .ToList();
+
+            var maxItems = Math.Max(1, Settings.CalendarMaxItems);
+            var budget = maxItems - abstractions.Count;
+            if (budget > 0)
+            {
+                foreach (var abstraction in missing.Take(budget))
+                {
+                    try
+                    {
+                        var nextAir = await abstraction.ViewModel.GetTimeTillNextAirAsync(null);
+                        if (nextAir.HasValue &&
+                            (nextAir.Value > nowUtc || AirTimeUtils.IsInAiringWindow(nextAir.Value, nowUtc)) &&
+                            (nextAir.Value - nowUtc).TotalDays < 7)
+                        {
+                            abstraction.ViewModel.SetNextAirCache(nextAir);
+                            abstractions.Add(abstraction);
+                        }
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 

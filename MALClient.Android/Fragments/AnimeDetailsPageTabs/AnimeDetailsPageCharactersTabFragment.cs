@@ -42,6 +42,13 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             ViewModel = ViewModelLocator.AnimeDetails;
         }
 
+        public override void OnDestroy()
+        {
+            _drainCts?.Cancel();
+            DetachBindings();
+            base.OnDestroy();
+        }
+
         private readonly ObservableCollection<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel> _localPairs =
             new ObservableCollection<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>();
         private CancellationTokenSource _drainCts;
@@ -51,25 +58,38 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
             //_gridHelper = new GridViewColumnHelper(AnimeDetailsPageCharactersTabGridView,340,1);
 Bindings.Add(this.SetBinding(() => ViewModel.AnimeStaffData).WhenSourceChanges(() =>
             {
-                if (ViewModel.AnimeStaffData == null)
+                try
                 {
-                    _drainCts?.Cancel();
-                    _localPairs.Clear();
-                    AnimeDetailsPageCharactersTabGridView.SetAdapter(null);
-                }
-                else
-                {
-                    AnimeDetailsPageCharactersTabGridView.SetAdapter(
-                        new ObservableRecyclerAdapter<
-                            AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel,
-                            Holder>(
-                        _localPairs,
-                        DataTemplate,
-                        Activity.LayoutInflater,
-                        Resource.Layout.CharacterActorPairItem));
-                    _drainCts = IncrementalListHelper.Drain(ViewModel.AnimeStaffData.AnimeCharacterPairs, _localPairs);
-                }
+                    if (RootView == null)
+                        return;
 
+                    if (ViewModel.AnimeStaffData == null)
+                    {
+                        _drainCts?.Cancel();
+                        _localPairs.Clear();
+                        AnimeDetailsPageCharactersTabGridView.SetAdapter(null);
+                    }
+                    else
+                    {
+                        var context = Activity ?? RootView.Context;
+                        if (context == null)
+                            return;
+
+                        AnimeDetailsPageCharactersTabGridView.SetAdapter(
+                            new ObservableRecyclerAdapter<
+                                AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel,
+                                Holder>(
+                            _localPairs,
+                            DataTemplate,
+                            LayoutInflater.From(context),
+                            Resource.Layout.CharacterActorPairItem));
+                        _drainCts = IncrementalListHelper.Drain(ViewModel.AnimeStaffData.AnimeCharacterPairs, _localPairs);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MALClient.Android.Activities.MainActivity.WriteCrashLog("CharactersTab bind", ex);
+                }
             }));
 
             AnimeDetailsPageCharactersTabGridView.SetLayoutManager(new GridLayoutManager(Activity, 2));

@@ -220,18 +220,6 @@ namespace MALClient.XShared.ViewModels
                 if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, nowUtc, out DateTime airingDate))
                 {
                     var diff = airingDate - nowUtc;
-
-                    if (diff.TotalDays > 0)
-                    {
-                        _airDayTillBind = diff.TotalDays < 1
-                            ? diff.TotalHours < 1 ? $"{diff.TotalMinutes:N0}m" : $"{diff.TotalHours:N0}h"
-                            : (int)diff.TotalDays + "D";
-                    }
-                    else if (diff.TotalDays < 0)
-                    {
-                        _airDayTillBind = "Aired!";
-                    }
-
                     return diff.TotalDays > 7;
                 }
                 else
@@ -309,10 +297,12 @@ namespace MALClient.XShared.ViewModels
 
         private void ApplyNextAir(DateTime? nextAirUtc)
         {
-            if (nextAirUtc.HasValue && nextAirUtc.Value > DateTime.UtcNow)
+            var now = DateTime.UtcNow;
+            if (nextAirUtc.HasValue &&
+                (nextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(nextAirUtc.Value, now)))
             {
                 DataCache.UpdateVolatileDataWithNextAir(ParentAbstraction?.MalId ?? Id, nextAirUtc.Value);
-                TimeTillNextAirCache = AirTimeUtils.FormatAirCountdown(nextAirUtc.Value, DateTime.UtcNow);
+                TimeTillNextAirCache = AirTimeUtils.FormatAirCountdown(nextAirUtc.Value, now);
             }
             else
             {
@@ -857,7 +847,8 @@ namespace MALClient.XShared.ViewModels
                 bool calculated = false;
                 var malId = ParentAbstraction?.MalId ?? Id;
                 if (DataCache.TryRetrieveDataForId(malId, out var volatileData) &&
-                    volatileData.NextAirUtc.HasValue && volatileData.NextAirUtc.Value > now)
+                    volatileData.NextAirUtc.HasValue &&
+                    (volatileData.NextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, now)))
                 {
                     _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(volatileData.NextAirUtc.Value, now);
                     calculated = true;
@@ -865,7 +856,8 @@ namespace MALClient.XShared.ViewModels
 
                 if (string.IsNullOrEmpty(_timeTillNextAirCache) &&
                     ResourceLocator.AiringInfoProvider.InitializationSuccess &&
-                    ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, now, out DateTime airDate) && now < airDate)
+                    ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, now, out DateTime airDate) &&
+                    (airDate > now || AirTimeUtils.IsInAiringWindow(airDate, now)))
                 {
                     _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(airDate, now);
                     calculated = true;
@@ -892,9 +884,9 @@ namespace MALClient.XShared.ViewModels
         {
             if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(Id, DateTime.UtcNow, out DateTime airDate))
             {
-                if (DateTime.UtcNow > airDate)
-                    return null;
-                return airDate;
+                if (airDate > DateTime.UtcNow || AirTimeUtils.IsInAiringWindow(airDate, DateTime.UtcNow))
+                    return airDate;
+                return null;
             }
 
             var fromEpisodes = await GetEpisodesStalenessFallbackAsync();
@@ -958,7 +950,7 @@ namespace MALClient.XShared.ViewModels
                 if (!string.Equals(data.Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase))
                     return null;
 
-                return AirTimeUtils.ComputeNextAirDate(data.Broadcast, DateTime.UtcNow);
+                return AirTimeUtils.ComputeNextAirDate(data.Broadcast, DateTime.UtcNow, true);
             }
             catch
             {

@@ -22,6 +22,7 @@ namespace MALClient.XShared.BL
         private readonly IMessageDialogProvider _dialogProvider;
 
         private List<AiringData> _airingData;
+        private Task _initTask;
         private List<AiringData> AiringShows
         {
             get { return _airingData; }
@@ -43,7 +44,18 @@ namespace MALClient.XShared.BL
             _applicationDataService = applicationDataService;
         }
 
-        public async Task Init(bool cacheOnly)
+        public Task Init(bool cacheOnly)
+        {
+            if (_airingData != null)
+                return Task.CompletedTask;
+            //dedupe: let concurrent callers (startup + calendar) share one in-flight fetch
+            if (_initTask != null)
+                return _initTask;
+            _initTask = InitCore(cacheOnly);
+            return _initTask;
+        }
+
+        private async Task InitCore(bool cacheOnly)
         {
             if(_airingData != null)
                 return;
@@ -62,9 +74,13 @@ namespace MALClient.XShared.BL
             var fresh = lastUpdate != null &&
                         DateTime.Now - DateTime.FromBinary((long) lastUpdate) < TimeSpan.FromHours(8);
 
+            //self-heal: a cache persisted from the legacy feed only carries mal_id+episodes
+            //(no titles/images). Treat it as stale so we try to re-fetch the full schedules data.
+            var oldSchema = data != null && data.Any() && data.All(x => string.IsNullOrEmpty(x.Title));
+
             try
             {
-                if (data != null && data.Any() && fresh)
+                if (data != null && data.Any() && fresh && !oldSchema)
                 {
                     ApplyData(data);
                     return;
@@ -91,6 +107,9 @@ namespace MALClient.XShared.BL
             {
                 // network/refetch failure -> keep whatever cache we already read (stale-not-blank)
             }
+
+            if (oldSchema && data != null && data.Any() && !string.IsNullOrEmpty(data.First().Title))
+                DiagnosticsReporter.Info("AiringInfoProvider", $"old-schema cache self-healed: {data.Count} entries have titles");
 
             if (data == null || !data.Any())
             {

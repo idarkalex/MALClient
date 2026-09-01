@@ -18,6 +18,29 @@ namespace MALClient.XShared.Utils
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
         }
 
+        private static DateTime? _rateLimitedUntil;
+
+        private static async Task<string> GetStringWithBackoffAsync(string url)
+        {
+            if (_rateLimitedUntil.HasValue && DateTime.UtcNow < _rateLimitedUntil.Value)
+                return null;
+
+            try
+            {
+                return await Client.GetStringAsync(url);
+            }
+            catch (HttpRequestException ex)
+            {
+                if (ex.Message.Contains("429") || ex.Message.Contains("Too Many Requests"))
+                {
+                    _rateLimitedUntil = DateTime.UtcNow.AddMinutes(1);
+                    DiagnosticsReporter.Warn("AnimeThemes", $"rate limited (429), backoff 1min: {ex.Message}");
+                    return null;
+                }
+                throw;
+            }
+        }
+
         public class ThemeVideo
         {
             public string Type { get; set; }
@@ -253,7 +276,7 @@ namespace MALClient.XShared.Utils
             var query = Uri.EscapeDataString(variant);
             var url = $"https://api.animethemes.moe/search?q={query}";
             AppendThemeDebug($"GET {url}");
-            var json = await Client.GetStringAsync(url);
+            var json = await GetStringWithBackoffAsync(url);
             AppendThemeDebug($"  resp len={json?.Length ?? 0} head={(json?.Length > 200 ? json.Substring(0, 200) : json)}");
             var response = JsonConvert.DeserializeObject<SearchResponse>(json);
 
@@ -332,7 +355,7 @@ namespace MALClient.XShared.Utils
             try
             {
                 AppendThemeDebug($"GET {keyedUrl}");
-                var keyedJson = await Client.GetStringAsync(keyedUrl);
+                var keyedJson = await GetStringWithBackoffAsync(keyedUrl);
                 AppendThemeDebug($"  resp len={keyedJson?.Length ?? 0} head={(keyedJson?.Length > 160 ? keyedJson.Substring(0, 160) : keyedJson)}");
                 var keyed = JsonConvert.DeserializeObject<AnimeKeyedApiResponse>(keyedJson);
                 var videos = BuildVideos(keyed?.anime);
@@ -371,7 +394,7 @@ namespace MALClient.XShared.Utils
             var buster = string.IsNullOrEmpty(cacheBuster) ? "" : "&cb=" + cacheBuster;
             var url = $"https://api.animethemes.moe/anime?filter[name]={query}&include=animethemes.animethemeentries.videos,animethemes.song&page[size]=8{buster}";
             AppendThemeDebug($"GET {url}");
-            var json = await Client.GetStringAsync(url);
+            var json = await GetStringWithBackoffAsync(url);
             AppendThemeDebug($"  resp len={json?.Length ?? 0} head={(json?.Length > 160 ? json.Substring(0, 160) : json)}");
             var response = JsonConvert.DeserializeObject<AnimeApiResponse>(json);
             AppendThemeDebug($"  parse anime={response?.anime?.Count ?? 0} exactThemes={(response?.anime?.FirstOrDefault()?.animethemes?.Count) ?? 0}");
@@ -402,7 +425,7 @@ namespace MALClient.XShared.Utils
                 {
                     var keyedUrl = keyedBase + "&cb=" + Guid.NewGuid().ToString("N");
                     AppendThemeDebug($"GET {keyedUrl}");
-                    var keyedJson = await Client.GetStringAsync(keyedUrl);
+                    var keyedJson = await GetStringWithBackoffAsync(keyedUrl);
                     AppendThemeDebug($"  resp len={keyedJson?.Length ?? 0} head={(keyedJson?.Length > 160 ? keyedJson.Substring(0, 160) : keyedJson)}");
                     var keyed = JsonConvert.DeserializeObject<AnimeKeyedApiResponse>(keyedJson);
                     videos = BuildVideos(keyed?.anime);

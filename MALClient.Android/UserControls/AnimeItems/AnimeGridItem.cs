@@ -97,9 +97,7 @@ namespace MALClient.Android.UserControls
         {
             if (AnimeGridItemBadgeContainer == null) return;
 
-            var countdown = ViewModel.AirDayTillBind;
-            if (string.IsNullOrEmpty(countdown))
-                countdown = ViewModel.TimeTillNextAirCache;
+            var countdown = ViewModel.TimeTillNextAirCache;
             if (countdown == "Aired!") countdown = "";
 
             var hasCountdown = !string.IsNullOrEmpty(countdown);

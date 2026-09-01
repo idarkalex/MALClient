@@ -847,7 +847,7 @@ namespace MALClient.XShared.ViewModels.Main
                 {
                     var nextAir = await item.GetTimeTillNextAirAsync(null);
                     if (nextAir.HasValue)
-                        item.TimeTillNextAirCache = AirTimeUtils.FormatAirCountdown(nextAir.Value, DateTime.UtcNow);
+                        item.SetNextAirCache(nextAir);
                 }
             }
         }
@@ -1257,6 +1257,8 @@ namespace MALClient.XShared.ViewModels.Main
 
             var requestedMode = modeOverride ?? WorkMode;
 
+            DiagnosticsReporter.Info("AnimeList", $"fetch: source={ListSource} mode={requestedMode} force={force} auth={Credentials.Authenticated}");
+
             if (!force && _prevListSource == ListSource && _prevWorkMode == requestedMode)
             {
                 if (_prevWorkMode != modeOverride)
@@ -1324,6 +1326,7 @@ namespace MALClient.XShared.ViewModels.Main
                     await new LibraryListQuery(ListSource, requestedMode).GetLibrary(force));
                 if (data?.Count == 0)
                 {
+                    DiagnosticsReporter.Error("AnimeList", $"fetch: library query returned 0 items (mode={requestedMode} source={ListSource}) - empty grid first run", null);
                     //no data?
                     RefreshList();
                     _fetching = false;
