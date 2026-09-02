@@ -248,10 +248,25 @@ namespace MALClient.XShared.ViewModels
             var brush = AirDayBrush;
             RaisePropertyChanged(() => AirDayTillBind);
             var hasCountdown = !string.IsNullOrEmpty(TimeTillNextAirCache);
-            if (hasCountdown || string.IsNullOrEmpty(_airDayTillBind) && (Airing || brush == true))
+            if (hasCountdown)
             {
-                RefreshTimeTillNextAirInBackground();
+                var malId = ParentAbstraction?.MalId ?? Id;
+                if (DataCache.TryRetrieveDataForId(malId, out var vd) && vd.NextAirUtc.HasValue)
+                {
+                    if (!string.IsNullOrEmpty(vd.LastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(vd.LastKnownStatus))
+                    {
+                        DataCache.UpdateVolatileDataWithNextAir(malId, null);
+                        TimeTillNextAirCache = "";
+                    }
+                    else if (AirTimeUtils.NeedsRefresh(vd.NextAirUtc, vd.NextAirFetchedAtUtc, DateTime.UtcNow))
+                        RefreshTimeTillNextAirInBackground();
+                }
+                else
+                    RefreshTimeTillNextAirInBackground();
+                return;
             }
+            if (string.IsNullOrEmpty(_airDayTillBind) && (Airing || brush == true))
+                RefreshTimeTillNextAirInBackground();
         }
 
         public void RefreshTimeTillNextAirInBackground()

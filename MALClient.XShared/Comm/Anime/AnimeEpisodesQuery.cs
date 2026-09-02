@@ -90,9 +90,12 @@ namespace MALClient.XShared.Comm.Anime
                         using var probeDoc = JsonDocument.Parse(probeJson);
                         var probeRoot = probeDoc.RootElement;
                         int probeLastPage = 1;
+                        int probeCount = 0;
                         if (probeRoot.TryGetProperty("pagination", out var pp) && pp.TryGetProperty("last_visible_page", out var pl) && pl.ValueKind == JsonValueKind.Number)
                             probeLastPage = pl.GetInt32();
-                        if (probeLastPage == cached.lastPage)
+                        if (probeRoot.TryGetProperty("data", out var pdata) && pdata.ValueKind == JsonValueKind.Array)
+                            probeCount = pdata.GetArrayLength();
+                        if (probeLastPage == cached.lastPage && probeCount == cached.data.Count)
                             return cached.data;
                     }
                     catch { return cached.data; }
