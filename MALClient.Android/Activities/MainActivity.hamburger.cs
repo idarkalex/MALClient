@@ -397,6 +397,7 @@ namespace MALClient.Android.Activities
         public void SetActiveButton(HamburgerButtons val)
         {
             SyncBottomNavForHamburger(val);
+            if (_drawer == null) return;
 
             if (_footerView != null)
             {
@@ -534,6 +535,7 @@ namespace MALClient.Android.Activities
 
         public void UpdateLogInLabel()
         {
+            if (_drawer == null) return;
             if (Credentials.Authenticated)
             {
                 var btn = new ContainerDrawerItem();
@@ -681,6 +683,7 @@ namespace MALClient.Android.Activities
             set
             {
                 _mangaSectionVisbility = value;
+                if (_drawer == null) return;
                 if (value)
                 {
                     var mangaSubHeader = new SectionDrawerItem();
