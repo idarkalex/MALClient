@@ -126,6 +126,7 @@ namespace MALClient.XShared.BL
             }
 
             ApplyData(data);
+            try { AiringsUpdated?.Invoke(); } catch { }
         }
 
         private void ApplyData(List<AiringData> data)
@@ -277,6 +278,8 @@ namespace MALClient.XShared.BL
         }
 
         public bool InitializationSuccess { get; set; }
+        public event Action AiringsUpdated;
+        public void NotifyUpdated() => AiringsUpdated?.Invoke();
 
         [Preserve(AllMembers = true)]
         public class Episode

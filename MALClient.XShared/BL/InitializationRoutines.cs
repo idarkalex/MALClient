@@ -45,9 +45,19 @@ namespace MALClient.XShared.BL
                 if (DateTime.UtcNow - lastDt > TimeSpan.FromMinutes(30))
                     forceAiring = true;
             } catch { }
-            await Task.WhenAll(
-                ResourceLocator.AiringInfoProvider.Init(false, forceAiring),
-                ResourceLocator.EnglishTitlesProvider.Init());
+            var englishTask = ResourceLocator.EnglishTitlesProvider.Init();
+            var airingTask = ResourceLocator.AiringInfoProvider.Init(false, forceAiring);
+            await englishTask;
+            // airing refresh is progressive: don't block grid, update in background when ready
+            _ = Task.Run(async () =>
+            {
+                try { await airingTask; } catch { }
+                try
+                {
+                    ResourceLocator.AiringInfoProvider.NotifyUpdated();
+                    DiagnosticsReporter.Info("Startup", $"airing refresh done force={forceAiring} success={ResourceLocator.AiringInfoProvider.InitializationSuccess}");
+                } catch { }
+            });
 
             if (Settings.NotificationCheckInRuntime && Credentials.Authenticated)
                 ResourceLocator.SchdeuledJobsManger.StartJob(ScheduledJob.FetchNotifications, 5,
@@ -55,23 +65,30 @@ namespace MALClient.XShared.BL
             ResourceLocator.HandyDataStorage.Init();
             AwaitableCompletion.SetResult(true);
 
-            try
+            _ = Task.Run(async () =>
             {
-                using var client = new HttpClient();
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var result = await client.GetAsync("https://myanimelist.net", cts.Token);
-
-                result.EnsureSuccessStatusCode();
-            }
-            catch (Exception e)
-            {
-                ResourceLocator.DispatcherAdapter.Run(() =>
+                try
                 {
-                    ResourceLocator.MessageDialogProvider.ShowMessageDialog(
-                        "Failed to connect to MyAnimeList.net. Website is probably down, try checking on the browser. If it's down try again later.",
-                        "MAL is down");
-                });
-            }
+                    await Task.Delay(3000);
+                    using var client = new HttpClient();
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                    var result = await client.GetAsync("https://myanimelist.net", cts.Token);
+                    result.EnsureSuccessStatusCode();
+                }
+                catch (Exception e)
+                {
+                    // only show MAL down if we actually have no cached data
+                    if (!ResourceLocator.AiringInfoProvider.InitializationSuccess)
+                    {
+                        ResourceLocator.DispatcherAdapter.Run(() =>
+                        {
+                            ResourceLocator.MessageDialogProvider.ShowMessageDialog(
+                                "Failed to connect to MyAnimeList.net. Website is probably down, try checking on the browser. If it's down try again later.",
+                                "MAL is down");
+                        });
+                    }
+                }
+            });
 
 
         }

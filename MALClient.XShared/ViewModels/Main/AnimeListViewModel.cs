@@ -133,6 +133,7 @@ namespace MALClient.XShared.ViewModels.Main
             _animeLibraryDataStorage = animeLibraryDataStorage;
 
             _animeLibraryDataStorage.AnimeRemoved += OnAnimeEntryRemoved;
+            ResourceLocator.AiringInfoProvider.AiringsUpdated += OnAiringsUpdated;
 
             for (int i = 2000; i < DateTime.Now.Year + 2; i++)
             {
@@ -370,6 +371,16 @@ namespace MALClient.XShared.ViewModels.Main
             ViewModelLocator.GeneralMain.OnSearchDelayedQuerySubmitted -= OnOnSearchDelayedQuerySubmitted;
             ViewModelLocator.GeneralMain.OnSearchQuerySubmitted -= OnOnSearchDelayedQuerySubmitted;
             _queryHandler = false;
+        }
+
+        private void OnAiringsUpdated()
+        {
+            ResourceLocator.DispatcherAdapter.Run(() =>
+            {
+                foreach (var vm in AnimeItems)
+                    vm.RefreshTimeTillNextAirInBackground();
+                RaisePropertyChanged(() => AnimeItems);
+            });
         }
 
         private void OnOnSearchDelayedQuerySubmitted(string query)

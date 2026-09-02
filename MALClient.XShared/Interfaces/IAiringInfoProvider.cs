@@ -18,6 +18,8 @@ namespace MALClient.XShared.Interfaces
         bool TryGetEntry(int id, out MALClient.XShared.BL.AiringInfoProvider.AiringData entry);
 
         bool InitializationSuccess { get; }
+        event Action AiringsUpdated;
+        void NotifyUpdated();
 
     }
 }

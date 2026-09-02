@@ -155,6 +155,7 @@ namespace MALClient.XShared.ViewModels.Main
         {
             _animeLibraryDataStorage = animeLibraryDataStorage;
             ItemWidth = AnimeItemViewModel.MaxWidth - 8;
+            ResourceLocator.AiringInfoProvider.AiringsUpdated += async () => { if (_initialized) await Init(true); };
         }
 
         private bool _initialized;
