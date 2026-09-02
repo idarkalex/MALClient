@@ -109,7 +109,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                 try
                 {
                     var clean = MALClient.XShared.Utils.Utilities.CleanAnimeTitle(q);
-                    var res = await TenraiClient.GetPaginatedAsync($"anime?q={Uri.EscapeDataString(clean)}&sfw");
+                    var res = await TenraiClient.GetPaginatedAsync($"anime?q={Uri.EscapeDataString(clean)}&sfw&order_by=popularity&sort=asc");
                     var items = res.Items;
                     if (gen != _dropdownGen || token.IsCancellationRequested) return;
                     var posters = items.Select(el =>

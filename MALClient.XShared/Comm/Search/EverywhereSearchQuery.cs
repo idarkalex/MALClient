@@ -62,7 +62,8 @@ namespace MALClient.XShared.Comm.Search
         {
             try
             {
-                var (items, _) = await TenraiClient.GetPaginatedAsync($"{endpoint}?q={Uri.EscapeDataString(query)}&sfw");
+                var pop = endpoint == "characters" ? "" : "&order_by=popularity&sort=asc";
+                var (items, _) = await TenraiClient.GetPaginatedAsync($"{endpoint}?q={Uri.EscapeDataString(query)}&sfw{pop}");
                 return items.Take(5).Select(el =>
                 {
                     var id = el.TryGetProperty("mal_id", out var p) && p.ValueKind == System.Text.Json.JsonValueKind.Number ? p.GetInt32() : 0;

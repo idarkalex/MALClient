@@ -24,7 +24,7 @@ namespace MALClient.XShared.Comm.Manga
 
             try
             {
-                var (items, _) = await TenraiClient.GetPaginatedAsync($"manga?q={Uri.EscapeDataString(_query)}&sfw");
+                var (items, _) = await TenraiClient.GetPaginatedAsync($"manga?q={Uri.EscapeDataString(_query)}&sfw&order_by=popularity&sort=asc");
 
                 foreach (var result in items)
                 {

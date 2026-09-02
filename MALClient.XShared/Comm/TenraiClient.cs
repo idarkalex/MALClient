@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -180,8 +181,14 @@ namespace MALClient.XShared.Comm
             }
         }
 
+        private static readonly Dictionary<string, (List<JsonElement> items, bool hasNext, DateTime fetchedAt)> _paginatedCache = new Dictionary<string, (List<JsonElement>, bool, DateTime)>();
         public static async Task<(List<JsonElement> Items, bool HasNextPage)> GetPaginatedAsync(string endpoint)
         {
+            lock (_cacheLock)
+            {
+                if (_paginatedCache.TryGetValue(endpoint, out var cached) && DateTime.UtcNow - cached.fetchedAt < TimeSpan.FromMinutes(5))
+                    return (cached.items.Select(e => e.Clone()).ToList(), cached.hasNext);
+            }
             var json = await GetStringAsync(endpoint);
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
@@ -194,6 +201,7 @@ namespace MALClient.XShared.Comm
             if (root.TryGetProperty("pagination", out var pagination))
                 hasNext = pagination.GetProperty("has_next_page").GetBoolean();
 
+            lock (_cacheLock) _paginatedCache[endpoint] = (items.Select(e => e.Clone()).ToList(), hasNext, DateTime.UtcNow);
             return (items, hasNext);
         }
 
