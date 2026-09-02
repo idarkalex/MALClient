@@ -9,12 +9,22 @@ namespace MALClient.XShared.Comm.Anime
 {
     public class AnimeEpisodesQuery : Query
     {
-        private readonly Dictionary<int, List<AnimeEpisode>> _cache = new Dictionary<int, List<AnimeEpisode>>();
+        private readonly Dictionary<int, (List<AnimeEpisode> data, DateTime fetchedAt, int lastPage)> _cache = new Dictionary<int, (List<AnimeEpisode>, DateTime, int)>();
+        private static bool IsAiringForTtl(int animeId)
+        {
+            if (MALClient.XShared.Utils.DataCache.TryRetrieveDataForId(animeId, out var vd) && !string.IsNullOrEmpty(vd.LastKnownStatus))
+                return MALClient.XShared.Utils.AirTimeUtils.IsCurrentlyAiringStatus(vd.LastKnownStatus);
+            return false;
+        }
 
         public async Task<List<AnimeEpisode>> GetEpisodes(int animeId, bool force = false)
         {
-            if (_cache.ContainsKey(animeId) && !force)
-                return _cache[animeId];
+            if (!force && _cache.TryGetValue(animeId, out var cachedFull))
+            {
+                var ttl = IsAiringForTtl(animeId) ? TimeSpan.FromHours(1) : TimeSpan.FromDays(7);
+                if (DateTime.UtcNow - cachedFull.fetchedAt < ttl)
+                    return cachedFull.data;
+            }
 
             try
             {
@@ -52,7 +62,7 @@ namespace MALClient.XShared.Comm.Anime
                     }
                 }
 
-                _cache[animeId] = result;
+                _cache[animeId] = (result, DateTime.UtcNow, 1);
                 return result;
             }
             catch
@@ -68,8 +78,26 @@ namespace MALClient.XShared.Comm.Anime
         /// </summary>
         public async Task<List<AnimeEpisode>> GetLastEpisodesAsync(int animeId)
         {
-            if (_cache.ContainsKey(animeId))
-                return _cache[animeId];
+            if (_cache.TryGetValue(animeId, out var cached) && cached.data != null)
+            {
+                var ttl = IsAiringForTtl(animeId) ? TimeSpan.FromHours(1) : TimeSpan.FromDays(7);
+                var isExpired = DateTime.UtcNow - cached.fetchedAt >= ttl;
+                if (!isExpired)
+                {
+                    try
+                    {
+                        var probeJson = await TenraiClient.GetRawJsonAsync($"anime/{animeId}/episodes?page=1");
+                        using var probeDoc = JsonDocument.Parse(probeJson);
+                        var probeRoot = probeDoc.RootElement;
+                        int probeLastPage = 1;
+                        if (probeRoot.TryGetProperty("pagination", out var pp) && pp.TryGetProperty("last_visible_page", out var pl) && pl.ValueKind == JsonValueKind.Number)
+                            probeLastPage = pl.GetInt32();
+                        if (probeLastPage == cached.lastPage)
+                            return cached.data;
+                    }
+                    catch { return cached.data; }
+                }
+            }
 
             try
             {
@@ -117,7 +145,7 @@ namespace MALClient.XShared.Comm.Anime
                     }
                 }
 
-                _cache[animeId] = result;
+                _cache[animeId] = (result, DateTime.UtcNow, lastPage);
                 return result;
             }
             catch

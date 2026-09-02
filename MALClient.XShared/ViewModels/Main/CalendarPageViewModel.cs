@@ -302,7 +302,12 @@ namespace MALClient.XShared.ViewModels.Main
         private List<AnimeItemAbstraction> ProviderMyListAbstractions()
         {
             var abstractions = _animeLibraryDataStorage.AllLoadedAuthAnimeItems.Where(abstraction =>
-                ResourceLocator.AiringInfoProvider.HasAiringEntry(abstraction.Id)).Where(
+                ResourceLocator.AiringInfoProvider.HasAiringEntry(abstraction.Id)).Where(abstraction =>
+            {
+                if (DataCache.TryRetrieveDataForId(abstraction.Id, out var vd) && !string.IsNullOrEmpty(vd.LastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(vd.LastKnownStatus))
+                    return false;
+                return true;
+            }).Where(
                 abstraction => abstraction.Type == (int)AnimeType.TV && (
                     (Settings.CalendarIncludePlanned &&
                      abstraction.MyStatus == AnimeStatus.PlanToWatch) ||

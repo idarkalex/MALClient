@@ -249,6 +249,24 @@ namespace MALClient.XShared.ViewModels.Details
 
         private void UpdateLastAired()
         {
+            if (ResourceLocator.AiringInfoProvider.TryGetEntry(MalId, out var airEntry) && airEntry.Episodes != null && airEntry.Episodes.Count > 0)
+            {
+                var now = DateTime.UtcNow;
+                var airedEntries = airEntry.Episodes
+                    .Select(e => DateTimeOffset.FromUnixTimeSeconds(e.Timestamp).UtcDateTime)
+                    .Where(d => d <= now)
+                    .OrderBy(d => d)
+                    .ToList();
+                if (airedEntries.Count > 0)
+                {
+                    var lastDate = airedEntries.Last();
+                    var epNum = airEntry.Episodes.Count(e => DateTimeOffset.FromUnixTimeSeconds(e.Timestamp).UtcDateTime <= now);
+                    LastAired = $"EP {epNum} - {lastDate.ToString("d MMM", CultureInfo.InvariantCulture)}";
+                    DiagnosticsReporter.Info("Details", $"UpdateLastAired malId={MalId} source=schedule ep={epNum} date={lastDate:O} status='{Status}' result='{LastAired}'");
+                    RaisePropertyChanged(() => LastAired);
+                    return;
+                }
+            }
             var last = Episodes
                 .Where(ep => ep.AiredDate.HasValue)
                 .OrderBy(ep => ep.AiredDate.Value)
@@ -259,27 +277,6 @@ namespace MALClient.XShared.ViewModels.Details
                     ? last.EpisodeId
                     : Episodes.IndexOf(last) + 1;
                 LastAired = $"EP {ep} - {last.AiredDate.Value.ToString("d MMM", CultureInfo.InvariantCulture)}";
-            }
-            else if (ResourceLocator.AiringInfoProvider.TryGetEntry(MalId, out var airEntry) && airEntry.Episodes != null && airEntry.Episodes.Count > 0)
-            {
-                var lastTs = airEntry.Episodes.Max(e => e.Timestamp);
-                var lastDate = DateTimeOffset.FromUnixTimeSeconds(lastTs).UtcDateTime;
-                if ((DateTime.UtcNow - lastDate).TotalDays < 365)
-                {
-                    LastAired = $"EP {airEntry.Episodes.Count} - {lastDate.ToString("d MMM", CultureInfo.InvariantCulture)}";
-                }
-                else if (!string.IsNullOrEmpty(EndDate) && EndDate != AnimeItemViewModel.InvalidStartEndDate && EndDate != "N/A")
-                {
-                    if (DateTime.TryParse(EndDate, out var endDt))
-                    {
-                        var epStr = AllEpisodes > 0 ? AllEpisodes.ToString() : "?";
-                        LastAired = $"EP {epStr} - {endDt.ToString("d MMM", CultureInfo.InvariantCulture)}";
-                    }
-                    else
-                        LastAired = "";
-                }
-                else
-                    LastAired = "";
             }
             else if (!string.IsNullOrEmpty(EndDate) && EndDate != AnimeItemViewModel.InvalidStartEndDate && EndDate != "N/A")
             {
@@ -295,7 +292,7 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 LastAired = "";
             }
-            DiagnosticsReporter.Info("Details", $"UpdateLastAired malId={MalId} lastEp={(last != null ? last.EpisodeId.ToString() : "null")} epCount={Episodes.Count} status='{Status}' endDate='{EndDate}' result='{LastAired}'");
+            DiagnosticsReporter.Info("Details", $"UpdateLastAired malId={MalId} source=episodes lastEp={(last != null ? last.EpisodeId.ToString() : "null")} epCount={Episodes.Count} status='{Status}' endDate='{EndDate}' result='{LastAired}'");
             RaisePropertyChanged(() => LastAired);
         }
 
@@ -1749,13 +1746,49 @@ namespace MALClient.XShared.ViewModels.Details
                 UpdateLastAired();
                 RaisePropertyChanged(() => TimeTillNextAir);
 
-                if (_animeItemReference is AnimeItemViewModel itemVm && Episodes.Count > 0)
+                if (_animeItemReference is AnimeItemViewModel itemVm)
                 {
-                    var nextAir = AirTimeUtils.ComputeNextAirFromEpisodes(Episodes, DateTime.UtcNow);
-                    if (nextAir.HasValue)
-                        itemVm.SetNextAirCache(nextAir);
+                    var nextAirFromSchedule = (DateTime?)null;
+                    if (ResourceLocator.AiringInfoProvider.TryGetEntry(MalId, out var sched) && sched.Episodes != null && sched.Episodes.Count > 0)
+                    {
+                        var lastTs = sched.Episodes.Max(e => e.Timestamp);
+                        var lastDate = DateTimeOffset.FromUnixTimeSeconds(lastTs).UtcDateTime;
+                        var gap = 7.0;
+                        if (sched.Episodes.Count >= 2)
+                        {
+                            var gaps = new System.Collections.Generic.List<double>();
+                            var sorted = sched.Episodes.Select(e => DateTimeOffset.FromUnixTimeSeconds(e.Timestamp).UtcDateTime).OrderBy(d => d).ToList();
+                            for (int i = 1; i < sorted.Count; i++) gaps.Add((sorted[i] - sorted[i-1]).TotalDays);
+                            gaps.Sort();
+                            gap = gaps[gaps.Count / 2];
+                            if (gap < 1 || gap > 30) gap = 7;
+                        }
+                        if ((DateTime.UtcNow - lastDate).TotalDays <= gap * 3)
+                        {
+                            var cand = lastDate.AddDays(gap);
+                            while (cand <= DateTime.UtcNow) cand = cand.AddDays(gap);
+                            if (AirTimeUtils.IsInAiringWindow(lastDate, DateTime.UtcNow))
+                                nextAirFromSchedule = lastDate;
+                            else
+                                nextAirFromSchedule = cand;
+                        }
+                    }
+                    if (nextAirFromSchedule.HasValue)
+                        itemVm.SetNextAirCache(nextAirFromSchedule);
+                    else if (Episodes.Count > 0)
+                    {
+                        var nextAir = AirTimeUtils.ComputeNextAirFromEpisodes(Episodes, DateTime.UtcNow);
+                        if (nextAir.HasValue)
+                            itemVm.SetNextAirCache(nextAir);
+                        else
+                            itemVm.RefreshTimeTillNextAirInBackground();
+                    }
                     else
-                        itemVm.RefreshTimeTillNextAirInBackground();
+                    {
+                        DataCache.UpdateVolatileDataWithNextAir(MalId, null);
+                        itemVm.TimeTillNextAirCache = "";
+                        DiagnosticsReporter.Info("AirRes", $"malId={MalId} LoadEpisodes cleared nextAir (no schedule, no episodes)");
+                    }
                 }
             }
             catch (Exception ex)
