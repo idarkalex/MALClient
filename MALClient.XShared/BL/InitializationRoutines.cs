@@ -35,8 +35,18 @@ namespace MALClient.XShared.BL
                 await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync();
             }
 
+            var forceAiring = false;
+            try
+            {
+                const string mandatoryKey = "AiringMandatoryLastRefresh";
+                var lastMan = ResourceLocator.ApplicationDataService[mandatoryKey] as string;
+                DateTime lastDt = DateTime.MinValue;
+                if (!string.IsNullOrEmpty(lastMan) && DateTime.TryParse(lastMan, out var parsed)) lastDt = parsed;
+                if (DateTime.UtcNow - lastDt > TimeSpan.FromMinutes(30))
+                    forceAiring = true;
+            } catch { }
             await Task.WhenAll(
-                ResourceLocator.AiringInfoProvider.Init(false),
+                ResourceLocator.AiringInfoProvider.Init(false, forceAiring),
                 ResourceLocator.EnglishTitlesProvider.Init());
 
             if (Settings.NotificationCheckInRuntime && Credentials.Authenticated)

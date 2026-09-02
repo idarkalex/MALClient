@@ -44,20 +44,26 @@ namespace MALClient.XShared.BL
             _applicationDataService = applicationDataService;
         }
 
-        public Task Init(bool cacheOnly)
+        private const string MandatoryRefreshKey = "AiringMandatoryLastRefresh";
+        public Task Init(bool cacheOnly, bool force = false)
         {
+            if (force)
+            {
+                _airingData = null;
+                _initTask = null;
+            }
             if (_airingData != null)
                 return Task.CompletedTask;
             //dedupe: let concurrent callers (startup + calendar) share one in-flight fetch
             if (_initTask != null)
                 return _initTask;
-            _initTask = InitCore(cacheOnly);
+            _initTask = InitCore(cacheOnly, force);
             return _initTask;
         }
 
-        private async Task InitCore(bool cacheOnly)
+        private async Task InitCore(bool cacheOnly, bool force = false)
         {
-            if(_airingData != null)
+            if(!force && _airingData != null)
                 return;
 
             List<AiringData> data = null;
@@ -71,7 +77,7 @@ namespace MALClient.XShared.BL
             }
 
             var lastUpdate = _applicationDataService[UpdateStorakeKey];
-            var fresh = lastUpdate != null &&
+            var fresh = !force && lastUpdate != null &&
                         DateTime.Now - DateTime.FromBinary((long) lastUpdate) < TimeSpan.FromHours(8);
 
             //self-heal: a cache persisted from the legacy feed only carries mal_id+episodes
@@ -97,6 +103,7 @@ namespace MALClient.XShared.BL
                         {
                             data = schedulesData;
                             _applicationDataService[UpdateStorakeKey] = DateTime.Now.ToBinary();
+                            try { _applicationDataService["AiringMandatoryLastRefresh"] = DateTime.UtcNow.ToString("O"); } catch { }
                             try { _dataCache.SaveData(data, CacheFileName, null); } catch (Exception) { }
                         }
                     }
