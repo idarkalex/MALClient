@@ -56,7 +56,7 @@ namespace MALClient.XShared.Comm.Anime
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("Characters", $"structured API failed for anime {_animeId}, falling back to HTML", ex);
+                DiagnosticsReporter.Info("Characters", $"structured API failed for anime {_animeId}, falling back to HTML: {ex.Message}");
             }
 
             var htmlResult = await GetCharStaffDataHtml(output);

@@ -80,26 +80,9 @@ namespace MALClient.XShared.Comm.Anime
         {
             if (_cache.TryGetValue(animeId, out var cached) && cached.data != null)
             {
-                var ttl = IsAiringForTtl(animeId) ? TimeSpan.FromHours(1) : TimeSpan.FromDays(7);
-                var isExpired = DateTime.UtcNow - cached.fetchedAt >= ttl;
-                if (!isExpired)
-                {
-                    try
-                    {
-                        var probeJson = await TenraiClient.GetRawJsonAsync($"anime/{animeId}/episodes?page=1");
-                        using var probeDoc = JsonDocument.Parse(probeJson);
-                        var probeRoot = probeDoc.RootElement;
-                        int probeLastPage = 1;
-                        int probeCount = 0;
-                        if (probeRoot.TryGetProperty("pagination", out var pp) && pp.TryGetProperty("last_visible_page", out var pl) && pl.ValueKind == JsonValueKind.Number)
-                            probeLastPage = pl.GetInt32();
-                        if (probeRoot.TryGetProperty("data", out var pdata) && pdata.ValueKind == JsonValueKind.Array)
-                            probeCount = pdata.GetArrayLength();
-                        if (probeLastPage == cached.lastPage && probeCount == cached.data.Count)
-                            return cached.data;
-                    }
-                    catch { return cached.data; }
-                }
+                    var ttl = IsAiringForTtl(animeId) ? TimeSpan.FromHours(1) : TimeSpan.FromDays(7);
+                if (DateTime.UtcNow - cached.fetchedAt < ttl)
+                    return cached.data;
             }
 
             try

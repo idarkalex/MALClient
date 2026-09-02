@@ -244,7 +244,7 @@ namespace MALClient.XShared.Comm.Anime
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("Related", $"parse failed for anime {_animeId}", ex);
+                DiagnosticsReporter.Info("Related", $"parse failed for anime {_animeId}: {ex.Message}");
             }
 
             if (output.Count > 0)
