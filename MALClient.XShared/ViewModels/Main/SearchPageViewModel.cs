@@ -78,6 +78,7 @@ namespace MALClient.XShared.ViewModels.Main
             if (!string.IsNullOrWhiteSpace(args.Query) &&
                 (args.DisplayMode == SearchPageDisplayModes.Main || args.ForceQuery))
             {
+                if (args.ForceQuery) PrevQuery = null;
                 ViewModelLocator.GeneralMain.PopulateSearchFilters(_filters);
                 SubmitQuery(args.Query);
                 if (args.ForceQuery)
