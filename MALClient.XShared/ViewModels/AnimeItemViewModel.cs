@@ -933,36 +933,13 @@ namespace MALClient.XShared.ViewModels
         public async Task<DateTime?> GetTimeTillNextAirAsync(TimeZoneInfo zoneInfo)
         {
             var malIdLog = ParentAbstraction?.MalId ?? Id;
+            var res = await MALClient.XShared.BL.AiringDatumRepository.GetNextAirUtcAsync(malIdLog);
             var nowLog = DateTime.UtcNow;
-            if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(Id, nowLog, out DateTime airDate))
-            {
-                if (airDate > nowLog || AirTimeUtils.IsInAiringWindow(airDate, nowLog))
-                {
-                    MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=provider nextAirUtc={airDate:O} fmt={AirTimeUtils.FormatAirCountdown(airDate, nowLog)}");
-                    return airDate;
-                }
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=provider nextAirUtc={airDate:O} expired(>1h) -> null");
-                return null;
-            }
-
-            var fromEpisodes = await GetEpisodesStalenessFallbackAsync();
-            if (fromEpisodes.HasValue)
-            {
-                var isAiring = await IsCurrentlyAiringAsync();
-                if (isAiring)
-                {
-                    MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=episodes nextAirUtc={fromEpisodes:O} fmt={AirTimeUtils.FormatAirCountdown(fromEpisodes.Value, nowLog)}");
-                    return fromEpisodes;
-                }
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=episodes nextAirUtc={fromEpisodes:O} notCurrentlyAiring -> fallback");
-            }
-
-            var broadcast = await GetBroadcastFallbackAsync();
-            if (broadcast.HasValue)
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=broadcast nextAirUtc={broadcast:O} fmt={AirTimeUtils.FormatAirCountdown(broadcast.Value, nowLog)}");
+            if (res.HasValue)
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} viaRepo nextAirUtc={res:O} fmt={AirTimeUtils.FormatAirCountdown(res.Value, nowLog)}");
             else
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=none -> null");
-            return broadcast;
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} viaRepo -> null");
+            return res;
         }
 
         private async Task<bool> IsCurrentlyAiringAsync()
