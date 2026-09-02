@@ -1722,9 +1722,17 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 var isAiring = string.Equals(Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase);
                 var cached = force ? null : await DataCache.RetrieveAnimeEpisodes(MalId, isAiring);
-                var episodes = cached != null && cached.Count > 0
-                    ? cached
-                    : await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
+                List<AnimeEpisode> episodes = null;
+                if (isAiring)
+                {
+                    episodes = await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
+                    if ((episodes == null || episodes.Count == 0) && cached != null && cached.Count > 0)
+                        episodes = cached;
+                }
+                else
+                {
+                    episodes = cached != null && cached.Count > 0 ? cached : await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
+                }
                 var fromStale = false;
 
                 // serve the expired cache when the network failed, rather than a blank tab

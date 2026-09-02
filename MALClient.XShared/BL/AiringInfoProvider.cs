@@ -89,7 +89,7 @@ namespace MALClient.XShared.BL
                 if (!cacheOnly)
                 {
                     var schedulesTask = new AnimeSchedulesQuery().GetScheduleAsync();
-                    var completed = await Task.WhenAny(schedulesTask, Task.Delay(8000));
+                    var completed = await Task.WhenAny(schedulesTask, Task.Delay(15000));
                     if (completed == schedulesTask)
                     {
                         var schedulesData = await schedulesTask;
