@@ -32,6 +32,7 @@ namespace MALClient.XShared.Utils
         public string TimeTillNextAir { get; set; }
         public DateTime? NextAirUtc { get; set; }
         public DateTime? NextAirFetchedAtUtc { get; set; }
+        public string LastKnownStatus { get; set; }
     }
 
     public static class DataCache
@@ -298,6 +299,8 @@ namespace MALClient.XShared.Utils
             {
                 _volatileDataCache[id].NextAirUtc = nextAirUtc;
                 _volatileDataCache[id].NextAirFetchedAtUtc = DateTime.UtcNow;
+                if (!nextAirUtc.HasValue)
+                    _volatileDataCache[id].TimeTillNextAir = "";
             }
             else
             {
@@ -306,6 +309,20 @@ namespace MALClient.XShared.Utils
                     NextAirUtc = nextAirUtc,
                     NextAirFetchedAtUtc = DateTime.UtcNow
                 };
+            }
+        }
+
+        public static void UpdateVolatileStatus(int id, string status)
+        {
+            if (_volatileDataCache.ContainsKey(id))
+                _volatileDataCache[id].LastKnownStatus = status;
+            else
+                _volatileDataCache[id] = new VolatileDataCache { LastKnownStatus = status };
+            if (!string.IsNullOrEmpty(status) && !AirTimeUtils.IsCurrentlyAiringStatus(status))
+            {
+                _volatileDataCache[id].NextAirUtc = null;
+                _volatileDataCache[id].NextAirFetchedAtUtc = null;
+                _volatileDataCache[id].TimeTillNextAir = "";
             }
         }
 

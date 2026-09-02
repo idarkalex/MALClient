@@ -843,6 +843,17 @@ namespace MALClient.XShared.ViewModels
         {
             get
             {
+                var malIdPeek = ParentAbstraction?.MalId ?? Id;
+                if (DataCache.TryRetrieveDataForId(malIdPeek, out var vdPeek) && !string.IsNullOrEmpty(vdPeek.LastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(vdPeek.LastKnownStatus))
+                {
+                    if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                    {
+                        _timeTillNextAirCache = "";
+                        RaisePropertyChanged(() => TimeTillNextAirCache);
+                        RaisePropertyChanged(() => AirDayTillBind);
+                    }
+                    return "";
+                }
                 if (!string.IsNullOrEmpty(_timeTillNextAirCache))
                     return _timeTillNextAirCache;
 
@@ -853,8 +864,16 @@ namespace MALClient.XShared.ViewModels
                     volatileData.NextAirUtc.HasValue &&
                     (volatileData.NextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, now)))
                 {
-                    _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(volatileData.NextAirUtc.Value, now);
-                    calculated = true;
+                    if (!string.IsNullOrEmpty(volatileData.LastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(volatileData.LastKnownStatus))
+                    {
+                        _timeTillNextAirCache = "";
+                        calculated = true;
+                    }
+                    else
+                    {
+                        _timeTillNextAirCache = AirTimeUtils.FormatAirCountdown(volatileData.NextAirUtc.Value, now);
+                        calculated = true;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(_timeTillNextAirCache) &&
@@ -930,6 +949,9 @@ namespace MALClient.XShared.ViewModels
                 if (data == null)
                     return false;
 
+                if (!string.IsNullOrEmpty(data.Status))
+                    DataCache.UpdateVolatileStatus(malId, data.Status);
+
                 return AirTimeUtils.IsCurrentlyAiringStatus(data.Status);
             }
             catch
@@ -969,6 +991,8 @@ namespace MALClient.XShared.ViewModels
 
                 if (data?.Broadcast == null)
                     return null;
+                if (!string.IsNullOrEmpty(data.Status))
+                    DataCache.UpdateVolatileStatus(malId, data.Status);
                 if (!string.Equals(data.Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase))
                     return null;
 

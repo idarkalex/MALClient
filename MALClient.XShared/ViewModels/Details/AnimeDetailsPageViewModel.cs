@@ -148,6 +148,17 @@ namespace MALClient.XShared.ViewModels.Details
         {
             get
             {
+                var heroMalIdPeek = (_animeItemReference as AnimeItemViewModel)?.ParentAbstraction?.MalId ?? Id;
+                if (DataCache.TryRetrieveDataForId(heroMalIdPeek, out var heroVdPeek) && !string.IsNullOrEmpty(heroVdPeek.LastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(heroVdPeek.LastKnownStatus))
+                {
+                    if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                    {
+                        _timeTillNextAirCache = "";
+                        RaisePropertyChanged(() => TimeTillNextAir);
+                    }
+                    DiagnosticsReporter.Info("Details", $"hero malId={heroMalIdPeek} hit=finishedStatus status='{heroVdPeek.LastKnownStatus}' -> empty");
+                    return "";
+                }
                 if (!string.IsNullOrEmpty(_timeTillNextAirCache))
                 {
                     DiagnosticsReporter.Info("Details", $"hero malId={Id} hit=field result='{_timeTillNextAirCache}'");
@@ -228,17 +239,49 @@ namespace MALClient.XShared.ViewModels.Details
                 .Where(ep => ep.AiredDate.HasValue)
                 .OrderBy(ep => ep.AiredDate.Value)
                 .LastOrDefault();
-            if (last == null)
-            {
-                LastAired = "";
-            }
-            else
+            if (last != null)
             {
                 var ep = last.EpisodeId > 0
                     ? last.EpisodeId
                     : Episodes.IndexOf(last) + 1;
                 LastAired = $"EP {ep} - {last.AiredDate.Value.ToString("d MMM", CultureInfo.InvariantCulture)}";
             }
+            else if (ResourceLocator.AiringInfoProvider.TryGetEntry(MalId, out var airEntry) && airEntry.Episodes != null && airEntry.Episodes.Count > 0)
+            {
+                var lastTs = airEntry.Episodes.Max(e => e.Timestamp);
+                var lastDate = DateTimeOffset.FromUnixTimeSeconds(lastTs).UtcDateTime;
+                if ((DateTime.UtcNow - lastDate).TotalDays < 365)
+                {
+                    LastAired = $"EP {airEntry.Episodes.Count} - {lastDate.ToString("d MMM", CultureInfo.InvariantCulture)}";
+                }
+                else if (!string.IsNullOrEmpty(EndDate) && EndDate != AnimeItemViewModel.InvalidStartEndDate && EndDate != "N/A")
+                {
+                    if (DateTime.TryParse(EndDate, out var endDt))
+                    {
+                        var epStr = AllEpisodes > 0 ? AllEpisodes.ToString() : "?";
+                        LastAired = $"EP {epStr} - {endDt.ToString("d MMM", CultureInfo.InvariantCulture)}";
+                    }
+                    else
+                        LastAired = "";
+                }
+                else
+                    LastAired = "";
+            }
+            else if (!string.IsNullOrEmpty(EndDate) && EndDate != AnimeItemViewModel.InvalidStartEndDate && EndDate != "N/A")
+            {
+                if (DateTime.TryParse(EndDate, out var endDt))
+                {
+                    var epStr2 = AllEpisodes > 0 ? AllEpisodes.ToString() : "?";
+                    LastAired = $"EP {epStr2} - {endDt.ToString("d MMM", CultureInfo.InvariantCulture)}";
+                }
+                else
+                    LastAired = "";
+            }
+            else
+            {
+                LastAired = "";
+            }
+            DiagnosticsReporter.Info("Details", $"UpdateLastAired malId={MalId} lastEp={(last != null ? last.EpisodeId.ToString() : "null")} epCount={Episodes.Count} status='{Status}' endDate='{EndDate}' result='{LastAired}'");
             RaisePropertyChanged(() => LastAired);
         }
 
