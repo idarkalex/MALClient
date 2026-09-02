@@ -1,9 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              android:background="?BrushDeepBackground">
+  <android.support.v7.widget.SearchView
+      android:id="@+id/SearchPageSearchView"
+      android:layout_width="match_parent"
+      android:layout_height="48dp"
+      android:background="?BrushAppBarUpper"
+      app:iconifiedByDefault="false"
+      android:queryHint="Search anime, manga, characters..."
+      android:elevation="4dp" />
   <MALClient.Android.UserControls.PagerSlidingTabStrip
     android:id="@+id/SearchPageTabStrip"
     android:layout_width="match_parent"
