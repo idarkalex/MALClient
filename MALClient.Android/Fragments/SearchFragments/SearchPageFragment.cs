@@ -14,6 +14,8 @@ using Android.Runtime;
 using Android.Support.V4.View;
 using Android.Views;
 using Android.Widget;
+using FFImageLoading;
+using FFImageLoading.Views;
 using MALClient.Android.PagerAdapters;
 using MALClient.Android.Resources;
 
@@ -25,11 +27,27 @@ using MALClient.XShared.ViewModels;
 
 namespace MALClient.Android.Fragments.SearchFragments
 {
+    public class SuggestionPoster { public string Title; public string ImgUrl; public int MalId; public string Type; }
+    public class PosterDropAdapter : ArrayAdapter<SuggestionPoster>
+    {
+        private readonly global::Android.Views.LayoutInflater _inf;
+        public PosterDropAdapter(global::Android.Content.Context ctx) : base(ctx, 0) { _inf = global::Android.Views.LayoutInflater.From(ctx); }
+        public override global::Android.Views.View GetView(int pos, global::Android.Views.View cv, global::Android.Views.ViewGroup parent)
+        {
+            var v = cv ?? _inf.Inflate(Resource.Layout.SuggestionPosterItem, parent, false);
+            var it = GetItem(pos);
+            v.FindViewById<TextView>(Resource.Id.SuggestionPosterTitle).Text = it.Title;
+            var img = v.FindViewById<FFImageLoading.Views.ImageViewAsync>(Resource.Id.SuggestionPosterImage);
+            if ((string)img.Tag != it.ImgUrl) { img.Tag = it.ImgUrl; try { img.Into(it.ImgUrl, null, null, 100); } catch { } }
+            return v;
+        }
+    }
+
     public class SearchPageFragment : MalFragmentBase
     {
         private readonly SearchPageNavigationArgs _args;
-        private ArrayAdapter<string> _hintAdapter;
-        private AutoCompleteTextView _searchAutoComplete;
+        private PosterDropAdapter _hintAdapter;
+        private global::Android.Widget.AutoCompleteTextView _searchAutoComplete;
         private CancellationTokenSource _dropdownCts;
         private int _dropdownGen;
 
@@ -52,8 +70,8 @@ namespace MALClient.Android.Fragments.SearchFragments
             SearchPageSearchView.Iconified = false;
             if (!string.IsNullOrEmpty(_args?.Query))
                 SearchPageSearchView.SetQuery(_args.Query, false);
-            _hintAdapter = new ArrayAdapter<string>(Activity, global::Android.Resource.Layout.SimpleDropDownItem1Line);
-            _searchAutoComplete = SearchPageSearchView.FindViewById<AutoCompleteTextView>(Resource.Id.search_src_text);
+            _hintAdapter = new PosterDropAdapter(Activity);
+            _searchAutoComplete = SearchPageSearchView.FindViewById<global::Android.Widget.AutoCompleteTextView>(Resource.Id.search_src_text);
             if (_searchAutoComplete != null)
             {
                 _searchAutoComplete.Adapter = _hintAdapter;
@@ -62,11 +80,11 @@ namespace MALClient.Android.Fragments.SearchFragments
                 _searchAutoComplete.ItemClick += (s2, e2) =>
                 {
                     var sel = _hintAdapter.GetItem(e2.Position);
-                    SearchPageSearchView.SetQuery(sel, false);
+                    SearchPageSearchView.SetQuery(sel.Title, false);
                     _searchAutoComplete.DismissDropDown();
-                    _args.Query = sel;
+                    _args.Query = sel.Title;
                     _args.ForceQuery = true;
-                    ViewModelLocator.GeneralMain.CurrentSearchQuery = sel;
+                    ViewModelLocator.GeneralMain.CurrentSearchQuery = sel.Title;
                     SearchPageViewPager.Adapter = new SearchPagePagerAdapter(ChildFragmentManager, _args, out int ns2);
                     SearchPageTabStrip.SetViewPager(SearchPageViewPager);
                     SearchPageViewPager.SetCurrentItem(0, false);
@@ -94,14 +112,24 @@ namespace MALClient.Android.Fragments.SearchFragments
                     var res = await TenraiClient.GetPaginatedAsync($"anime?q={Uri.EscapeDataString(clean)}&sfw");
                     var items = res.Items;
                     if (gen != _dropdownGen || token.IsCancellationRequested) return;
-                    var titles = items.Select(el => el.TryGetProperty("title", out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "").Where(t => !string.IsNullOrEmpty(t)).Distinct().Take(5).ToList();
+                    var posters = items.Select(el =>
+                    {
+                        var title = el.TryGetProperty("title", out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : "";
+                        var id = el.TryGetProperty("mal_id", out var ip) && ip.ValueKind == JsonValueKind.Number ? ip.GetInt32() : 0;
+                        var img = "";
+                        if (el.TryGetProperty("images", out var imgs) && imgs.ValueKind == JsonValueKind.Object)
+                            if (imgs.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object)
+                                if (jpg.TryGetProperty("image_url", out var url) && url.ValueKind == JsonValueKind.String) img = url.GetString();
+                        var typ = el.TryGetProperty("type", out var tp) && tp.ValueKind == JsonValueKind.String ? tp.GetString()?.ToLower() : "anime";
+                        return new SuggestionPoster { Title = title, ImgUrl = img, MalId = id, Type = typ };
+                    }).Where(t => !string.IsNullOrEmpty(t.Title) && t.MalId > 0).GroupBy(t => t.MalId).Select(g => g.First()).Take(5).ToList();
                     Activity?.RunOnUiThread(() =>
                     {
                         if (gen != _dropdownGen) return;
                         _hintAdapter.Clear();
-                        foreach (var t in titles) _hintAdapter.Add(t);
+                        foreach (var t in posters) _hintAdapter.Add(t);
                         _hintAdapter.NotifyDataSetChanged();
-                        if (titles.Count > 0) _searchAutoComplete?.ShowDropDown(); else _searchAutoComplete?.DismissDropDown();
+                        if (posters.Count > 0) _searchAutoComplete?.ShowDropDown(); else _searchAutoComplete?.DismissDropDown();
                     });
                 }
                 catch { }
@@ -121,7 +149,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                 e.Handled = true;
                 SearchPageSearchView.ClearFocus();
             };
-            var se = SearchPageSearchView.FindViewById(Resource.Id.search_src_text) as EditText;
+            var se = SearchPageSearchView.FindViewById(Resource.Id.search_src_text) as global::Android.Widget.EditText;
             if (se != null) se.SetTextColor(Color.White);
         }
 

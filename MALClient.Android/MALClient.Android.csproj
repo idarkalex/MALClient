@@ -1259,6 +1259,9 @@
     <AndroidResource Include="Resources\layout\SuggestionItem.xml" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\layout\SuggestionPosterItem.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <AndroidResource Include="Resources\layout\TextInputDialog.xml" />
   </ItemGroup>
   <ItemGroup>

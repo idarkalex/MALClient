@@ -7,10 +7,10 @@
 
   <GridView
     android:id="@+id/CharacterSearchPageList"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:gravity="center"
+    android:columnWidth="170dp"
+    android:stretchMode="columnWidth"
     android:choiceMode="singleChoice"
     android:divider="@color/Transparent"
     android:dividerHeight="5dp"

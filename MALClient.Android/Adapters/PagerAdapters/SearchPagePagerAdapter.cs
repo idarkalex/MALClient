@@ -32,13 +32,13 @@ namespace MALClient.Android.PagerAdapters
                 {
                     _animeSearchPageFragment = new AnimeSearchPageFragment(true);
                     _mangaSearchPageFragment = new AnimeSearchPageFragment(false);
-                    targetPage = 0;
+                    targetPage = 1;
                 }
                 else
                 {
                     _animeSearchPageFragment = new AnimeSearchPageFragment(false);
                     _mangaSearchPageFragment = new AnimeSearchPageFragment(true);
-                    targetPage = 0;
+                    targetPage = 2;
                 }
 
                 if (arg.Everywhere)
@@ -55,12 +55,11 @@ namespace MALClient.Android.PagerAdapters
                 ViewModelLocator.CharacterSearch.Init(args);
                 _everywhereSearchPageFragment = SearchEverywherePageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
                 _characterSearchPageFragment = CharacterSearchPageFragment.BuildInstance(new SearchPageNavArgsBase(),true);
-                targetPage = 3;
+                targetPage = 0;
             }
 
-            
-
-            _everywhereSearchPageFragment = SearchEverywherePageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
+            if (_everywhereSearchPageFragment == null)
+                _everywhereSearchPageFragment = SearchEverywherePageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
             _studiosSearchPageFragment = AnimeTypeSearchFragment.Instance;
             _genresSearchPageFragment = AnimeTypeSearchFragment.Instance;
 
@@ -87,8 +86,7 @@ namespace MALClient.Android.PagerAdapters
             switch ((int)p0.Tag)
             {
                 case 0:
-                    _animeSearchPageFragment.NavigatedTo();
-                    _currentFragment = _animeSearchPageFragment;
+                    _currentFragment = _everywhereSearchPageFragment;
                     ShowSearchStuff();
                     ViewModelLocator.SearchEverywhereViewModel.Init(new SearchPageNavigationArgs { Query = ViewModelLocator.GeneralMain.CurrentSearchQuery });
                     break;

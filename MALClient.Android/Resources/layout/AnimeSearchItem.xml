@@ -107,15 +107,18 @@
             android:textSize="@dimen/FontSizeNormal" />
       </LinearLayout>
 
-      <FrameLayout
+      <LinearLayout
           android:id="@+id/AnimeSearchItemBtmSection"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content">
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:layout_marginTop="8dp">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginTop="15dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
           <TextView
@@ -142,7 +145,6 @@
             android:id="@+id/AnimeSearchItemGlobalScoreContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_gravity="end|center">
 
           <ImageView
@@ -164,7 +166,7 @@
               android:textStyle="bold"
               tools:text="7.87" />
         </FrameLayout>
-      </FrameLayout>
+      </LinearLayout>
 
 
     </LinearLayout>

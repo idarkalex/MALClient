@@ -151,6 +151,19 @@ namespace MALClient.Android.AoLibsCompat
                 i++;
             }
             _source = source;
+            HookCollectionChanged();
+        }
+
+        private void HookCollectionChanged()
+        {
+            if (_source is INotifyCollectionChanged notifyCollection)
+            {
+                notifyCollection.CollectionChanged += (s, e) =>
+                {
+                    if (HasObservers)
+                        NotifyDataSetChanged();
+                };
+            }
         }
 
         public override int ItemCount => _source?.Count ?? 0;
