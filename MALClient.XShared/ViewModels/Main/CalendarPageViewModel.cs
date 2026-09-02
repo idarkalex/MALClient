@@ -226,7 +226,8 @@ namespace MALClient.XShared.ViewModels.Main
                                  (volatileData.NextAirUtc.Value > nowUtc || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, nowUtc)) &&
                                  (volatileData.NextAirUtc.Value - nowUtc).TotalDays < 7)
                         {
-                            int day = (int) volatileData.NextAirUtc.Value.DayOfWeek;
+                            var jst = volatileData.NextAirUtc.Value.AddHours(9);
+                            int day = (int) jst.DayOfWeek;
                             if (day >= 0 && day <= 7)
                                 CalendarData[day].Items.Add(abstraction.ViewModel);
                         }
@@ -236,6 +237,24 @@ namespace MALClient.XShared.ViewModels.Main
                         //there are some numm ref crashes and I don't know really know where
                         // probably MAL returns some odd stuff and we cannot get details
                     }
+                }
+
+                // sort each day by next air time (most proximate first) - single datum NextAirUtc JST
+                for (int d = 0; d < 7; d++)
+                {
+                    CalendarData[d].Items.Sort((a, b) =>
+                    {
+                        DateTime? aNext = null, bNext = null;
+                        var aId = a.ParentAbstraction?.MalId ?? a.Id;
+                        var bId = b.ParentAbstraction?.MalId ?? b.Id;
+                        if (DataCache.TryRetrieveDataForId(aId, out var av) && av.NextAirUtc.HasValue) aNext = av.NextAirUtc;
+                        else if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(aId, DateTime.UtcNow, out var ad)) aNext = ad;
+                        if (DataCache.TryRetrieveDataForId(bId, out var bv) && bv.NextAirUtc.HasValue) bNext = bv.NextAirUtc;
+                        else if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(bId, DateTime.UtcNow, out var bd)) bNext = bd;
+                        if (!aNext.HasValue) return 1;
+                        if (!bNext.HasValue) return -1;
+                        return aNext.Value.CompareTo(bNext.Value);
+                    });
                 }
 
                 DiagnosticsReporter.Info("Calendar", $"calendar init: items assigned={CalendarData.Sum(p => p.Items.Count)}");
