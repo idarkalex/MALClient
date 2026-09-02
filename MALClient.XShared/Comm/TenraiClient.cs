@@ -27,6 +27,11 @@ namespace MALClient.XShared.Comm
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
+        private static readonly Dictionary<string, (JsonElement data, DateTime fetchedAt)> _dataCache = new Dictionary<string, (JsonElement, DateTime)>();
+        private static readonly Dictionary<string, Task<JsonElement>> _inFlight = new Dictionary<string, Task<JsonElement>>();
+        private static readonly object _cacheLock = new object();
+        private const int DataCacheTtlMinutes = 5;
+
         static TenraiClient()
         {
             Client.DefaultRequestHeaders.Add("User-Agent", "MALClient/3.0");
@@ -117,16 +122,30 @@ namespace MALClient.XShared.Comm
 
         public static async Task<JsonElement> GetDataAsync(string endpoint)
         {
+            lock (_cacheLock)
+            {
+                if (_dataCache.TryGetValue(endpoint, out var cached) && DateTime.UtcNow - cached.fetchedAt < TimeSpan.FromMinutes(DataCacheTtlMinutes))
+                    return cached.data.Clone();
+            }
             var json = await GetStringAsync(endpoint);
             using var doc = JsonDocument.Parse(json);
-            return doc.RootElement.GetProperty("data").Clone();
+            var result = doc.RootElement.GetProperty("data").Clone();
+            lock (_cacheLock) _dataCache[endpoint] = (result.Clone(), DateTime.UtcNow);
+            return result;
         }
 
         public static async Task<JsonElement> GetDataAsync(string endpoint, TimeSpan timeout)
         {
+            lock (_cacheLock)
+            {
+                if (_dataCache.TryGetValue(endpoint, out var cached) && DateTime.UtcNow - cached.fetchedAt < TimeSpan.FromMinutes(DataCacheTtlMinutes))
+                    return cached.data.Clone();
+            }
             var json = await GetStringAsync(endpoint, timeout);
             using var doc = JsonDocument.Parse(json);
-            return doc.RootElement.GetProperty("data").Clone();
+            var result = doc.RootElement.GetProperty("data").Clone();
+            lock (_cacheLock) _dataCache[endpoint] = (result.Clone(), DateTime.UtcNow);
+            return result;
         }
 
         private static async Task<string> GetStringAsync(string endpoint, TimeSpan timeout)
