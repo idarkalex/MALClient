@@ -35,19 +35,6 @@ namespace MALClient.XShared.Comm.Anime
             var requestedYear = _season.Year != 0 ? _season.Year : DateTime.UtcNow.Year;
             var requestedSeason = _season.Year != 0 ? SeasonEnumToString(_season.Season) : GetCurrentSeason();
 
-            try
-            {
-                var official = await GetSeasonalFromOfficialMalApi(requestedYear, requestedSeason);
-                if (official.Count != 0)
-                {
-                    DataCache.SaveSeasonalData(official, _season.Name);
-                    return official;
-                }
-            }
-            catch (Exception)
-            {
-            }
-
             const int maxAttempts = 3;
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {

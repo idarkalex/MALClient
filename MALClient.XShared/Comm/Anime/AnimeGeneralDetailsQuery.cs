@@ -24,19 +24,6 @@ namespace MALClient.XShared.Comm.Anime
 
             try
             {
-                output = await TryGetDetailsFromOfficialMalApi(id, animeMode);
-                if (output != null)
-                {
-                    await DataCache.SaveGeneralDetailsByStatus(id, output, animeMode);
-                    return output;
-                }
-            }
-            catch (Exception)
-            {
-            }
-
-            try
-            {
                 var data = await TenraiClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}/full");
 
                 output = BuildFromFullData(data, animeMode, int.Parse(id));
