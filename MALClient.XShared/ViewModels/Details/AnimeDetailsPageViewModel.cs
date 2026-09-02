@@ -161,6 +161,17 @@ namespace MALClient.XShared.ViewModels.Details
                 }
                 if (!string.IsNullOrEmpty(_timeTillNextAirCache))
                 {
+                    if (_animeItemReference is AnimeItemViewModel hv && DataCache.TryRetrieveDataForId(heroMalIdPeek, out var hvVd) && hvVd.NextAirUtc.HasValue)
+                    {
+                        var expectedHero = FormatAirCountdown(hvVd.NextAirUtc.Value, DateTime.UtcNow);
+                        if (_timeTillNextAirCache != expectedHero)
+                        {
+                            _timeTillNextAirCache = expectedHero;
+                            DiagnosticsReporter.Info("Details", $"hero malId={heroMalIdPeek} hit=field-stale corrected to '{expectedHero}'");
+                            RaisePropertyChanged(() => TimeTillNextAir);
+                            return _timeTillNextAirCache;
+                        }
+                    }
                     DiagnosticsReporter.Info("Details", $"hero malId={Id} hit=field result='{_timeTillNextAirCache}'");
                     return _timeTillNextAirCache;
                 }
@@ -168,8 +179,11 @@ namespace MALClient.XShared.ViewModels.Details
                 var now = DateTime.UtcNow;
                 string result = "";
                 var malId = (_animeItemReference as AnimeItemViewModel)?.ParentAbstraction?.MalId ?? Id;
-
-                if (string.IsNullOrEmpty(result) &&
+                if (_animeItemReference is AnimeItemViewModel syncVm && !string.IsNullOrEmpty(syncVm.TimeTillNextAirCache))
+                {
+                    result = syncVm.TimeTillNextAirCache;
+                }
+                else if (string.IsNullOrEmpty(result) &&
                     DataCache.TryRetrieveDataForId(malId, out var volatileData) &&
                     volatileData.NextAirUtc.HasValue &&
                     (volatileData.NextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, now)))

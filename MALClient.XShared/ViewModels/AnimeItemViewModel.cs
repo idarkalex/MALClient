@@ -247,8 +247,8 @@ namespace MALClient.XShared.ViewModels
         {
             var brush = AirDayBrush;
             RaisePropertyChanged(() => AirDayTillBind);
-
-            if (string.IsNullOrEmpty(_airDayTillBind) && (Airing || brush == true))
+            var hasCountdown = !string.IsNullOrEmpty(TimeTillNextAirCache);
+            if (hasCountdown || string.IsNullOrEmpty(_airDayTillBind) && (Airing || brush == true))
             {
                 RefreshTimeTillNextAirInBackground();
             }
@@ -854,7 +854,20 @@ namespace MALClient.XShared.ViewModels
                     }
                     return "";
                 }
-                if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                var nowPeek = DateTime.UtcNow;
+                if (!string.IsNullOrEmpty(_timeTillNextAirCache) && DataCache.TryRetrieveDataForId(malIdPeek, out var vdCheck) && vdCheck.NextAirUtc.HasValue)
+                {
+                    var expected = AirTimeUtils.FormatAirCountdown(vdCheck.NextAirUtc.Value, nowPeek);
+                    if (_timeTillNextAirCache != expected)
+                    {
+                        _timeTillNextAirCache = expected;
+                        RaisePropertyChanged(() => TimeTillNextAirCache);
+                        RaisePropertyChanged(() => AirDayTillBind);
+                        return _timeTillNextAirCache;
+                    }
+                    return _timeTillNextAirCache;
+                }
+                if (!string.IsNullOrEmpty(_timeTillNextAirCache) && !DataCache.TryRetrieveDataForId(malIdPeek, out _))
                     return _timeTillNextAirCache;
 
                 var now = DateTime.UtcNow;

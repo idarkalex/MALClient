@@ -184,9 +184,17 @@ namespace MALClient.XShared.Utils
                 return TimeSpan.Zero;
             var remaining = nextAirUtc.Value - nowUtc;
             if (remaining.TotalSeconds > 0 && remaining.TotalDays >= 1)
-                return TimeSpan.FromHours(24);
+            {
+                var days = (int)remaining.TotalDays;
+                var toNextDay = remaining - TimeSpan.FromDays(days) + TimeSpan.FromMinutes(1);
+                return toNextDay;
+            }
             if (remaining.TotalSeconds > 0 && remaining.TotalHours >= 1)
-                return TimeSpan.FromHours(1);
+            {
+                var hours = (int)remaining.TotalHours;
+                var toNextHour = remaining - TimeSpan.FromHours(hours) + TimeSpan.FromMinutes(1);
+                return toNextHour;
+            }
             if (remaining.TotalSeconds > 0)
                 return TimeSpan.FromMinutes(15);
             if (IsInAiringWindow(nextAirUtc.Value, nowUtc))
