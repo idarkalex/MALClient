@@ -663,6 +663,7 @@ namespace MALClient.XShared.ViewModels.Main
             //});
             //If we have items then we should hide EmptyNotice       
             EmptyNoticeVisibility = _animeItemsSet.Count == 0;
+            DiagnosticsReporter.Info("AnimeList", $"refresh: mode={WorkMode} status={status} set={_animeItemsSet.Count} empty={EmptyNoticeVisibility} query='{query}'");
 
             UpdatePageSetup();
             UpdateUpperStatus();
@@ -1426,6 +1427,7 @@ namespace MALClient.XShared.ViewModels.Main
             }
 
             _fetching = false;
+            DiagnosticsReporter.Info("AnimeList", $"fetch done: mode={requestedMode} authItems={_animeLibraryDataStorage.AllLoadedAuthAnimeItems.Count} allItems={_animeLibraryDataStorage.AllLoadedAnimeItemAbstractions.Count}");
             if (WorkMode != requestedMode)
                 return; // manga or anime is loaded top manga can proceed loading something else
 

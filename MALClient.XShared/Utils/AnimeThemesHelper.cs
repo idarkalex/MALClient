@@ -37,6 +37,11 @@ namespace MALClient.XShared.Utils
                     DiagnosticsReporter.Warn("AnimeThemes", $"rate limited (429), backoff 1min: {ex.Message}");
                     return null;
                 }
+                if (ex.Message.Contains("404") || ex.Message.Contains("Not Found"))
+                {
+                    // 404 is expected for slug guesses that don't exist - silent return
+                    return null;
+                }
                 throw;
             }
         }
@@ -277,6 +282,8 @@ namespace MALClient.XShared.Utils
             var url = $"https://api.animethemes.moe/search?q={query}";
             AppendThemeDebug($"GET {url}");
             var json = await GetStringWithBackoffAsync(url);
+            if (string.IsNullOrEmpty(json))
+                return new List<ThemeVideo>(); // 404 or rate limited
             AppendThemeDebug($"  resp len={json?.Length ?? 0} head={(json?.Length > 200 ? json.Substring(0, 200) : json)}");
             var response = JsonConvert.DeserializeObject<SearchResponse>(json);
 
@@ -356,6 +363,8 @@ namespace MALClient.XShared.Utils
             {
                 AppendThemeDebug($"GET {keyedUrl}");
                 var keyedJson = await GetStringWithBackoffAsync(keyedUrl);
+                if (string.IsNullOrEmpty(keyedJson))
+                    return new List<ThemeVideo>(); // 404 or rate limited - silent fallback
                 AppendThemeDebug($"  resp len={keyedJson?.Length ?? 0} head={(keyedJson?.Length > 160 ? keyedJson.Substring(0, 160) : keyedJson)}");
                 var keyed = JsonConvert.DeserializeObject<AnimeKeyedApiResponse>(keyedJson);
                 var videos = BuildVideos(keyed?.anime);
@@ -395,6 +404,8 @@ namespace MALClient.XShared.Utils
             var url = $"https://api.animethemes.moe/anime?filter[name]={query}&include=animethemes.animethemeentries.videos,animethemes.song&page[size]=8{buster}";
             AppendThemeDebug($"GET {url}");
             var json = await GetStringWithBackoffAsync(url);
+            if (string.IsNullOrEmpty(json))
+                return new List<ThemeVideo>(); // 404 or rate limited
             AppendThemeDebug($"  resp len={json?.Length ?? 0} head={(json?.Length > 160 ? json.Substring(0, 160) : json)}");
             var response = JsonConvert.DeserializeObject<AnimeApiResponse>(json);
             AppendThemeDebug($"  parse anime={response?.anime?.Count ?? 0} exactThemes={(response?.anime?.FirstOrDefault()?.animethemes?.Count) ?? 0}");
@@ -426,6 +437,8 @@ namespace MALClient.XShared.Utils
                     var keyedUrl = keyedBase + "&cb=" + Guid.NewGuid().ToString("N");
                     AppendThemeDebug($"GET {keyedUrl}");
                     var keyedJson = await GetStringWithBackoffAsync(keyedUrl);
+                    if (string.IsNullOrEmpty(keyedJson))
+                        continue; // 404 or rate limited, try next attempt
                     AppendThemeDebug($"  resp len={keyedJson?.Length ?? 0} head={(keyedJson?.Length > 160 ? keyedJson.Substring(0, 160) : keyedJson)}");
                     var keyed = JsonConvert.DeserializeObject<AnimeKeyedApiResponse>(keyedJson);
                     videos = BuildVideos(keyed?.anime);

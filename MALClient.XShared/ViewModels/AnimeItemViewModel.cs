@@ -298,16 +298,19 @@ namespace MALClient.XShared.ViewModels
         private void ApplyNextAir(DateTime? nextAirUtc)
         {
             var now = DateTime.UtcNow;
+            var malId = ParentAbstraction?.MalId ?? Id;
             if (nextAirUtc.HasValue &&
                 (nextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(nextAirUtc.Value, now)))
             {
-                DataCache.UpdateVolatileDataWithNextAir(ParentAbstraction?.MalId ?? Id, nextAirUtc.Value);
-                TimeTillNextAirCache = AirTimeUtils.FormatAirCountdown(nextAirUtc.Value, now);
+                DataCache.UpdateVolatileDataWithNextAir(malId, nextAirUtc.Value);
+                var fmt = AirTimeUtils.FormatAirCountdown(nextAirUtc.Value, now);
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malId} ApplyNextAir persisted nextAirUtc={nextAirUtc:O} fmt={fmt} inWindow={AirTimeUtils.IsInAiringWindow(nextAirUtc.Value, now)}");
+                TimeTillNextAirCache = fmt;
             }
             else
             {
-                var malId = ParentAbstraction?.MalId ?? Id;
                 DataCache.RegisterVolatileDataAiringTimeFetchFailure(malId);
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malId} ApplyNextAir cleared (nextAirUtc={(nextAirUtc.HasValue ? nextAirUtc.Value.ToString("O") : "null")})");
                 TimeTillNextAirCache = "";
             }
         }
@@ -882,18 +885,37 @@ namespace MALClient.XShared.ViewModels
         }
         public async Task<DateTime?> GetTimeTillNextAirAsync(TimeZoneInfo zoneInfo)
         {
-            if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(Id, DateTime.UtcNow, out DateTime airDate))
+            var malIdLog = ParentAbstraction?.MalId ?? Id;
+            var nowLog = DateTime.UtcNow;
+            if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(Id, nowLog, out DateTime airDate))
             {
-                if (airDate > DateTime.UtcNow || AirTimeUtils.IsInAiringWindow(airDate, DateTime.UtcNow))
+                if (airDate > nowLog || AirTimeUtils.IsInAiringWindow(airDate, nowLog))
+                {
+                    MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=provider nextAirUtc={airDate:O} fmt={AirTimeUtils.FormatAirCountdown(airDate, nowLog)}");
                     return airDate;
+                }
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=provider nextAirUtc={airDate:O} expired(>1h) -> null");
                 return null;
             }
 
             var fromEpisodes = await GetEpisodesStalenessFallbackAsync();
-            if (fromEpisodes.HasValue && await IsCurrentlyAiringAsync())
-                return fromEpisodes;
+            if (fromEpisodes.HasValue)
+            {
+                var isAiring = await IsCurrentlyAiringAsync();
+                if (isAiring)
+                {
+                    MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=episodes nextAirUtc={fromEpisodes:O} fmt={AirTimeUtils.FormatAirCountdown(fromEpisodes.Value, nowLog)}");
+                    return fromEpisodes;
+                }
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=episodes nextAirUtc={fromEpisodes:O} notCurrentlyAiring -> fallback");
+            }
 
-            return await GetBroadcastFallbackAsync();
+            var broadcast = await GetBroadcastFallbackAsync();
+            if (broadcast.HasValue)
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=broadcast nextAirUtc={broadcast:O} fmt={AirTimeUtils.FormatAirCountdown(broadcast.Value, nowLog)}");
+            else
+                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} branch=none -> null");
+            return broadcast;
         }
 
         private async Task<bool> IsCurrentlyAiringAsync()

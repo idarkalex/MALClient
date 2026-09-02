@@ -149,7 +149,10 @@ namespace MALClient.XShared.ViewModels.Details
             get
             {
                 if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                {
+                    DiagnosticsReporter.Info("Details", $"hero malId={Id} hit=field result='{_timeTillNextAirCache}'");
                     return _timeTillNextAirCache;
+                }
 
                 var now = DateTime.UtcNow;
                 string result = "";
@@ -171,21 +174,41 @@ namespace MALClient.XShared.ViewModels.Details
                     result = FormatAirCountdown(airDate, now);
                 }
 
+                                string hit = "";
                 if (string.IsNullOrEmpty(result) && AirTimeUtils.IsCurrentlyAiringStatus(Status))
                 {
                     var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
                     if (nextFromEpisodes.HasValue)
+                    {
                         result = FormatAirCountdown(nextFromEpisodes.Value, now);
+                        hit = $"episodes nextAirUtc={nextFromEpisodes:O}";
+                    }
 
                     if (string.IsNullOrEmpty(result))
                     {
                         var nextAirFromBroadcast = ComputeNextAirDate(_broadcast, now);
                         if (nextAirFromBroadcast.HasValue)
+                        {
                             result = FormatAirCountdown(nextAirFromBroadcast.Value, now);
+                            hit = $"broadcast nextAirUtc={nextAirFromBroadcast:O} broadcast='{_broadcast}'";
+                        }
                     }
                 }
 
+                if (string.IsNullOrEmpty(result))
+                    hit = "miss";
+                else if (string.IsNullOrEmpty(hit))
+                {
+                    if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                        hit = "field";
+                    else if (DataCache.TryRetrieveDataForId(malId, out var vd2) && vd2.NextAirUtc.HasValue)
+                        hit = $"volatile nextAirUtc={vd2.NextAirUtc:O}";
+                    else
+                        hit = "provider";
+                }
+
                 _timeTillNextAirCache = result;
+                DiagnosticsReporter.Info("Details", $"hero malId={malId} hit={hit} status='{Status}' result='{result}' eps={Episodes?.Count ?? 0}");
 
                 if (_animeItemReference is AnimeItemViewModel itemVm)
                     itemVm.RefreshTimeTillNextAirInBackground();
@@ -382,9 +405,16 @@ namespace MALClient.XShared.ViewModels.Details
                 RaisePropertyChanged(() => LastAired);
             }
 
+            var heroSyncBefore = _timeTillNextAirCache;
             //basic init assignment
             _animeItemReference = param.AnimeItem;
             EnsureAirItemSubscription();
+            // force sync from itemVm (already seeded from provider/episodes) instead of computing stale fallback
+            if (_animeItemReference is AnimeItemViewModel itemVm)
+            {
+                _timeTillNextAirCache = itemVm.TimeTillNextAirCache;
+            }
+            DiagnosticsReporter.Info("Details", $"nav malId={param.Id} title={param.Title} sameEntry={sameEntry} heroCacheBefore='{heroSyncBefore}' heroCacheAfter='{_timeTillNextAirCache}' itemVmCache='{(_animeItemReference as AnimeItemViewModel)?.TimeTillNextAirCache}'");
             RaisePropertyChanged(() => TimeTillNextAir);
             AnimeMode = param.AnimeMode;
             Id = param.Id;
