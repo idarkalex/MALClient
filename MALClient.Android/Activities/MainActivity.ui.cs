@@ -12,7 +12,6 @@ using Android.Runtime;
 using Android.Support.Design.Widget;
 using Android.Support.V4.View;
 using Android.Support.V4.Widget;
-using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
 
@@ -123,28 +122,9 @@ namespace MALClient.Android.Activities
             MainPageCopyVideoLinkButton.Click += MainPageCopyVideoLinkButtonOnClick;
             MainPageVideoView.Prepared += MainPageVideoViewOnPrepared;
 
-            // search bar fixed always visible
-            MainPageSearchView.Iconified = false;
-            MainPageSearchView.ClearFocus();
-            Bindings.Add(this.SetBinding(() => ViewModel.CurrentMainPage).WhenSourceChanges(() =>
-            {
-                if (ViewModel.CurrentMainPage == PageIndex.PageAnimeList ||
-                    ViewModel.CurrentMainPage == PageIndex.PageMangaList)
-                    MainPageSearchView.QueryHint = "Search in current list";
-                else if (ViewModel.CurrentMainPage == PageIndex.PageSearch)
-                    MainPageSearchView.QueryHint = "Search in whole database";
-                else
-                    MainPageSearchView.QueryHint = "";
-            }));
-            MainPageSearchView.QueryTextChange += MainPageSearchViewOnQueryTextChange;
-            MainPageSearchView.QueryTextSubmit += MainPageSearchViewOnQueryTextSubmit;
-            MainPageSearchView.Visibility = ViewStates.Visible;
-            var searchEdit = MainPageSearchView.FindViewById(Resource.Id.search_src_text) as EditText;
-            if (searchEdit != null) searchEdit.SetTextColor(Color.White);
-            MainPageHamburgerButton.Click += MainPageHamburgerButtonOnClick;
-
-            BuildDrawer();
-            _drawer.OnDrawerItemClickListener = new HamburgerItemClickListener(OnHamburgerItemClick);
+            // Drawer removed permanently - MorePage is the hamburger replacement
+            //BuildDrawer();
+            //_drawer.OnDrawerItemClickListener = new HamburgerItemClickListener(OnHamburgerItemClick);
 
             _lastBottomNavSelectedItemId = MainPageBottomNav.SelectedItemId;
             StartBottomNavPolling();
@@ -153,27 +133,6 @@ namespace MALClient.Android.Activities
             MainPageCloseVideoButton.SetZ(0);
             MainPageCopyVideoLinkButton.SetZ(0);
             ShareFloatingActionButton.Hide();
-        }
-
-        private void MainPageSearchViewOnSuggestionClick(object sender, global::Android.Support.V7.Widget.SearchView.SuggestionClickEventArgs e)
-        {
-            MainPageSearchView.SetQuery(ViewModel.CurrentHintSet[e.Position], true);
-            MainPageSearchView.ClearFocus();
-        }
-        private void MainPageSearchViewOnQueryTextSubmit(object sender, global::Android.Support.V7.Widget.SearchView.QueryTextSubmitEventArgs e)
-        {
-            ViewModel.CurrentSearchQuery = MainPageSearchView.Query?.ToString() ?? "";
-            ViewModel.OnSearchInputSubmit();
-            MainPageSearchView.ClearFocus();
-            e.Handled = true;
-        }
-        private void MainPageSearchViewOnQueryTextChange(object sender, global::Android.Support.V7.Widget.SearchView.QueryTextChangeEventArgs e)
-        {
-            ViewModel.CurrentSearchQuery = e.NewText;
-        }
-        private void MainPageHamburgerButtonOnClick(object sender, EventArgs e)
-        {
-            _drawer?.OpenDrawer();
         }
 
         private void ShareManagerOnTimerStateChanged(object sender, bool e)
@@ -534,11 +493,6 @@ namespace MALClient.Android.Activities
         private RelativeLayout _mainPageVideoViewContainer;
         private LinearLayout _mainPageRoot;
         private BottomNavigationView _mainPageBottomNav;
-        private global::Android.Support.V7.Widget.SearchView _mainPageSearchView;
-        private ImageButton _mainPageHamburgerButton;
-        private LinearLayout _mainPageStatusContainer;
-        private TextView _mainPageCurrentStatus;
-        private TextView _mainPageCurrentSatusSubtitle;
 
         public FrameLayout MainContentFrame => GetView(ref _mainContentFrame, Resource.Id.MainContentFrame);
         public AdView MainPageAdView => GetView(ref _mainPageAdView, Resource.Id.MainPageAdView);
@@ -548,11 +502,6 @@ namespace MALClient.Android.Activities
         public ImageButton MainPageCloseVideoButton => GetView(ref _mainPageCloseVideoButton, Resource.Id.MainPageCloseVideoButton);
         public RelativeLayout MainPageVideoViewContainer => GetView(ref _mainPageVideoViewContainer, Resource.Id.MainPageVideoViewContainer);
         public LinearLayout MainPageRoot => GetView(ref _mainPageRoot, Resource.Id.MainPageRoot);
-        public global::Android.Support.V7.Widget.SearchView MainPageSearchView => GetView(ref _mainPageSearchView, Resource.Id.MainPageSearchView);
-        public ImageButton MainPageHamburgerButton => GetView(ref _mainPageHamburgerButton, Resource.Id.MainPageHamburgerButton);
-        public LinearLayout MainPageStatusContainer => GetView(ref _mainPageStatusContainer, Resource.Id.MainPageStatusContainer);
-        public TextView MainPageCurrentStatus => GetView(ref _mainPageCurrentStatus, Resource.Id.MainPageCurrentStatus);
-        public TextView MainPageCurrentSatusSubtitle => GetView(ref _mainPageCurrentSatusSubtitle, Resource.Id.MainPageCurrentSatusSubtitle);
 
         public BottomNavigationView MainPageBottomNav => GetView(ref _mainPageBottomNav, Resource.Id.MainPageBottomNav);
 

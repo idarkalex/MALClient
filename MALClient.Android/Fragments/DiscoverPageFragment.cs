@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -79,6 +80,19 @@ namespace MALClient.Android.Fragments
             DiscoverUpcomingHeader.Text = $"Upcoming - {GetNextSeason().Name}";
             DiscoverPageRefresh.ScrollingView = DiscoverPageScroll;
             DiscoverPageRefresh.Refresh += DiscoverPageRefreshOnRefresh;
+            DiscoverPageSearchView.QueryTextSubmit += (s, e) =>
+            {
+                var q = DiscoverPageSearchView.Query?.ToString()?.Trim();
+                if (!string.IsNullOrWhiteSpace(q) && q.Length >= 2)
+                    ViewModelLocator.GeneralMain.Navigate(PageIndex.PageSearch, new SearchPageNavigationArgs { Query = q, ForceQuery = true });
+                e.Handled = true;
+            };
+            DiscoverPageSearchView.QueryTextChange += (s, e) =>
+            {
+                // keep hint updated, no direct search here
+            };
+            var se = DiscoverPageSearchView.FindViewById(Resource.Id.search_src_text) as EditText;
+            if (se != null) se.SetTextColor(Color.White);
             if (!Credentials.Authenticated)
             {
                 DiscoverLoginPrompt.Visibility = ViewStates.Visible;
@@ -572,8 +586,10 @@ namespace MALClient.Android.Fragments
         private LinearLayout _discoverSuggestionsRow;
         private LinearLayout _discoverUpcomingRow;
         private LinearLayout _discoverFeaturedRow;
+        private global::Android.Support.V7.Widget.SearchView _discoverPageSearchView;
 
         public ScrollView DiscoverPageScroll => GetView(ref _discoverPageScroll, Resource.Id.DiscoverPageScroll);
+        public global::Android.Support.V7.Widget.SearchView DiscoverPageSearchView => GetView(ref _discoverPageSearchView, Resource.Id.DiscoverPageSearchView);
         public ScrollableSwipeToRefreshLayout DiscoverPageRefresh => GetView(ref _discoverPageRefresh, Resource.Id.DiscoverPageRefresh);
         public ProgressBar DiscoverPageLoadingSpinner => GetView(ref _discoverPageLoadingSpinner, Resource.Id.DiscoverPageLoadingSpinner);
         public TextView DiscoverLoginPrompt => GetView(ref _discoverLoginPrompt, Resource.Id.DiscoverLoginPrompt);

@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/DiscoverPageRefresh"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?BrushDeepBackground">
+
+  <android.support.v7.widget.SearchView
+      android:id="@+id/DiscoverPageSearchView"
+      android:layout_width="match_parent"
+      android:layout_height="48dp"
+      android:background="?BrushAppBarUpper"
+      app:iconifiedByDefault="false"
+      android:queryHint="Search anime, manga, characters..."
+      android:elevation="4dp" />
+
+<MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout
+    android:id="@+id/DiscoverPageRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
     android:background="?BrushDeepBackground">
 
   <ScrollView
@@ -524,4 +540,5 @@
   </LinearLayout>
   </ScrollView>
 </MALClient.Android.UserControls.ScrollableSwipeToRefreshLayout>
+</LinearLayout>
 
