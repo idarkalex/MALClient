@@ -21,15 +21,15 @@
 
     <FrameLayout
         android:layout_width="75dp"
-        android:layout_height="wrap_content"
+        android:layout_height="124dp"
         android:background="?BrushAnimeItemInnerBackground"
         android:elevation="4dp">
 
       <ImageView
           android:id="@+id/Image"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:adjustViewBounds="true"
+          android:layout_height="match_parent"
+          android:scaleType="fitCenter"
           tools:src="@drawable/icon_search" />
     </FrameLayout>
 

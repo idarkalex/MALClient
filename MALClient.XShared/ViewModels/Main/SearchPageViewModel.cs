@@ -24,6 +24,7 @@ namespace MALClient.XShared.ViewModels.Main
         private bool _isFirstVisitGridVisible = true;
         private bool _queryHandler;
         private int _queryGeneration;
+        private string _lastLoadedQuery;
         public SearchPageNavigationArgs PrevArgs;
         public string PrevQuery;
 
@@ -78,7 +79,19 @@ namespace MALClient.XShared.ViewModels.Main
             if (!string.IsNullOrWhiteSpace(args.Query) &&
                 (args.DisplayMode == SearchPageDisplayModes.Main || args.ForceQuery))
             {
-                if (args.ForceQuery) PrevQuery = null;
+                if (args.ForceQuery)
+                {
+                    PrevQuery = null;
+                    if (_lastLoadedQuery == args.Query && (_allAnimeSearchItemViewModels.Count > 0 || _allMangaSearchItemViewModels.Count > 0))
+                    {
+                        // both tabs already loaded for this query -> instant tab switch, no refetch
+                        IsFirstVisitGridVisible = false;
+                        EmptyNoticeVisibility = false;
+                        ViewModelLocator.GeneralMain.CurrentSearchQuery = args.Query;
+                        InternalQuery = args.Query;
+                        return;
+                    }
+                }
                 ViewModelLocator.GeneralMain.PopulateSearchFilters(_filters);
                 SubmitQuery(args.Query);
                 if (args.ForceQuery)
@@ -118,52 +131,36 @@ namespace MALClient.XShared.ViewModels.Main
             Loading = true;
             EmptyNoticeVisibility = false;
             CurrentSearchItems.Clear();
-            var data = new List<AnimeGeneralDetailsData>();
             _filters.Clear();
             _allAnimeSearchItemViewModels = new List<AnimeSearchItemViewModel>();
-            if (_animeSearch)
-            {
-                await
-                    Task.Run(
-                        async () =>
-                            data = await new AnimeSearchQuery(Utilities.CleanAnimeTitle(query)).GetSearchResults());
-                if (generation != _queryGeneration)
-                    return;
-                try
-                {
-                    foreach (var item in data)
-                    {
-                        var type = item.Type;
-                        _allAnimeSearchItemViewModels.Add(new AnimeSearchItemViewModel(item, ViewModelLocator.AnimeList));
-                        if (!_filters.Contains(type))
-                            _filters.Add(type);
-                    }
-                }
-                catch (Exception) //if MAL returns nothing it returns unparsable xml ... 
-                {
-                    //will display empty notice
-                }
-            }
-            else // manga search
-            {
-                try
-                {
-                    foreach (var item in await new MangaSearchQuery(Utilities.CleanAnimeTitle(query))
-                        .GetSearchResults())
-                    {
-                        _allAnimeSearchItemViewModels.Add(new AnimeSearchItemViewModel(item, ViewModelLocator.AnimeList, false));
-                        if (!_filters.Contains(item.Type))
-                            _filters.Add(item.Type);
-                    }
-                }
-                catch (Exception) //if MAL returns nothing it returns unparsable xml ... 
-                {
-                    //will display empty notice
-                }
-            }
+            _allMangaSearchItemViewModels = new List<AnimeSearchItemViewModel>();
+
+            var cleanQuery = Utilities.CleanAnimeTitle(query);
+            var animeTask = Task.Run(async () => await new AnimeSearchQuery(cleanQuery).GetSearchResults());
+            var mangaTask = Task.Run(async () => await new MangaSearchQuery(cleanQuery).GetSearchResults());
+
+            var animeData = new List<AnimeGeneralDetailsData>();
+            var mangaData = new List<AnimeGeneralDetailsData>();
+            try { animeData = await animeTask; } catch (Exception) { }
+            try { mangaData = await mangaTask; } catch (Exception) { }
 
             if (generation != _queryGeneration)
                 return;
+
+            foreach (var item in animeData)
+            {
+                _allAnimeSearchItemViewModels.Add(new AnimeSearchItemViewModel(item, ViewModelLocator.AnimeList));
+                if (!_filters.Contains(item.Type))
+                    _filters.Add(item.Type);
+            }
+            foreach (var item in mangaData)
+            {
+                _allMangaSearchItemViewModels.Add(new AnimeSearchItemViewModel(item, ViewModelLocator.AnimeList, false));
+                if (!_filters.Contains(item.Type))
+                    _filters.Add(item.Type);
+            }
+
+            _lastLoadedQuery = query;
 
             ViewModelLocator.GeneralMain.PopulateSearchFilters(_filters);
             PopulateItems();
@@ -176,9 +173,10 @@ namespace MALClient.XShared.ViewModels.Main
         private void PopulateItems()
         {
             CurrentSearchItems.Clear();
+            var source = _animeSearch ? _allAnimeSearchItemViewModels : _allMangaSearchItemViewModels;
             foreach (
                 var item in
-                _allAnimeSearchItemViewModels.Where(
+                source.Where(
                     item =>
                         string.IsNullOrWhiteSpace(_currrentFilter) ||
                         string.Equals(_currrentFilter, item.Type, StringComparison.CurrentCultureIgnoreCase)))
@@ -200,6 +198,7 @@ namespace MALClient.XShared.ViewModels.Main
         #region Properties
 
         private List<AnimeSearchItemViewModel> _allAnimeSearchItemViewModels;
+        private List<AnimeSearchItemViewModel> _allMangaSearchItemViewModels = new List<AnimeSearchItemViewModel>();
 
         public ObservableCollection<AnimeSearchItemViewModel> AnimeSearchItemViewModels { get; } =
             new ObservableCollection<AnimeSearchItemViewModel>();

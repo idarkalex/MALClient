@@ -149,6 +149,7 @@ namespace MALClient.Android.Fragments.SearchFragments
             private readonly ImageViewAsync _posterImage;
             private readonly TextView _posterTitle;
             private readonly TextView _posterScore;
+            private readonly TextView _posterType;
             private AnimeSearchItemViewModel _currentItem;
 
             public PosterHolder(View view) : base(view)
@@ -156,6 +157,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                 _posterImage = view.FindViewById<ImageViewAsync>(Resource.Id.SearchPosterImage);
                 _posterTitle = view.FindViewById<TextView>(Resource.Id.SearchPosterTitle);
                 _posterScore = view.FindViewById<TextView>(Resource.Id.SearchPosterScore);
+                _posterType = view.FindViewById<TextView>(Resource.Id.SearchPosterType);
                 ItemView.Click += (s, e) => _currentItem?.NavigateDetails();
             }
 
@@ -172,6 +174,15 @@ namespace MALClient.Android.Fragments.SearchFragments
                 else
                 {
                     _posterScore.Visibility = ViewStates.Gone;
+                }
+                if (!string.IsNullOrWhiteSpace(item.Type))
+                {
+                    _posterType.Text = item.Type;
+                    _posterType.Visibility = ViewStates.Visible;
+                }
+                else
+                {
+                    _posterType.Visibility = ViewStates.Gone;
                 }
             }
         }
