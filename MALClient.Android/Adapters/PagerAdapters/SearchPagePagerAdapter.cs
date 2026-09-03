@@ -142,17 +142,17 @@ namespace MALClient.Android.PagerAdapters
             switch (p1)
             {
                 case 0:
-                    return _everywhereSearchPageFragment;
+                    return _everywhereSearchPageFragment ?? SearchEverywherePageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
                 case 1:
-                    return _animeSearchPageFragment;
+                    return _animeSearchPageFragment ?? new AnimeSearchPageFragment(true);
                 case 2:
-                    return  _mangaSearchPageFragment;
+                    return  _mangaSearchPageFragment ?? new AnimeSearchPageFragment(false);
                 case 3:
-                    return _characterSearchPageFragment;
+                    return _characterSearchPageFragment ?? CharacterSearchPageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
                 case 4:
-                    return _genresSearchPageFragment;
+                    return _genresSearchPageFragment ?? AnimeTypeSearchFragment.Instance;
                 case 5:
-                    return _studiosSearchPageFragment;
+                    return _studiosSearchPageFragment ?? AnimeTypeSearchFragment.Instance;
             }
             throw new ArgumentException();
         }
