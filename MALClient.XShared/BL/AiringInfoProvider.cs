@@ -143,6 +143,7 @@ namespace MALClient.XShared.BL
         public bool TryGetCurrentEpisode(int id, out int episode, DateTime? forDay = null)
         {
             episode = 0;
+            if (_lookupDictionary == null) return false;
             var currentTimestamp = Utilities.ConvertToUnixTimestamp(DateTime.UtcNow);
             var data = _lookupDictionary[id];
             if (data == null)
@@ -178,6 +179,7 @@ namespace MALClient.XShared.BL
 
         public bool TryGetLastEpisode(int id, out int ep)
         {
+            if (_lookupDictionary == null) { ep = 0; return false; }
             var data = _lookupDictionary[id];
             if (data?.Episodes == null || !data.Episodes.Any())
             {
@@ -207,6 +209,7 @@ namespace MALClient.XShared.BL
         public bool TryGetNextAirDate(int id, DateTime forDay, out DateTime date)
         {
             date = DateTime.MinValue;
+            if (_lookupDictionary == null) return false;
 
             var data = _lookupDictionary[id];
             if (data == null)
@@ -245,6 +248,7 @@ namespace MALClient.XShared.BL
         public bool TryGetAiringDay(int id, out DayOfWeek day)
         {
             day = DayOfWeek.Monday;
+            if (_lookupDictionary == null) return false;
             var data = _lookupDictionary[id];
             if (data == null || !data.Episodes.Any())
                 return false;
@@ -268,11 +272,13 @@ namespace MALClient.XShared.BL
 
         public bool HasAiringEntry(int id)
         {
+            if (_lookupDictionary == null) return false;
             return _lookupDictionary.ContainsKey(id);
         }
 
         public bool TryGetEntry(int id, out AiringData entry)
         {
+            if (_lookupDictionary == null) { entry = null; return false; }
             entry = _lookupDictionary[id];
             return entry != null;
         }

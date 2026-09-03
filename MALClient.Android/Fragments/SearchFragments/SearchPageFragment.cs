@@ -142,6 +142,17 @@ namespace MALClient.Android.Fragments.SearchFragments
                     });
                 }
                 catch { }
+                // live search in vivo >2 (everywhere default)
+                try
+                {
+                    if (q.Length >= 2)
+                    {
+                        _args.Query = q;
+                        _args.ForceQuery = true;
+                        ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { Query = q, ForceQuery = true, Anime = true });
+                        ViewModelLocator.SearchEverywhereViewModel.Init(new SearchPageNavigationArgs { Query = q, ForceQuery = true });
+                    }
+                } catch { }
             };
             SearchPageSearchView.QueryTextSubmit += (s, e) =>
             {
