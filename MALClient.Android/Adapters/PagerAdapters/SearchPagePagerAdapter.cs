@@ -27,7 +27,6 @@ namespace MALClient.Android.PagerAdapters
             var arg = args as SearchPageNavigationArgs;
             if (arg != null)
             {
-                ViewModelLocator.SearchPage.Init(arg);
                 if (string.IsNullOrWhiteSpace(arg.Query))
                     targetPage = 0;
                 else if (arg.Anime)
@@ -50,8 +49,8 @@ namespace MALClient.Android.PagerAdapters
             }
             else
             {
-                _animeSearchPageFragment = new AnimeSearchPageFragment(false);
-                _mangaSearchPageFragment = new AnimeSearchPageFragment(false);
+                _animeSearchPageFragment = new AnimeSearchPageFragment(true);
+                _mangaSearchPageFragment = new AnimeSearchPageFragment(true);
 
                 ViewModelLocator.CharacterSearch.Init(args);
                 _everywhereSearchPageFragment = SearchEverywherePageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
@@ -65,6 +64,13 @@ namespace MALClient.Android.PagerAdapters
             _genresSearchPageFragment = AnimeTypeSearchFragment.Instance;
 
             startPage = targetPage;
+        }
+
+        public void TriggerSearch(SearchPageNavigationArgs args)
+        {
+            try { ViewModelLocator.SearchPage?.Init(args); } catch { }
+            try { ViewModelLocator.SearchEverywhereViewModel?.Init(new SearchPageNavigationArgs { Query = args.Query, ForceQuery = true }); } catch { }
+            try { ViewModelLocator.CharacterSearch?.Init(new SearchPageNavArgsBase()); } catch { }
         }
 
         public override int Count => 6;

@@ -50,6 +50,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         private global::Android.Widget.AutoCompleteTextView _searchAutoComplete;
         private CancellationTokenSource _dropdownCts;
         private int _dropdownGen;
+        private SearchPagePagerAdapter _pagerAdapter;
 
         private SearchPageFragment(SearchPageNavigationArgs args)
         {
@@ -59,7 +60,8 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         protected override void InitBindings()
         {
-            SearchPageViewPager.Adapter = new SearchPagePagerAdapter(ChildFragmentManager, _args, out int start);
+            _pagerAdapter = new SearchPagePagerAdapter(ChildFragmentManager, _args, out int start);
+            SearchPageViewPager.Adapter = _pagerAdapter;
             SearchPageTabStrip.IndicatorColor = Color.ParseColor("#0066FF");
             SearchPageTabStrip.IndicatorHeight = 3;
             SearchPageTabStrip.SetViewPager(SearchPageViewPager);
@@ -94,8 +96,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     _args.Query = sel.Title;
                     _args.ForceQuery = true;
                     ViewModelLocator.GeneralMain.CurrentSearchQuery = sel.Title;
-                    SearchPageViewPager.Adapter = new SearchPagePagerAdapter(ChildFragmentManager, _args, out int ns2);
-                    SearchPageTabStrip.SetViewPager(SearchPageViewPager);
+                    _pagerAdapter.TriggerSearch(new SearchPageNavigationArgs { Query = sel.Title, ForceQuery = true, Anime = true });
                     SearchPageViewPager.SetCurrentItem(0, false);
                     SearchPageSearchView.ClearFocus();
                 };
@@ -149,8 +150,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     {
                         _args.Query = q;
                         _args.ForceQuery = true;
-                        ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { Query = q, ForceQuery = true, Anime = true });
-                        ViewModelLocator.SearchEverywhereViewModel.Init(new SearchPageNavigationArgs { Query = q, ForceQuery = true });
+                        _pagerAdapter.TriggerSearch(new SearchPageNavigationArgs { Query = q, ForceQuery = true, Anime = true });
                     }
                 } catch { }
             };
@@ -162,8 +162,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     _args.Query = q;
                     _args.ForceQuery = true;
                     ViewModelLocator.GeneralMain.CurrentSearchQuery = q;
-                    SearchPageViewPager.Adapter = new SearchPagePagerAdapter(ChildFragmentManager, _args, out int ns);
-                    SearchPageTabStrip.SetViewPager(SearchPageViewPager);
+                    _pagerAdapter.TriggerSearch(new SearchPageNavigationArgs { Query = q, ForceQuery = true, Anime = true });
                     SearchPageViewPager.SetCurrentItem(0, false);
                 }
                 e.Handled = true;
@@ -171,6 +170,9 @@ namespace MALClient.Android.Fragments.SearchFragments
             };
             var se = SearchPageSearchView.FindViewById(Resource.Id.search_src_text) as global::Android.Widget.EditText;
             if (se != null) se.SetTextColor(Color.White);
+
+            // Trigger initial search after fragments are created and their InitBindings run
+            _pagerAdapter.TriggerSearch(_args);
         }
 
         protected override void Init(Bundle savedInstanceState)

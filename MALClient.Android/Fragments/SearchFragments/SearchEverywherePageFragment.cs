@@ -94,6 +94,13 @@ namespace MALClient.Android.Fragments.SearchFragments
             SearchRecyclerView.SetAdapter(_everywhereAdapter);
             SearchRecyclerView.SetLayoutManager(new LinearLayoutManager(Activity));
 
+            // Initial refresh if data already populated
+            if (ViewModel.SearchResults?.Count > 0)
+            {
+                _everywhereAdapter.NotifyDataSetChanged();
+                SearchRecyclerView.RequestLayout();
+            }
+
             Bindings.Add(this.SetBinding(() => ViewModel.Loading).WhenSourceChanges(() =>
             {
                 if (ViewModel.Loading)
