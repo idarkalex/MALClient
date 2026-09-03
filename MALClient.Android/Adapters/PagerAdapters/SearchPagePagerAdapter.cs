@@ -23,12 +23,14 @@ namespace MALClient.Android.PagerAdapters
 
         public SearchPagePagerAdapter(FragmentManager fm, SearchPageNavArgsBase args, out int startPage) : base(fm)
         {
-            int targetPage;
+            int targetPage = 0;
             var arg = args as SearchPageNavigationArgs;
             if (arg != null)
             {
                 ViewModelLocator.SearchPage.Init(arg);
-                if (arg.Anime)
+                if (string.IsNullOrWhiteSpace(arg.Query))
+                    targetPage = 0;
+                else if (arg.Anime)
                 {
                     _animeSearchPageFragment = new AnimeSearchPageFragment(true);
                     _mangaSearchPageFragment = new AnimeSearchPageFragment(false);
@@ -43,7 +45,6 @@ namespace MALClient.Android.PagerAdapters
 
                 if (arg.Everywhere)
                     targetPage = 0;
-
 
                 _characterSearchPageFragment = CharacterSearchPageFragment.BuildInstance(new SearchPageNavArgsBase());
             }
