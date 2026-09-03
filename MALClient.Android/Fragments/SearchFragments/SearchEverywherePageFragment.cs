@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Support.V7.Widget;
@@ -27,7 +28,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         private static SearchPageNavArgsBase _prevArgs;
 
         private SearchEverywhereViewModel ViewModel;
-        private ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder> _everywhereAdapter;
+        private FixedSizeEverywhereAdapter _everywhereAdapter;
 
         private SearchEverywherePageFragment(bool initBindings) : base(initBindings)
         {
@@ -36,63 +37,11 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         protected override void InitBindings()
         {
-            _everywhereAdapter = new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>(new Dictionary<Type, ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.IItemEntry>
-            {
-                {
-                    typeof(SearchCategoryItem),
-                    new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.SpecializedItemEntry<SearchCategoryItem, CategoryHolder>
-                    {
-                        ItemTemplate = CategoryItemTemplate,
-                        SpecializedDataTemplate = CategoryDataTemplate
-                    }
-                },
-                {
-                    typeof(SearchEverywhereAnimeItem),
-                    new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.SpecializedItemEntry<SearchEverywhereAnimeItem, SearchItemHolder>
-                    {
-                        ItemTemplate = AnimeItemTemplate,
-                        SpecializedDataTemplate = AnimeDataTemplate
-                    }
-                },
-                {
-                    typeof(SearchEverywhereMangaItem),
-                    new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.SpecializedItemEntry<SearchEverywhereMangaItem, SearchItemHolder>
-                    {
-                        ItemTemplate = MangaItemTemplate,
-                        SpecializedDataTemplate = MangaDataTemplate
-                    }
-                },
-                {
-                    typeof(SearchEverywhereCharacterItem),
-                    new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.SpecializedItemEntry<SearchEverywhereCharacterItem, SearchItemHolder>
-                    {
-                        ItemTemplate = CharacterItemTemplate,
-                        SpecializedDataTemplate = CharacterDataTemplate
-                    }
-                },
-                {
-                    typeof(SearchEverywherePersonItem),
-                    new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.SpecializedItemEntry<SearchEverywherePersonItem, SearchItemHolder>
-                    {
-                        ItemTemplate = PersonItemTemplate,
-                        SpecializedDataTemplate = PersonDataTemplate
-                    }
-                },
-                {
-                    typeof(SearchEverywhereUserItem),
-                    new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.SpecializedItemEntry<SearchEverywhereUserItem, SearchItemHolder>
-                    {
-                        ItemTemplate = UserItemTemplate,
-                        SpecializedDataTemplate = UserDataTemplate
-                    }
-                },
-            }, 
-            ViewModel.SearchResults)
-            {
-                StretchContentHorizonatally = true
-            };
+            _everywhereAdapter = new FixedSizeEverywhereAdapter(this, ViewModel);
+            _everywhereAdapter.StretchContentHorizonatally = true;
             SearchRecyclerView.SetAdapter(_everywhereAdapter);
             SearchRecyclerView.SetLayoutManager(new LinearLayoutManager(Activity));
+            SearchRecyclerView.HasFixedSize = true;
 
             // Initial refresh if data already populated
             if (ViewModel.SearchResults?.Count > 0)
@@ -112,8 +61,11 @@ namespace MALClient.Android.Fragments.SearchFragments
                     else
                     {
                         LoadingSpinner.Visibility = ViewStates.Gone;
-                        _everywhereAdapter?.NotifyDataSetChanged();
-                        SearchRecyclerView?.RequestLayout();
+                        SearchRecyclerView?.Post(() =>
+                        {
+                            _everywhereAdapter?.NotifyDataSetChanged();
+                            SearchRecyclerView?.RequestLayout();
+                        });
                     }
                 });
             }));
@@ -141,128 +93,6 @@ namespace MALClient.Android.Fragments.SearchFragments
                     FirstSearchSection.Visibility = ViewStates.Gone;
                 }
             }));
-        }
-
-        private void CategoryDataTemplate(SearchCategoryItem item, CategoryHolder holder, int position)
-        {
-            holder.Category.Text = item.Name;
-
-        }
-
-        private View CategoryItemTemplate(int viewtype)
-        {
-            return LayoutInflater.Inflate(Resource.Layout.SearchEverywhereCategoryItem, null);
-        }
-
-        private View MangaItemTemplate(int viewtype)
-        {
-            return LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null);
-        }
-
-        private View CharacterItemTemplate(int viewtype)
-        {
-            return LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null);
-        }
-
-        private View PersonItemTemplate(int viewtype)
-        {
-            return LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null);
-        }
-
-        private View UserItemTemplate(int viewtype)
-        {
-            return LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null);
-        }
-
-        private View AnimeItemTemplate(int viewtype)
-        {
-            return LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null);
-        }
-
-        private void AnimeDataTemplate(SearchEverywhereAnimeItem item, SearchItemHolder holder, int position)
-        {
-            var subtitleBuilder = new StringBuilder();
-
-            if (!string.IsNullOrEmpty(item.Item.Payload.Aired))
-                subtitleBuilder.AppendLine($"Aired: {item.Item.Payload.Aired}");
-
-            if (!string.IsNullOrEmpty(item.Item.Payload.Score))
-                subtitleBuilder.AppendLine($"Score: {item.Item.Payload.Score}");
-
-            if (!string.IsNullOrEmpty(item.Item.Payload.Status))
-                subtitleBuilder.AppendLine($"Status: {item.Item.Payload.Status}");
-
-            holder.Image.Into(item.Item.ImageUrl);
-            holder.Title.Text = item.Item.Name;
-            holder.Subtitle.Text = subtitleBuilder.ToString();
-            holder.RightMarker.Text = item.Item.Payload.MediaType;
-            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => { ViewModel.NavigateAnimeDetails(item); }));
-        }
-
-        private void MangaDataTemplate(SearchEverywhereMangaItem item, SearchItemHolder holder, int position)
-        {
-            var subtitleBuilder = new StringBuilder();
-
-            if (!string.IsNullOrEmpty(item.Item.Payload.Aired))
-                subtitleBuilder.AppendLine($"Published: {item.Item.Payload.Published}");
-
-            if (!string.IsNullOrEmpty(item.Item.Payload.Score))
-                subtitleBuilder.AppendLine($"Score: {item.Item.Payload.Score}");
-
-            if (!string.IsNullOrEmpty(item.Item.Payload.Status))
-                subtitleBuilder.AppendLine($"Status: {item.Item.Payload.Status}");
-
-            holder.Image.Into(item.Item.ImageUrl);
-            holder.Title.Text = item.Item.Name;
-            holder.Subtitle.Text = subtitleBuilder.ToString();
-            holder.RightMarker.Text = item.Item.Payload.MediaType;
-            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => { ViewModel.NavigateMangaDetails(item); }));
-        }
-
-        private void CharacterDataTemplate(SearchEverywhereCharacterItem item, SearchItemHolder holder, int position)
-        {
-            var subtitleBuilder = new StringBuilder();
-
-            if (item.Item.Payload.RelatedWorks != null)
-            {
-                foreach (var related in item.Item.Payload.RelatedWorks.Take(2))
-                {
-                    subtitleBuilder.AppendLine(related);
-                }
-            }
-
-            subtitleBuilder.Append("Favs: ").Append(item.Item.Payload.Favorites).AppendLine();
-
-            holder.Image.Into(item.Item.ImageUrl);
-            holder.Title.Text = item.Item.Name;
-            holder.Subtitle.Text = subtitleBuilder.ToString();
-            holder.RightMarker.Text = string.Empty;
-            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => ViewModel.NavigateCharacterDetails(item)));
-        }
-
-        private void PersonDataTemplate(SearchEverywherePersonItem item, SearchItemHolder holder, int position)
-        {
-            var subtitleBuilder = new StringBuilder();
-
-            if (!string.IsNullOrEmpty(item.Item.Payload.Birthday))
-                subtitleBuilder.AppendLine($"Birthday: {item.Item.Payload.Birthday}");
-
-            subtitleBuilder.Append("Favs: ").Append(item.Item.Payload.Favorites).AppendLine();
-
-            holder.Image.Into(item.Item.ImageUrl);
-            holder.Title.Text = item.Item.Name;
-            holder.Subtitle.Text = subtitleBuilder.ToString();
-            holder.RightMarker.Text = string.Empty;
-            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => ViewModel.NavigatePersonDetails(item)));
-        }
-
-        private void UserDataTemplate(SearchEverywhereUserItem item, SearchItemHolder holder, int position)
-        {
-            holder.Image.Into(item.Item.ImageUrl);
-            holder.Title.Text = item.Item.Name;
-            holder.Subtitle.Text = string.Empty;
-            holder.RightMarker.Text = string.Empty;
-            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => ViewModel.NavigateUserDetails(item)));
         }
 
         protected override void Init(Bundle savedInstanceState)
@@ -328,5 +158,182 @@ namespace MALClient.Android.Fragments.SearchFragments
             _prevArgs = args;
             return new SearchEverywherePageFragment(initBindings);
         }
+
+    // Custom adapter with fixed item size and proper view recycling
+    class FixedSizeEverywhereAdapter : ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>
+    {
+        private readonly SearchEverywherePageFragment _fragment;
+        private readonly SearchEverywhereViewModel _viewModel;
+
+        public FixedSizeEverywhereAdapter(SearchEverywherePageFragment fragment, SearchEverywhereViewModel viewModel) 
+            : base(new Dictionary<Type, ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.IItemEntry>
+            {
+                {
+                    typeof(SearchCategoryItem),
+                    new SpecializedItemEntry<SearchCategoryItem, CategoryHolder>
+                    {
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereCategoryItem, null),
+                        SpecializedDataTemplate = (item, holder, position) => 
+                        {
+                            holder.Category.Text = item.Name;
+                        }
+                    }
+                },
+                {
+                    typeof(SearchEverywhereAnimeItem),
+                    new SpecializedItemEntry<SearchEverywhereAnimeItem, SearchItemHolder>
+                    {
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null),
+                        SpecializedDataTemplate = (item, holder, position) => 
+                        {
+                            var subtitleBuilder = new StringBuilder();
+
+                            if (!string.IsNullOrEmpty(item.Item.Payload.Aired))
+                                subtitleBuilder.AppendLine($"Aired: {item.Item.Payload.Aired}");
+
+                            if (!string.IsNullOrEmpty(item.Item.Payload.Score))
+                                subtitleBuilder.AppendLine($"Score: {item.Item.Payload.Score}");
+
+                            if (!string.IsNullOrEmpty(item.Item.Payload.Status))
+                                subtitleBuilder.AppendLine($"Status: {item.Item.Payload.Status}");
+
+                            holder.Image.Into(item.Item.ImageUrl);
+                            holder.Title.Text = item.Item.Name;
+                            holder.Subtitle.Text = subtitleBuilder.ToString();
+                            holder.RightMarker.Text = item.Item.Payload.MediaType;
+                            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => { viewModel.NavigateAnimeDetails(item); }));
+                            
+                            // Force fixed height to prevent cutting
+                            ForceFixedHeight(holder.ClickSurface, fragment.Activity);
+                        }
+                    }
+                },
+                {
+                    typeof(SearchEverywhereMangaItem),
+                    new SpecializedItemEntry<SearchEverywhereMangaItem, SearchItemHolder>
+                    {
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null),
+                        SpecializedDataTemplate = (item, holder, position) => 
+                        {
+                            var subtitleBuilder = new StringBuilder();
+
+                            if (!string.IsNullOrEmpty(item.Item.Payload.Aired))
+                                subtitleBuilder.AppendLine($"Published: {item.Item.Payload.Published}");
+
+                            if (!string.IsNullOrEmpty(item.Item.Payload.Score))
+                                subtitleBuilder.AppendLine($"Score: {item.Item.Payload.Score}");
+
+                            if (!string.IsNullOrEmpty(item.Item.Payload.Status))
+                                subtitleBuilder.AppendLine($"Status: {item.Item.Payload.Status}");
+
+                            holder.Image.Into(item.Item.ImageUrl);
+                            holder.Title.Text = item.Item.Name;
+                            holder.Subtitle.Text = subtitleBuilder.ToString();
+                            holder.RightMarker.Text = item.Item.Payload.MediaType;
+                            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => { viewModel.NavigateMangaDetails(item); }));
+                            
+                            // Force fixed height
+                            ForceFixedHeight(holder.ClickSurface, fragment.Activity);
+                        }
+                    }
+                },
+                {
+                    typeof(SearchEverywhereCharacterItem),
+                    new SpecializedItemEntry<SearchEverywhereCharacterItem, SearchItemHolder>
+                    {
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null),
+                        SpecializedDataTemplate = (item, holder, position) => 
+                        {
+                            var subtitleBuilder = new StringBuilder();
+
+                            if (item.Item.Payload.RelatedWorks != null)
+                            {
+                                foreach (var related in item.Item.Payload.RelatedWorks.Take(2))
+                                {
+                                    subtitleBuilder.AppendLine(related);
+                                }
+                            }
+
+                            subtitleBuilder.Append("Favs: ").Append(item.Item.Payload.Favorites).AppendLine();
+
+                            holder.Image.Into(item.Item.ImageUrl);
+                            holder.Title.Text = item.Item.Name;
+                            holder.Subtitle.Text = subtitleBuilder.ToString();
+                            holder.RightMarker.Text = string.Empty;
+                            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => viewModel.NavigateCharacterDetails(item)));
+                            
+                            // Force fixed height
+                            ForceFixedHeight(holder.ClickSurface, fragment.Activity);
+                        }
+                    }
+                },
+                {
+                    typeof(SearchEverywherePersonItem),
+                    new SpecializedItemEntry<SearchEverywherePersonItem, SearchItemHolder>
+                    {
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null),
+                        SpecializedDataTemplate = (item, holder, position) => 
+                        {
+                            var subtitleBuilder = new StringBuilder();
+
+                            if (!string.IsNullOrEmpty(item.Item.Payload.Birthday))
+                                subtitleBuilder.AppendLine($"Birthday: {item.Item.Payload.Birthday}");
+
+                            subtitleBuilder.Append("Favs: ").Append(item.Item.Payload.Favorites).AppendLine();
+
+                            holder.Image.Into(item.Item.ImageUrl);
+                            holder.Title.Text = item.Item.Name;
+                            holder.Subtitle.Text = subtitleBuilder.ToString();
+                            holder.RightMarker.Text = string.Empty;
+                            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => viewModel.NavigatePersonDetails(item)));
+                            
+                            // Force fixed height
+                            ForceFixedHeight(holder.ClickSurface, fragment.Activity);
+                        }
+                    }
+                },
+                {
+                    typeof(SearchEverywhereUserItem),
+                    new SpecializedItemEntry<SearchEverywhereUserItem, SearchItemHolder>
+                    {
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereItem, null),
+                        SpecializedDataTemplate = (item, holder, position) => 
+                        {
+                            holder.Image.Into(item.Item.ImageUrl);
+                            holder.Title.Text = item.Item.Name;
+                            holder.Subtitle.Text = string.Empty;
+                            holder.RightMarker.Text = string.Empty;
+                            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => viewModel.NavigateUserDetails(item)));
+                            
+                            // Force fixed height
+                            ForceFixedHeight(holder.ClickSurface, fragment.Activity);
+                        }
+                    }
+                },
+            }, 
+            viewModel.SearchResults)
+        {
+            StretchContentHorizonatally = true;
+        }
+
+        private static void ForceFixedHeight(LinearLayout clickSurface, global::Android.Content.Context context)
+        {
+            var lp = clickSurface.LayoutParameters;
+            if (lp != null)
+            {
+                lp.Height = (int)(150 * global::Android.Util.TypedValue.ApplyDimension(global::Android.Util.ComplexUnitType.Dip, 1, context.Resources.DisplayMetrics));
+                clickSurface.LayoutParameters = lp;
+            }
+        }
+
+        public override void OnViewRecycled(Java.Lang.Object holder)
+        {
+            base.OnViewRecycled(holder);
+            if (holder is SearchItemHolder searchHolder && _fragment.Activity != null)
+            {
+                ForceFixedHeight(searchHolder.ClickSurface, _fragment.Activity);
+            }
+        }
     }
+}
 }
