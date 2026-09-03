@@ -32,14 +32,14 @@ namespace MALClient.Android.PagerAdapters
                     targetPage = 0;
                 else if (arg.Anime)
                 {
-                    _animeSearchPageFragment = new AnimeSearchPageFragment(true);
-                    _mangaSearchPageFragment = new AnimeSearchPageFragment(false);
+                    _animeSearchPageFragment = new AnimeSearchPageFragment(true) { IsManga = false };
+                    _mangaSearchPageFragment = new AnimeSearchPageFragment(true) { IsManga = true };
                     targetPage = 1;
                 }
                 else
                 {
-                    _animeSearchPageFragment = new AnimeSearchPageFragment(false);
-                    _mangaSearchPageFragment = new AnimeSearchPageFragment(true);
+                    _animeSearchPageFragment = new AnimeSearchPageFragment(true) { IsManga = false };
+                    _mangaSearchPageFragment = new AnimeSearchPageFragment(true) { IsManga = true };
                     targetPage = 2;
                 }
 
@@ -147,9 +147,9 @@ namespace MALClient.Android.PagerAdapters
                 case 0:
                     return _everywhereSearchPageFragment ?? SearchEverywherePageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
                 case 1:
-                    return _animeSearchPageFragment ?? new AnimeSearchPageFragment(true);
+                    return _animeSearchPageFragment ?? new AnimeSearchPageFragment(true) { IsManga = false };
                 case 2:
-                    return  _mangaSearchPageFragment ?? new AnimeSearchPageFragment(false);
+                    return  _mangaSearchPageFragment ?? new AnimeSearchPageFragment(true) { IsManga = true };
                 case 3:
                     return _characterSearchPageFragment ?? CharacterSearchPageFragment.BuildInstance(new SearchPageNavArgsBase(), true);
                 case 4:

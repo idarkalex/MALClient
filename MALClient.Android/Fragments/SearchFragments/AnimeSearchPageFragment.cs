@@ -7,16 +7,13 @@ using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
 using MALClient.Android.AoLibsCompat;
-using FFImageLoading;
-using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
-using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.UserControls;
 using MALClient.Models.Enums;
 using MALClient.XShared.NavArgs;
-using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
 
@@ -26,7 +23,9 @@ namespace MALClient.Android.Fragments.SearchFragments
     {
         private bool _waitForRootView;
 
-        public AnimeSearchPageFragment(bool initBindings) : base(initBindings)
+        public bool IsManga { get; set; }
+
+        public AnimeSearchPageFragment(bool initBindings = true) : base(initBindings)
         {
 
         }
@@ -47,10 +46,9 @@ namespace MALClient.Android.Fragments.SearchFragments
                 NavigatedTo();
             }
 
-            SearchRecyclerView.SetAdapter(new ObservableRecyclerAdapter<AnimeSearchItemViewModel, ItemHolder>(
-                ViewModel.AnimeSearchItemViewModels, DataTemplate, LayoutInflater,
-                Resource.Layout.AnimeSearchItem) {StretchContentHorizonatally = true});
-            SearchRecyclerView.SetLayoutManager(new LinearLayoutManager(Activity));
+            SearchRecyclerView.SetAdapter(new SearchGridAdapter(
+                IsManga ? ViewModel.MangaSearchItemViewModels : ViewModel.AnimeSearchItemViewModels, Activity));
+            SearchRecyclerView.SetLayoutManager(new GridLayoutManager(Activity, 3));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Loading).WhenSourceChanges(() =>
             {
@@ -94,49 +92,6 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         }
 
-        private void DataTemplate(AnimeSearchItemViewModel item, ItemHolder holder, int position)
-        {
-            holder.AnimeSearchItemTitle.Text = item.Title;
-            holder.AnimeSearchItemType.Text = item.Type;
-            holder.AnimeSearchItemDescription.Text = item.Synopsis;
-            holder.WatchedEpisodes.Text = item.WatchedEps;
-
-            if (Settings.HideGlobalScoreInDetailsWhenNotRated)
-            {
-                if (item.IsAuth && item.MyScore > 0)
-                {
-                    holder.AnimeSearchItemGlobalScoreContainer.Visibility = ViewStates.Visible;
-                    holder.AnimeSearchItemGlobalScore.Text = item.GlobalScoreBind;
-                }
-                else
-                {
-                    holder.AnimeSearchItemGlobalScoreContainer.Visibility = ViewStates.Gone;
-                }
-            }
-            else
-            {
-                holder.AnimeSearchItemGlobalScore.Text = item.GlobalScoreBind;
-            }
-
-
-            if (item.IsAuth)
-            {
-                holder.TopRightInfo.Visibility = ViewStates.Visible;
-                holder.WatchingStatus.Text =
-                    item.MyStatusBindShort;
-                holder.WatchedEpisodes.Text =
-                    item.MyEpisodesBindShort;
-            }
-            else
-            {
-                holder.TopRightInfo.Visibility = ViewStates.Gone;
-            }
-
-            holder.AnimeSearchItemImage.Into(item.ImgUrl);
-
-            holder.ClickSurface.SetOnClickListener(new OnClickListener(view => item.NavigateDetails()));
-        }
-
         public void NavigatedTo()
         {
             if (RootView == null)
@@ -148,39 +103,48 @@ namespace MALClient.Android.Fragments.SearchFragments
         public override int LayoutResourceId => Resource.Layout.AnimeSearchPage;
 
 
-        class ItemHolder : RecyclerView.ViewHolder
+        class SearchGridAdapter : RecyclerView.Adapter
         {
-            private readonly View _view;
+            private readonly System.Collections.Generic.IList<AnimeSearchItemViewModel> _items;
+            private readonly global::Android.Content.Context _context;
 
-            public ItemHolder(View view) : base(view)
+            public SearchGridAdapter(System.Collections.Generic.IList<AnimeSearchItemViewModel> items, global::Android.Content.Context context)
             {
-                _view = view;
+                _items = items;
+                _context = context;
             }
-            private ImageView _animeSearchItemImage;
-            private TextView _watchingStatus;
-            private TextView _watchedEpisodes;
-            private LinearLayout _topRightInfo;
-            private TextView _animeSearchItemTitle;
-            private TextView _animeSearchItemDescription;
-            private TextView _animeSearchItemType;
-            private TextView _animeSearchItemEpisodes;
-            private TextView _animeSearchItemGlobalScore;
-            private FrameLayout _animeSearchItemGlobalScoreContainer;
-            private FrameLayout _animeSearchItemBtmSection;
-            private LinearLayout _clickSurface;
 
-            public ImageView AnimeSearchItemImage => _animeSearchItemImage ?? (_animeSearchItemImage = _view.FindViewById<ImageView>(Resource.Id.AnimeSearchItemImage));
-            public TextView WatchingStatus => _watchingStatus ?? (_watchingStatus = _view.FindViewById<TextView>(Resource.Id.WatchingStatus));
-            public TextView WatchedEpisodes => _watchedEpisodes ?? (_watchedEpisodes = _view.FindViewById<TextView>(Resource.Id.WatchedEpisodes));
-            public LinearLayout TopRightInfo => _topRightInfo ?? (_topRightInfo = _view.FindViewById<LinearLayout>(Resource.Id.TopRightInfo));
-            public TextView AnimeSearchItemTitle => _animeSearchItemTitle ?? (_animeSearchItemTitle = _view.FindViewById<TextView>(Resource.Id.AnimeSearchItemTitle));
-            public TextView AnimeSearchItemDescription => _animeSearchItemDescription ?? (_animeSearchItemDescription = _view.FindViewById<TextView>(Resource.Id.AnimeSearchItemDescription));
-            public TextView AnimeSearchItemType => _animeSearchItemType ?? (_animeSearchItemType = _view.FindViewById<TextView>(Resource.Id.AnimeSearchItemType));
-            public TextView AnimeSearchItemEpisodes => _animeSearchItemEpisodes ?? (_animeSearchItemEpisodes = _view.FindViewById<TextView>(Resource.Id.AnimeSearchItemEpisodes));
-            public TextView AnimeSearchItemGlobalScore => _animeSearchItemGlobalScore ?? (_animeSearchItemGlobalScore = _view.FindViewById<TextView>(Resource.Id.AnimeSearchItemGlobalScore));
-            public FrameLayout AnimeSearchItemGlobalScoreContainer => _animeSearchItemGlobalScoreContainer ?? (_animeSearchItemGlobalScoreContainer = _view.FindViewById<FrameLayout>(Resource.Id.AnimeSearchItemGlobalScoreContainer));
-            public FrameLayout AnimeSearchItemBtmSection => _animeSearchItemBtmSection ?? (_animeSearchItemBtmSection = _view.FindViewById<FrameLayout>(Resource.Id.AnimeSearchItemBtmSection));
-            public LinearLayout ClickSurface => _clickSurface ?? (_clickSurface = _view.FindViewById<LinearLayout>(Resource.Id.ClickSurface));
+            public override int ItemCount => _items.Count;
+
+            public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
+            {
+                GridHolder gridHolder = null;
+                var card = new AnimeGridItem(_context, vm => gridHolder?.SearchItem?.NavigateDetails());
+                card.LayoutParameters = new RecyclerView.LayoutParams(
+                    ViewGroup.LayoutParams.MatchParent,
+                    (int)_context.Resources.GetDimension(Resource.Dimension.GridCardHeight));
+                gridHolder = new GridHolder(card);
+                return gridHolder;
+            }
+
+            public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
+            {
+                var gridHolder = (GridHolder)holder;
+                var item = _items[position];
+                gridHolder.SearchItem = item;
+                gridHolder.Card.BindModel(item.ToGridViewModel(), false);
+            }
+        }
+
+        class GridHolder : RecyclerView.ViewHolder
+        {
+            public AnimeGridItem Card { get; }
+            public AnimeSearchItemViewModel SearchItem { get; set; }
+
+            public GridHolder(AnimeGridItem card) : base(card)
+            {
+                Card = card;
+            }
         }
 
 

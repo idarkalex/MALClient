@@ -90,7 +90,7 @@ namespace MALClient.XShared.ViewModels.Main
             else
             {
                 _filters.Clear();
-                AnimeSearchItemViewModels.Clear();
+                CurrentSearchItems.Clear();
                 IsFirstVisitGridVisible = true;
                 ResetQuery();
             }
@@ -117,7 +117,7 @@ namespace MALClient.XShared.ViewModels.Main
             PrevQuery = query;
             Loading = true;
             EmptyNoticeVisibility = false;
-            AnimeSearchItemViewModels.Clear();
+            CurrentSearchItems.Clear();
             var data = new List<AnimeGeneralDetailsData>();
             _filters.Clear();
             _allAnimeSearchItemViewModels = new List<AnimeSearchItemViewModel>();
@@ -170,17 +170,20 @@ namespace MALClient.XShared.ViewModels.Main
             Loading = false;
         }
 
+        private ObservableCollection<AnimeSearchItemViewModel> CurrentSearchItems =>
+            _animeSearch ? AnimeSearchItemViewModels : MangaSearchItemViewModels;
+
         private void PopulateItems()
         {
-            AnimeSearchItemViewModels.Clear();
+            CurrentSearchItems.Clear();
             foreach (
                 var item in
                 _allAnimeSearchItemViewModels.Where(
                     item =>
                         string.IsNullOrWhiteSpace(_currrentFilter) ||
                         string.Equals(_currrentFilter, item.Type, StringComparison.CurrentCultureIgnoreCase)))
-                AnimeSearchItemViewModels.Add(item);
-            EmptyNoticeVisibility = AnimeSearchItemViewModels.Count == 0;
+                CurrentSearchItems.Add(item);
+            EmptyNoticeVisibility = CurrentSearchItems.Count == 0;
         }
 
         private void ResetQuery()
@@ -199,6 +202,9 @@ namespace MALClient.XShared.ViewModels.Main
         private List<AnimeSearchItemViewModel> _allAnimeSearchItemViewModels;
 
         public ObservableCollection<AnimeSearchItemViewModel> AnimeSearchItemViewModels { get; } =
+            new ObservableCollection<AnimeSearchItemViewModel>();
+
+        public ObservableCollection<AnimeSearchItemViewModel> MangaSearchItemViewModels { get; } =
             new ObservableCollection<AnimeSearchItemViewModel>();
 
         public AnimeSearchItemViewModel CurrentlySelectedItem
