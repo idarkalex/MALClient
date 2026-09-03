@@ -71,6 +71,14 @@ namespace MALClient.Android.Fragments.SearchFragments
             SearchPageViewPager.SetCurrentItem(start, false);
             HasOnlyManualBindings = true;
 
+            // Force-create all 6 fragments so their InitBindings run before search starts
+            // Tab order: 0=Everywhere, 1=Anime, 2=Manga, 3=Characters, 4=Genres, 5=Studios
+            for (int i = 0; i < 6; i++)
+            {
+                SearchPageViewPager.SetCurrentItem(i, false);
+            }
+            SearchPageViewPager.SetCurrentItem(start, false);
+
             SearchPageSearchView.Iconified = false;
             try
             {

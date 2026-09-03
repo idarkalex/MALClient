@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Runtime;
 using Android.Support.V4.App;
@@ -68,9 +69,18 @@ namespace MALClient.Android.PagerAdapters
 
         public void TriggerSearch(SearchPageNavigationArgs args)
         {
+            // Priority 1: Anime/Manga search (highest priority)
             try { ViewModelLocator.SearchPage?.Init(args); } catch { }
+
+            // Priority 2: Everywhere search (runs in parallel)
             try { ViewModelLocator.SearchEverywhereViewModel?.Init(new SearchPageNavigationArgs { Query = args.Query, ForceQuery = true }); } catch { }
-            try { ViewModelLocator.CharacterSearch?.Init(new SearchPageNavArgsBase()); } catch { }
+
+            // Priority 3: Characters search (lower priority, small delay to not compete with API)
+            Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                try { ViewModelLocator.CharacterSearch?.Init(new SearchPageNavArgsBase()); } catch { }
+            });
         }
 
         public override int Count => 6;
