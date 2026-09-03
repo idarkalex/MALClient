@@ -81,33 +81,36 @@ namespace MALClient.Android.PagerAdapters
 
         public void TabSelected(View p0)
         {
-            var txt = p0 as TextView;
-            txt.Alpha = 1f;
-            _currentFragment?.DetachBindings();
-            switch ((int)p0.Tag)
+            try
             {
-                case 0:
-                    _currentFragment = _everywhereSearchPageFragment;
-                    ShowSearchStuff();
-                    ViewModelLocator.SearchEverywhereViewModel.Init(new SearchPageNavigationArgs { Query = ViewModelLocator.GeneralMain.CurrentSearchQuery, ForceQuery = true });
-                    break;
-                case 1:
-                    _animeSearchPageFragment.NavigatedTo();
-                    _currentFragment = _animeSearchPageFragment;
-                    ShowSearchStuff();
-                    ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { Query = ViewModelLocator.GeneralMain.CurrentSearchQuery, ForceQuery = true });
-                    break;
-                case 2:
-                    _mangaSearchPageFragment.NavigatedTo();
-                    _currentFragment = _mangaSearchPageFragment;
-                    ShowSearchStuff();
-                    ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs {Anime = false , Query = ViewModelLocator.GeneralMain.CurrentSearchQuery, ForceQuery = true});
-                    break;
-                case 3:
-                    _currentFragment = _characterSearchPageFragment;
-                    ShowSearchStuff();
-                    ViewModelLocator.CharacterSearch.Init(new SearchPageNavArgsBase());
-                    break;
+                var txt = p0 as TextView;
+                if (txt != null) txt.Alpha = 1f;
+                _currentFragment?.DetachBindings();
+                var q = ViewModelLocator.GeneralMain?.CurrentSearchQuery ?? "";
+                switch ((int)p0.Tag)
+                {
+                    case 0:
+                        _currentFragment = _everywhereSearchPageFragment;
+                        ShowSearchStuff();
+                        try { ViewModelLocator.SearchEverywhereViewModel?.Init(new SearchPageNavigationArgs { Query = q, ForceQuery = true }); } catch { }
+                        break;
+                    case 1:
+                        try { _animeSearchPageFragment?.NavigatedTo(); } catch { }
+                        _currentFragment = _animeSearchPageFragment;
+                        ShowSearchStuff();
+                        try { ViewModelLocator.SearchPage?.Init(new SearchPageNavigationArgs { Query = q, ForceQuery = true }); } catch { }
+                        break;
+                    case 2:
+                        try { _mangaSearchPageFragment?.NavigatedTo(); } catch { }
+                        _currentFragment = _mangaSearchPageFragment;
+                        ShowSearchStuff();
+                        try { ViewModelLocator.SearchPage?.Init(new SearchPageNavigationArgs {Anime = false , Query = q, ForceQuery = true}); } catch { }
+                        break;
+                    case 3:
+                        _currentFragment = _characterSearchPageFragment;
+                        ShowSearchStuff();
+                        try { ViewModelLocator.CharacterSearch?.Init(new SearchPageNavArgsBase()); } catch { }
+                        break;
                 case 4:
                     _currentFragment = _genresSearchPageFragment;
                     ViewModelLocator.GeneralMain.SearchToggleLock = false;
@@ -121,11 +124,11 @@ namespace MALClient.Android.PagerAdapters
                     ViewModelLocator.GeneralMain.SearchToggleLock = false;
                     ViewModelLocator.GeneralMain.CurrentStatus = "Anime by Studio";
                     _currentFragment = _studiosSearchPageFragment;
-                    ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { ByStudio = true});
+                    try { ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { ByStudio = true}); } catch { }
                     _currentFragment?.ReattachBindings();
                     break;
             }
-
+            } catch { }
         }
 
         private void ShowSearchStuff()
