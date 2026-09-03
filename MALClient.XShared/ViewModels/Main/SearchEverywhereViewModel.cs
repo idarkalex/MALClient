@@ -71,6 +71,7 @@ namespace MALClient.XShared.ViewModels.Main
 
             if (args is SearchPageNavigationArgs a)
             {
+                if (a.ForceQuery) _prevQuery = null;
                 OnOnSearchQuerySubmitted(a.Query);
             }
 
@@ -78,7 +79,12 @@ namespace MALClient.XShared.ViewModels.Main
                 ViewModelLocator.GeneralMain.OnSearchDelayedQuerySubmitted += OnOnSearchQuerySubmitted;
             _queryHandler = true;
 
-            OnOnSearchQuerySubmitted(ViewModelLocator.GeneralMain.CurrentSearchQuery);
+            if (!string.IsNullOrEmpty(ViewModelLocator.GeneralMain.CurrentSearchQuery))
+            {
+                var cur = ViewModelLocator.GeneralMain.CurrentSearchQuery;
+                if (cur?.Equals(_prevQuery, StringComparison.CurrentCultureIgnoreCase) == true) _prevQuery = null;
+                OnOnSearchQuerySubmitted(cur);
+            }
         }
 
         private async void OnOnSearchQuerySubmitted(string query)

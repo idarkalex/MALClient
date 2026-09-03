@@ -89,19 +89,19 @@ namespace MALClient.Android.PagerAdapters
                 case 0:
                     _currentFragment = _everywhereSearchPageFragment;
                     ShowSearchStuff();
-                    ViewModelLocator.SearchEverywhereViewModel.Init(new SearchPageNavigationArgs { Query = ViewModelLocator.GeneralMain.CurrentSearchQuery });
+                    ViewModelLocator.SearchEverywhereViewModel.Init(new SearchPageNavigationArgs { Query = ViewModelLocator.GeneralMain.CurrentSearchQuery, ForceQuery = true });
                     break;
                 case 1:
                     _animeSearchPageFragment.NavigatedTo();
                     _currentFragment = _animeSearchPageFragment;
                     ShowSearchStuff();
-                    ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { Query = ViewModelLocator.GeneralMain.CurrentSearchQuery });
+                    ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { Query = ViewModelLocator.GeneralMain.CurrentSearchQuery, ForceQuery = true });
                     break;
                 case 2:
                     _mangaSearchPageFragment.NavigatedTo();
                     _currentFragment = _mangaSearchPageFragment;
                     ShowSearchStuff();
-                    ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs {Anime = false , Query = ViewModelLocator.GeneralMain.CurrentSearchQuery});
+                    ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs {Anime = false , Query = ViewModelLocator.GeneralMain.CurrentSearchQuery, ForceQuery = true});
                     break;
                 case 3:
                     _currentFragment = _characterSearchPageFragment;
