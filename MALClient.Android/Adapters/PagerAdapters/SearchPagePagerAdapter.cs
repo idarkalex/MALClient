@@ -9,6 +9,7 @@ using MALClient.Android.Fragments;
 using MALClient.Android.Fragments.SearchFragments;
 using MALClient.Android.Resources;
 
+using MALClient.Models.Enums;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using PagerSlidingTab;
@@ -80,6 +81,29 @@ namespace MALClient.Android.PagerAdapters
             {
                 await Task.Delay(200);
                 try { ViewModelLocator.CharacterSearch?.Init(new SearchPageNavArgsBase()); } catch { }
+            });
+        }
+
+        public void TriggerSearchWithStudio(AnimeStudios studio)
+        {
+            // Switch to Anime tab and search with studio filter
+            var args = new SearchPageNavigationArgs 
+            { 
+                ByStudio = true, 
+                Studio = studio,
+                ForceQuery = true 
+            };
+            TriggerSearch(args);
+            // Switch to Anime tab (index 1)
+            var activity = MALClient.Android.Activities.MainActivity.CurrentContext;
+            activity?.RunOnUiThread(() =>
+            {
+                try 
+                {
+                    var viewPager = activity.FindViewById<global::Android.Support.V4.View.ViewPager>(Resource.Id.SearchPageViewPager);
+                    viewPager?.SetCurrentItem(1, true);
+                } 
+                catch { }
             });
         }
 

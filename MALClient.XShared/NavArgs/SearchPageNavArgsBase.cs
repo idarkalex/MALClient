@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MALClient.Models.Enums;
 
 namespace MALClient.XShared.NavArgs
 {
@@ -21,6 +22,7 @@ namespace MALClient.XShared.NavArgs
     {
         public bool ByGenre { get; set; }
         public bool ByStudio { get; set; }
+        public AnimeStudios? Studio { get; set; }
         public bool Anime { get; set; } = true;
         public string Query { get; set; }
         public bool ForceQuery { get; set; }

@@ -5,6 +5,7 @@ using System.Text;
 
 using Android.App;
 using Android.Content;
+using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -21,8 +22,11 @@ namespace MALClient.Android.Fragments.SearchFragments
 {
     public class AnimeTypeSearchFragment : MalFragmentBase
     {
-        private SearchPageViewModel ViewModel;
         private readonly bool _isGenreMode;
+        private SearchView _searchView;
+        private List<Enum> _allChoices;
+        private List<Enum> _filteredChoices;
+        private Action<Enum> _onItemClick;
 
         public AnimeTypeSearchFragment(bool isGenreMode) : base(false)
         {
@@ -31,21 +35,70 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         protected override void Init(Bundle savedInstanceState)
         {
-            ViewModel = ViewModelLocator.SearchPage;
+            _allChoices = _isGenreMode
+                ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList()
+                : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
+            _filteredChoices = new List<Enum>(_allChoices);
+
+            _onItemClick = _isGenreMode ? OnGenreClick : OnStudioClick;
         }
 
         protected override void InitBindings()
         {
+            // Setup SearchView
+            _searchView = RootView.FindViewById<SearchView>(Resource.Id.AnimeTypeSearchView);
+            if (_searchView != null)
+            {
+                _searchView.Iconified = false;
+                _searchView.SetQueryHint(_isGenreMode ? "Search genres..." : "Search studios...");
+                
+                try
+                {
+                    var mag = _searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
+                    if (mag != null) mag.SetColorFilter(Color.White);
+                    var close = _searchView.FindViewById<ImageView>(Resource.Id.search_close_btn);
+                    if (close != null) 
+                    {
+                        close.SetColorFilter(Color.White);
+                        close.Click += (s, e) => ClearFilter();
+                    }
+                } catch { }
+
+                _searchView.QueryTextChange += (s, e) => FilterChoices(e.NewText);
+                _searchView.QueryTextSubmit += (s, e) => { e.Handled = true; _searchView.ClearFocus(); };
+            }
+
+            RefreshAdapter();
+        }
+
+        private void FilterChoices(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                _filteredChoices = new List<Enum>(_allChoices);
+            }
+            else
+            {
+                var q = query.ToLower();
+                _filteredChoices = _allChoices.Where(c => c.GetDescription().ToLower().Contains(q)).ToList();
+            }
+            RefreshAdapter();
+        }
+
+        private void ClearFilter()
+        {
+            if (_searchView != null)
+            {
+                _searchView.SetQuery("", false);
+                _searchView.ClearFocus();
+            }
+            _filteredChoices = new List<Enum>(_allChoices);
             RefreshAdapter();
         }
 
         public void RefreshAdapter()
         {
-            var choices = _isGenreMode
-                ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList()
-                : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
-
-            AnimeTypeSearchPageList.Adapter = choices.GetAdapter(GetTemplateDelegate);
+            AnimeTypeSearchPageList.Adapter = _filteredChoices.GetAdapter(GetTemplateDelegate);
         }
 
         private View GetTemplateDelegate(int i, Enum parameter, View convertView)
@@ -66,10 +119,25 @@ namespace MALClient.Android.Fragments.SearchFragments
         private void ViewOnClick(object sender, EventArgs eventArgs)
         {
             var item = (sender as View).Tag.Unwrap<Enum>();
-            if (_isGenreMode)
-                ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs((AnimeGenreSearch)item));
-            else
-                ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs((AnimeStudios)item));
+            _onItemClick(item);
+        }
+
+        private void OnGenreClick(Enum genre)
+        {
+            // Apply local filter to the grid - just show this genre
+            // In a real implementation, this would filter the results in the current tab
+            // For now, navigate to anime list with genre filter
+            ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs((AnimeGenreSearch)genre));
+        }
+
+        private void OnStudioClick(Enum studio)
+        {
+            // Navigate to Anime tab (index 1) with studio filter
+            var pagerAdapter = SearchPageFragment.CurrentPagerAdapter;
+            if (pagerAdapter != null)
+            {
+                pagerAdapter.TriggerSearchWithStudio((AnimeStudios)studio);
+            }
         }
 
         public override int LayoutResourceId => Resource.Layout.AnimeTypeSearchPage;

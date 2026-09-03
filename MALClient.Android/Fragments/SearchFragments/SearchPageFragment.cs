@@ -45,6 +45,8 @@ namespace MALClient.Android.Fragments.SearchFragments
 
     public class SearchPageFragment : MalFragmentBase
     {
+        public static SearchPagePagerAdapter CurrentPagerAdapter { get; private set; }
+
         private readonly SearchPageNavigationArgs _args;
         private PosterDropAdapter _hintAdapter;
         private global::Android.Widget.AutoCompleteTextView _searchAutoComplete;
@@ -61,6 +63,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         protected override void InitBindings()
         {
             _pagerAdapter = new SearchPagePagerAdapter(ChildFragmentManager, _args, out int start);
+            CurrentPagerAdapter = _pagerAdapter;
             SearchPageViewPager.Adapter = _pagerAdapter;
             SearchPageTabStrip.IndicatorColor = Color.ParseColor("#0066FF");
             SearchPageTabStrip.IndicatorHeight = 3;
