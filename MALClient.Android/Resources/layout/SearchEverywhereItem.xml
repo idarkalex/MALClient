@@ -11,8 +11,7 @@
   <LinearLayout
       android:id="@+id/ClickSurface"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:minHeight="150dp"
+      android:layout_height="150dp"
       android:background="?BrushAnimeItemBackground"
       android:clickable="true"
       android:focusable="true"

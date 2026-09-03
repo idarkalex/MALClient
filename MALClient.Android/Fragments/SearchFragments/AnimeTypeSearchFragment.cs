@@ -36,6 +36,11 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         protected override void InitBindings()
         {
+            RefreshAdapter();
+        }
+
+        public void RefreshAdapter()
+        {
             var choices = _isGenreMode
                 ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList()
                 : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();

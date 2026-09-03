@@ -134,6 +134,7 @@ namespace MALClient.Android.PagerAdapters
                     ViewModelLocator.GeneralMain.CurrentStatus = "Anime by Genre";
                     ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { ByGenre = true});
                     _currentFragment?.ReattachBindings();
+                    _genresSearchPageFragment.RefreshAdapter();
                     break;
                 case 5:
                     ViewModelLocator.GeneralMain.HideSearchStuff();
@@ -142,6 +143,7 @@ namespace MALClient.Android.PagerAdapters
                     _currentFragment = _studiosSearchPageFragment;
                     try { ViewModelLocator.SearchPage.Init(new SearchPageNavigationArgs { ByStudio = true}); } catch { }
                     _currentFragment?.ReattachBindings();
+                    _studiosSearchPageFragment.RefreshAdapter();
                     break;
             }
             } catch { }
