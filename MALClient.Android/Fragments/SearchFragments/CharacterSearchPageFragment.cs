@@ -39,14 +39,17 @@ namespace MALClient.Android.Fragments.SearchFragments
 
             Bindings.Add(this.SetBinding(() => ViewModel.Loading).WhenSourceChanges(() =>
             {
-                if (ViewModel.Loading)
+                Activity?.RunOnUiThread(() =>
                 {
-                    CharacterSearchPageLoadingSpinner.Visibility = ViewStates.Visible;
-                }
-                else
-                {
-                    CharacterSearchPageLoadingSpinner.Visibility = ViewStates.Gone;
-                }
+                    if (ViewModel.Loading)
+                    {
+                        CharacterSearchPageLoadingSpinner.Visibility = ViewStates.Visible;
+                    }
+                    else
+                    {
+                        CharacterSearchPageLoadingSpinner.Visibility = ViewStates.Gone;
+                    }
+                });
             }));
         }
 

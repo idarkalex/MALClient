@@ -59,16 +59,19 @@ namespace MALClient.Android.Fragments.SearchFragments
 
             Bindings.Add(this.SetBinding(() => ViewModel.Loading).WhenSourceChanges(() =>
             {
-                if (ViewModel.Loading)
+                Activity?.RunOnUiThread(() =>
                 {
-                    AnimeSearchPageLoadingSpinner.Visibility = ViewStates.Visible;
-                }
-                else
-                {
-                    AnimeSearchPageLoadingSpinner.Visibility = ViewStates.Gone;
-                    _gridAdapter?.NotifyDataSetChanged();
-                    SearchRecyclerView?.RequestLayout();
-                }
+                    if (ViewModel.Loading)
+                    {
+                        AnimeSearchPageLoadingSpinner.Visibility = ViewStates.Visible;
+                    }
+                    else
+                    {
+                        AnimeSearchPageLoadingSpinner.Visibility = ViewStates.Gone;
+                        _gridAdapter?.NotifyDataSetChanged();
+                        SearchRecyclerView?.RequestLayout();
+                    }
+                });
             }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.EmptyNoticeVisibility).WhenSourceChanges(() =>

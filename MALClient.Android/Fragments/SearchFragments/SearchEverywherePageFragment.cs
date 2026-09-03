@@ -103,16 +103,19 @@ namespace MALClient.Android.Fragments.SearchFragments
 
             Bindings.Add(this.SetBinding(() => ViewModel.Loading).WhenSourceChanges(() =>
             {
-                if (ViewModel.Loading)
+                Activity?.RunOnUiThread(() =>
                 {
-                    LoadingSpinner.Visibility = ViewStates.Visible;
-                }
-                else
-                {
-                    LoadingSpinner.Visibility = ViewStates.Gone;
-                    _everywhereAdapter?.NotifyDataSetChanged();
-                    SearchRecyclerView?.RequestLayout();
-                }
+                    if (ViewModel.Loading)
+                    {
+                        LoadingSpinner.Visibility = ViewStates.Visible;
+                    }
+                    else
+                    {
+                        LoadingSpinner.Visibility = ViewStates.Gone;
+                        _everywhereAdapter?.NotifyDataSetChanged();
+                        SearchRecyclerView?.RequestLayout();
+                    }
+                });
             }));
 
             Bindings.Add(this.SetBinding(() => ViewModel.IsEmptyNoticeVisible).WhenSourceChanges(() =>
