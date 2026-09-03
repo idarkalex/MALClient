@@ -101,39 +101,5 @@ namespace MALClient.XShared.ViewModels
                             AnimeMode = AnimeMode
                         });
         }
-
-        public AnimeItemViewModel ToGridViewModel()
-        {
-            AnimeItemAbstraction abstraction;
-            if (AnimeMode)
-            {
-                abstraction = new AnimeItemAbstraction(IsAuth, new AnimeLibraryItemData
-                {
-                    Id = Id,
-                    MalId = Id,
-                    Title = Title,
-                    ImgUrl = ImgUrl,
-                    AllEpisodes = AllEpisodes,
-                    Type = (int)MalTypeParser.ParseAnimeType(Type),
-                    AlternateTitle = AlaternateTitle
-                });
-            }
-            else
-            {
-                abstraction = new AnimeItemAbstraction(IsAuth, new MangaLibraryItemData
-                {
-                    Id = Id,
-                    MalId = Id,
-                    Title = Title,
-                    ImgUrl = ImgUrl,
-                    AllEpisodes = AllEpisodes,
-                    AllVolumes = AllVolumes,
-                    Type = (int)MalTypeParser.ParseMangaType(Type),
-                    AlternateTitle = AlaternateTitle
-                });
-            }
-            abstraction.GlobalScore = GlobalScore;
-            return abstraction.ViewModel;
-        }
     }
 }

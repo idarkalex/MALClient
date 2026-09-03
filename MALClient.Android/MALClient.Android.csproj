@@ -907,6 +907,9 @@
     <AndroidResource Include="Resources\layout\AnimeItemWatchedDialog.xml" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\layout\SearchPosterItem.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <AndroidResource Include="Resources\layout\AnimeLightItem.xml" />
   </ItemGroup>
   <ItemGroup>

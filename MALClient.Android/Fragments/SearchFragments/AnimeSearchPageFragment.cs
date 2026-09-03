@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
-using MALClient.Android.AoLibsCompat;
+using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Resources;
-using MALClient.Android.UserControls;
-using MALClient.Models.Enums;
-using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
 
@@ -105,45 +103,76 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         class SearchGridAdapter : RecyclerView.Adapter
         {
-            private readonly System.Collections.Generic.IList<AnimeSearchItemViewModel> _items;
+            private readonly IList<AnimeSearchItemViewModel> _items;
             private readonly global::Android.Content.Context _context;
 
-            public SearchGridAdapter(System.Collections.Generic.IList<AnimeSearchItemViewModel> items, global::Android.Content.Context context)
+            public SearchGridAdapter(IList<AnimeSearchItemViewModel> items, global::Android.Content.Context context)
             {
                 _items = items;
                 _context = context;
+                if (items is INotifyCollectionChanged notifyCollection)
+                {
+                    notifyCollection.CollectionChanged += OnCollectionChanged;
+                }
             }
 
-            public override int ItemCount => _items.Count;
+            private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                NotifyDataSetChanged();
+            }
+
+            public override void OnAttachedToRecyclerView(RecyclerView recyclerView)
+            {
+                base.OnAttachedToRecyclerView(recyclerView);
+                if (_items?.Count > 0)
+                    NotifyDataSetChanged();
+            }
+
+            public override int ItemCount => _items?.Count ?? 0;
 
             public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
             {
-                GridHolder gridHolder = null;
-                var card = new AnimeGridItem(_context, vm => gridHolder?.SearchItem?.NavigateDetails());
-                card.LayoutParameters = new RecyclerView.LayoutParams(
-                    ViewGroup.LayoutParams.MatchParent,
-                    (int)_context.Resources.GetDimension(Resource.Dimension.GridCardHeight));
-                gridHolder = new GridHolder(card);
-                return gridHolder;
+                var view = LayoutInflater.From(_context).Inflate(Resource.Layout.SearchPosterItem, parent, false);
+                return new PosterHolder(view);
             }
 
             public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
             {
-                var gridHolder = (GridHolder)holder;
+                var posterHolder = (PosterHolder)holder;
                 var item = _items[position];
-                gridHolder.SearchItem = item;
-                gridHolder.Card.BindModel(item.ToGridViewModel(), false);
+                posterHolder.Bind(item);
             }
         }
 
-        class GridHolder : RecyclerView.ViewHolder
+        class PosterHolder : RecyclerView.ViewHolder
         {
-            public AnimeGridItem Card { get; }
-            public AnimeSearchItemViewModel SearchItem { get; set; }
+            private readonly ImageViewAsync _posterImage;
+            private readonly TextView _posterTitle;
+            private readonly TextView _posterScore;
+            private AnimeSearchItemViewModel _currentItem;
 
-            public GridHolder(AnimeGridItem card) : base(card)
+            public PosterHolder(View view) : base(view)
             {
-                Card = card;
+                _posterImage = view.FindViewById<ImageViewAsync>(Resource.Id.SearchPosterImage);
+                _posterTitle = view.FindViewById<TextView>(Resource.Id.SearchPosterTitle);
+                _posterScore = view.FindViewById<TextView>(Resource.Id.SearchPosterScore);
+                ItemView.Click += (s, e) => _currentItem?.NavigateDetails();
+            }
+
+            public void Bind(AnimeSearchItemViewModel item)
+            {
+                _currentItem = item;
+                _posterImage.AnimeInto(item.ImgUrl);
+                _posterTitle.Text = item.Title;
+                if (item.GlobalScore > 0)
+                {
+                    _posterScore.Text = item.GlobalScoreBind;
+                    _posterScore.Visibility = ViewStates.Visible;
+                }
+                else
+                {
+                    _posterScore.Visibility = ViewStates.Gone;
+                }
             }
         }
 
