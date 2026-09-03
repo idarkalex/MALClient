@@ -27,6 +27,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         private static SearchPageNavArgsBase _prevArgs;
 
         private SearchEverywhereViewModel ViewModel;
+        private ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder> _everywhereAdapter;
 
         private SearchEverywherePageFragment(bool initBindings) : base(initBindings)
         {
@@ -35,7 +36,7 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         protected override void InitBindings()
         {
-            SearchRecyclerView.SetAdapter(new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>(new Dictionary<Type, ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.IItemEntry>
+            _everywhereAdapter = new ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>(new Dictionary<Type, ObservableRecyclerAdapterWithMultipleViewTypes<ISearchEverywhereItem, RecyclerView.ViewHolder>.IItemEntry>
             {
                 {
                     typeof(SearchCategoryItem),
@@ -89,7 +90,8 @@ namespace MALClient.Android.Fragments.SearchFragments
             ViewModel.SearchResults)
             {
                 StretchContentHorizonatally = true
-            });
+            };
+            SearchRecyclerView.SetAdapter(_everywhereAdapter);
             SearchRecyclerView.SetLayoutManager(new LinearLayoutManager(Activity));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Loading).WhenSourceChanges(() =>
@@ -101,6 +103,8 @@ namespace MALClient.Android.Fragments.SearchFragments
                 else
                 {
                     LoadingSpinner.Visibility = ViewStates.Gone;
+                    _everywhereAdapter?.NotifyDataSetChanged();
+                    SearchRecyclerView?.RequestLayout();
                 }
             }));
 

@@ -172,15 +172,22 @@ namespace MALClient.XShared.ViewModels.Main
 
         private void PopulateItems()
         {
-            CurrentSearchItems.Clear();
-            var source = _animeSearch ? _allAnimeSearchItemViewModels : _allMangaSearchItemViewModels;
+            AnimeSearchItemViewModels.Clear();
+            MangaSearchItemViewModels.Clear();
             foreach (
                 var item in
-                source.Where(
+                _allAnimeSearchItemViewModels.Where(
                     item =>
                         string.IsNullOrWhiteSpace(_currrentFilter) ||
                         string.Equals(_currrentFilter, item.Type, StringComparison.CurrentCultureIgnoreCase)))
-                CurrentSearchItems.Add(item);
+                AnimeSearchItemViewModels.Add(item);
+            foreach (
+                var item in
+                _allMangaSearchItemViewModels.Where(
+                    item =>
+                        string.IsNullOrWhiteSpace(_currrentFilter) ||
+                        string.Equals(_currrentFilter, item.Type, StringComparison.CurrentCultureIgnoreCase)))
+                MangaSearchItemViewModels.Add(item);
             EmptyNoticeVisibility = CurrentSearchItems.Count == 0;
         }
 

@@ -29,7 +29,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         }
 
         private SearchPageViewModel ViewModel;
-
+        private SearchGridAdapter _gridAdapter;
 
         protected override void Init(Bundle savedInstanceState)
         {
@@ -44,8 +44,9 @@ namespace MALClient.Android.Fragments.SearchFragments
                 NavigatedTo();
             }
 
-            SearchRecyclerView.SetAdapter(new SearchGridAdapter(
-                IsManga ? ViewModel.MangaSearchItemViewModels : ViewModel.AnimeSearchItemViewModels, Activity));
+            _gridAdapter = new SearchGridAdapter(
+                IsManga ? ViewModel.MangaSearchItemViewModels : ViewModel.AnimeSearchItemViewModels, Activity);
+            SearchRecyclerView.SetAdapter(_gridAdapter);
             SearchRecyclerView.SetLayoutManager(new GridLayoutManager(Activity, 3));
 
             Bindings.Add(this.SetBinding(() => ViewModel.Loading).WhenSourceChanges(() =>
@@ -57,6 +58,8 @@ namespace MALClient.Android.Fragments.SearchFragments
                 else
                 {
                     AnimeSearchPageLoadingSpinner.Visibility = ViewStates.Gone;
+                    _gridAdapter?.NotifyDataSetChanged();
+                    SearchRecyclerView?.RequestLayout();
                 }
             }));
 
