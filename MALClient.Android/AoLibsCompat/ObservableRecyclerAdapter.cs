@@ -69,10 +69,16 @@ namespace MALClient.Android.AoLibsCompat
             {
                 notifyCollection.CollectionChanged += (s, e) =>
                 {
-                    if (HasObservers)
-                        NotifyDataSetChanged();
+                    NotifyDataSetChanged();
                 };
             }
+        }
+
+        public override void OnAttachedToRecyclerView(RecyclerView recyclerView)
+        {
+            base.OnAttachedToRecyclerView(recyclerView);
+            if (_source?.Count > 0)
+                NotifyDataSetChanged();
         }
 
         public override int ItemCount => _source?.Count ?? 0;
@@ -160,10 +166,16 @@ namespace MALClient.Android.AoLibsCompat
             {
                 notifyCollection.CollectionChanged += (s, e) =>
                 {
-                    if (HasObservers)
-                        NotifyDataSetChanged();
+                    NotifyDataSetChanged();
                 };
             }
+        }
+
+        public override void OnAttachedToRecyclerView(RecyclerView recyclerView)
+        {
+            base.OnAttachedToRecyclerView(recyclerView);
+            if (_source?.Count > 0)
+                NotifyDataSetChanged();
         }
 
         public override int ItemCount => _source?.Count ?? 0;
