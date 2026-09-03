@@ -51,7 +51,7 @@ namespace MALClient.XShared.ViewModels.Main
 
             GenreSelectionGridVisibility = false;
 
-            if (_animeSearch != args.Anime)
+            if (_animeSearch != args.Anime || args.ForceQuery)
                 PrevQuery = null;
             if (!_queryHandler)
                 ViewModelLocator.GeneralMain.OnSearchQuerySubmitted += SubmitQuery;

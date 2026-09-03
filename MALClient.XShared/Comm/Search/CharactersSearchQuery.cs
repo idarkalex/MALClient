@@ -78,32 +78,29 @@ namespace MALClient.XShared.Comm.Search
         {
             try
             {
-                var data = await TenraiClient.GetDataAsync($"characters?q={Uri.EscapeDataString(_query)}");
-                if (data.ValueKind == JsonValueKind.Object && data.TryGetProperty("data", out var results) && results.ValueKind == JsonValueKind.Array)
+                var (items, _) = await TenraiClient.GetPaginatedAsync($"characters?q={Uri.EscapeDataString(_query)}");
+                var output = new List<AnimeCharacter>();
+                foreach (var item in items)
                 {
-                    var output = new List<AnimeCharacter>();
-                    foreach (var item in results.EnumerateArray())
+                    try
                     {
-                        try
-                        {
-                            var character = new AnimeCharacter();
-                            character.Id = GetIntString(item, "mal_id");
-                            character.Name = WebUtility.HtmlDecode(GetString(item, "name"));
-                            character.ImgUrl = GetNestedImageUrl(item);
-                            var nicknames = GetStringArray(item, "nicknames");
-                            var about = GetString(item, "about");
-                            character.Notes = nicknames.Count > 0
-                                ? string.Join(", ", nicknames)
-                                : NormalizeAbout(about);
-                            output.Add(character);
-                        }
-                        catch (Exception)
-                        {
-                            //
-                        }
+                        var character = new AnimeCharacter();
+                        character.Id = GetIntString(item, "mal_id");
+                        character.Name = WebUtility.HtmlDecode(GetString(item, "name"));
+                        character.ImgUrl = GetNestedImageUrl(item);
+                        var nicknames = GetStringArray(item, "nicknames");
+                        var about = GetString(item, "about");
+                        character.Notes = nicknames.Count > 0
+                            ? string.Join(", ", nicknames)
+                            : NormalizeAbout(about);
+                        output.Add(character);
                     }
-                    return output;
+                    catch (Exception)
+                    {
+                        //
+                    }
                 }
+                return output;
             }
             catch (Exception)
             {
