@@ -60,6 +60,8 @@ namespace MALClient.Android.Fragments.SearchFragments
         protected override void InitBindings()
         {
             SearchPageViewPager.Adapter = new SearchPagePagerAdapter(ChildFragmentManager, _args, out int start);
+            SearchPageTabStrip.IndicatorColor = Color.ParseColor("#0066FF");
+            SearchPageTabStrip.IndicatorHeight = 3;
             SearchPageTabStrip.SetViewPager(SearchPageViewPager);
             SearchPageTabStrip.CenterTabs();
             SearchPageViewPager.OffscreenPageLimit = 5;
@@ -68,6 +70,13 @@ namespace MALClient.Android.Fragments.SearchFragments
             HasOnlyManualBindings = true;
 
             SearchPageSearchView.Iconified = false;
+            try
+            {
+                var mag = SearchPageSearchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
+                if (mag != null) mag.SetColorFilter(Color.White);
+                var close = SearchPageSearchView.FindViewById<ImageView>(Resource.Id.search_close_btn);
+                if (close != null) close.SetColorFilter(Color.White);
+            } catch { }
             if (!string.IsNullOrEmpty(_args?.Query))
                 SearchPageSearchView.SetQuery(_args.Query, false);
             _hintAdapter = new PosterDropAdapter(Activity);
