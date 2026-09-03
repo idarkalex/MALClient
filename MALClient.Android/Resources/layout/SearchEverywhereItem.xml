@@ -21,7 +21,7 @@
 
     <FrameLayout
         android:layout_width="75dp"
-        android:layout_height="124dp"
+        android:layout_height="150dp"
         android:background="?BrushAnimeItemInnerBackground"
         android:elevation="4dp">
 

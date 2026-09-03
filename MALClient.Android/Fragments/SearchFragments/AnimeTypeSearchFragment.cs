@@ -13,7 +13,6 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.Resources;
 using MALClient.Models.Enums;
-using MALClient.Models.Enums;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
@@ -23,10 +22,11 @@ namespace MALClient.Android.Fragments.SearchFragments
     public class AnimeTypeSearchFragment : MalFragmentBase
     {
         private SearchPageViewModel ViewModel;
+        private readonly bool _isGenreMode;
 
-        private AnimeTypeSearchFragment() : base(false)
+        public AnimeTypeSearchFragment(bool isGenreMode) : base(false)
         {
-            
+            _isGenreMode = isGenreMode;
         }
 
         protected override void Init(Bundle savedInstanceState)
@@ -34,10 +34,13 @@ namespace MALClient.Android.Fragments.SearchFragments
             ViewModel = ViewModelLocator.SearchPage;
         }
 
-
         protected override void InitBindings()
         {
-            AnimeTypeSearchPageList.Adapter = ViewModel.AvailableSelectionChoices.GetAdapter(GetTemplateDelegate);
+            var choices = _isGenreMode
+                ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList()
+                : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
+
+            AnimeTypeSearchPageList.Adapter = choices.GetAdapter(GetTemplateDelegate);
         }
 
         private View GetTemplateDelegate(int i, Enum parameter, View convertView)
@@ -58,9 +61,9 @@ namespace MALClient.Android.Fragments.SearchFragments
         private void ViewOnClick(object sender, EventArgs eventArgs)
         {
             var item = (sender as View).Tag.Unwrap<Enum>();
-            if (item is AnimeGenreSearch)
+            if (_isGenreMode)
                 ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs((AnimeGenreSearch)item));
-            else                                                                                                             
+            else
                 ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs((AnimeStudios)item));
         }
 
@@ -71,9 +74,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         private GridView _animeTypeSearchPageList;
 
         public GridView AnimeTypeSearchPageList => GetView(ref _animeTypeSearchPageList, Resource.Id.AnimeTypeSearchPageList);
- 
-        #endregion
 
-        public static AnimeTypeSearchFragment Instance => new AnimeTypeSearchFragment();
+        #endregion
     }
 }
