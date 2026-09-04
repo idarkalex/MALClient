@@ -209,17 +209,25 @@ namespace MALClient.Android.Fragments.SearchFragments
                 try
                 {
                     SearchPageSearchView.Iconified = false;
-                    SearchPageSearchView.ClearFocus();
                     var edit = SearchPageSearchView.FindViewById<global::Android.Widget.AutoCompleteTextView>(Resource.Id.search_src_text);
                     if (edit != null)
                     {
+                        edit.Focusable = true;
+                        edit.FocusableInTouchMode = true;
+                        edit.Enabled = true;
                         edit.RequestFocus();
                         edit.SelectAll();
                         var imm = Activity?.GetSystemService(global::Android.Content.Context.InputMethodService) as global::Android.Views.InputMethods.InputMethodManager;
                         imm?.ShowSoftInput(edit, global::Android.Views.InputMethods.ShowFlags.Implicit);
                     }
+                    else
+                    {
+                        SearchPageSearchView.RequestFocus();
+                        var imm2 = Activity?.GetSystemService(global::Android.Content.Context.InputMethodService) as global::Android.Views.InputMethods.InputMethodManager;
+                        imm2?.ShowSoftInput(SearchPageSearchView, global::Android.Views.InputMethods.ShowFlags.Implicit);
+                    }
                 } catch { }
-            }, 250);
+            }, 300);
 
             // Manejar X de la barra global: limpiar filtro de genres/studios también
             try

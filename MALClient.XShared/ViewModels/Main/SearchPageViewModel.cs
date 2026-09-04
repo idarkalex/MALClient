@@ -84,11 +84,12 @@ namespace MALClient.XShared.ViewModels.Main
                     PrevQuery = null;
                     if (_lastLoadedQuery == args.Query && (_allAnimeSearchItemViewModels.Count > 0 || _allMangaSearchItemViewModels.Count > 0))
                     {
-                        // both tabs already loaded for this query -> instant tab switch, no refetch
+                        // both tabs already loaded for this query -> instant tab switch, no refetch but refresh current tab
                         IsFirstVisitGridVisible = false;
                         EmptyNoticeVisibility = false;
                         ViewModelLocator.GeneralMain.CurrentSearchQuery = args.Query;
                         InternalQuery = args.Query;
+                        PopulateItems();
                         return;
                     }
                 }

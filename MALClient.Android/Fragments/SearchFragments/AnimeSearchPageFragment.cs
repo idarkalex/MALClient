@@ -46,11 +46,11 @@ namespace MALClient.Android.Fragments.SearchFragments
 
             _gridAdapter = new SearchGridAdapter(
                 IsManga ? ViewModel.MangaSearchItemViewModels : ViewModel.AnimeSearchItemViewModels, Activity);
-            SearchRecyclerView.SetAdapter(_gridAdapter);
             SearchRecyclerView.SetLayoutManager(new GridLayoutManager(Activity, 3));
-            SearchRecyclerView.HasFixedSize = true;
+            SearchRecyclerView.SetAdapter(_gridAdapter);
+            SearchRecyclerView.HasFixedSize = false;
             SearchRecyclerView.SetClipToPadding(false);
-            SearchRecyclerView.SetPadding(4, 0, 4, 0);
+            SearchRecyclerView.SetPadding(4, 4, 4, 4);
 
             // Initial refresh if data already populated (before Loading binding fires)
             var currentItems = IsManga ? ViewModel.MangaSearchItemViewModels : ViewModel.AnimeSearchItemViewModels;
@@ -104,7 +104,7 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         public override void DetachBindings()
         {
-
+            base.DetachBindings();
         }
 
         public void NavigatedTo()

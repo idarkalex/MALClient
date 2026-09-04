@@ -41,10 +41,11 @@ namespace MALClient.Android.Fragments.SearchFragments
             _everywhereAdapter = new CardsEverywhereAdapter(this, ViewModel);
             var gridManager = new GridLayoutManager(Activity, 3);
             gridManager.SetSpanSizeLookup(new CardsSpanLookup(_everywhereAdapter));
-            SearchRecyclerView.SetAdapter(_everywhereAdapter);
             SearchRecyclerView.SetLayoutManager(gridManager);
-            SearchRecyclerView.HasFixedSize = false;
+            SearchRecyclerView.SetAdapter(_everywhereAdapter);
+            SearchRecyclerView.HasFixedSize = true;
             SearchRecyclerView.SetClipToPadding(false);
+            SearchRecyclerView.SetPadding(4, 4, 4, 4);
 
             // Initial refresh if data already populated
             if (ViewModel.SearchResults?.Count > 0)
@@ -180,9 +181,18 @@ namespace MALClient.Android.Fragments.SearchFragments
                     img = g.Item.ImageUrl;
                     type = g.Item.Payload?.MediaType ?? "";
                     score = g.Item.Payload?.Score ?? "";
+                    if (!string.IsNullOrWhiteSpace(type))
+                    {
+                        type = type.Trim().ToLower();
+                        if (type == "novel" || type == "light_novel" || type == "light novel") type = "Novela";
+                        else if (type == "oneshot" || type == "one-shot") type = "One-shot";
+                        else type = char.ToUpper(type[0]) + type.Substring(1);
+                    }
                     if (string.IsNullOrWhiteSpace(type) && item is SearchEverywhereCharacterItem) type = "Character";
                     else if (item is SearchEverywherePersonItem) type = "Person";
                     else if (item is SearchEverywhereUserItem) type = "User";
+                    else if (item is SearchEverywhereMangaItem && string.IsNullOrWhiteSpace(type)) type = "Manga";
+                    else if (item is SearchEverywhereAnimeItem && string.IsNullOrWhiteSpace(type)) type = "Anime";
                 }
                 _posterImage.AnimeInto(img);
                 _posterTitle.Text = title;
@@ -276,7 +286,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         {
             _fragment = fragment;
             _viewModel = viewModel;
-            StretchContentHorizonatally = true;
+            StretchContentHorizonatally = false;
         }
 
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
