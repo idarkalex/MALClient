@@ -157,6 +157,8 @@ var view = convertView;
                     {
                         view.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, (int)global::Android.Util.TypedValue.ApplyDimension(global::Android.Util.ComplexUnitType.Dip, targetDp, view.Context.Resources.DisplayMetrics));
                     }
+                    // Force re-measurement with new height
+                    view.RequestLayout();
                     var tvInner = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
                     if (tvInner != null)
                     {

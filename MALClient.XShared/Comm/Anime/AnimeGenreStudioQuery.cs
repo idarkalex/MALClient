@@ -33,7 +33,7 @@ namespace MALClient.XShared.Comm.Anime
 
         public async Task<List<SeasonalAnimeData>> GetAnime()
         {
-            var cacheKey = _genreMode ? $"genre_v4_{_genre}_{_page}" : $"studio_v4_{_studio}_{_page}";
+            var cacheKey = _genreMode ? $"genre_v9_{_genre}_{_page}" : $"studio_v9_{_studio}_{_page}";
             var cacheRegion = _genreMode ? "AnimesByGenre" : "AnimesByStudio";
             var output = await DataCache.RetrieveData<List<SeasonalAnimeData>>(cacheKey, cacheRegion, 1)
                          ?? new List<SeasonalAnimeData>();
@@ -44,7 +44,7 @@ namespace MALClient.XShared.Comm.Anime
             {
                 var endpoint = _genreMode
                     ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc&sfw"
-                    : $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw";
+                    : $"anime?studios={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw";
 
                 var (items, _) = await TenraiClient.GetPaginatedAsync(endpoint);
 
@@ -63,8 +63,9 @@ namespace MALClient.XShared.Comm.Anime
                     });
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                DiagnosticsReporter.Error("AnimeGenreStudioQuery", $"error for {(_genreMode ? _genre.ToString() : _studio.ToString())}: {ex.Message}", ex);
                 return output;
             }
 

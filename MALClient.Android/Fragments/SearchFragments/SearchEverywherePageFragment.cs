@@ -45,7 +45,7 @@ namespace MALClient.Android.Fragments.SearchFragments
             SearchRecyclerView.SetAdapter(_everywhereAdapter);
             SearchRecyclerView.HasFixedSize = false;
             SearchRecyclerView.SetClipToPadding(false);
-            SearchRecyclerView.SetPadding(4, 8, 4, 8);
+            SearchRecyclerView.SetPadding(4, 24, 4, 8);
 
             // Initial refresh if data already populated
             if (ViewModel.SearchResults?.Count > 0)
