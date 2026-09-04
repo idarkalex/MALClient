@@ -48,6 +48,9 @@ namespace MALClient.Android.Fragments.SearchFragments
                 IsManga ? ViewModel.MangaSearchItemViewModels : ViewModel.AnimeSearchItemViewModels, Activity);
             SearchRecyclerView.SetAdapter(_gridAdapter);
             SearchRecyclerView.SetLayoutManager(new GridLayoutManager(Activity, 3));
+            SearchRecyclerView.HasFixedSize = true;
+            SearchRecyclerView.SetClipToPadding(false);
+            SearchRecyclerView.SetPadding(4, 0, 4, 0);
 
             // Initial refresh if data already populated (before Loading binding fires)
             var currentItems = IsManga ? ViewModel.MangaSearchItemViewModels : ViewModel.AnimeSearchItemViewModels;

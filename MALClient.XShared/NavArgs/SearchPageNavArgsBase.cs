@@ -23,6 +23,7 @@ namespace MALClient.XShared.NavArgs
         public bool ByGenre { get; set; }
         public bool ByStudio { get; set; }
         public AnimeStudios? Studio { get; set; }
+        public AnimeGenreSearch? Genre { get; set; }
         public bool Anime { get; set; } = true;
         public string Query { get; set; }
         public bool ForceQuery { get; set; }

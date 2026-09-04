@@ -73,14 +73,10 @@ namespace MALClient.Android.Fragments.SearchFragments
 
             SearchPageViewPager.SetCurrentItem(start, false);
             HasOnlyManualBindings = true;
-
-            // Force-create all 6 fragments so their InitBindings run before search starts
-            // Tab order: 0=Everywhere, 1=Anime, 2=Manga, 3=Characters, 4=Genres, 5=Studios
-            for (int i = 0; i < 6; i++)
+            try
             {
-                SearchPageViewPager.SetCurrentItem(i, false);
-            }
-            SearchPageViewPager.SetCurrentItem(start, false);
+                SearchPageViewPager.AddOnPageChangeListener(new SearchPageChangeListener(SearchPageSearchView));
+            } catch { }
 
             SearchPageSearchView.Iconified = false;
             try
@@ -116,6 +112,23 @@ namespace MALClient.Android.Fragments.SearchFragments
             {
                 var q = e.NewText?.Trim() ?? "";
                 ViewModelLocator.GeneralMain.CurrentSearchQuery = e.NewText;
+                var currentTab = SearchPageViewPager.CurrentItem;
+                // Genres(4) y Studios(5) son pestañas independientes: filtrar grid local, no búsqueda global
+                if (currentTab == 4)
+                {
+                    _pagerAdapter.FilterCurrentGenreTab(q);
+                    _dropdownCts?.Cancel();
+                    Activity?.RunOnUiThread(() => { _hintAdapter.Clear(); _hintAdapter.NotifyDataSetChanged(); _searchAutoComplete?.DismissDropDown(); });
+                    return;
+                }
+                if (currentTab == 5)
+                {
+                    _pagerAdapter.FilterCurrentStudioTab(q);
+                    _dropdownCts?.Cancel();
+                    Activity?.RunOnUiThread(() => { _hintAdapter.Clear(); _hintAdapter.NotifyDataSetChanged(); _searchAutoComplete?.DismissDropDown(); });
+                    return;
+                }
+
                 _dropdownCts?.Cancel();
                 _dropdownCts = new CancellationTokenSource();
                 var token = _dropdownCts.Token;
@@ -182,18 +195,38 @@ namespace MALClient.Android.Fragments.SearchFragments
             var se = SearchPageSearchView.FindViewById(Resource.Id.search_src_text) as global::Android.Widget.EditText;
             if (se != null) se.SetTextColor(Color.White);
 
-            // Auto-focus search bar and show keyboard on entering search
+            // Auto-focus search bar and show keyboard on entering search - post para que ViewPager termine layout
             SearchPageSearchView.PostDelayed(() =>
             {
                 try
                 {
+                    SearchPageSearchView.Iconified = false;
+                    SearchPageSearchView.ClearFocus();
                     var edit = SearchPageSearchView.FindViewById<global::Android.Widget.AutoCompleteTextView>(Resource.Id.search_src_text);
-                    edit?.RequestFocus();
-                    var imm = Activity?.GetSystemService(global::Android.Content.Context.InputMethodService) as global::Android.Views.InputMethods.InputMethodManager;
-                    if (edit != null) imm?.ShowSoftInput(edit, global::Android.Views.InputMethods.ShowFlags.Forced);
-                    else imm?.ShowSoftInput(SearchPageSearchView, global::Android.Views.InputMethods.ShowFlags.Forced);
+                    if (edit != null)
+                    {
+                        edit.RequestFocus();
+                        edit.SelectAll();
+                        var imm = Activity?.GetSystemService(global::Android.Content.Context.InputMethodService) as global::Android.Views.InputMethods.InputMethodManager;
+                        imm?.ShowSoftInput(edit, global::Android.Views.InputMethods.ShowFlags.Implicit);
+                    }
                 } catch { }
-            }, 150);
+            }, 250);
+
+            // Manejar X de la barra global: limpiar filtro de genres/studios también
+            try
+            {
+                var closeBtn = SearchPageSearchView.FindViewById<ImageView>(Resource.Id.search_close_btn);
+                if (closeBtn != null)
+                    closeBtn.Click += (s, e) =>
+                    {
+                        try
+                        {
+                            if (SearchPageViewPager.CurrentItem == 4) _pagerAdapter.FilterCurrentGenreTab("");
+                            if (SearchPageViewPager.CurrentItem == 5) _pagerAdapter.FilterCurrentStudioTab("");
+                        } catch { }
+                    };
+            } catch { }
 
             // Trigger initial search after fragments are created and their InitBindings run
             _pagerAdapter.TriggerSearch(_args);
@@ -225,5 +258,20 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         public override int LayoutResourceId => Resource.Layout.SearchPage;
         
+    }
+
+    class SearchPageChangeListener : ViewPager.SimpleOnPageChangeListener
+    {
+        private readonly global::Android.Support.V7.Widget.SearchView _searchView;
+        public SearchPageChangeListener(global::Android.Support.V7.Widget.SearchView sv) { _searchView = sv; }
+        public override void OnPageSelected(int position)
+        {
+            try
+            {
+                if (position == 4) _searchView.QueryHint = "Search genres...";
+                else if (position == 5) _searchView.QueryHint = "Search studios...";
+                else _searchView.QueryHint = "Search anime, manga, characters...";
+            } catch { }
+        }
     }
 }

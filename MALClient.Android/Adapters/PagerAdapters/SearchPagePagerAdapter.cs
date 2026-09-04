@@ -86,15 +86,14 @@ namespace MALClient.Android.PagerAdapters
 
         public void TriggerSearchWithStudio(AnimeStudios studio)
         {
-            // Switch to Anime tab and search with studio filter
             var args = new SearchPageNavigationArgs 
             { 
                 ByStudio = true, 
                 Studio = studio,
                 ForceQuery = true 
             };
+            ViewModelLocator.GeneralMain.CurrentSearchQuery = studio.GetDescription();
             TriggerSearch(args);
-            // Switch to Anime tab (index 1)
             var activity = MALClient.Android.Activities.MainActivity.CurrentContext;
             activity?.RunOnUiThread(() =>
             {
@@ -105,6 +104,38 @@ namespace MALClient.Android.PagerAdapters
                 } 
                 catch { }
             });
+        }
+
+        public void TriggerSearchWithGenre(AnimeGenreSearch genre)
+        {
+            var args = new SearchPageNavigationArgs 
+            { 
+                ByGenre = true, 
+                Genre = genre,
+                ForceQuery = true 
+            };
+            ViewModelLocator.GeneralMain.CurrentSearchQuery = genre.GetDescription();
+            TriggerSearch(args);
+            var activity = MALClient.Android.Activities.MainActivity.CurrentContext;
+            activity?.RunOnUiThread(() =>
+            {
+                try 
+                {
+                    var viewPager = activity.FindViewById<global::Android.Support.V4.View.ViewPager>(Resource.Id.SearchPageViewPager);
+                    viewPager?.SetCurrentItem(1, true);
+                } 
+                catch { }
+            });
+        }
+
+        public void FilterCurrentGenreTab(string query)
+        {
+            try { _genresSearchPageFragment?.FilterChoices(query); } catch { }
+        }
+
+        public void FilterCurrentStudioTab(string query)
+        {
+            try { _studiosSearchPageFragment?.FilterChoices(query); } catch { }
         }
 
         public override int Count => 6;
