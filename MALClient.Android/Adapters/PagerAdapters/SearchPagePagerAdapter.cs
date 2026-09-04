@@ -132,6 +132,8 @@ namespace MALClient.Android.PagerAdapters
         {
             try 
             { 
+                // Ensure fragment view is created
+                _ = _genresSearchPageFragment.AnimeTypeSearchPageList;
                 _genresSearchPageFragment?.FilterChoices(query); 
             } 
             catch (Exception ex) 
@@ -144,6 +146,8 @@ namespace MALClient.Android.PagerAdapters
         {
             try 
             { 
+                // Ensure fragment view is created
+                _ = _studiosSearchPageFragment.AnimeTypeSearchPageList;
                 _studiosSearchPageFragment?.FilterChoices(query); 
             } 
             catch (Exception ex) 

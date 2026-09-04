@@ -229,7 +229,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                 } catch { }
             }, 300);
 
-            // Manejar X de la barra global: limpiar filtro de genres/studios también
+            // Manejar X de la barra global: limpiar búsqueda y filtro de genres/studios
             try
             {
                 var closeBtn = SearchPageSearchView.FindViewById<ImageView>(Resource.Id.search_close_btn);
@@ -238,11 +238,28 @@ namespace MALClient.Android.Fragments.SearchFragments
                     {
                         try
                         {
-                            if (SearchPageViewPager.CurrentItem == 4) _pagerAdapter.FilterCurrentGenreTab("");
-                            if (SearchPageViewPager.CurrentItem == 5) _pagerAdapter.FilterCurrentStudioTab("");
-                        } catch { }
+                            // Clear search query
+                            SearchPageSearchView.SetQuery("", false);
+                            SearchPageSearchView.ClearFocus();
+                            
+                            // Clear genre/studio filters
+                            if (SearchPageViewPager.CurrentItem == 4) 
+                                _pagerAdapter.FilterCurrentGenreTab("");
+                            if (SearchPageViewPager.CurrentItem == 5) 
+                                _pagerAdapter.FilterCurrentStudioTab("");
+                            
+                            // Reset search query in ViewModel
+                            ViewModelLocator.GeneralMain.CurrentSearchQuery = "";
+                            _args.Query = "";
+                            _args.ForceQuery = true;
+                            
+                            // Trigger search with empty query to reset results
+                            _pagerAdapter.TriggerSearch(new SearchPageNavigationArgs { Query = "", ForceQuery = true });
+                        } 
+                        catch { }
                     };
-            } catch { }
+            } 
+            catch { }
 
             // Trigger initial search after fragments are created and their InitBindings run
             _pagerAdapter.TriggerSearch(_args);

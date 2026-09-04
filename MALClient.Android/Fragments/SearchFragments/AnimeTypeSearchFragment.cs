@@ -113,8 +113,10 @@ namespace MALClient.Android.Fragments.SearchFragments
                     try
                     {
                         var inflater = ctx != null ? LayoutInflater.From(ctx) : null;
+                        // Inflate with null parent since GridView will add it, but ensure proper LayoutParams
                         inflated = inflater?.Inflate(Resource.Layout.AnimeSearchTypeItem, null);
-                    } catch { }
+                    }
+                    catch { }
                     view = inflated;
                     if (view == null)
                     {
@@ -123,9 +125,27 @@ namespace MALClient.Android.Fragments.SearchFragments
                         tvFallback.SetPadding(20, 20, 20, 20);
                         tvFallback.Text = parameter?.GetDescription() ?? "";
                         tvFallback.Tag = parameter?.Wrap();
+                        // Ensure fallback has proper LayoutParams for GridView
+                        var fallbackLp = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                        tvFallback.LayoutParameters = fallbackLp;
                         return tvFallback;
                     }
                     view.Click += ViewOnClick;
+                    // Ensure the inflated view has proper LayoutParams for GridView
+                    var lp = view.LayoutParameters;
+                    if (lp == null)
+                    {
+                        view.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                    }
+                }
+                else
+                {
+                    // Recycled view - ensure it has correct LayoutParams
+                    var lp = view.LayoutParameters;
+                    if (lp == null)
+                    {
+                        view.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                    }
                 }
                 // Horizontal cards: studios 2 filas (80dp), genres 1 fila (56dp) centradas
                 try
@@ -143,7 +163,8 @@ namespace MALClient.Android.Fragments.SearchFragments
                         tvInner.SetMaxLines(_isGenreMode ? 1 : 2);
                         tvInner.Ellipsize = global::Android.Text.TextUtils.TruncateAt.End;
                     }
-                } catch { }
+                }
+                catch { }
                 var tv = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
                 if (tv != null) tv.Text = parameter?.GetDescription() ?? "";
                 else
@@ -162,6 +183,8 @@ namespace MALClient.Android.Fragments.SearchFragments
                     var tvFallback = new TextView(fallbackCtx);
                     tvFallback.SetPadding(20, 20, 20, 20);
                     tvFallback.Text = parameter?.GetDescription() ?? "item";
+                    var fallbackLp = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                    tvFallback.LayoutParameters = fallbackLp;
                     return tvFallback;
                 }
                 catch { return new TextView(global::Android.App.Application.Context) { Text = "item" }; }
