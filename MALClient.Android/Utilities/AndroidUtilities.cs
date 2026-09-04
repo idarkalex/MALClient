@@ -127,6 +127,7 @@ namespace MALClient.Android
             this IList<T> collection,
             Func<int, T, View, View> getTemplateDelegate, View footer, bool forGridView)
         {
+            if (collection == null) collection = new List<T>();
             if (footer != null) footer.Tag = "Footer";
             if (forGridView)
                 return new ObservableGridViewAdapterWithFooter<T>()

@@ -58,6 +58,9 @@ namespace MALClient.Android.Fragments.SearchFragments
         public void RefreshAdapter()
         {
             if (AnimeTypeSearchPageList == null) return;
+            if (_allChoices == null)
+                _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
+            if (_filteredChoices == null) _filteredChoices = new List<Enum>(_allChoices);
             AnimeTypeSearchPageList.Adapter = _filteredChoices.GetAdapter(GetTemplateDelegate, null, true);
         }
 
