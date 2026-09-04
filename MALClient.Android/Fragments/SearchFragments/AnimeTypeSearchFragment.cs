@@ -61,7 +61,10 @@ namespace MALClient.Android.Fragments.SearchFragments
             if (_allChoices == null)
                 _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
             if (_filteredChoices == null) _filteredChoices = new List<Enum>(_allChoices);
-            AnimeTypeSearchPageList.Adapter = _filteredChoices.GetAdapter(GetTemplateDelegate, null, true);
+            var ctx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;
+            var footer = new View(ctx);
+            footer.Visibility = ViewStates.Gone;
+            AnimeTypeSearchPageList.Adapter = _filteredChoices.GetAdapter(GetTemplateDelegate, footer, true);
         }
 
         private View GetTemplateDelegate(int i, Enum parameter, View convertView)
