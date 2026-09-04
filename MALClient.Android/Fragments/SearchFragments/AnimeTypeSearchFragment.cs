@@ -66,19 +66,52 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         private View GetTemplateDelegate(int i, Enum parameter, View convertView)
         {
-            var view = convertView;
-            if (view == null)
+            try
             {
-                var ctx = Activity ?? MainActivity.CurrentContext;
-                var inflater = ctx != null ? LayoutInflater.From(ctx) : MainActivity.CurrentContext?.LayoutInflater;
-                view = inflater?.Inflate(Resource.Layout.AnimeSearchTypeItem, null);
-                if (view == null) return new TextView(ctx) { Text = parameter.GetDescription() };
-                view.Click += ViewOnClick;
+                var view = convertView;
+                if (view == null)
+                {
+                    var ctx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;
+                    View inflated = null;
+                    try
+                    {
+                        var inflater = ctx != null ? LayoutInflater.From(ctx) : null;
+                        inflated = inflater?.Inflate(Resource.Layout.AnimeSearchTypeItem, null);
+                    } catch { }
+                    view = inflated;
+                    if (view == null)
+                    {
+                        var fallbackCtx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;
+                        var tvFallback = new TextView(fallbackCtx);
+                        tvFallback.SetPadding(20, 20, 20, 20);
+                        tvFallback.Text = parameter?.GetDescription() ?? "";
+                        tvFallback.Tag = parameter?.Wrap();
+                        return tvFallback;
+                    }
+                    view.Click += ViewOnClick;
+                }
+                var tv = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
+                if (tv != null) tv.Text = parameter?.GetDescription() ?? "";
+                else
+                {
+                    // fallback TextView case
+                    if (view is TextView tv2) tv2.Text = parameter?.GetDescription() ?? "";
+                }
+                view.Tag = parameter?.Wrap();
+                return view;
             }
-            var tv = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
-            if (tv != null) tv.Text = parameter.GetDescription();
-            view.Tag = parameter.Wrap();
-            return view;
+            catch
+            {
+                try
+                {
+                    var fallbackCtx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;
+                    var tvFallback = new TextView(fallbackCtx);
+                    tvFallback.SetPadding(20, 20, 20, 20);
+                    tvFallback.Text = parameter?.GetDescription() ?? "item";
+                    return tvFallback;
+                }
+                catch { return new TextView(global::Android.App.Application.Context) { Text = "item" }; }
+            }
         }
 
         private void ViewOnClick(object sender, EventArgs eventArgs)
