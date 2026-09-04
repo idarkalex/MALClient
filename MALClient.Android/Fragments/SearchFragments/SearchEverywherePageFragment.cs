@@ -229,7 +229,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     typeof(SearchCategoryItem),
                     new SpecializedItemEntry<SearchCategoryItem, CategoryHolder>
                     {
-                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereCategoryItem, null),
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereCategoryItem, fragment.SearchRecyclerView, false),
                         SpecializedDataTemplate = (item, holder, position) => holder.Category.Text = item.Name
                     }
                 },
@@ -237,7 +237,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     typeof(SearchEverywhereSeparator),
                     new SpecializedItemEntry<SearchEverywhereSeparator, SeparatorHolder>
                     {
-                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereSeparatorItem, null),
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchEverywhereSeparatorItem, fragment.SearchRecyclerView, false),
                         SpecializedDataTemplate = (item, holder, position) => {}
                     }
                 },

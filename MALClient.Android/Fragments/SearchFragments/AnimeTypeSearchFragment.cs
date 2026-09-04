@@ -78,6 +78,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                 var q = query.ToLower();
                 _filteredChoices = _allChoices.Where(c => c.GetDescription().ToLower().Contains(q)).ToList();
             }
+            // Apply filter immediately if view is ready, otherwise it will be applied in RefreshAdapter
             RefreshAdapter();
         }
 
@@ -94,7 +95,11 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         public void RefreshAdapter()
         {
-            if (AnimeTypeSearchPageList == null) return;
+            if (AnimeTypeSearchPageList == null)
+            {
+                // View not ready yet, filter will be applied when view is created
+                return;
+            }
             if (_allChoices == null)
                 _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList();
             if (_filteredChoices == null) _filteredChoices = new List<Enum>(_allChoices);
@@ -105,19 +110,17 @@ namespace MALClient.Android.Fragments.SearchFragments
         {
             try
             {
-                var view = convertView;
+var view = convertView;
                 if (view == null)
                 {
                     var ctx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;
-                    View inflated = null;
                     try
                     {
                         var inflater = ctx != null ? LayoutInflater.From(ctx) : null;
-                        // Inflate with null parent since GridView will add it, but ensure proper LayoutParams
-                        inflated = inflater?.Inflate(Resource.Layout.AnimeSearchTypeItem, null);
+                        var inflatedView = inflater?.Inflate(Resource.Layout.AnimeSearchTypeItem, null);
+                        view = inflatedView;
                     }
                     catch { }
-                    view = inflated;
                     if (view == null)
                     {
                         var fallbackCtx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;
@@ -125,18 +128,11 @@ namespace MALClient.Android.Fragments.SearchFragments
                         tvFallback.SetPadding(20, 20, 20, 20);
                         tvFallback.Text = parameter?.GetDescription() ?? "";
                         tvFallback.Tag = parameter?.Wrap();
-                        // Ensure fallback has proper LayoutParams for GridView
                         var fallbackLp = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
                         tvFallback.LayoutParameters = fallbackLp;
                         return tvFallback;
                     }
                     view.Click += ViewOnClick;
-                    // Ensure the inflated view has proper LayoutParams for GridView
-                    var lp = view.LayoutParameters;
-                    if (lp == null)
-                    {
-                        view.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-                    }
                 }
                 else
                 {
@@ -156,6 +152,10 @@ namespace MALClient.Android.Fragments.SearchFragments
                     {
                         lp.Height = (int)global::Android.Util.TypedValue.ApplyDimension(global::Android.Util.ComplexUnitType.Dip, targetDp, view.Context.Resources.DisplayMetrics);
                         view.LayoutParameters = lp;
+                    }
+                    else
+                    {
+                        view.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, (int)global::Android.Util.TypedValue.ApplyDimension(global::Android.Util.ComplexUnitType.Dip, targetDp, view.Context.Resources.DisplayMetrics));
                     }
                     var tvInner = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
                     if (tvInner != null)

@@ -33,7 +33,7 @@ namespace MALClient.XShared.Comm.Anime
 
         public async Task<List<SeasonalAnimeData>> GetAnime()
         {
-            var cacheKey = _genreMode ? $"genre_v3_{_genre}_{_page}" : $"studio_v3_{_studio}_{_page}";
+            var cacheKey = _genreMode ? $"genre_v4_{_genre}_{_page}" : $"studio_v4_{_studio}_{_page}";
             var cacheRegion = _genreMode ? "AnimesByGenre" : "AnimesByStudio";
             var output = await DataCache.RetrieveData<List<SeasonalAnimeData>>(cacheKey, cacheRegion, 1)
                          ?? new List<SeasonalAnimeData>();
