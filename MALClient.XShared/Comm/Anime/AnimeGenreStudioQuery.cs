@@ -33,7 +33,7 @@ namespace MALClient.XShared.Comm.Anime
 
         public async Task<List<SeasonalAnimeData>> GetAnime()
         {
-            var cacheKey = _genreMode ? $"genre_v2_{_genre}_{_page}" : $"studio_v2_{_studio}_{_page}";
+            var cacheKey = _genreMode ? $"genre_v3_{_genre}_{_page}" : $"studio_v3_{_studio}_{_page}";
             var cacheRegion = _genreMode ? "AnimesByGenre" : "AnimesByStudio";
             var output = await DataCache.RetrieveData<List<SeasonalAnimeData>>(cacheKey, cacheRegion, 1)
                          ?? new List<SeasonalAnimeData>();
@@ -44,15 +44,9 @@ namespace MALClient.XShared.Comm.Anime
             {
                 var endpoint = _genreMode
                     ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc&sfw"
-                    : $"anime?studios={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw";
+                    : $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw";
 
                 var (items, _) = await TenraiClient.GetPaginatedAsync(endpoint);
-                // Fallback to producers if studios returns empty (Tenrai/Jikan param difference)
-                if (items.Count == 0 && !_genreMode)
-                {
-                    var fallbackProd = $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw";
-                    (items, _) = await TenraiClient.GetPaginatedAsync(fallbackProd);
-                }
 
                 int index = (_page - 1) * 25 + 1;
                 foreach (var entry in items)

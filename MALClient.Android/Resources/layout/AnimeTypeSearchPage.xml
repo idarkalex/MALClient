@@ -1,17 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
  
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?BrushDeepBackground">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:background="?BrushDeepBackground">
+  <android.support.v7.widget.SearchView
+      android:id="@+id/AnimeTypeSearchView"
+      android:layout_width="match_parent"
+      android:layout_height="48dp"
+      android:background="?BrushAppBarUpper"
+      app:iconifiedByDefault="false"
+      android:queryHint="Search genres..."
+      android:elevation="4dp" />
   <GridView
     android:id="@+id/AnimeTypeSearchPageList"
     android:layout_width="match_parent"
-    android:layout_gravity="top"
-    android:layout_height="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
     android:choiceMode="singleChoice"
     android:stretchMode="columnWidth"
     android:numColumns="3"
-    android:dividerHeight="5dp"
-    android:divider="@color/Transparent" />
-</RelativeLayout>
+    android:horizontalSpacing="8dp"
+    android:verticalSpacing="8dp"
+    android:padding="8dp"
+    android:clipToPadding="false"
+    android:divider="@color/Transparent"
+    android:dividerHeight="0dp" />
+</LinearLayout>

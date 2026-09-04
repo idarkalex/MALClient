@@ -130,12 +130,26 @@ namespace MALClient.Android.PagerAdapters
 
         public void FilterCurrentGenreTab(string query)
         {
-            try { _genresSearchPageFragment?.FilterChoices(query); } catch { }
+            try 
+            { 
+                _genresSearchPageFragment?.FilterChoices(query); 
+            } 
+            catch (Exception ex) 
+            {
+                System.Diagnostics.Debug.WriteLine($"FilterCurrentGenreTab error: {ex.Message}");
+            }
         }
 
         public void FilterCurrentStudioTab(string query)
         {
-            try { _studiosSearchPageFragment?.FilterChoices(query); } catch { }
+            try 
+            { 
+                _studiosSearchPageFragment?.FilterChoices(query); 
+            } 
+            catch (Exception ex) 
+            {
+                System.Diagnostics.Debug.WriteLine($"FilterCurrentStudioTab error: {ex.Message}");
+            }
         }
 
         public override int Count => 6;

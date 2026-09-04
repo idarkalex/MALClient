@@ -5,17 +5,24 @@ using System.Linq;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using Android.Graphics;
+using Android.Support.V7.Widget;
+using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Activities;
 using MALClient.Android.Resources;
 using MALClient.Models.Enums;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
+using MALClient.XShared.ViewModels.Main;
+
+using SearchView = Android.Support.V7.Widget.SearchView;
 
 namespace MALClient.Android.Fragments.SearchFragments
 {
     public class AnimeTypeSearchFragment : MalFragmentBase
     {
         private readonly bool _isGenreMode;
+        private SearchView _searchView;
         private List<Enum> _allChoices;
         private List<Enum> _filteredChoices;
 
@@ -27,20 +34,43 @@ namespace MALClient.Android.Fragments.SearchFragments
         protected override void Init(Bundle savedInstanceState)
         {
             _allChoices = _isGenreMode
-                ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList()
-                : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
+                ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList()
+                : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList();
             _filteredChoices = new List<Enum>(_allChoices);
         }
 
         protected override void InitBindings()
         {
+            // Setup SearchView
+            _searchView = RootView.FindViewById<SearchView>(Resource.Id.AnimeTypeSearchView);
+            if (_searchView != null)
+            {
+                _searchView.Iconified = false;
+                _searchView.QueryHint = _isGenreMode ? "Search genres..." : "Search studios...";
+                
+                try
+                {
+                    var mag = _searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
+                    if (mag != null) mag.SetColorFilter(Color.White);
+                    var close = _searchView.FindViewById<ImageView>(Resource.Id.search_close_btn);
+                    if (close != null) 
+                    {
+                        close.SetColorFilter(Color.White);
+                        close.Click += (s, e) => ClearFilter();
+                    }
+                } catch { }
+
+                _searchView.QueryTextChange += (s, e) => FilterChoices(e.NewText);
+                _searchView.QueryTextSubmit += (s, e) => { e.Handled = true; _searchView.ClearFocus(); };
+            }
+
             RefreshAdapter();
         }
 
         public void FilterChoices(string query)
         {
             if (_allChoices == null)
-                _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
+                _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList();
             if (string.IsNullOrWhiteSpace(query))
                 _filteredChoices = new List<Enum>(_allChoices);
             else
@@ -53,6 +83,11 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         public void ClearFilter()
         {
+            if (_searchView != null)
+            {
+                _searchView.SetQuery("", false);
+                _searchView.ClearFocus();
+            }
             _filteredChoices = new List<Enum>(_allChoices);
             RefreshAdapter();
         }
@@ -61,12 +96,9 @@ namespace MALClient.Android.Fragments.SearchFragments
         {
             if (AnimeTypeSearchPageList == null) return;
             if (_allChoices == null)
-                _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
+                _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.GetDescription()).ToList();
             if (_filteredChoices == null) _filteredChoices = new List<Enum>(_allChoices);
-            var ctx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;
-            var footer = new View(ctx);
-            footer.Visibility = ViewStates.Gone;
-            AnimeTypeSearchPageList.Adapter = _filteredChoices.GetAdapter(GetTemplateDelegate, footer, true);
+            AnimeTypeSearchPageList.Adapter = _filteredChoices.GetAdapter(GetTemplateDelegate, null, true);
         }
 
         private View GetTemplateDelegate(int i, Enum parameter, View convertView)
@@ -148,7 +180,6 @@ namespace MALClient.Android.Fragments.SearchFragments
         private void OnGenreClick(Enum genre)
         {
             var g = (AnimeGenreSearch)genre;
-            ViewModelLocator.GeneralMain.CurrentSearchQuery = g.GetDescription();
             var pager = SearchPageFragment.CurrentPagerAdapter;
             if (pager != null)
                 pager.TriggerSearchWithGenre(g);
@@ -159,7 +190,6 @@ namespace MALClient.Android.Fragments.SearchFragments
         private void OnStudioClick(Enum studio)
         {
             var s = (AnimeStudios)studio;
-            ViewModelLocator.GeneralMain.CurrentSearchQuery = s.GetDescription();
             var pager = SearchPageFragment.CurrentPagerAdapter;
             if (pager != null)
                 pager.TriggerSearchWithStudio(s);
@@ -172,6 +202,7 @@ namespace MALClient.Android.Fragments.SearchFragments
         #region Views
 
         private GridView _animeTypeSearchPageList;
+
         public GridView AnimeTypeSearchPageList => GetView(ref _animeTypeSearchPageList, Resource.Id.AnimeTypeSearchPageList);
 
         #endregion
