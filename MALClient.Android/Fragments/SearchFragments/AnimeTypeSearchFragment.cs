@@ -23,7 +23,7 @@ namespace MALClient.Android.Fragments.SearchFragments
     public class AnimeTypeSearchFragment : MalFragmentBase
     {
         private readonly bool _isGenreMode;
-        private SearchView _searchView;
+        private global::Android.Support.V7.Widget.SearchView _searchView;
         private List<Enum> _allChoices;
         private List<Enum> _filteredChoices;
         private Action<Enum> _onItemClick;
@@ -46,11 +46,11 @@ namespace MALClient.Android.Fragments.SearchFragments
         protected override void InitBindings()
         {
             // Setup SearchView
-            _searchView = RootView.FindViewById<SearchView>(Resource.Id.AnimeTypeSearchView);
+            _searchView = RootView.FindViewById<global::Android.Support.V7.Widget.SearchView>(Resource.Id.AnimeTypeSearchView);
             if (_searchView != null)
             {
                 _searchView.Iconified = false;
-                _searchView.SetQueryHint(_isGenreMode ? "Search genres..." : "Search studios...");
+                _searchView.QueryHint = _isGenreMode ? "Search genres..." : "Search studios...";
                 
                 try
                 {
