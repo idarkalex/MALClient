@@ -183,15 +183,17 @@ namespace MALClient.Android.Fragments.SearchFragments
             if (se != null) se.SetTextColor(Color.White);
 
             // Auto-focus search bar and show keyboard on entering search
-            SearchPageSearchView.RequestFocus();
-            SearchPageSearchView.Post(() =>
+            SearchPageSearchView.PostDelayed(() =>
             {
                 try
                 {
+                    var edit = SearchPageSearchView.FindViewById<global::Android.Widget.AutoCompleteTextView>(Resource.Id.search_src_text);
+                    edit?.RequestFocus();
                     var imm = Activity?.GetSystemService(global::Android.Content.Context.InputMethodService) as global::Android.Views.InputMethods.InputMethodManager;
-                    imm?.ShowSoftInput(SearchPageSearchView.FindViewById(Resource.Id.search_src_text), global::Android.Views.InputMethods.ShowFlags.Forced);
+                    if (edit != null) imm?.ShowSoftInput(edit, global::Android.Views.InputMethods.ShowFlags.Forced);
+                    else imm?.ShowSoftInput(SearchPageSearchView, global::Android.Views.InputMethods.ShowFlags.Forced);
                 } catch { }
-            });
+            }, 150);
 
             // Trigger initial search after fragments are created and their InitBindings run
             _pagerAdapter.TriggerSearch(_args);

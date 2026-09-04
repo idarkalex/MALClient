@@ -318,18 +318,19 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         private static void ForceFixedHeight(LinearLayout clickSurface, global::Android.Content.Context context)
         {
+            if (clickSurface == null || context == null) return;
             var lp = clickSurface.LayoutParameters;
             if (lp != null)
             {
-                lp.Height = (int)(150 * global::Android.Util.TypedValue.ApplyDimension(global::Android.Util.ComplexUnitType.Dip, 1, context.Resources.DisplayMetrics));
-                clickSurface.LayoutParameters = lp;
+                try { lp.Height = (int)(150 * global::Android.Util.TypedValue.ApplyDimension(global::Android.Util.ComplexUnitType.Dip, 1, context.Resources.DisplayMetrics)); } catch { return; }
+                try { clickSurface.LayoutParameters = lp; } catch { }
             }
         }
 
         public override void OnViewRecycled(Java.Lang.Object holder)
         {
-            base.OnViewRecycled(holder);
-            if (holder is SearchItemHolder searchHolder && _fragment.Activity != null)
+            try { base.OnViewRecycled(holder); } catch { }
+            if (holder is SearchItemHolder searchHolder && _fragment?.Activity != null && searchHolder.ClickSurface != null)
             {
                 ForceFixedHeight(searchHolder.ClickSurface, _fragment.Activity);
             }
