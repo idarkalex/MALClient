@@ -111,8 +111,9 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 var searchResultsQuery = await new EverywhereSearchQuery().GetResult(query);
 
-                foreach (var category in searchResultsQuery.Categories)
+                for (int ci = 0; ci < searchResultsQuery.Categories.Count; ci++)
                 {
+                    var category = searchResultsQuery.Categories[ci];
                     list.Add(new SearchCategoryItem
                     {
                         Name = char.ToUpper(category.Type[0]) + category.Type.Substring(1)
@@ -143,6 +144,8 @@ namespace MALClient.XShared.ViewModels.Main
 
                         list.Add(listItem);
                     }
+                    if (ci < searchResultsQuery.Categories.Count - 1)
+                        list.Add(new SearchEverywhereSeparator());
                 }
 
                 SearchResults.AddRange(list);

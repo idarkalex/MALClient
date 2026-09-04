@@ -1328,6 +1328,9 @@
     <AndroidResource Include="Resources\layout\SearchEverywhereCategoryItem.xml" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\layout\SearchEverywhereSeparatorItem.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Lib\ModernHttpClient.dll" />
     <Content Include="Lib\Square.OkHttp3.dll" />
     <Content Include="Lib\Square.OkIO.dll" />

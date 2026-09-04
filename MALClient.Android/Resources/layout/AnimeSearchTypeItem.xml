@@ -2,17 +2,26 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
+    android:layout_height="80dp"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?android:selectableItemBackground">
-  <RelativeLayout
-      android:layout_width="match_parent" android:background="?BrushAnimeItemInnerBackground"
+    android:foreground="?android:selectableItemBackground"
+    android:padding="4dp">
+  <LinearLayout
+      android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:padding="10dp"
-      android:layout_margin="10dp">
-    <TextView android:id="@+id/AnimeSearchTypeItemTextView" android:layout_width="wrap_content" android:gravity="center_horizontal"
-        android:layout_height="wrap_content" android:maxLines="2" android:layout_centerInParent="true"
-        android:textColor="?BrushText"/>
-  </RelativeLayout>
+      android:background="@drawable/electric_midnight_grid_badge"
+      android:gravity="center"
+      android:orientation="vertical"
+      android:padding="8dp">
+    <TextView android:id="@+id/AnimeSearchTypeItemTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter"
+        android:gravity="center"
+        android:maxLines="2"
+        android:textColor="#ffffff"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+  </LinearLayout>
 </FrameLayout>
