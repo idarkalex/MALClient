@@ -35,7 +35,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             var cacheKey = _genreMode ? $"genre_{_genre}_{_page}" : $"studio_{_studio}_{_page}";
             var cacheRegion = _genreMode ? "AnimesByGenre" : "AnimesByStudio";
-            var output = await DataCache.RetrieveData<List<SeasonalAnimeData>>(cacheKey, cacheRegion, 7)
+            var output = await DataCache.RetrieveData<List<SeasonalAnimeData>>(cacheKey, cacheRegion, 1)
                          ?? new List<SeasonalAnimeData>();
             if (output.Count > 0)
                 return output;
@@ -43,8 +43,8 @@ namespace MALClient.XShared.Comm.Anime
             try
             {
                 var endpoint = _genreMode
-                    ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc"
-                    : $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc";
+                    ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc&sfw"
+                    : $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw";
 
                 var (items, _) = await TenraiClient.GetPaginatedAsync(endpoint);
 
@@ -68,7 +68,32 @@ namespace MALClient.XShared.Comm.Anime
                 return output;
             }
 
-            DataCache.SaveData(output, cacheKey, cacheRegion);
+            if (output.Count > 0)
+                DataCache.SaveData(output, cacheKey, cacheRegion);
+            else if (!_genreMode)
+            {
+                // Studio produced no results via producers filter - try text search as fallback
+                try
+                {
+                    var studioName = _studio.GetDescription();
+                    var fallbackEndpoint = $"anime?q={Uri.EscapeDataString(studioName)}&order_by=score&sort=desc&sfw";
+                    var (fbItems, _) = await TenraiClient.GetPaginatedAsync(fallbackEndpoint);
+                    int fbIndex = 1;
+                    foreach (var entry in fbItems.Take(25))
+                    {
+                        output.Add(new SeasonalAnimeData
+                        {
+                            Title = GetString(entry, "title"),
+                            Id = GetInt(entry, "mal_id"),
+                            ImgUrl = GetNestedString(entry, "images", "jpg", "image_url"),
+                            Episodes = GetInt(entry, "episodes").ToString(),
+                            Score = (float)GetDouble(entry, "score"),
+                            Genres = GetGenreNames(entry),
+                            Index = fbIndex++
+                        });
+                    }
+                } catch { }
+            }
             return output;
         }
 

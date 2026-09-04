@@ -136,6 +136,14 @@ namespace MALClient.Android.Fragments.SearchFragments
                 if (string.IsNullOrEmpty(q) || q.Length < 3)
                 {
                     Activity?.RunOnUiThread(() => { _hintAdapter.Clear(); _hintAdapter.NotifyDataSetChanged(); _searchAutoComplete?.DismissDropDown(); });
+                    if (string.IsNullOrEmpty(q))
+                    {
+                        // X pressed - reset search for non-genre/studio tabs
+                        if (currentTab != 4 && currentTab != 5)
+                        {
+                            try { _pagerAdapter.TriggerSearch(new SearchPageNavigationArgs { Query = "", ForceQuery = true }); } catch { }
+                        }
+                    }
                     return;
                 }
                 try { await Task.Delay(300, token); } catch { return; }

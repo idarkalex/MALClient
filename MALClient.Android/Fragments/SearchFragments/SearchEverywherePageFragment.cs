@@ -43,7 +43,7 @@ namespace MALClient.Android.Fragments.SearchFragments
             gridManager.SetSpanSizeLookup(new CardsSpanLookup(_everywhereAdapter));
             SearchRecyclerView.SetAdapter(_everywhereAdapter);
             SearchRecyclerView.SetLayoutManager(gridManager);
-            SearchRecyclerView.HasFixedSize = true;
+            SearchRecyclerView.HasFixedSize = false;
             SearchRecyclerView.SetClipToPadding(false);
 
             // Initial refresh if data already populated
