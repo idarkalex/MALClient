@@ -146,7 +146,10 @@ namespace MALClient.XShared.ViewModels.Main
             try { mangaData = await mangaTask; } catch (Exception) { }
 
             if (generation != _queryGeneration)
+            {
+                Loading = false;
                 return;
+            }
 
             foreach (var item in animeData)
             {

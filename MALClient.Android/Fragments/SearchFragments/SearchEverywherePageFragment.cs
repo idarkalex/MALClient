@@ -202,9 +202,9 @@ namespace MALClient.Android.Fragments.SearchFragments
                     _posterType.Visibility = ViewStates.Visible;
                 }
                 else _posterType.Visibility = ViewStates.Gone;
-                if (!string.IsNullOrWhiteSpace(score) && float.TryParse(score, out var sc) && sc > 0)
+                if (!string.IsNullOrWhiteSpace(score) && float.TryParse(score, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sc) && sc > 0)
                 {
-                    _posterScore.Text = sc.ToString("0.00");
+                    _posterScore.Text = sc.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
                     _posterScore.Visibility = ViewStates.Visible;
                 }
                 else _posterScore.Visibility = ViewStates.Gone;
@@ -245,7 +245,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     typeof(SearchEverywhereAnimeItem),
                     new SpecializedItemEntry<SearchEverywhereAnimeItem, PosterHolder>
                     {
-                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, null),
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, fragment.SearchRecyclerView, false),
                         SpecializedDataTemplate = (item, holder, position) => holder.Bind(item)
                     }
                 },
@@ -253,7 +253,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     typeof(SearchEverywhereMangaItem),
                     new SpecializedItemEntry<SearchEverywhereMangaItem, PosterHolder>
                     {
-                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, null),
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, fragment.SearchRecyclerView, false),
                         SpecializedDataTemplate = (item, holder, position) => holder.Bind(item)
                     }
                 },
@@ -261,7 +261,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     typeof(SearchEverywhereCharacterItem),
                     new SpecializedItemEntry<SearchEverywhereCharacterItem, PosterHolder>
                     {
-                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, null),
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, fragment.SearchRecyclerView, false),
                         SpecializedDataTemplate = (item, holder, position) => holder.Bind(item)
                     }
                 },
@@ -269,7 +269,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     typeof(SearchEverywherePersonItem),
                     new SpecializedItemEntry<SearchEverywherePersonItem, PosterHolder>
                     {
-                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, null),
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, fragment.SearchRecyclerView, false),
                         SpecializedDataTemplate = (item, holder, position) => holder.Bind(item)
                     }
                 },
@@ -277,7 +277,7 @@ namespace MALClient.Android.Fragments.SearchFragments
                     typeof(SearchEverywhereUserItem),
                     new SpecializedItemEntry<SearchEverywhereUserItem, PosterHolder>
                     {
-                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, null),
+                        ItemTemplate = viewType => fragment.LayoutInflater.Inflate(Resource.Layout.SearchPosterItem, fragment.SearchRecyclerView, false),
                         SpecializedDataTemplate = (item, holder, position) => holder.Bind(item)
                     }
                 },

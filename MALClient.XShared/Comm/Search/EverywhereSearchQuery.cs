@@ -75,8 +75,16 @@ namespace MALClient.XShared.Comm.Search
                             if (jpg.TryGetProperty("image_url", out var url) && url.ValueKind == System.Text.Json.JsonValueKind.String)
                                 img = url.GetString();
                     }
+                    string scoreStr = "";
+                    if (el.TryGetProperty("score", out var sp) && sp.ValueKind == System.Text.Json.JsonValueKind.Number) scoreStr = sp.GetDouble().ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    string mediaType = "";
+                    if (el.TryGetProperty("type", out var ty) && ty.ValueKind == System.Text.Json.JsonValueKind.String) mediaType = ty.GetString();
                     var urlStr = $"https://myanimelist.net/{type}/{id}";
-                    return new Item { Id = id, Type = type, Name = title, Url = urlStr, ImageUrl = img, ThumbnailUrl = img, EsScore = 1.0, Payload = new Payload() };
+                    var payload = new Payload { Score = scoreStr, MediaType = mediaType };
+                    double esScore = 0;
+                    if (el.TryGetProperty("score", out var sc2) && sc2.ValueKind == System.Text.Json.JsonValueKind.Number) esScore = sc2.GetDouble();
+                    if (esScore == 0) esScore = 1.0;
+                    return new Item { Id = id, Type = type, Name = title, Url = urlStr, ImageUrl = img, ThumbnailUrl = img, EsScore = esScore, Payload = payload };
                 }).Where(i => i.Id > 0 && !string.IsNullOrEmpty(i.Name)).ToList();
             }
             catch { return new List<Item>(); }

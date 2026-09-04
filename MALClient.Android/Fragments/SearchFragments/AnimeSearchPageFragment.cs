@@ -71,8 +71,12 @@ namespace MALClient.Android.Fragments.SearchFragments
                     else
                     {
                         AnimeSearchPageLoadingSpinner.Visibility = ViewStates.Gone;
-                        _gridAdapter?.NotifyDataSetChanged();
-                        SearchRecyclerView?.RequestLayout();
+                        SearchRecyclerView?.Post(() =>
+                        {
+                            _gridAdapter?.NotifyDataSetChanged();
+                            SearchRecyclerView?.RequestLayout();
+                            SearchRecyclerView?.Invalidate();
+                        });
                     }
                 });
             }));

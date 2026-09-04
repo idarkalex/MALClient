@@ -39,6 +39,8 @@ namespace MALClient.Android.Fragments.SearchFragments
 
         public void FilterChoices(string query)
         {
+            if (_allChoices == null)
+                _allChoices = _isGenreMode ? Enum.GetValues(typeof(AnimeGenreSearch)).Cast<Enum>().OrderBy(val => val.ToString()).ToList() : Enum.GetValues(typeof(AnimeStudios)).Cast<Enum>().OrderBy(val => val.ToString()).ToList();
             if (string.IsNullOrWhiteSpace(query))
                 _filteredChoices = new List<Enum>(_allChoices);
             else
@@ -93,6 +95,23 @@ namespace MALClient.Android.Fragments.SearchFragments
                     }
                     view.Click += ViewOnClick;
                 }
+                // Horizontal cards: studios 2 filas (80dp), genres 1 fila (56dp) centradas
+                try
+                {
+                    int targetDp = _isGenreMode ? 56 : 80;
+                    var lp = view.LayoutParameters;
+                    if (lp != null)
+                    {
+                        lp.Height = (int)global::Android.Util.TypedValue.ApplyDimension(global::Android.Util.ComplexUnitType.Dip, targetDp, view.Context.Resources.DisplayMetrics);
+                        view.LayoutParameters = lp;
+                    }
+                    var tvInner = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
+                    if (tvInner != null)
+                    {
+                        tvInner.SetMaxLines(_isGenreMode ? 1 : 2);
+                        tvInner.Ellipsize = global::Android.Text.TextUtils.TruncateAt.End;
+                    }
+                } catch { }
                 var tv = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
                 if (tv != null) tv.Text = parameter?.GetDescription() ?? "";
                 else

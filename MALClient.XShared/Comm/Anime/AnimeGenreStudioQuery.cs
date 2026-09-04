@@ -76,30 +76,6 @@ namespace MALClient.XShared.Comm.Anime
 
             if (output.Count > 0)
                 DataCache.SaveData(output, cacheKey, cacheRegion);
-            else if (!_genreMode)
-            {
-                // Studio produced no results via producers filter - try text search as fallback
-                try
-                {
-                    var studioName = _studio.GetDescription();
-                    var fallbackEndpoint = $"anime?q={Uri.EscapeDataString(studioName)}&order_by=score&sort=desc&sfw";
-                    var (fbItems, _) = await TenraiClient.GetPaginatedAsync(fallbackEndpoint);
-                    int fbIndex = 1;
-                    foreach (var entry in fbItems.Take(25))
-                    {
-                        output.Add(new SeasonalAnimeData
-                        {
-                            Title = GetString(entry, "title"),
-                            Id = GetInt(entry, "mal_id"),
-                            ImgUrl = GetNestedString(entry, "images", "jpg", "image_url"),
-                            Episodes = GetInt(entry, "episodes").ToString(),
-                            Score = (float)GetDouble(entry, "score"),
-                            Genres = GetGenreNames(entry),
-                            Index = fbIndex++
-                        });
-                    }
-                } catch { }
-            }
             return output;
         }
 
