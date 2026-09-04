@@ -69,10 +69,14 @@ namespace MALClient.Android.Fragments.SearchFragments
             var view = convertView;
             if (view == null)
             {
-                view = MainActivity.CurrentContext.LayoutInflater.Inflate(Resource.Layout.AnimeSearchTypeItem, null);
+                var ctx = Activity ?? MainActivity.CurrentContext;
+                var inflater = ctx != null ? LayoutInflater.From(ctx) : MainActivity.CurrentContext?.LayoutInflater;
+                view = inflater?.Inflate(Resource.Layout.AnimeSearchTypeItem, null);
+                if (view == null) return new TextView(ctx) { Text = parameter.GetDescription() };
                 view.Click += ViewOnClick;
             }
-            view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView).Text = parameter.GetDescription();
+            var tv = view.FindViewById<TextView>(Resource.Id.AnimeSearchTypeItemTextView);
+            if (tv != null) tv.Text = parameter.GetDescription();
             view.Tag = parameter.Wrap();
             return view;
         }
