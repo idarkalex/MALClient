@@ -12,9 +12,11 @@ using Android.Widget;
 using Com.Mikepenz.Materialdrawer;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
+using MALClient.Android.Utilities;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Clubs;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.Clubs
 {
@@ -43,6 +45,26 @@ namespace MALClient.Android.Fragments.Clubs
         }
 
         public override int LayoutResourceId => Resource.Layout.ClubsIndexMyClubsTab;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(List, FragmentUiState.ClubsIndex, "MyClubs");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(List, FragmentUiState.ClubsIndex, "MyClubs");
+            }
+            catch { }
+        }
 
         #region Views
 

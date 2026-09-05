@@ -16,6 +16,7 @@ using MALClient.Android.Activities;
 using MALClient.Android.CollectionAdapters;
 using MALClient.Android.Listeners;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.Favourites;
 using MALClient.XShared.ViewModels;
@@ -179,6 +180,26 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
         {
             _helper.OnConfigurationChanged(newConfig);
             base.OnConfigurationChanged(newConfig);
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(ProfilePageFavouritesTabGridView, FragmentUiState.Profile, "Favourites");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(ProfilePageFavouritesTabGridView, FragmentUiState.Profile, "Favourites");
+            }
+            catch { }
         }
 
 

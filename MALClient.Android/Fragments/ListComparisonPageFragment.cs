@@ -18,6 +18,7 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -308,6 +309,16 @@ namespace MALClient.Android.Fragments
 
 
         public override int LayoutResourceId => Resource.Layout.ListComparisonPage;
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(ComparisonListView, FragmentUiState.ListComparison, "Scroll");
+            }
+            catch { }
+        }
 
         #region Views
 

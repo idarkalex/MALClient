@@ -18,6 +18,7 @@ using MALClient.Android.Adapters;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.PagerAdapters;
+using MALClient.Android.Utilities;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -31,9 +32,41 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
 
         private ProfilePageViewModel ViewModel = ViewModelLocator.ProfilePage;
 
+        private ScrollView _profilePageStatsTabScroll;
+
+        public ScrollView ProfilePageStatsTabScroll =>
+            _profilePageStatsTabScroll ?? (_profilePageStatsTabScroll =
+                RootView?.FindViewById<ScrollView>(Resource.Id.ProfilePageStatsTabScroll));
+
         protected override void Init(Bundle savedInstanceState)
         {
 
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(ProfilePageStatsTabScroll?.ScrollY ?? 0, FragmentUiState.Profile, "Stats");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = ScrollStateHelper.RestoreScrollY(FragmentUiState.Profile, "Stats");
+                var scroll = ProfilePageStatsTabScroll;
+                if (y > 0 && scroll != null)
+                    scroll.Post(() =>
+                    {
+                        try { scroll.ScrollTo(0, y); } catch { }
+                    });
+            }
+            catch { }
         }
 
         protected override void InitBindings()

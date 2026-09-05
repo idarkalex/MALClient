@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Graphics;
 using Android.OS;
+using Android.Support.V4.Widget;
 using Android.Views;
 using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
@@ -17,10 +18,12 @@ using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
 using MALClient.Android.Fragments;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Models.Models.Anime;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 {
@@ -43,6 +46,32 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         public override int LayoutResourceId => Resource.Layout.AnimeDetailsPageDetailsTab;
 
         public static AnimeDetailsPageDetailsTabFragment Instance => new AnimeDetailsPageDetailsTabFragment();
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(AnimeDetailsPageDetailsTabScroll?.ScrollY ?? 0, FragmentUiState.AnimeDetails, "Details");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = ScrollStateHelper.RestoreScrollY(FragmentUiState.AnimeDetails, "Details");
+                var scroll = AnimeDetailsPageDetailsTabScroll;
+                if (y > 0 && scroll != null)
+                    scroll.Post(() =>
+                    {
+                        try { scroll.ScrollTo(0, y); } catch { }
+                    });
+            }
+            catch { }
+        }
 
         protected override void Init(Bundle savedInstanceState)
         {
@@ -286,6 +315,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         #region Views
 
+        private NestedScrollView _animeDetailsPageDetailsTabScroll;
         private LinearLayout _animeDetailsPageDetailsTabLeftGenresList;
         private LinearLayout _animeDetailsPageDetailsTabRightGenresList;
         private LinearLayout _animeDetailsPageDetailsTabInformationList;
@@ -296,6 +326,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private LinearLayout _animeDetailsPageDetailsTabEDsList;
 
 
+        public NestedScrollView AnimeDetailsPageDetailsTabScroll => GetView(ref _animeDetailsPageDetailsTabScroll, Resource.Id.AnimeDetailsPageDetailsTabScroll);
         public LinearLayout AnimeDetailsPageDetailsTabLeftGenresList => GetView(ref _animeDetailsPageDetailsTabLeftGenresList, Resource.Id.AnimeDetailsPageDetailsTabLeftGenresList);
         public LinearLayout AnimeDetailsPageDetailsTabRightGenresList => GetView(ref _animeDetailsPageDetailsTabRightGenresList, Resource.Id.AnimeDetailsPageDetailsTabRightGenresList);
         public LinearLayout AnimeDetailsPageDetailsTabInformationList => GetView(ref _animeDetailsPageDetailsTabInformationList, Resource.Id.AnimeDetailsPageDetailsTabInformationList);

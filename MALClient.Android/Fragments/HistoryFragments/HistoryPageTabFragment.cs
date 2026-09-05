@@ -14,9 +14,11 @@ using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.ViewModels;
+using MALClient.XShared.ViewModels.Main;
 using Orientation = Android.Content.Res.Orientation;
 
 namespace MALClient.Android.Fragments.HistoryFragments
@@ -24,11 +26,12 @@ namespace MALClient.Android.Fragments.HistoryFragments
     public class HistoryPageTabFragment : MalFragmentBase
     {
         private readonly List<Tuple<AnimeItemViewModel, List<MalProfileHistoryEntry>>> _data;
+        private readonly int _pageIndex;
 
-
-        public HistoryPageTabFragment(List<Tuple<AnimeItemViewModel, List<MalProfileHistoryEntry>>> data)
+        public HistoryPageTabFragment(List<Tuple<AnimeItemViewModel, List<MalProfileHistoryEntry>>> data, int pageIndex)
         {
             _data = data;
+            _pageIndex = pageIndex;
 
         }
 
@@ -168,5 +171,25 @@ namespace MALClient.Android.Fragments.HistoryFragments
         }
 
         public override int LayoutResourceId => Resource.Layout.HistoryPageTab;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(RootView?.FindViewById<ListView>(Resource.Id.HistoryPageTabList), FragmentUiState.History, "Tab_" + _pageIndex);
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(RootView?.FindViewById<ListView>(Resource.Id.HistoryPageTabList), FragmentUiState.History, "Tab_" + _pageIndex);
+            }
+            catch { }
+        }
     }
 }

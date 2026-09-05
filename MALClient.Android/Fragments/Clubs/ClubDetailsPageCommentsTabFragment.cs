@@ -13,11 +13,13 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Fragments.ProfilePageFragments;
 using MALClient.Android.Listeners;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Android.ViewHolders;
 using MALClient.Models.Models;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Clubs;
+using MALClient.XShared.ViewModels.Main;
 using Org.Apache.Http.Conn;
 
 namespace MALClient.Android.Fragments.Clubs
@@ -146,6 +148,26 @@ namespace MALClient.Android.Fragments.Clubs
 
 
         public override int LayoutResourceId => Resource.Layout.ClubDetailsPageCommentsPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(CommentsList, FragmentUiState.ClubDetails, "Comments");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(CommentsList, FragmentUiState.ClubDetails, "Comments");
+            }
+            catch { }
+        }
 
         #region Views
 

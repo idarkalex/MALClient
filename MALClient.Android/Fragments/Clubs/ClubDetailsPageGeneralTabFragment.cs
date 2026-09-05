@@ -17,6 +17,7 @@ using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Android.Web;
 using MALClient.Models.Enums;
 using MALClient.Models.Models;
@@ -25,6 +26,7 @@ using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Clubs;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.Clubs
 {
@@ -146,6 +148,32 @@ namespace MALClient.Android.Fragments.Clubs
 
         public override int LayoutResourceId => Resource.Layout.ClubDetailsPageGeneralTab;
 
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(ClubDetailsPageGeneralTabOfficersScroll?.ScrollY ?? 0, FragmentUiState.ClubDetails, "General");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = ScrollStateHelper.RestoreScrollY(FragmentUiState.ClubDetails, "General");
+                var scroll = ClubDetailsPageGeneralTabOfficersScroll;
+                if (y > 0 && scroll != null)
+                    scroll.Post(() =>
+                    {
+                        try { scroll.ScrollTo(0, y); } catch { }
+                    });
+            }
+            catch { }
+        }
+
 
         #region Views
 
@@ -156,6 +184,9 @@ namespace MALClient.Android.Fragments.Clubs
         private Button _buttonForum;
         private Button _buttonLeave;
         private WebView _webView;
+        private ScrollView _clubDetailsPageGeneralTabOfficersScroll;
+
+        public ScrollView ClubDetailsPageGeneralTabOfficersScroll => GetView(ref _clubDetailsPageGeneralTabOfficersScroll, Resource.Id.ClubDetailsPageGeneralTabOfficersScroll);
 
         public ImageViewAsync Image => GetView(ref _image, Resource.Id.Image);
 

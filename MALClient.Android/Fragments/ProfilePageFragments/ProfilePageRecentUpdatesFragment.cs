@@ -13,6 +13,7 @@ using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.CollectionAdapters;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
@@ -70,13 +71,41 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
 
         public override int LayoutResourceId => Resource.Layout.ProfilePageRecentUpdatesTab;
 
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(ProfilePageRecentUpdatesTabScroll?.ScrollY ?? 0, FragmentUiState.Profile, "Recent");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = ScrollStateHelper.RestoreScrollY(FragmentUiState.Profile, "Recent");
+                var scroll = ProfilePageRecentUpdatesTabScroll;
+                if (y > 0 && scroll != null)
+                    scroll.Post(() =>
+                    {
+                        try { scroll.ScrollTo(0, y); } catch { }
+                    });
+            }
+            catch { }
+        }
+
         #region Views
 
+        private ScrollView _profilePageRecentUpdatesTabScroll;
         private LinearLayout _profilePageRecentUpdatesTabAnimeList;
         private RelativeLayout _profilePageRecentUpdatesTabAnimeListEmptyNotice;
         private RelativeLayout _profilePageRecentUpdatesTabMangaListEmptyNotice;
         private LinearLayout _profilePageRecentUpdatesTabMangaList;
 
+        public ScrollView ProfilePageRecentUpdatesTabScroll => GetView(ref _profilePageRecentUpdatesTabScroll, Resource.Id.ProfilePageRecentUpdatesTabScroll);
         public LinearLayout ProfilePageRecentUpdatesTabAnimeList => GetView(ref _profilePageRecentUpdatesTabAnimeList, Resource.Id.ProfilePageRecentUpdatesTabAnimeList);
 
         public RelativeLayout ProfilePageRecentUpdatesTabAnimeListEmptyNotice => GetView(ref _profilePageRecentUpdatesTabAnimeListEmptyNotice, Resource.Id.ProfilePageRecentUpdatesTabAnimeListEmptyNotice);

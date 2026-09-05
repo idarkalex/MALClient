@@ -17,12 +17,14 @@ using MALClient.Android.AoLibsCompat;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 {
@@ -39,6 +41,26 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             base.OnCreate(savedInstanceState);
             RetainInstance = true;
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveRecyclerView(AnimeDetailsPageRelatedTabsList, FragmentUiState.AnimeDetails, "Related");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreRecyclerView(AnimeDetailsPageRelatedTabsList, FragmentUiState.AnimeDetails, "Related");
+            }
+            catch { }
         }
 
         public override void OnDestroy()

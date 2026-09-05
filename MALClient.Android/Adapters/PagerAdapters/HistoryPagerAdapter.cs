@@ -41,7 +41,7 @@ namespace MALClient.Android.Adapters.PagerAdapters
         {
             if (!_pageFragments.ContainsKey(position))
             {
-                _pageFragments.Add(position, new HistoryPageTabFragment(_items[position].Value));
+                _pageFragments.Add(position, new HistoryPageTabFragment(_items[position].Value, position));
             }
             return _pageFragments[position];
         }

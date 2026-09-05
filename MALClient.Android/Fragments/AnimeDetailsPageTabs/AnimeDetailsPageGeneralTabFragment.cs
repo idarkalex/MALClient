@@ -7,13 +7,16 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V4.Widget;
 using Android.Views;
 using Android.Widget;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 
 
 namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
@@ -106,8 +109,35 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 
         public static AnimeDetailsPageGeneralTabFragment Instance => new AnimeDetailsPageGeneralTabFragment();
 
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(AnimeDetailsPageGeneralTabScroll?.ScrollY ?? 0, FragmentUiState.AnimeDetails, "General");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = ScrollStateHelper.RestoreScrollY(FragmentUiState.AnimeDetails, "General");
+                var scroll = AnimeDetailsPageGeneralTabScroll;
+                if (y > 0 && scroll != null)
+                    scroll.Post(() =>
+                    {
+                        try { scroll.ScrollTo(0, y); } catch { }
+                    });
+            }
+            catch { }
+        }
+
         #region Views
 
+        private NestedScrollView _animeDetailsPageGeneralTabScroll;
         private TextView _animeDetailsPageGeneralTabFragmentEpisodesLabel;
         private TextView _animeDetailsPageGeneralTabFragmentEpisodes;
         private TextView _animeDetailsPageGeneralTabFragmentScore;
@@ -125,6 +155,7 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         private TextView _animeDetailsPageGeneralTabFragmentMembers;
         private TextView _animeDetailsPageGeneralTabFragmentPremiered;
 
+        public NestedScrollView AnimeDetailsPageGeneralTabScroll => GetView(ref _animeDetailsPageGeneralTabScroll, Resource.Id.AnimeDetailsPageGeneralTabScroll);
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodesLabel => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodesLabel, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodesLabel);
         public TextView AnimeDetailsPageGeneralTabFragmentEpisodes => GetView(ref _animeDetailsPageGeneralTabFragmentEpisodes, Resource.Id.AnimeDetailsPageGeneralTabFragmentEpisodes);
         public TextView AnimeDetailsPageGeneralTabFragmentScore => GetView(ref _animeDetailsPageGeneralTabFragmentScore, Resource.Id.AnimeDetailsPageGeneralTabFragmentScore);

@@ -23,6 +23,7 @@ using MALClient.Android.DIalogs;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Android.ViewHolders;
 using MALClient.Models.Models;
 using MALClient.XShared.Utils;
@@ -439,6 +440,32 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
 
 
         public override int LayoutResourceId => Resource.Layout.ProfilePageGeneralTab;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(ProfilePageGeneralTabScrollingContainer?.ScrollY ?? 0, FragmentUiState.Profile, "General");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = ScrollStateHelper.RestoreScrollY(FragmentUiState.Profile, "General");
+                var scroll = ProfilePageGeneralTabScrollingContainer;
+                if (y > 0 && scroll != null)
+                    scroll.Post(() =>
+                    {
+                        try { scroll.ScrollTo(0, y); } catch { }
+                    });
+            }
+            catch { }
+        }
 
         #region Views
 

@@ -16,6 +16,7 @@ using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.PagerAdapters;
 
+using MALClient.Android.Utilities;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
@@ -58,6 +59,31 @@ namespace MALClient.Android.Fragments.ProfilePageFragments
                     () => ProfilePageLoadingSpinner.Visibility).ConvertSourceToTarget(Converters.BoolToVisibility));
 
             ProfilePageTabStrip.OnPageChangeListener = new OnPageChangedListener(i => ViewModel.CurrentPivotIndex = i);
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(ProfilePagePivot?.CurrentItem ?? 0, FragmentUiState.Profile, "Pivot");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var idx = ScrollStateHelper.RestoreScrollY(FragmentUiState.Profile, "Pivot");
+                if (ProfilePagePivot != null && idx >= 0)
+                    ProfilePagePivot.Post(() =>
+                    {
+                        try { ProfilePagePivot.SetCurrentItem(idx, false); } catch { }
+                    });
+            }
+            catch { }
         }
 
         public override int LayoutResourceId => Resource.Layout.ProfilePage;

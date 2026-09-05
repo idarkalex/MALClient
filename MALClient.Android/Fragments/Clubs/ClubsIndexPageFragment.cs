@@ -18,9 +18,11 @@ using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.PagerAdapters;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Clubs;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.Clubs
 {
@@ -72,6 +74,31 @@ namespace MALClient.Android.Fragments.Clubs
         }
 
         public override int LayoutResourceId => Resource.Layout.ClubsIndexPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(Pivot?.CurrentItem ?? 0, FragmentUiState.ClubsIndex, "Pivot");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var idx = ScrollStateHelper.RestoreScrollY(FragmentUiState.ClubsIndex, "Pivot");
+                if (Pivot != null && idx >= 0)
+                    Pivot.Post(() =>
+                    {
+                        try { Pivot.SetCurrentItem(idx, false); } catch { }
+                    });
+            }
+            catch { }
+        }
 
         #region Views
 

@@ -20,6 +20,7 @@ using MALClient.Models.Models;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
+using MALClient.Android.Utilities;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Clubs;
 using MALClient.XShared.ViewModels.Main;
@@ -185,6 +186,26 @@ namespace MALClient.Android.Fragments.Clubs
         #endregion
 
         public override int LayoutResourceId => Resource.Layout.ClubDetailsPageRelationsTab;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(GridView, FragmentUiState.ClubDetails, "Relations");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(GridView, FragmentUiState.ClubDetails, "Relations");
+            }
+            catch { }
+        }
 
         #region Views
 

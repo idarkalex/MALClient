@@ -14,11 +14,13 @@ using MALClient.Android.BindingConverters;
 using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Models.Anime;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
 {
@@ -48,6 +50,26 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         }
 
         public override int LayoutResourceId => Resource.Layout.AnimeDetailsPageEpisodesTab;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveRecyclerView(AnimeDetailsPageEpisodesTabList, FragmentUiState.AnimeDetails, "Episodes");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreRecyclerView(AnimeDetailsPageEpisodesTabList, FragmentUiState.AnimeDetails, "Episodes");
+            }
+            catch { }
+        }
 
         public override void OnDestroy()
         {

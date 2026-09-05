@@ -203,6 +203,11 @@ namespace MALClient.Android.Fragments
 
         public override void OnPause()
         {
+            try
+            {
+                MALClient.Android.Utilities.ScrollStateHelper.SaveAbsListView(ComparisonListView, MALClient.XShared.ViewModels.Main.FragmentUiState.ListComparison, "Scroll");
+            }
+            catch { }
             _actionMenu.Close(false);
             base.OnPause();
         }

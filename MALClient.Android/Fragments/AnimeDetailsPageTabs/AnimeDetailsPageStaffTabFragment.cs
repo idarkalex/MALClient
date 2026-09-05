@@ -24,6 +24,7 @@ using MALClient.Android.Utilities.ImageLoading;
 using MALClient.Models.Models.Favourites;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 using Orientation = Android.Content.Res.Orientation;
 
 
@@ -37,6 +38,26 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             base.OnCreate(savedInstanceState);
             RetainInstance = true;
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveRecyclerView(AnimeDetailsPageCharactersTabGridView, FragmentUiState.AnimeDetails, "Staff");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreRecyclerView(AnimeDetailsPageCharactersTabGridView, FragmentUiState.AnimeDetails, "Staff");
+            }
+            catch { }
         }
 
         protected override void Init(Bundle savedInstanceState)

@@ -29,6 +29,7 @@ using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Comm.MagicalRawQueries;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 using MoreLinq;
 
 namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
@@ -46,6 +47,26 @@ namespace MALClient.Android.Fragments.AnimeDetailsPageTabs
         {
             base.OnCreate(savedInstanceState);
             RetainInstance = true;
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveRecyclerView(AnimeDetailsPageReviewsTabsList, FragmentUiState.AnimeDetails, "Reviews");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreRecyclerView(AnimeDetailsPageReviewsTabsList, FragmentUiState.AnimeDetails, "Reviews");
+            }
+            catch { }
         }
 
         public override void OnDestroy()

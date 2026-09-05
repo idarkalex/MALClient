@@ -19,9 +19,11 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.XShared.Comm.MagicalRawQueries.Clubs;
 using MALClient.XShared.ViewModels;
+using MALClient.XShared.ViewModels.Main;
 using SearchView = Android.Support.V7.Widget.SearchView;
 
 namespace MALClient.Android.Fragments.Clubs
@@ -114,6 +116,26 @@ namespace MALClient.Android.Fragments.Clubs
         }
 
         public override int LayoutResourceId => Resource.Layout.ClubsIndexAllClubsTab;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(List, FragmentUiState.ClubsIndex, "AllClubs");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(List, FragmentUiState.ClubsIndex, "AllClubs");
+            }
+            catch { }
+        }
 
         #region Hamburger
 
