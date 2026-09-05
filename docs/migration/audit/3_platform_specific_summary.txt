@@ -1,0 +1,128 @@
+﻿MALPlus Platform-Specific Code Audit Summary
+===============================================
+Generated: 2026-09-05 21:20
+
+Total entries: 57
+
+PROJECT STRUCTURE:
+------------------
+This is an Android-only Xamarin application (no iOS, UWP, or Windows projects).
+Shared code resides in:
+  - MALClient.XShared (ViewModels, Queries, Utils, Interfaces)
+  - MALClient.Models (Data models, Enums)
+  - MALClient.Adapters (Platform abstraction interfaces)
+  - MALClient.Utilities.BBCode (BBCode parser)
+
+Android-specific implementation in:
+  - MALClient.Android (Main application)
+  - MALClient.Android.Adapters (Android implementations of adapter interfaces)
+  - Various Android binding projects (MoPub, DialogPlus, Droppy, MaterialTabStrip, etc.)
+
+SYMBOL: DEBUG (Preprocessor directives)
+----------------------------------------
+Files: 2
+Entries: 7
+
+1. MALClient.Android/Activities/MainActivity.cs (line 233-236)
+   - Sets StrictMode.ThreadPolicy to PermitAll in DEBUG builds only
+   - Allows disk/network access on main thread during development
+
+2. MALClient.Android.Adapters/TelemetryProvider.cs (lines 38-103)
+   - 6 separate #if !DEBUG blocks
+   - Disables AppCenter Analytics/Crashes tracking in DEBUG builds
+   - Methods affected: Init(), TelemetryTrackEvent(), LogEvent(), TelemetryTrackNavigation()
+
+SYMBOL: ANDROID_API (Android platform-specific code)
+------------------------------------------------------
+Files: 33
+Entries: 50
+
+MainActivity.CurrentContext Usage (24 files):
+------------------------------------------------
+This static property provides access to the current Android Activity context.
+Used extensively throughout the Android project for:
+- Starting activities (NavMgr, SettingsViewModel, RateReminderPopUp)
+- Showing Toasts (NavMgr)
+- Accessing Resources (ResourceExtension, GridViewColumnHelper, DimensionsHelper)
+- Running on UI thread (AndroidUtilities, ForumTopicItem)
+- LayoutInflater for dialogs (all Dialog classes, AnimeListItem, ForumTopicPageFragment)
+- Getting system services (AndroidUtilities, NotificationTaskManager)
+- Accessing PackageName (SettingsViewModel, RateReminderPopUp)
+- Registering event handlers (MessagingPageFragment)
+- Setting screen orientation (LogInPageFragment)
+- Recreating activity (SettingsGeneralFragment)
+- IoC registration (AndroidViewModelLocator)
+
+Android.App.Application.Context Usage (1 file):
+-------------------------------------------------
+- MALClient.Android/Fragments/SearchFragments/AnimeTypeSearchFragment.cs (lines 227, 240, 250, 304, 312)
+- Fallback context when Activity and MainActivity.CurrentContext are null
+- Used in TextView creation as last resort
+
+Android SDK Version Checks (1 file):
+-------------------------------------
+- MALClient.Android/BackgroundTasks/NotificationCheckBroadcastReceiver.cs (line 250)
+- Build.VERSION.SdkInt >= BuildVersionCodes.O check for Android 8.0+ APIs
+
+Android Runtime Preserve Attributes (7 files):
+------------------------------------------------
+Used to prevent linker from removing types/members accessed via reflection:
+- MALClient.Android/Widgets/CalendarWidgetUpdateService.cs
+- MALClient.Android/Widgets/CalendarWidgetRemoteViewsService.cs
+- MALClient.Android/Utilities/Includes.cs
+- MALClient.Android/UserControls/PagerSlidingTabStrip.cs
+- MALClient.Android/Mediation/GenericAdBanner.cs (using alias)
+- MALClient.Android/Mediation/DakimakuriAdBanner.cs (using alias)
+- MALClient.Android/Mediation/CuddlyOctopusAdBanner.cs
+
+Android-Specific Namespaces/Types Used (Entire MALClient.Android project):
+--------------------------------------------------------------------------
+All 203 C# files in MALClient.Android use Android.* namespaces:
+- Android.App, Android.Content, Android.OS, Android.Runtime
+- Android.Views, Android.Widget, Android.Graphics
+- Android.Support.* (legacy support libraries)
+- Android.Gms.Ads (Google Mobile Ads)
+- Android.App.Job, Android.Appwidget (Widgets)
+- Android.Content.PM, Android.Content.Res
+
+NO iOS-SPECIFIC CODE FOUND:
+---------------------------
+- No __IOS__ preprocessor directives
+- No UIKit, Foundation, or iOS-specific namespaces
+- No Device.RuntimePlatform == 'iOS' checks
+- No iOS project in solution
+
+NO UWP/WINDOWS-SPECIFIC CODE FOUND:
+-----------------------------------
+- No WINDOWS_UWP, WINDOWS_APP, WINDOWS_PHONE_APP preprocessor directives
+- No Windows.UI.Xaml, Windows.Storage, Windows.System, Microsoft.UI.Xaml namespaces
+- No Windows.UI.Notifications usage
+- No UWP project in solution
+
+NO XAMARIN.FORMS DEVICE PLATFORM CHECKS FOUND:
+-----------------------------------------------
+- No Device.RuntimePlatform usage
+- No Device.OS == TargetPlatform.Android checks
+- No OnPlatform/OnIdiom in XAML (no XAML files - uses Android AXML layouts)
+
+NO DEPENDENCY ATTRIBUTE REGISTRATIONS FOUND:
+--------------------------------------------
+- No [assembly: Dependency(typeof(...))] attributes
+- Platform implementations use direct registration via SimpleIoc/MvvmLight
+- AndroidViewModelLocator registers IHamburgerViewModel using MainActivity.CurrentContext
+
+MIGRATION NOTES FOR .NET MAUI:
+------------------------------
+1. MainActivity.CurrentContext -> Replace with IWindowProvider/Application.Current.MainPage/Platform.CurrentActivity
+2. Android.App.Application.Context -> Android.App.Application.Context (available in MAUI via Platform.AppContext)
+3. Android.* namespaces -> Move to Platforms/Android/ folder, use #if ANDROID where needed
+4. Android.Support.* -> Migrate to AndroidX equivalents (Google.Play.Services, etc.)
+5. StrictMode DEBUG block -> Keep in Platforms/Android/MainApplication.cs or MauiProgram.cs
+6. AppCenter DEBUG blocks -> Configure in MauiProgram.cs with #if DEBUG
+7. [Preserve] attributes -> Use [DynamicallyAccessedMembers] or MAUI's built-in trimming config
+8. ResourceExtension static initialization -> Move to MAUI resource system or lazy initialization
+9. DialogPlus, Droppy, MaterialTabStrip bindings -> Find MAUI equivalents or rewrite
+10. Calendar Widget -> Implement as MAUI Platforms/Android widget
+11. Google Mobile Ads -> Use MAUI compatible ad SDK
+12. All Android-specific using statements -> Move to Platforms/Android/ files
+13. No iOS/UWP code to migrate - single target (Android) simplifies migration

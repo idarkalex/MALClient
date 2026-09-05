@@ -1,0 +1,112 @@
+﻿MALPlus NuGet Package Inventory Summary
+========================================
+Generated: 2026-09-05
+Solution: D:\Descargas\MALPlus
+Total Package References: 24 (across 5 projects)
+Unique Packages: 20
+
+=== SUMMARY BY CATEGORY ===
+
+XAMARIN_FORMS: 0 packages
+  (This is a native Xamarin.Android project, not Xamarin.Forms)
+
+IMAGE: 2 packages
+  - Xamarin.FFImageLoading 2.4.11.982
+  - Xamarin.FFImageLoading.Transformations 2.4.11.982
+
+DATABASE: 0 packages
+  (No SQLite/Database packages found in PackageReferences)
+
+JSON: 4 references (3 unique)
+  - Newtonsoft.Json 13.0.1 (used in 3 projects: MALClient.Models, MALClient.XShared, MALClient.Android)
+  - System.Text.Json 4.7.2 (MALClient.XShared)
+
+MVVM: 2 references (1 unique)
+  - MvvmLightLibsStd10 5.4.1.1 (used in 2 projects: MALClient.XShared, MALClient.Android)
+
+UI_COMPONENTS: 8 packages
+  - FastAdapter.Xamarin.Droid 1.6.0.2
+  - MaterialDrawer.Xamarin.Droid 5.3.6.2
+  - Xamarin.Android.Support.Design 28.0.0.3
+  - Xamarin.Android.Support.v4 28.0.0.3
+  - Xamarin.AndroidX.Legacy.Support.V4 1.0.0.15
+  - Xamarin.Google.Android.Material 1.7.0.1
+  - Xamarin.Android.Support.v7.AppCompat 28.0.0.1 (PagerSlidingTabStrip)
+  - (Xamarin.Android.Support.Annotations also provides UI support)
+
+WEB: 1 package
+  - HtmlAgilityPack 1.11.28
+
+NOTIFICATIONS: 5 packages
+  - Microsoft.AppCenter 4.4.0
+  - Microsoft.AppCenter.Analytics 4.4.0
+  - Microsoft.AppCenter.Crashes 4.4.0
+  - Xamarin.GooglePlayServices.Ads.Identifier 118.0.1.7
+  - Xamarin.GooglePlayServices.Ads.Lite 122.3.0.1
+
+PLATFORM_ANDROID: 2 packages
+  - Xamarin.Android.Arch.Core.Common 1.1.1.3
+  - Xamarin.Android.Support.Annotations 28.0.0.3
+
+OTHER: 1 package
+  - morelinq 3.3.2
+
+=== TOTALS ===
+Total PackageReference entries: 24
+Unique package IDs: 20
+Projects with PackageReferences: 5 (MALClient.Models, MALClient.XShared, MALClient.Android, PagerSlidingTabStrip, MALClient.Android.Adapters has none)
+
+=== MAUI MIGRATION COMPATIBILITY STATUS ===
+
+PACKAGE                                              | STATUS               | NOTES
+----------------------------------------------------|----------------------|------------------------------------------------------------------
+Newtonsoft.Json 13.0.1                               | MIGRATE_DIRECT       | Fully supported in .NET 8+/MAUI; no changes needed
+System.Text.Json 4.7.2                               | MIGRATE_DIRECT       | Built into .NET 6+; remove explicit reference, use built-in
+HtmlAgilityPack 1.11.28                              | MIGRATE_DIRECT       | NetStandard2.0 compatible; works in MAUI unchanged
+MvvmLightLibsStd10 5.4.1.1                           | NEEDS_REPLACEMENT    | MvvmLight is deprecated; migrate to CommunityToolkit.Mvvm
+FastAdapter.Xamarin.Droid 1.6.0.2                    | NEEDS_REPLACEMENT    | Xamarin-specific; no MAUI equivalent. Rewrite with CollectionView
+MaterialDrawer.Xamarin.Droid 5.3.6.2                 | NEEDS_REPLACEMENT    | Android-only drawer; use MAUI FlyoutPage or CommunityToolkit
+Microsoft.AppCenter 4.4.0                            | NEEDS_REPLACEMENT    | App Center deprecated; migrate to HockeyApp/Play Console or custom
+Microsoft.AppCenter.Analytics 4.4.0                  | NEEDS_REPLACEMENT    | Same as above; consider Firebase Analytics or custom telemetry
+Microsoft.AppCenter.Crashes 4.4.0                    | NEEDS_REPLACEMENT    | Same as above; consider Sentry, Firebase Crashlytics
+morelinq 3.3.2                                       | MIGRATE_DIRECT       | Linq extensions; works on .NET Standard 2.0+
+Xamarin.Android.Arch.Core.Common 1.1.1.3             | OBSOLETE_DELETE      | AndroidX Arch components; replaced by Jetpack libraries in MAUI
+Xamarin.Android.Support.Annotations 28.0.0.3         | OBSOLETE_DELETE      | Legacy Support Library; replaced by AndroidX in MAUI
+Xamarin.Android.Support.Design 28.0.0.3              | OBSOLETE_DELETE      | Legacy Support Library; replaced by Material Components in MAUI
+Xamarin.Android.Support.v4 28.0.0.3                  | OBSOLETE_DELETE      | Legacy Support Library; replaced by AndroidX in MAUI
+Xamarin.AndroidX.Legacy.Support.V4 1.0.0.15          | OBSOLETE_DELETE      | Compatibility shim; not needed in MAUI (AndroidX is native)
+Xamarin.FFImageLoading 2.4.11.982                    | NEEDS_REPLACEMENT    | No MAUI support; use Microsoft.Maui.Controls.Image or SkiaSharp
+Xamarin.FFImageLoading.Transformations 2.4.11.982    | NEEDS_REPLACEMENT    | Same as above; use SkiaSharp for transformations
+Xamarin.Google.Android.Material 1.7.0.1              | MIGRATE_DIRECT       | Material Components; available as Microsoft.Maui.Controls.Material
+Xamarin.GooglePlayServices.Ads.Identifier 118.0.1.7  | NEEDS_REPLACEMENT    | Ads SDK; use Google.MobileAds for MAUI (different namespace)
+Xamarin.GooglePlayServices.Ads.Lite 122.3.0.1        | NEEDS_REPLACEMENT    | Ads SDK; use Google.MobileAds for MAUI (different namespace)
+Xamarin.Android.Support.v7.AppCompat 28.0.0.1        | OBSOLETE_DELETE      | Legacy Support Library; replaced by Material Components in MAUI
+
+=== MIGRATION PRIORITY ===
+
+HIGH (Blocking - must replace):
+1. MvvmLightLibsStd10 → CommunityToolkit.Mvvm
+2. Xamarin.FFImageLoading → MAUI Image / SkiaSharp
+3. FastAdapter.Xamarin.Droid → CollectionView with custom adapters
+4. MaterialDrawer.Xamarin.Droid → MAUI FlyoutPage
+4. Microsoft.AppCenter.* → Firebase/Sentry/custom
+5. Xamarin.GooglePlayServices.Ads.* → Google.MobileAds
+
+MEDIUM (Obsolete - delete and use AndroidX/MAUI equivalents):
+6. All Xamarin.Android.Support.* packages
+7. Xamarin.AndroidX.Legacy.Support.V4
+8. Xamarin.Android.Arch.Core.Common
+
+LOW (Direct migration - minimal changes):
+9. Newtonsoft.Json (keep or switch to System.Text.Json)
+10. System.Text.Json (use built-in)
+11. HtmlAgilityPack (keep)
+12. morelinq (keep)
+13. Xamarin.Google.Android.Material → Microsoft.Maui.Controls.Material
+
+=== NOTES ===
+- The binding projects (Binding_MoPub*, Binding_Dialogplus, etc.) use AAR/JAR references, not NuGet PackageReferences
+- MALClient.Android.Adapters uses old-style packages.config with References, not PackageReference
+- PagerSlidingTabStrip (root) has one PackageReference; the AndroidBindings version uses References
+- Total unique packages to address: 20
+- Estimated effort: HIGH for MVVM + Image loading + Adapters; MEDIUM for Support Library cleanup

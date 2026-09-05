@@ -1,0 +1,309 @@
+﻿=============================================================================
+MALPlus Renderer & Image Loading Audit Summary
+Audit date: 2026-09-05
+Target: Xamarin.Android -> .NET MAUI migration planning
+=============================================================================
+
+KEY FINDINGS
+------------
+* NO Xamarin.Forms is in use. The project is a native Xamarin.Android app
+  using Fragment-based UI with MvvmLight + MVVM. Therefore:
+    - 0 classes extend ViewRenderer<,> (Xamarin.Forms renderer pattern)
+    - 0 classes extend Renderer (Xamarin.Forms Android renderer base)
+    - 0 references to FFImageLoading.Forms.*
+    - 0 references to CachedImage (the XF wrapper from FFImageLoading)
+* FFImageLoading IS used, but only the platform-side packages:
+    - Xamarin.FFImageLoading  (ImageService, ImageViewAsync)
+    - Xamarin.FFImageLoading.Transformations (CircleTransformation, BlurredTransformation)
+* 0 AXML/XAML uses FFImageLoading namespace (it's all done in C# code-behind).
+* Only 1 csproj has the packages: MALClient.Android.csproj.
+
+-----------------------------------------------------------------------------
+
+CATEGORY BREAKDOWN
+------------------
+
+[1] IMAGE_LOADING (55 files)
+    The bulk of the migration risk. Every fragment/view holder/user control
+    uses `FFImageLoading.Views.ImageViewAsync` (a custom Android ImageView
+    replacement) and/or `ImageService.Instance.LoadUrl(...).Into(...)` to
+    load remote images, often wrapped with CircleTransformation /
+    BlurredTransformation.
+
+    Files:
+      - MALClient.Android/App.cs                          (ImageService.Initialize)
+      - MALClient.Android/Utilities/AnimeImageExtensions.cs  (static helpers: AnimeInto, AnimeIntoIfLoaded, GetImgUrl)
+      - MALClient.Android/Utilities/ImageLoading/CustomScrollListener.cs  (RecyclerView.OnScrollListener: pause/resume FF work)
+      - MALClient.Android/Utilities/FlingCollectionsHelper.cs   (AbsListView extension; uses FFImageLoading.Extensions)
+      - MALClient.Android/Utilities/MemoryWatcher.cs     (InvalidateMemoryCache on memory pressure)
+      - MALClient.Android/Activities/MainActivity.hamburger.cs
+      - MALClient.Android/BackgroundTasks/AiredNotificationCheckReceiver.cs
+      - MALClient.Android/Widgets/CalendarWidgetRemoteViewsService.cs
+      - MALClient.Android/DIalogs/PinnedUsersDialog.cs
+      - MALClient.Android/DIalogs/KeyImageDialog.cs
+      - MALClient.Android/DIalogs/ChangelogDialog.cs
+      - MALClient.Android/DIalogs/AnimeDetailsPageDialogBuilder.cs
+      - MALClient.Android/DIalogs/AddFriendDialog.cs
+      - MALClient.Android/ViewHolders/CommentViewHolder.cs
+      - MALClient.Android/UserControls/AnimeItems/AnimeGridItem.cs
+      - MALClient.Android/UserControls/AnimeItems/AnimeListItem.cs
+      - MALClient.Android/UserControls/FavouriteItem.cs
+      - MALClient.Android/UserControls/ForumItems/ForumTopicItem.cs
+      - MALClient.Android/UserControls/ForumItems/ForumIndexItem.cs
+      - MALClient.Android/Mediation/GenericAdBanner.cs
+      - MALClient.Android/Mediation/DakimakuriAdBanner.cs
+      - MALClient.Android/Mediation/CuddlyOctopusAdBanner.cs
+      - MALClient.Android/Fragments/WallpapersPageFragment.cs
+      - MALClient.Android/Fragments/SearchFragments/SearchPageFragment.cs
+      - MALClient.Android/Fragments/SearchFragments/SearchEverywherePageFragment.cs
+      - MALClient.Android/Fragments/SearchFragments/AnimeTypeSearchFragment.cs
+      - MALClient.Android/Fragments/SearchFragments/AnimeSearchPageFragment.cs
+      - MALClient.Android/Fragments/RecommendationsFragments/RecommendationItemFragment.cs
+      - MALClient.Android/Fragments/PromoVideosPageFragment.cs
+      - MALClient.Android/Fragments/ProfilePageFragments/ProfilePageGeneralTabFragment.cs
+      - MALClient.Android/Fragments/MorePageFragment.cs
+      - MALClient.Android/Fragments/MessagingFragments/MessagingDetailsPageFragment.cs
+      - MALClient.Android/Fragments/ListComparisonPageFragment.cs
+      - MALClient.Android/Fragments/HistoryFragments/HistoryPageTabFragment.cs
+      - MALClient.Android/Fragments/FriendsPageFragments/FriendsPageTabFragment.cs
+      - MALClient.Android/Fragments/FriendsPageFragments/FriendsPageRequestsTabFragment.cs
+      - MALClient.Android/Fragments/FriendsFeedsPageFragment.cs
+      - MALClient.Android/Fragments/ForumFragments/Tabs/ForumIndexPageFragmentRecentsTabFragment.cs
+      - MALClient.Android/Fragments/Clubs/ClubIndexTabFragmentBase.cs
+      - MALClient.Android/Fragments/Clubs/ClubDetailsPageRelationsTabFragment.cs
+      - MALClient.Android/Fragments/Clubs/ClubDetailsPageGeneralTabFragment.cs
+      - MALClient.Android/Fragments/Clubs/ClubDetailsPageCommentsTabFragment.cs
+      - MALClient.Android/Fragments/DiscoverPageFragment.cs
+      - MALClient.Android/Fragments/ArticlesPageFragments/ArticlesPageTabFragment.cs
+      - MALClient.Android/Fragments/DetailsFragments/PersonDetailsPageVaTabFragment.cs
+      - MALClient.Android/Fragments/DetailsFragments/PersonDetailsPageProdTabFragment.cs
+      - MALClient.Android/Fragments/DetailsFragments/PersonDetailsPageFragment.cs
+      - MALClient.Android/Fragments/DetailsFragments/CharacterDetailsPageFragment.cs
+      - MALClient.Android/Fragments/AnimeDetailsPageFragment.cs
+      - MALClient.Android/Fragments/AnimeDetailsPageFragment.ui.cs
+      - MALClient.Android/Fragments/AnimeDetailsPageTabs/AnimeDetailsPageStaffTabFragment.cs
+      - MALClient.Android/Fragments/AnimeDetailsPageTabs/AnimeDetailsPageReviewsTabFragment.cs
+      - MALClient.Android/Fragments/AnimeDetailsPageTabs/AnimeDetailsPageRelatedTabFragment.cs
+      - MALClient.Android/Fragments/AnimeDetailsPageTabs/AnimeDetailsPageRecomsTabFragment.cs
+      - MALClient.Android/Fragments/AnimeDetailsPageTabs/AnimeDetailsPageCharactersTabFragment.cs
+      - MALClient.Android/Fragments/SettingsFragments/SettingsAboutFragment.cs
+
+    Count: 55 files
+
+[2] IMAGE_EFFECT (4 files / 2 unique classes)
+    Custom canvas / OnDraw overrides. In this project only ONE file actually
+    overrides OnDraw, but it's duplicated (the canonical one and a copy under
+    AndroidBindings/).
+
+      - MALClient.Android/UserControls/PagerSlidingTabStrip.cs            (line 666: OnDraw)
+      - MALClient.Android/AndroidBindings/PagerSlidingTabStrip/PagerSlidingTabStrip.cs  (line 674: OnDraw)
+
+    Circle, blur and other image transformations used in the project are
+    FFImageLoading.Transformations.CircleTransformation /
+    BlurredTransformation, applied at .Into(...) call time, NOT custom
+    drawable subclasses. There are NO custom BitmapDrawable / Drawable
+    subclasses in the project.
+
+    Count: 4 files (2 unique)
+
+[3] WEBVIEW (3 files)
+    WebViewClient subclasses and a JavascriptInterface. These have no direct
+    counterpart in MAUI's WebView handler, but they map reasonably to a
+    Handler / WebViewHandler / IWebViewDelegate approach.
+
+      - MALClient.Android/Web/InlineVideoWebViewClient.cs
+            : WebViewClient -- rewrites YouTube URLs to /embed/{id}, keeps
+            playback inside the app's overlay WebView.
+      - MALClient.Android.Adapters/ListenableWebClient.cs
+            : WebViewClient -- page-ready event + navigation interception
+            (used by the article reader to rewrite watch?v= -> /embed/).
+      - MALClient.Android/Utilities/Web/DataJavascriptInterface.cs
+            : Java.Lang.Object + [JavascriptInterface] -- bridge between
+            the article/news WebView and the ViewModel.
+
+    Count: 3 files
+
+[4] LIST (5 files)
+    Custom ListView/GridView/ViewPager subclasses with measure / drawing
+    overrides. None of them extend Renderer or use FFImageLoading.
+
+      - MALClient.Android/UserControls/PriorityListView.cs
+            : ListView -- toggles accessibility-event priority during fling
+            (performance hack).
+      - MALClient.Android/UserControls/ExpandableGridView.cs
+            : GridView -- sizes to content (OnMeasure override at line 37).
+      - MALClient.Android/UserControls/LandscapeHelpers/HeightAdjustingListView.cs
+            : ListView -- sizes to content (OnMeasure override at line 57).
+      - MALClient.Android/UserControls/LandscapeHelpers/HeightAdjustingGridView.cs
+            : GridView -- sizes to content (OnMeasure override at line 62).
+      - MALClient.Android/UserControls/LandscapeHelpers/HeightAdjustingViewPager.cs
+            : ViewPager -- sizes pager to active tab content (OnMeasure).
+
+    Count: 5 files
+
+[5] CUSTOM_CONTROL (6 files)
+    Custom compound views / user controls. These are the "Xamarin.Forms
+    renderer" equivalent on a native Android project.
+
+      - MALClient.Android/UserControls/ZoomableImageView.cs
+            : ImageViewAsync -- pinch-zoom / pan for the full-screen
+            key-art viewer (KeyImageDialog). Overrides OnMeasure (line 267)
+            and OnTouchEvent for ScaleGestureDetector.
+      - MALClient.Android/UserControls/FavouriteButton.cs
+            : FrameLayout -- heart toggle button used on anime/manga/character
+            detail pages.
+      - MALClient.Android/UserControls/BBCodeEditor.cs
+            : LinearLayout -- BBCode formatting toolbar + text editor for
+            forum/club posts and reviews.
+      - MALClient.Android/UserControls/UserControlBase.cs
+            : abstract FrameLayout -- generic ViewModel<T> + ViewRoot<TViewGroup>
+            bind contract, ancestor of AnimeGridItem / AnimeListItem /
+            AnimeComparisonItem etc. via MvvmLight.Helpers.
+      - MALClient.Android/Mediation/GenericAdBanner.cs
+            : compound view hosting an ImageViewAsync for the "moPub-style"
+            generic ad layout (consumes FFImageLoading).
+      - MALClient.Android/Mediation/DakimakuriAdBanner.cs
+            : dakimakuri ad banner (FFImageLoading).
+      - MALClient.Android/Mediation/CuddlyOctopusAdBanner.cs
+            : cuddly octopus ad banner (FFImageLoading).
+      - MALClient.Android/UserControls/ScrollableSwipeToRefreshLayout.cs
+            (SwipeRefreshLayout subclass - excluded; not an image renderer
+            but worth noting for MAUI RefreshView parity)
+
+    Count: 7 files (counted generously; the ScrollableSwipeToRefreshLayout
+    is not strictly a custom control but a layout helper that's heavily used
+    by the pull-to-refresh pass described in AGENTS.md)
+
+[6] OTHER (2 files)
+    Custom ScrollView subclasses without image-loading concerns. These do
+    NOT extend Renderer but are custom platform views that must be ported.
+
+      - MALClient.Android/UserControls/LandscapeHelpers/OrientationDependentScrollView.cs
+            : ScrollView -- orientation-aware layout.
+      - MALClient.Android/UserControls/ToggleableScrollView.cs
+            (PriorityScrollView) : ScrollView -- priority drawing toggle
+            during fling (performance hack).
+
+    Count: 2 files
+
+-----------------------------------------------------------------------------
+
+TOTALS
+------
+    IMAGE_LOADING : 55 files
+    IMAGE_EFFECT :  4 files (2 unique)
+    WEBVIEW      :  3 files
+    LIST         :  5 files
+    CUSTOM_CONTROL: 7 files
+    OTHER        :  2 files
+    -------------------
+    TOTAL        : 76 files (74 unique file paths; PagerSlidingTabStrip
+                  duplicated under AndroidBindings/)
+
+-----------------------------------------------------------------------------
+
+MIGRATION IMPLICATIONS (Xamarin.Android -> .NET MAUI)
+-----------------------------------------------------
+
+1. There are NO Xamarin.Forms renderers to port. The migration of UI is a
+   complete rewrite to MAUI's Handler architecture -- there is no shared
+   "port the renderer" path.
+
+2. The largest concrete migration surface is FFImageLoading itself.
+   - FFImageLoading for Xamarin.Android is unmaintained since ~2022.
+   - MAUI-side the recommended replacement is CommunityToolkit.Maui
+     (MauiHandlers + ImageSource) or Microsoft.Maui.Graphics.
+   - All `ImageViewAsync` view references in the 55 IMAGE_LOADING files
+     have to be replaced with the new image source.
+   - All `ImageService.Instance.LoadUrl(...).Into(imageAsync)` calls have
+     to be replaced with `image.SetImageSource(new UriImageSource { Uri = ... })`
+     or a similar wrapper.
+   - `AnimeImageExtensions.AnimeInto(...)` (AnimeInto, AnimeIntoIfLoaded,
+     GetImgUrl) is the central helper used everywhere -- replacing its
+     internals lets us touch 1 file and rewire every consumer.
+   - Custom transformations:
+        - `CircleTransformation` -> MauiBorder rounded corners or a
+          custom IImageSourceHandler that draws into a circular bitmap.
+        - `BlurredTransformation` -> PlatformEffect / handler with
+          BlurView or a Blur ImageSharp pipeline.
+
+3. Custom Android views (ZoomableImageView, FavouriteButton, BBCodeEditor,
+   UserControlBase) need MAUI Handlers. For most, a Grid with BindableProperty
+   wrapping the existing Android widget via a handler will be the cleanest
+   port. For FavouriteButton/BBCodeEditor a ContentView with an inner
+   GridLayout is straightforward. ZoomableImageView is the trickiest:
+   MAUI's built-in gestures do not give pixel-perfect pinch-zoom on raw
+   bitmaps, so plan for a GraphicsView or SkiaSharp port.
+
+4. PagerSlidingTabStrip.OnDraw (the only OnDraw override outside of the
+   FFImageLoading pipeline) -- in MAUI, replace with either a custom
+   Microsoft.Maui.Graphics IDrawable on a GraphicsView, or with a Border
+   + shadow / SkiaSharp. The behavior is "draw underline + tab divider
+   lines based on scroll position". Re-implementing on SkiaSharp is the
+   modern path.
+
+5. WebView clients (InlineVideoWebViewClient, ListenableWebClient) have
+   no exact MAUI equivalent. Plan for:
+        - ListenableWebClient -> MAUI WebViewHandler overrides
+          (IPlatformWebViewClient.OnPageStarted/Finished + HandlerChanged
+          events for navigation intercept).
+        - InlineVideoWebViewClient -> same approach with custom url
+          rewriting on ShouldInterceptRequest.
+        - DataJavascriptInterface -> bridge a JS object via EvaluateJavaScriptAsync
+          and a C# event sink; in MAUI this maps to a hybrid WebView
+          handler that calls CoreWebView2.AddScriptToExecuteOnDocumentCreated
+          (Windows) or WebKit's WKUserContentController (iOS/MacCatalyst).
+
+6. ListView/GridView/ViewPager measurement overrides -- MAUI's CollectionView
+   and CarouselView handle wrapping content for free; the custom HeightAdjustingListView
+   and ExpandableGridView can be deleted and replaced with CollectionView.
+   HeightAdjustingViewPager maps to CarouselView (or TabView with IndicatorView).
+   PriorityListView / PriorityScrollView performance hacks are no longer
+   needed -- MAUI's virtualization is good.
+
+7. The pull-to-refresh wrapper (`ScrollableSwipeToRefreshLayout`) is
+   already a thin SwipeRefreshLayout subclass; replace with MAUI RefreshView.
+
+8. FlingCollectionsHelper (AbsListView + LiveFlingAdapter) is the most
+   project-specific chunk of code: it pre-creates ViewHolders during
+   fling to keep scrolling smooth. In MAUI this pattern is built into
+   CollectionView's DataTemplateSelector + recycling pool; the helper
+   itself can be deleted.
+
+9. The bindings project PagerSlidingTabStrip (under AndroidBindings/) is
+   the upstream copy; UserControls/PagerSlidingTabStrip.cs is the local
+   fork. Both must be ported (or both can be deleted once MAUI's TabView
+   is wired in).
+
+10. NuGet packages to drop from csproj:
+        - Xamarin.FFImageLoading
+        - Xamarin.FFImageLoading.Transformations
+    and add:
+        - Microsoft.Maui.Controls (transitively)
+        - CommunityToolkit.Maui (or CommunityToolkit.Maui.Markup + an
+          image-loader of choice)
+        - SkiaSharp.Views.Maui.Controls  (if SkiaSharp is needed for the
+          PagerSlidingTabStrip port)
+
+-----------------------------------------------------------------------------
+
+PACKAGE REFERENCES (MALClient.Android.csproj)
+---------------------------------------------
+    <PackageReference Include="Xamarin.FFImageLoading" />           (line 373)
+    <PackageReference Include="Xamarin.FFImageLoading.Transformations" /> (line 376)
+
+No other csproj in the solution references FFImageLoading or its Transformations.
+
+-----------------------------------------------------------------------------
+
+EVIDENCE OF "NOT XAMARIN.FORMS"
+--------------------------------
+- 0 hits for `Xamarin.Forms` in any *.cs file.
+- 0 hits for `ViewRenderer<` in any *.cs file.
+- 0 hits for `class\s+\w+Renderer\b` (Xamarin.Forms renderer naming).
+- 0 hits for `FFImageLoading.Forms` (the Forms integration package).
+- 0 hits for `CachedImage` (the Forms-side FFImageLoading wrapper).
+- 0 hits for FFImageLoading in any *.axml (Android layout) -- image
+  elements are styled in C# code-behind or set via FindViewById<ImageViewAsync>
+  in the Fragment/Adapter.
+- 0 hits for FFImageLoading in any *.xaml (there is no XAML in the project).

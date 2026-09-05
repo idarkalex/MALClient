@@ -1,0 +1,58 @@
+FilePath,LineStart,Symbol,LineEnd,Snippet
+MALClient.Android/Activities/MainActivity.cs,233,DEBUG,236,"#if DEBUG
+                var policy = new StrictMode.ThreadPolicy.Builder().PermitAll().Build();
+                StrictMode.SetThreadPolicy(policy);
+#endif"
+MALClient.Android.Adapters/TelemetryProvider.cs,38,DEBUG,40,"#if !DEBUG
+            AppCenter.Start(\"4bfd20dc-d9ba-4bdf-bb15-01397ec4a176\", typeof(Crashes),typeof(Analytics));
+#endif"
+MALClient.Android.Adapters/TelemetryProvider.cs,45,DEBUG,47,"#if !DEBUG
+            Analytics.TrackEvent(@event.ToString());
+#endif"
+MALClient.Android.Adapters/TelemetryProvider.cs,52,DEBUG,54,"#if !DEBUG
+            Analytics.TrackEvent($\"{@event}\", args.ToDictionary(e => e.Key, e => e.Param));
+#endif"
+MALClient.Android.Adapters/TelemetryProvider.cs,59,DEBUG,61,"#if !DEBUG
+            Analytics.TrackEvent(@event);
+#endif"
+MALClient.Android.Adapters/TelemetryProvider.cs,91,DEBUG,96,"#if !DEBUG
+            Analytics.TrackEvent(\"Navigation\", new Dictionary<string, string>
+            {
+                {\"Page\", page.ToString()}
+            });
+#endif"
+MALClient.Android.Adapters/TelemetryProvider.cs,101,DEBUG,103,"#if !DEBUG
+            //MetricsManager.TrackEvent($\"Navigation: {page}\");
+#endif"
+MALClient.Android/Managers/NavMgr.cs,53,ANDROID_API,53,"Toast.MakeText(MainActivity.CurrentContext, \"Press back again to exit\", ToastLength.Short).Show();"
+MALClient.Android/Managers/NavMgr.cs,82,ANDROID_API,82,"MainActivity.CurrentContext.StartActivity(intent);"
+MALClient.Android/ViewModels/SettingsViewModel.cs,28,ANDROID_API,29,"MainActivity.CurrentContext.StartActivity(new Intent(Intent.ActionView, global::Android.Net.Uri.Parse($\"market://details?id={MainActivity.CurrentContext.PackageName}\")));"
+MALClient.Android/Resources/ResourceExtension.cs,28,ANDROID_API,37,"BrushAnimeItemInnerBackground = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushAnimeItemInnerBackground, null);\n                BrushAnimeItemBackground = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushAnimeItemBackground, null);\n                BrushAppBars = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushAppBars, null);\n                BrushFlyoutBackground = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushFlyoutBackground, null);\n                BrushRowAlternate1 = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushRowAlternate1, null);\n                BrushRowAlternate2 = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushRowAlternate2, null);\n                BrushText = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushText, null);\n                BrushTextSecondary = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushTextSecondary, null);\n                BrushSelectedDialogItem = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushSelectedDialogItem, null);"
+MALClient.Android/Resources/ResourceExtension.cs,43,ANDROID_API,68,"BrushNoSearchResults = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.DarkBrushNoSearchResults, null);\n                BrushAnimeItemInnerBackground = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushAnimeItemInnerBackground, null);\n                BrushAnimeItemBackground = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushAnimeItemBackground, null);\n                BrushAppBars = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushAppBars, null);\n                BrushFlyoutBackground = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushFlyoutBackground, null);\n                BrushRowAlternate1 = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushRowAlternate1, null);\n                BrushRowAlternate2 = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushRowAlternate2, null);\n                BrushText = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushText, null);\n                BrushTextSecondary = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushTextSecondary, null);\n                BrushSelectedDialogItem = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushSelectedDialogItem, null);\n                BrushNoSearchResults = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, Resource.Color.LightBrushNoSearchResults, null);"
+MALClient.Android/Resources/ResourceExtension.cs,80,ANDROID_API,231,"AccentColour = ResourcesCompat.GetColor(MainActivity.CurrentContext.Resources, ...);\n                ... (multiple AccentColour/AccentColourDark/OpaqueAccentColour assignments using MainActivity.CurrentContext.Resources)"
+MALClient.Android/Utilities/GridViewColumnHelper.cs,16,ANDROID_API,64,"private static readonly int DefaultPrefferedItemWidthBig = MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 190 : 200;\n        private static readonly int DefaultPrefferedItemWidthSmall = MainActivity.CurrentContext.Resources.DisplayMetrics.Density >= 2 ? 133 : 140;\n        ...\n        OnConfigurationChanged(MainActivity.CurrentContext.Resources.Configuration);\n        var config = MainActivity.CurrentContext.Resources.Configuration;"
+MALClient.Android/Utilities/RateReminderPopUp.cs,35,ANDROID_API,35,"MainActivity.CurrentContext.StartActivity(new Intent(Intent.ActionView, global::Android.Net.Uri.Parse($\"market://details?id={MainActivity.CurrentContext.PackageName}\")));"
+MALClient.Android/Fragments/SettingsFragments/SettingsGeneralFragment.cs,55,ANDROID_API,55,"MainActivity.CurrentContext.Recreate();"
+MALClient.Android/Utilities/DimensionsHelper.cs,9,ANDROID_API,14,"return (int) (dp * (MainActivity.CurrentContext.Resources.DisplayMetrics.Density));\n            return px / MainActivity.CurrentContext.Resources.DisplayMetrics.Density;"
+MALClient.Android/Utilities/AndroidUtilities.cs,85,ANDROID_API,184,"MainActivity.CurrentContext.RunOnUiThread(() => ...);\n            var fragmentRootView = MainActivity.CurrentContext.MainPageRoot;\n            var inputManager = (InputMethodManager)MainActivity.CurrentContext.GetSystemService(Context.InputMethodService);"
+MALClient.Android/Fragments/SearchFragments/AnimeTypeSearchFragment.cs,227,ANDROID_API,312,"var ctx = Activity ?? MainActivity.CurrentContext ?? global::Android.App.Application.Context;\n            ... (multiple usages with fallback to Android.App.Application.Context)"
+MALClient.Android/UserControls/ForumItems/ForumTopicItem.cs,327,ANDROID_API,327,"MainActivity.CurrentContext.RunOnUiThread(() => ...);"
+MALClient.Android/Fragments/MessagingFragments/MessagingPageFragment.cs,50,ANDROID_API,71,"MainActivity.CurrentContext.HamburgerOpened += CurrentContextOnHamburgerOpened;\n            MainActivity.CurrentContext.HamburgerOpened -= CurrentContextOnHamburgerOpened;"
+MALClient.Android/Fragments/LogInPageFragment.cs,55,ANDROID_API,223,"MainActivity.CurrentContext.RequestedOrientation = ScreenOrientation.Portrait;\n            MainActivity.CurrentContext.RequestedOrientation = ScreenOrientation.Unspecified;"
+MALClient.Android/AndroidViewModelLocator.cs,47,ANDROID_API,47,"SimpleIoc.Default.Register<IHamburgerViewModel>(() => MainActivity.CurrentContext as IHamburgerViewModel);"
+MALClient.Android/BackgroundTasks/NotificationTaskManager.cs,66,ANDROID_API,93,"StartTask(task, MainActivity.CurrentContext);\n            var scheduler = (JobScheduler)MainActivity.CurrentContext.GetSystemService(Context.JobSchedulerService);\n            await new NotificationCheckBroadcastReceiver.CalendarTask(null, MainActivity.CurrentContext).RunUpdate();"
+MALClient.Android/Dialogs/PinnedUsersDialog.cs,37,ANDROID_API,92,"var dialogBuilder = DialogPlus.NewDialog(MainActivity.CurrentContext);\n            MainActivity.CurrentContext.DialogToCollapseOnBack = _tagsDialog;\n            view = MainActivity.CurrentContext.LayoutInflater.Inflate(Resource.Layout.PinnedUsersDialogItem, null);\n            MainActivity.CurrentContext.DialogToCollapseOnBack = null;"
+MALClient.Android/Dialogs/ChangelogDialog.cs,34,ANDROID_API,50,"var dialogBuilder = DialogPlus.NewDialog(MainActivity.CurrentContext);\n            var view = new TextView(MainActivity.CurrentContext);"
+MALClient.Android/Dialogs/AnimeUpdateDialogBuilder.cs,28,ANDROID_API,320,"var dialogBuilder = DialogPlus.NewDialog(MainActivity.CurrentContext);\n            dialogBuilder.SetAdapter(new StatusDialogAdapter(MainActivity.CurrentContext, ...));\n            ... (multiple usages)"
+MALClient.Android/Dialogs/AnimeDetailsPageDialogBuilder.cs,38,ANDROID_API,79,"var dialogBuilder = DialogPlus.NewDialog(MainActivity.CurrentContext);\n            MainActivity.CurrentContext.LayoutInflater.Inflate(...)"
+MALClient.Android/UserControls/AnimeItems/AnimeListItem.cs,264,ANDROID_API,264,"_menu = AnimeItemFlyoutBuilder.BuildForAnimeItem(MainActivity.CurrentContext, AnimeListItemImgPlaceholder, null, ...);"
+MALClient.Android/Fragments/ForumFragments/ForumTopicPageFragment.cs,192,ANDROID_API,192,"var view = MainActivity.CurrentContext.LayoutInflater.Inflate(Resource.Layout.PageIndicatorItem, null);"
+MALClient.Android/BackgroundTasks/NotificationCheckBroadcastReceiver.cs,250,ANDROID_API,250,"if (Build.VERSION.SdkInt >= global::Android.OS.BuildVersionCodes.O)"
+MALClient.Android/Widgets/CalendarWidgetUpdateService.cs,30,ANDROID_API,72,"[global::Android.Runtime.Preserve(AllMembers = true)] on multiple classes"
+MALClient.Android/Widgets/CalendarWidgetRemoteViewsService.cs,20,ANDROID_API,24,"[global::Android.Runtime.Preserve(AllMembers = true)]"
+MALClient.Android/Utilities/Includes.cs,24,ANDROID_API,24,"[global::Android.Runtime.Preserve(AllMembers = true)]"
+MALClient.Android/UserControls/PagerSlidingTabStrip.cs,17,ANDROID_API,17,"[global::Android.Runtime.Preserve(AllMembers = true)]"
+MALClient.Android/Mediation/GenericAdBanner.cs,23,ANDROID_API,23,"using PreserveAttribute = Android.Runtime.PreserveAttribute;"
+MALClient.Android/Mediation/DakimakuriAdBanner.cs,23,ANDROID_API,23,"using PreserveAttribute = Android.Runtime.PreserveAttribute;"
+MALClient.Android/Mediation/CuddlyOctopusAdBanner.cs,27,ANDROID_API,27,"[global::Android.Runtime.Preserve(AllMembers = true)]"
+MALClient.Android/Fragments/SearchFragments/AnimeTypeSearchFragment.cs,312,ANDROID_API,312,"catch { return new TextView(global::Android.App.Application.Context) { Text = \"item\" }; }"
