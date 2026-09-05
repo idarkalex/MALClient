@@ -28,5 +28,7 @@ namespace MALClient.XShared.NavArgs
         public string Query { get; set; }
         public bool ForceQuery { get; set; }
         public bool Everywhere { get; set; }
+        public string CatalogueTitle { get; set; }
+        public bool IsCatalogue { get; set; }
     }
 }

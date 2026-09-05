@@ -6,14 +6,20 @@
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:background="?BrushDeepBackground">
-  <android.support.v7.widget.SearchView
-      android:id="@+id/AnimeTypeSearchView"
+  <TextView
+      android:id="@+id/AnimeTypeSearchCatalogueTitle"
       android:layout_width="match_parent"
-      android:layout_height="48dp"
-      android:background="?BrushAppBarUpper"
-      app:iconifiedByDefault="false"
-      android:queryHint="Search genres..."
-      android:elevation="4dp" />
+      android:layout_height="wrap_content"
+      android:background="?BrushDeepBackground"
+      android:fontFamily="@font/inter"
+      android:paddingStart="12dp"
+      android:paddingEnd="12dp"
+      android:paddingTop="8dp"
+      android:paddingBottom="8dp"
+      android:textColor="?BrushText"
+      android:textSize="16sp"
+      android:textStyle="bold"
+      android:visibility="gone" />
   <GridView
     android:id="@+id/AnimeTypeSearchPageList"
     android:layout_width="match_parent"
@@ -28,4 +34,22 @@
     android:clipToPadding="false"
     android:divider="@null"
     android:dividerHeight="0dp" />
+  <android.support.v7.widget.RecyclerView
+    android:id="@+id/AnimeTypeSearchResultsList"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:clipToPadding="false"
+    android:padding="3dp"
+    android:scrollbars="vertical"
+    android:visibility="gone" />
+  <ProgressBar
+      android:id="@+id/AnimeTypeSearchLoadingSpinner"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:backgroundTint="?AccentColour"
+      android:backgroundTintMode="src_in"
+      android:indeterminate="true"
+      android:visibility="gone" />
 </LinearLayout>

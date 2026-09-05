@@ -110,6 +110,125 @@ namespace MALClient.XShared.ViewModels.Main
             }
         }
 
+        public int LastSearchPageIndex { get; set; } = -1;
+
+        public bool? CatalogueIsGenre { get; set; }
+        public string ActiveCatalogueTitle { get; set; }
+        public int CatalogueScrollPosition { get; set; }
+        public int CatalogueScrollOffset { get; set; }
+        public string GenreFilterQuery { get; set; }
+        public string StudioFilterQuery { get; set; }
+        public int GenreListScrollPosition { get; set; }
+        public int StudioListScrollPosition { get; set; }
+
+        public void ClearCatalogueSession()
+        {
+            CatalogueIsGenre = null;
+            ActiveCatalogueTitle = null;
+            CatalogueScrollPosition = 0;
+            CatalogueScrollOffset = 0;
+        }
+
+        private SearchPageNavigationArgs _catalogueArgs;
+        private int _cataloguePage;
+        private int _catalogueToken;
+        public bool HasMoreCatalogue { get; private set; } = true;
+        public bool IsLoadingMoreCatalogue { get; private set; }
+
+        private AnimeGenreStudioQuery CreateCatalogueQuery(SearchPageNavigationArgs args, int page)
+            => args.Studio.HasValue
+                ? new AnimeGenreStudioQuery(args.Studio.Value, page)
+                : new AnimeGenreStudioQuery(args.Genre.Value, page);
+
+        public async Task LoadCatalogue(SearchPageNavigationArgs args)
+        {
+            var token = ++_catalogueToken;
+            try
+            {
+                EmptyNoticeVisibility = false;
+                IsFirstVisitGridVisible = false;
+                GenreSelectionGridVisibility = false;
+                Loading = true;
+                IsLoadingMoreCatalogue = false;
+                _catalogueArgs = args;
+                CatalogueIsGenre = args.Studio.HasValue ? (bool?)false : (bool?)true;
+                ActiveCatalogueTitle = args.CatalogueTitle;
+                CatalogueScrollPosition = 0;
+                CatalogueScrollOffset = 0;
+
+                const int initialPages = 2;
+                var allItems = new List<AnimeGeneralDetailsData>();
+                bool hasMore = false;
+                int pagesLoaded = 0;
+                for (int page = 1; page <= initialPages; page++)
+                {
+                    var query = CreateCatalogueQuery(args, page);
+                    var pageItems = await query.GetAnime();
+                    hasMore = query.HasNextPage;
+                    allItems.AddRange(pageItems);
+                    pagesLoaded++;
+                    if (!hasMore)
+                        break;
+                }
+                if (token != _catalogueToken)
+                    return;
+
+                _cataloguePage = pagesLoaded;
+                HasMoreCatalogue = hasMore;
+                ResourceLocator.DispatcherAdapter.Run(() =>
+                {
+                    CatalogueResults.Clear();
+                    var seen = new HashSet<int>();
+                    foreach (var item in allItems)
+                        if (seen.Add(item.Id))
+                            CatalogueResults.Add(new AnimeSearchItemViewModel(item, ViewModelLocator.AnimeList));
+                    EmptyNoticeVisibility = CatalogueResults.Count == 0;
+                    IsFirstVisitGridVisible = false;
+                });
+            }
+            finally
+            {
+                if (token == _catalogueToken)
+                    ResourceLocator.DispatcherAdapter.Run(() => Loading = false);
+            }
+        }
+
+        public async Task LoadMoreCatalogue()
+        {
+            if (IsLoadingMoreCatalogue || !HasMoreCatalogue || _catalogueArgs == null || _cataloguePage == 0)
+                return;
+            IsLoadingMoreCatalogue = true;
+            var token = _catalogueToken;
+            try
+            {
+                var args = _catalogueArgs;
+                var nextPage = _cataloguePage + 1;
+                var query = CreateCatalogueQuery(args, nextPage);
+                var items = await query.GetAnime();
+                if (token != _catalogueToken)
+                    return;
+                _cataloguePage = nextPage;
+                HasMoreCatalogue = query.HasNextPage;
+                var newItems = items.Select(item => new AnimeSearchItemViewModel(item, ViewModelLocator.AnimeList)).ToList();
+                ResourceLocator.DispatcherAdapter.Run(() =>
+                {
+                    var seen = new HashSet<int>(CatalogueResults.Select(result => result.Id));
+                    foreach (var vm in newItems)
+                        if (seen.Add(vm.Id))
+                            CatalogueResults.Add(vm);
+                });
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("SearchPageCatalogue", $"load-more failed page {_cataloguePage + 1}: {ex.Message}", ex);
+            }
+            finally
+            {
+                if (token == _catalogueToken)
+                    ResourceLocator.DispatcherAdapter.Run(() => IsLoadingMoreCatalogue = false);
+            }
+        }
+
         public void OnNavigatedFrom()
         {
             ViewModelLocator.GeneralMain.OnSearchQuerySubmitted -= SubmitQuery;
@@ -215,6 +334,9 @@ namespace MALClient.XShared.ViewModels.Main
             new ObservableCollection<AnimeSearchItemViewModel>();
 
         public ObservableCollection<AnimeSearchItemViewModel> MangaSearchItemViewModels { get; } =
+            new ObservableCollection<AnimeSearchItemViewModel>();
+
+        public ObservableCollection<AnimeSearchItemViewModel> CatalogueResults { get; } =
             new ObservableCollection<AnimeSearchItemViewModel>();
 
         public AnimeSearchItemViewModel CurrentlySelectedItem

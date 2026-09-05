@@ -1036,9 +1036,20 @@ namespace MALClient.XShared.ViewModels.Main
                     var query = WorkMode == AnimeListWorkModes.AnimeByStudio
                         ? new AnimeGenreStudioQuery(Studio, page)
                         : new AnimeGenreStudioQuery(Genre, page);
-                    List<SeasonalAnimeData> sResponse = null;
-                    await Task.Run(async () => sResponse = await query.GetAnime());
-                    data.AddRange(sResponse ?? new List<SeasonalAnimeData>());
+                    List<AnimeGeneralDetailsData> gResponse = null;
+                    await Task.Run(async () => gResponse = await query.GetAnime());
+                    int gIndex = (page - 1) * 25 + 1;
+                    foreach (var gItem in gResponse ?? new List<AnimeGeneralDetailsData>())
+                        data.Add(new SeasonalAnimeData
+                        {
+                            Id = gItem.MalId,
+                            Title = gItem.Title,
+                            ImgUrl = gItem.ImgUrl,
+                            Episodes = gItem.AllEpisodes.ToString(),
+                            Score = gItem.GlobalScore,
+                            Genres = gItem.Genres,
+                            Index = gIndex++
+                        });
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1063,8 +1074,9 @@ namespace MALClient.XShared.ViewModels.Main
             }
             else
             {
-                if (_animeLibraryDataStorage.AllLoadedAnimeItemAbstractions.Count == 0 && !_attemptedAnimeFetch)
-                    await FetchData(false, AnimeListWorkModes.Anime);
+                if (WorkMode != AnimeListWorkModes.AnimeByGenre && WorkMode != AnimeListWorkModes.AnimeByStudio)
+                    if (_animeLibraryDataStorage.AllLoadedAnimeItemAbstractions.Count == 0 && !_attemptedAnimeFetch)
+                        await FetchData(false, AnimeListWorkModes.Anime);
                 if ((WorkMode == AnimeListWorkModes.AnimeByGenre || WorkMode == AnimeListWorkModes.AnimeByStudio) && page > 1)
                 {
                     target = _animeLibraryDataStorage.AllLoadedSeasonalAnimeItems;

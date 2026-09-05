@@ -8,11 +8,11 @@
     android:foreground="?android:selectableItemBackground">
   <LinearLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:background="@drawable/electric_midnight_grid_badge"
+      android:layout_height="match_parent"
+      android:background="@drawable/electric_midnight_type_card"
       android:gravity="center"
       android:orientation="vertical"
-      android:padding="8dp">
+      android:padding="6dp">
     <TextView android:id="@+id/AnimeSearchTypeItemTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

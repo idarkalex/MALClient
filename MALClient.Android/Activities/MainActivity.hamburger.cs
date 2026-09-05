@@ -375,6 +375,8 @@ namespace MALClient.Android.Activities
                 .Into(avatar);
         }
 
+        private long _lastProgrammaticBottomNavChange = -1;
+
         private void SyncBottomNavForHamburger(HamburgerButtons val)
         {
             int id;
@@ -391,6 +393,7 @@ namespace MALClient.Android.Activities
                 _isBottomNavSyncing = true;
                 try { MainPageBottomNav.SelectedItemId = id; }
                 finally { _isBottomNavSyncing = false; }
+                _lastProgrammaticBottomNavChange = SystemClock.UptimeMillis();
             }
         }
 

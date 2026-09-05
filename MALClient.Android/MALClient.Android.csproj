@@ -800,6 +800,7 @@
     <AndroidResource Include="Resources\drawable\electric_midnight_glass_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_primary_button.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_grid_badge.xml" />
+    <AndroidResource Include="Resources\drawable\electric_midnight_type_card.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_type_badge.xml" />
     <AndroidResource Include="Resources\drawable\electric_midnight_airing_badge.xml" />

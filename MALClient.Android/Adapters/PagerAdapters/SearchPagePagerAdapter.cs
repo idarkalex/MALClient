@@ -86,46 +86,12 @@ namespace MALClient.Android.PagerAdapters
 
         public void TriggerSearchWithStudio(AnimeStudios studio)
         {
-            var args = new SearchPageNavigationArgs 
-            { 
-                ByStudio = true, 
-                Studio = studio,
-                ForceQuery = true 
-            };
-            ViewModelLocator.GeneralMain.CurrentSearchQuery = studio.GetDescription();
-            TriggerSearch(args);
-            var activity = MALClient.Android.Activities.MainActivity.CurrentContext;
-            activity?.RunOnUiThread(() =>
-            {
-                try 
-                {
-                    var viewPager = activity.FindViewById<global::Android.Support.V4.View.ViewPager>(Resource.Id.SearchPageViewPager);
-                    viewPager?.SetCurrentItem(1, true);
-                } 
-                catch { }
-            });
+            ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs(studio));
         }
 
         public void TriggerSearchWithGenre(AnimeGenreSearch genre)
         {
-            var args = new SearchPageNavigationArgs 
-            { 
-                ByGenre = true, 
-                Genre = genre,
-                ForceQuery = true 
-            };
-            ViewModelLocator.GeneralMain.CurrentSearchQuery = genre.GetDescription();
-            TriggerSearch(args);
-            var activity = MALClient.Android.Activities.MainActivity.CurrentContext;
-            activity?.RunOnUiThread(() =>
-            {
-                try 
-                {
-                    var viewPager = activity.FindViewById<global::Android.Support.V4.View.ViewPager>(Resource.Id.SearchPageViewPager);
-                    viewPager?.SetCurrentItem(1, true);
-                } 
-                catch { }
-            });
+            ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs(genre));
         }
 
         public void FilterCurrentGenreTab(string query)

@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MALClient.Models.Enums;
+using MALClient.Models.Models.Anime;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
 
@@ -31,35 +32,40 @@ namespace MALClient.XShared.Comm.Anime
             _genreMode = false;
         }
 
-        public async Task<List<SeasonalAnimeData>> GetAnime()
+        public bool HasNextPage { get; set; } = true;
+
+        public async Task<List<AnimeGeneralDetailsData>> GetAnime()
         {
-            var cacheKey = _genreMode ? $"genre_v9_{_genre}_{_page}" : $"studio_v9_{_studio}_{_page}";
+            var cacheKey = _genreMode ? $"genre_v11_{_genre}_{_page}" : $"studio_v11_{_studio}_{_page}";
             var cacheRegion = _genreMode ? "AnimesByGenre" : "AnimesByStudio";
-            var output = await DataCache.RetrieveData<List<SeasonalAnimeData>>(cacheKey, cacheRegion, 1)
-                         ?? new List<SeasonalAnimeData>();
+            var output = await DataCache.RetrieveData<List<AnimeGeneralDetailsData>>(cacheKey, cacheRegion, 1)
+                         ?? new List<AnimeGeneralDetailsData>();
             if (output.Count > 0)
                 return output;
 
             try
             {
                 var endpoint = _genreMode
-                    ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc&sfw"
-                    : $"anime?studios={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw";
+                    ? $"anime?genres={(int)_genre}&page={_page}&order_by=score&sort=desc&sfw&limit=25"
+                    : $"anime?producers={(int)_studio}&page={_page}&order_by=score&sort=desc&sfw&limit=25";
 
-                var (items, _) = await TenraiClient.GetPaginatedAsync(endpoint);
+                var (items, hasNext) = await TenraiClient.GetPaginatedAsync(endpoint);
+                HasNextPage = hasNext;
 
-                int index = (_page - 1) * 25 + 1;
                 foreach (var entry in items)
                 {
-                    output.Add(new SeasonalAnimeData
+                    output.Add(new AnimeGeneralDetailsData
                     {
                         Title = GetString(entry, "title"),
+                        MalId = GetInt(entry, "mal_id"),
                         Id = GetInt(entry, "mal_id"),
                         ImgUrl = GetNestedString(entry, "images", "jpg", "image_url"),
-                        Episodes = GetInt(entry, "episodes").ToString(),
-                        Score = (float)GetDouble(entry, "score"),
+                        AllEpisodes = GetInt(entry, "episodes"),
+                        GlobalScore = (float)GetDouble(entry, "score"),
+                        Type = GetString(entry, "type"),
+                        Status = GetString(entry, "status"),
                         Genres = GetGenreNames(entry),
-                        Index = index++
+                        StartDate = GetString(entry, "aired")
                     });
                 }
             }

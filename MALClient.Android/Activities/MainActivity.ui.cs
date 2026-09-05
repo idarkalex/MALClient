@@ -352,7 +352,9 @@ namespace MALClient.Android.Activities
                     if (_lastBottomNavSelectedItemId != -1 && currentSelected != _lastBottomNavSelectedItemId)
                     {
                         _lastBottomNavSelectedItemId = currentSelected;
-                        if (!_isBottomNavSyncing)
+                        var programmaticChange = _lastProgrammaticBottomNavChange != -1 &&
+                                                 SystemClock.UptimeMillis() - _lastProgrammaticBottomNavChange < 500;
+                        if (!programmaticChange && !_isBottomNavSyncing)
                             OnBottomNavigationItemSelected(currentSelected);
                     }
                     else

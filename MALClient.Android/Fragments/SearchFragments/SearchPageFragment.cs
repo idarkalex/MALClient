@@ -77,11 +77,31 @@ namespace MALClient.Android.Fragments.SearchFragments
             {
                 SearchPageViewPager.SetCurrentItem(i, false);
             }
-            SearchPageViewPager.SetCurrentItem(start, false);
+            // Restore the LAST page the user was on (e.g. Genres with an active catalogue) instead of
+            // resetting to `start` (2=Manga for manga-mode sessions) on every view recreation.
+            int restore = start;
+            int last = ViewModelLocator.SearchPage.LastSearchPageIndex;
+            if (last >= 0 && last <= 5)
+                restore = last;
+            SearchPageViewPager.SetCurrentItem(restore, false);
+            // Re-apply the saved genre/studio filter text when re-binding a fresh Search page.
+            try
+            {
+                if (last >= 0 && (restore == 4 || restore == 5))
+                {
+                    var savedFilter = restore == 4 ? ViewModelLocator.SearchPage.GenreFilterQuery : ViewModelLocator.SearchPage.StudioFilterQuery;
+                    if (!string.IsNullOrWhiteSpace(savedFilter))
+                    {
+                        SearchPageSearchView.SetQuery(savedFilter, false);
+                        if (restore == 4) _pagerAdapter.FilterCurrentGenreTab(savedFilter);
+                        else _pagerAdapter.FilterCurrentStudioTab(savedFilter);
+                    }
+                }
+            } catch { }
             HasOnlyManualBindings = true;
             try
             {
-                SearchPageViewPager.AddOnPageChangeListener(new SearchPageChangeListener(SearchPageSearchView));
+                SearchPageViewPager.AddOnPageChangeListener(new SearchPageChangeListener(SearchPageSearchView, pos => ViewModelLocator.SearchPage.LastSearchPageIndex = pos));
             } catch { }
 
             SearchPageSearchView.Iconified = false;
@@ -269,6 +289,31 @@ namespace MALClient.Android.Fragments.SearchFragments
 
             // Trigger initial search after fragments are created and their InitBindings run
             _pagerAdapter.TriggerSearch(_args);
+            // Restore genre/studio filter after TriggerSearch's SetQuery("") clobbers it.
+            SearchPageSearchView.Post(() =>
+            {
+                try
+                {
+                    if (SearchPageViewPager?.CurrentItem == 4)
+                    {
+                        var q = ViewModelLocator.SearchPage.GenreFilterQuery;
+                        if (!string.IsNullOrWhiteSpace(q))
+                        {
+                            SearchPageSearchView.SetQuery(q, false);
+                            _pagerAdapter?.FilterCurrentGenreTab(q);
+                        }
+                    }
+                    else if (SearchPageViewPager?.CurrentItem == 5)
+                    {
+                        var q = ViewModelLocator.SearchPage.StudioFilterQuery;
+                        if (!string.IsNullOrWhiteSpace(q))
+                        {
+                            SearchPageSearchView.SetQuery(q, false);
+                            _pagerAdapter?.FilterCurrentStudioTab(q);
+                        }
+                    }
+                } catch { }
+            });
         }
 
         protected override void Init(Bundle savedInstanceState)
@@ -302,11 +347,18 @@ namespace MALClient.Android.Fragments.SearchFragments
     class SearchPageChangeListener : ViewPager.SimpleOnPageChangeListener
     {
         private readonly global::Android.Support.V7.Widget.SearchView _searchView;
-        public SearchPageChangeListener(global::Android.Support.V7.Widget.SearchView sv) { _searchView = sv; }
+        private readonly Action<int> _pageChanged;
+        public SearchPageChangeListener(global::Android.Support.V7.Widget.SearchView sv, Action<int> pageChanged) { _searchView = sv; _pageChanged = pageChanged; }
         public override void OnPageSelected(int position)
         {
             try
             {
+                _pageChanged?.Invoke(position);
+                if (position == 4 || position == 5)
+                {
+                    _searchView.SetQuery("", false);
+                    _searchView.ClearFocus();
+                }
                 if (position == 4) _searchView.QueryHint = "Search genres...";
                 else if (position == 5) _searchView.QueryHint = "Search studios...";
                 else _searchView.QueryHint = "Search anime, manga, characters...";
