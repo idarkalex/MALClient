@@ -20,6 +20,7 @@ using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.Notifications;
 using MALClient.XShared.ViewModels;
@@ -204,6 +205,26 @@ namespace MALClient.Android.Fragments
         #endregion
 
         public override int LayoutResourceId => Resource.Layout.NotificationHubPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(NotificationHubPageList, FragmentUiState.NotifHub, "Scroll");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(NotificationHubPageList, FragmentUiState.NotifHub, "Scroll");
+            }
+            catch { }
+        }
 
         #region Views
 

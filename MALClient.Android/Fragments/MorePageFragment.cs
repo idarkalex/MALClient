@@ -200,6 +200,19 @@ namespace MALClient.Android.Fragments
         public override void OnResume()
         {
             base.OnResume();
+            // Restore from FragmentUiState if instance fields are default (fresh fragment instance after nav)
+            try
+            {
+                var ui = XShared.ViewModels.Main.FragmentUiState.More;
+                if (ui != null)
+                {
+                    if (!_animeListPanelExpanded && ui.TryGetValue("AnimeList", out var a) && a is bool ab && ab) _animeListPanelExpanded = true;
+                    if (!_mangaListPanelExpanded && ui.TryGetValue("MangaList", out var ml) && ml is bool mlb && mlb) _mangaListPanelExpanded = true;
+                    if (!_topAnimePanelExpanded && ui.TryGetValue("TopAnime", out var ta) && ta is bool tab && tab) _topAnimePanelExpanded = true;
+                    if (!_topMangaPanelExpanded && ui.TryGetValue("TopManga", out var tm) && tm is bool tmb && tmb) _topMangaPanelExpanded = true;
+                    if (!_adaptedPanelExpanded && ui.TryGetValue("Adapted", out var ad) && ad is bool adb && adb) _adaptedPanelExpanded = true;
+                }
+            } catch { }
             RootView.PostDelayed(() =>
             {
                 if (_animeListPanelExpanded && MorePageAnimeListPanel != null)
@@ -228,6 +241,21 @@ namespace MALClient.Android.Fragments
                     MorePageAdaptedMoreButton.Rotation = 180f;
                 }
             }, 50);
+        }
+
+        public override void OnPause()
+        {
+            base.OnPause();
+            try
+            {
+                var ui = XShared.ViewModels.Main.FragmentUiState.More;
+                if (ui == null) return;
+                ui["AnimeList"] = _animeListPanelExpanded;
+                ui["MangaList"] = _mangaListPanelExpanded;
+                ui["TopAnime"] = _topAnimePanelExpanded;
+                ui["TopManga"] = _topMangaPanelExpanded;
+                ui["Adapted"] = _adaptedPanelExpanded;
+            } catch { }
         }
 
         private static void AnimateExpand(LinearLayout panel, ImageView arrow)

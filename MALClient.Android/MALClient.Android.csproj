@@ -281,6 +281,7 @@
     <Compile Include="UserControls\UserControlBase.cs" />
     <Compile Include="UserControls\ZoomableImageView.cs" />
     <Compile Include="Utilities\AndroidUtilities.cs" />
+    <Compile Include="Utilities\ScrollStateHelper.cs" />
     <Compile Include="Utilities\AnimeImageExtensions.cs" />
     <Compile Include="Utilities\AnimeListAdapterExtensions.cs" />
     <Compile Include="Utilities\CssManager.cs" />

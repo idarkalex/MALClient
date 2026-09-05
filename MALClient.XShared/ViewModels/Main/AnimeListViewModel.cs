@@ -146,6 +146,20 @@ namespace MALClient.XShared.ViewModels.Main
         /// </summary>
         public int CurrentIndexPosition { get; set; }
 
+        public Dictionary<string, object> UiState { get; } = new Dictionary<string, object>();
+
+        public void SetListScroll(int firstVisiblePosition, int pixelOffset)
+        {
+            UiState["AnimeListScroll"] = (firstVisiblePosition, pixelOffset);
+        }
+
+        public (int position, int offset) GetListScroll()
+        {
+            if (UiState.TryGetValue("AnimeListScroll", out var v) && v is ValueTuple<int, int> t)
+                return t;
+            return (0, 0);
+        }
+
         public event AnimeItemListInitialized Initialized;
         public event ScrollIntoViewRequest ScrollIntoViewRequested;
         public event SortingSettingChange SortingSettingChanged;

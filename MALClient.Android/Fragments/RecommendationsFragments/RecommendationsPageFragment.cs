@@ -13,6 +13,7 @@ using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
 using MALClient.Android.PagerAdapters;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 
 using MALClient.Models.Enums;
 using MALClient.XShared.NavArgs;
@@ -107,6 +108,28 @@ namespace MALClient.Android.Fragments.RecommendationsFragments
         }
 
         public override int LayoutResourceId => Resource.Layout.RecommendationsPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(ViewModel?.PivotItemIndex ?? 0, FragmentUiState.Recommendations, "Pivot");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var idx = ScrollStateHelper.RestoreScrollY(FragmentUiState.Recommendations, "Pivot");
+                if (ViewModel != null && idx > 0)
+                    ViewModel.PivotItemIndex = idx;
+            }
+            catch { }
+        }
 
         #region Views
 

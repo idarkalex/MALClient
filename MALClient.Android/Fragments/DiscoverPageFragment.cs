@@ -107,6 +107,32 @@ namespace MALClient.Android.Fragments
             ReloadSectionsAsync();
         }
 
+        public override void OnPause()
+        {
+            base.OnPause();
+            try
+            {
+                if (DiscoverPageScroll != null)
+                    MALClient.Android.Utilities.ScrollStateHelper.SaveScrollY(DiscoverPageScroll.ScrollY, XShared.ViewModels.Main.FragmentUiState.Discover, "ScrollY");
+            } catch { }
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = MALClient.Android.Utilities.ScrollStateHelper.RestoreScrollY(XShared.ViewModels.Main.FragmentUiState.Discover, "ScrollY");
+                if (y > 0 && DiscoverPageScroll != null)
+                {
+                    DiscoverPageScroll.Post(() =>
+                    {
+                        try { DiscoverPageScroll.ScrollTo(0, y); } catch { }
+                    });
+                }
+            } catch { }
+        }
+
         private async void ReloadSectionsAsync()
         {
             await LoadSections(force: true);

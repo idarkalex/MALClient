@@ -15,10 +15,12 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.CollectionAdapters;
 using MALClient.Android.UserControls.ForumItems;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Forums;
 using MALClient.XShared.ViewModels.Forums.Items;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.ForumFragments.Tabs
 {
@@ -53,6 +55,26 @@ namespace MALClient.Android.Fragments.ForumFragments.Tabs
 
 
         public override int LayoutResourceId => Resource.Layout.ForumIndexPageBoardsTab;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(ForumIndexPageBoardsTabListView, FragmentUiState.ForumIndex, "Scroll");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(ForumIndexPageBoardsTabListView, FragmentUiState.ForumIndex, "Scroll");
+            }
+            catch { }
+        }
 
         #region Views
 

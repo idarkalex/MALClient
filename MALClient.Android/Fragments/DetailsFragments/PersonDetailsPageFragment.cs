@@ -16,10 +16,12 @@ using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.PagerAdapters;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.DetailsFragments
 {
@@ -72,6 +74,37 @@ namespace MALClient.Android.Fragments.DetailsFragments
         }
 
         public override int LayoutResourceId => Resource.Layout.PersonDetailsPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(PersonDetailsPagePivot?.CurrentItem ?? 0, FragmentUiState.StaffDetails, "Pivot");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var idx = ScrollStateHelper.RestoreScrollY(FragmentUiState.StaffDetails, "Pivot");
+                var pivot = PersonDetailsPagePivot;
+                if (pivot != null && idx >= 0)
+                    pivot.Post(() =>
+                    {
+                        try
+                        {
+                            if (pivot.Adapter != null && idx < pivot.Adapter.Count)
+                                pivot.SetCurrentItem(idx, false);
+                        }
+                        catch { }
+                    });
+            }
+            catch { }
+        }
 
         #region Views
 

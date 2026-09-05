@@ -16,6 +16,7 @@ using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.NavArgs;
@@ -146,6 +147,26 @@ namespace MALClient.Android.Fragments.MessagingFragments
         }
 
         public override int LayoutResourceId => Resource.Layout.MessagingDetailsPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(MessagingDetailsPageList, FragmentUiState.MessagingDetails, "Scroll");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(MessagingDetailsPageList, FragmentUiState.MessagingDetails, "Scroll");
+            }
+            catch { }
+        }
 
         #region Views
 

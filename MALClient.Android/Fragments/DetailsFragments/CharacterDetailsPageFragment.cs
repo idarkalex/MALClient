@@ -15,11 +15,13 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Models.Anime;
 using MALClient.Models.Models.Favourites;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.DetailsFragments
 {
@@ -196,6 +198,32 @@ namespace MALClient.Android.Fragments.DetailsFragments
         {
             _gridViewColumnHelper.OnConfigurationChanged(newConfig);
             base.OnConfigurationChanged(newConfig);
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(CharacterDetailsPageScroll?.ScrollY ?? 0, FragmentUiState.CharacterDetails, "ScrollY");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var y = ScrollStateHelper.RestoreScrollY(FragmentUiState.CharacterDetails, "ScrollY");
+                var scroll = CharacterDetailsPageScroll;
+                if (y > 0 && scroll != null)
+                    scroll.Post(() =>
+                    {
+                        try { scroll.ScrollTo(0, y); } catch { }
+                    });
+            }
+            catch { }
         }
 
         #region Views

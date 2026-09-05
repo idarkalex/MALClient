@@ -15,6 +15,7 @@ using MALClient.Android.PagerAdapters;
 using MALClient.Android.Resources;
 
 using MALClient.Android.Web;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.Comm.Anime;
@@ -59,6 +60,37 @@ namespace MALClient.Android.Fragments.ArticlesPageFragments
                 ViewModel.OpenWebView -= ViewModelOnOpenWebView;
             _attachedHandler = false;
             base.OnDestroy();
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(ArticlesPagePivot?.CurrentItem ?? 0, FragmentUiState.Articles, "ScrollY");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var idx = ScrollStateHelper.RestoreScrollY(FragmentUiState.Articles, "ScrollY");
+                var pivot = ArticlesPagePivot;
+                if (pivot != null && idx >= 0)
+                    pivot.Post(() =>
+                    {
+                        try
+                        {
+                            if (pivot.Adapter != null && idx < pivot.Adapter.Count)
+                                pivot.SetCurrentItem(idx, false);
+                        }
+                        catch { }
+                    });
+            }
+            catch { }
         }
 
         protected override void InitBindings()

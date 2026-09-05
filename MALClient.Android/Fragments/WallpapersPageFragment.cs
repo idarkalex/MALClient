@@ -30,6 +30,7 @@ using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -232,6 +233,26 @@ namespace MALClient.Android.Fragments
         }
 
         public override int LayoutResourceId => Resource.Layout.WallpapersPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(WallpapersPageList, FragmentUiState.Wallpapers, "Scroll");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(WallpapersPageList, FragmentUiState.Wallpapers, "Scroll");
+            }
+            catch { }
+        }
 
         #region Hamburger
         private Drawer _rightDrawer;

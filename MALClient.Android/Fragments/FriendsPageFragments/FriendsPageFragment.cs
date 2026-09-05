@@ -17,6 +17,7 @@ using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Listeners;
 using MALClient.Android.PagerAdapters;
+using MALClient.Android.Utilities;
 
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.NavArgs;
@@ -50,6 +51,37 @@ namespace MALClient.Android.Fragments
         }
 
         public override int LayoutResourceId => Resource.Layout.FriendsPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveScrollY(Pivot?.CurrentItem ?? 0, FragmentUiState.Friends, "Pivot");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                var idx = ScrollStateHelper.RestoreScrollY(FragmentUiState.Friends, "Pivot");
+                var pivot = Pivot;
+                if (pivot != null && idx >= 0)
+                    pivot.Post(() =>
+                    {
+                        try
+                        {
+                            if (pivot.Adapter != null && idx < pivot.Adapter.Count)
+                                pivot.SetCurrentItem(idx, false);
+                        }
+                        catch { }
+                    });
+            }
+            catch { }
+        }
 
         #region Views
 

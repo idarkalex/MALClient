@@ -20,6 +20,7 @@ using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.Utils;
@@ -159,6 +160,26 @@ namespace MALClient.Android.Fragments
         public override void OnConfigurationChanged(Configuration newConfig)
         {
             _helper.OnConfigurationChanged(newConfig);
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(PromoVideosPageGridView, FragmentUiState.PromoVideos, "Scroll");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(PromoVideosPageGridView, FragmentUiState.PromoVideos, "Scroll");
+            }
+            catch { }
         }
 
         #region Views

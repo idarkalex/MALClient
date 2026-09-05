@@ -65,6 +65,7 @@ namespace MALClient.Android.Fragments
             RightDrawer?.DrawerLayout?.SetDrawerLockMode(DrawerLayout.LockModeUnlocked);
             MainActivity.CurrentContext.HamburgerOpened += CurrentContextOnHamburgerOpened;
             base.OnResume();
+            RestoreAnimeListScroll();
         }
 
         protected override void Cleanup()
@@ -101,7 +102,42 @@ namespace MALClient.Android.Fragments
         public override void OnPause()
         {
             RightDrawer.DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
+            SaveAnimeListScroll();
             base.OnPause();
+        }
+
+        private void SaveAnimeListScroll()
+        {
+            try
+            {
+                if (AnimeListPageGridView != null)
+                    Utilities.ScrollStateHelper.SaveAbsListView(AnimeListPageGridView, ViewModel.UiState, "AnimeListScroll");
+                if (AnimeListPageListView != null && AnimeListPageListView.Visibility == ViewStates.Visible)
+                    Utilities.ScrollStateHelper.SaveAbsListView(AnimeListPageListView, ViewModel.UiState, "AnimeListScroll");
+                if (AnimeListPageCompactListView != null && AnimeListPageCompactListView.Visibility == ViewStates.Visible)
+                    Utilities.ScrollStateHelper.SaveAbsListView(AnimeListPageCompactListView, ViewModel.UiState, "AnimeListScroll");
+            } catch { }
+        }
+
+        private void RestoreAnimeListScroll()
+        {
+            try
+            {
+                var (pos, off) = ViewModel.GetListScroll();
+                if (pos <= 0) return;
+                View.Post(() =>
+                {
+                    try
+                    {
+                        if (AnimeListPageGridView != null && AnimeListPageGridView.Visibility == ViewStates.Visible)
+                            AnimeListPageGridView.SetSelectionFromTop(pos, off);
+                        else if (AnimeListPageListView != null && AnimeListPageListView.Visibility == ViewStates.Visible)
+                            AnimeListPageListView.SetSelectionFromTop(pos, off);
+                        else if (AnimeListPageCompactListView != null && AnimeListPageCompactListView.Visibility == ViewStates.Visible)
+                            AnimeListPageCompactListView.SetSelectionFromTop(pos, off);
+                    } catch { }
+                });
+            } catch { }
         }
 
         private void InitDrawer()

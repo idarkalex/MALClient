@@ -18,6 +18,7 @@ using FFImageLoading.Views;
 using GalaSoft.MvvmLight.Helpers;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Models;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.Comm.Anime;
@@ -150,6 +151,26 @@ namespace MALClient.Android.Fragments
         {
             _gridViewColumnHelper?.OnConfigurationChanged(newConfig);
             base.OnConfigurationChanged(newConfig);
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(FriendsFeedsPageGridView, FragmentUiState.FriendsFeeds, "Scroll");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(FriendsFeedsPageGridView, FragmentUiState.FriendsFeeds, "Scroll");
+            }
+            catch { }
         }
 
         #region Views

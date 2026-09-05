@@ -17,6 +17,7 @@ using MALClient.Android.Activities;
 using MALClient.Android.BindingConverters;
 using MALClient.Android.Resources;
 using MALClient.Android.UserControls;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.Utils;
@@ -48,6 +49,21 @@ namespace MALClient.Android.Fragments.MessagingFragments
         {
             MainActivity.CurrentContext.HamburgerOpened += CurrentContextOnHamburgerOpened;
             base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(MessagingPageList, FragmentUiState.Messaging, "Scroll");
+            }
+            catch { }
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(MessagingPageList, FragmentUiState.Messaging, "Scroll");
+            }
+            catch { }
+            base.OnPause();
         }
 
         protected override void Cleanup()

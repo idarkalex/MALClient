@@ -19,11 +19,13 @@ using MALClient.Android.DIalogs;
 using MALClient.Android.Flyouts;
 using MALClient.Android.Listeners;
 using MALClient.Android.Resources;
+using MALClient.Android.Utilities;
 using MALClient.Models.Enums;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Forums;
 using MALClient.XShared.ViewModels.Forums.Items;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALClient.Android.Fragments.ForumFragments
 {
@@ -263,6 +265,26 @@ namespace MALClient.Android.Fragments.ForumFragments
         }
 
         public override int LayoutResourceId => Resource.Layout.ForumBoardPage;
+
+        public override void OnPause()
+        {
+            try
+            {
+                ScrollStateHelper.SaveAbsListView(ForumBoardPagePostsList, FragmentUiState.ForumBoard, "Scroll");
+            }
+            catch { }
+            base.OnPause();
+        }
+
+        public override void OnResume()
+        {
+            base.OnResume();
+            try
+            {
+                ScrollStateHelper.RestoreAbsListView(ForumBoardPagePostsList, FragmentUiState.ForumBoard, "Scroll");
+            }
+            catch { }
+        }
 
 
         #region Views
