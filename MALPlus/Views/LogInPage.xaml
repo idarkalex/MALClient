@@ -4,36 +4,47 @@
              x:Class="MALPlus.Views.LogInPage"
              BackgroundColor="{StaticResource EmBackground}">
     <Grid>
-    <ScrollView>
+    <ScrollView x:Name="LoginForm">
         <VerticalStackLayout Padding="24" Spacing="14" VerticalOptions="Center">
-            <Label x:Name="DebugLabel" FontFamily="Inter" FontSize="10" TextColor="Yellow" />
-            <Label Text="Log In" FontFamily="InterBold" FontSize="24"
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="0">
+                <Label Text="MAL" FontFamily="InterBold" FontSize="52" TextColor="White" />
+                <Label Text="+" FontFamily="InterBold" FontSize="52" TextColor="#FF6B00" />
+            </HorizontalStackLayout>
+            <Label Text="Your anime and manga list, with you"
+                   FontFamily="Inter" FontSize="14"
                    TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
-            <Entry x:Name="UserEntry" Placeholder="MAL username" Text="{Binding UserNameInput}"
+            <Entry x:Name="UserEntry" Placeholder="MyAnimeList username" Text="{Binding UserNameInput}"
                    FontFamily="Inter" FontSize="14" />
-            <Entry Placeholder="Password" Text="{Binding PasswordInput}" IsPassword="True"
+            <Entry x:Name="PassEntry" Placeholder="Password" Text="{Binding PasswordInput}" IsPassword="True"
                    FontFamily="Inter" FontSize="14" />
-            <Button Text="Log In" Command="{Binding LogInCommand}"
+            <Button x:Name="SignInButton" Text="Sign in" Clicked="OnAutoSignInClicked"
                     FontFamily="InterSemiBold" FontSize="14" />
-            <ActivityIndicator IsRunning="{Binding Authenticating}" IsVisible="{Binding Authenticating}"
+            <ActivityIndicator x:Name="BusySpinner" IsRunning="False" IsVisible="False"
                                Color="{StaticResource EmAccent}" HorizontalOptions="Center" />
-            <Button Text="Log Out" Command="{Binding LogOutCommand}"
+            <Label x:Name="StatusLabel" IsVisible="False" FontFamily="Inter" FontSize="13"
+                   TextColor="{StaticResource BrushText}" HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+            <Button Text="Log out" Command="{Binding LogOutCommand}"
                     IsVisible="{Binding LogOutButtonVisibility}"
                     FontFamily="InterSemiBold" FontSize="14" />
-            <Button Text="Register on myanimelist.net" Command="{Binding NavigateRegister}"
+            <Button Text="Create account on myanimelist.net" Command="{Binding NavigateRegister}"
                     FontFamily="Inter" FontSize="12" BackgroundColor="Transparent"
                     TextColor="{StaticResource EmAccent}" />
-            <Button Text="Sign in with MyAnimeList (web)" Clicked="OnWebSignInClicked"
-                    FontFamily="InterSemiBold" FontSize="14" />
         </VerticalStackLayout>
     </ScrollView>
     <Grid x:Name="WebOverlay" IsVisible="False" BackgroundColor="#051522"
           VerticalOptions="Fill" HorizontalOptions="Fill">
-        <Grid RowDefinitions="Auto,*">
+        <Grid RowDefinitions="Auto,Auto,*">
             <Button Text="Close" Clicked="OnWebCloseClicked"
                     FontFamily="InterSemiBold" FontSize="14"
                     HorizontalOptions="End" Margin="0,8,8,0" />
-            <WebView x:Name="AuthWebView" Grid.Row="1" Navigating="OnAuthNavigating" />
+            <Label x:Name="OverlayHint" Grid.Row="1" IsVisible="False"
+                   Text="Review and tap Allow to connect MAL+ to your account"
+                   FontFamily="Inter" FontSize="13"
+                   TextColor="{StaticResource BrushText}" HorizontalOptions="Center"
+                   Margin="16,4" HorizontalTextAlignment="Center" />
+            <WebView x:Name="AuthWebView" Grid.Row="2"
+                     Navigating="OnAuthNavigating" Navigated="OnAuthNavigated" />
         </Grid>
     </Grid>
     </Grid>
