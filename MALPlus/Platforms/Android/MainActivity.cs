@@ -15,38 +15,55 @@ namespace MALPlus;
     DataScheme = "malplus")]
 public class MainActivity : MauiAppCompatActivity
 {
+    public static Intent DeepLinkIntent { get; private set; }
+
+    protected override void OnCreate(Bundle savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+        if (Intent?.Data != null && Intent.Data.ToString().StartsWith("malplus://"))
+        {
+            DeepLinkIntent = Intent;
+            HandleDeepLinkNavigation(Intent.Data.ToString());
+        }
+    }
+
     protected override void OnNewIntent(Intent intent)
     {
         base.OnNewIntent(intent);
         Intent = intent;
-        System.Diagnostics.Debug.WriteLine($"MALPLUS OnNewIntent: {intent?.Data}");
-        HandleDeepLink(intent);
+        if (intent?.Data != null && intent.Data.ToString().StartsWith("malplus://"))
+        {
+            DeepLinkIntent = intent;
+            HandleDeepLinkNavigation(intent.Data.ToString());
+        }
     }
 
-    private void HandleDeepLink(Intent intent)
+    private void HandleDeepLinkNavigation(string uri)
     {
-        if (intent?.Data != null)
+        if (uri.StartsWith("malplus://"))
         {
-            var uri = intent.Data.ToString();
-            System.Diagnostics.Debug.WriteLine($"MALPLUS HandleDeepLink: {uri}");
-            if (uri.StartsWith("malplus://"))
+            var path = uri.Replace("malplus://", "");
+            System.Diagnostics.Debug.WriteLine($"MALPLUS Deep link path: {path}");
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                var path = uri.Replace("malplus://", "");
-                System.Diagnostics.Debug.WriteLine($"MALPLUS Deep link path: {path}");
-                MainThread.BeginInvokeOnMainThread(async () =>
+                try
                 {
-                    try
+                    System.Diagnostics.Debug.WriteLine($"MALPLUS GoToAsync: {path}");
+                    if (Shell.Current != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"MALPLUS GoToAsync: {path}");
                         await Shell.Current.GoToAsync(path);
                         System.Diagnostics.Debug.WriteLine($"MALPLUS GoToAsync success");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        System.Diagnostics.Debug.WriteLine($"Deep link failed: {ex}");
+                        System.Diagnostics.Debug.WriteLine("MALPLUS Shell.Current is null!");
                     }
-                });
-            }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Deep link failed: {ex.Message} | Stack: {ex.StackTrace}");
+                }
+            });
         }
     }
 }
