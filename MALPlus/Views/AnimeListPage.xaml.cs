@@ -100,4 +100,20 @@ public partial class AnimeListPage : ContentPage
             Console.WriteLine("MALPLUS refresh failed: " + ex.Message);
         }
     }
+
+    private async void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            if (e.CurrentSelection.FirstOrDefault() is AnimeItemViewModel item)
+            {
+                AnimeGrid.SelectedItem = null;
+                await Shell.Current.GoToAsync($"animedetails?id={item.Id}&title={Uri.EscapeDataString(item.Title ?? string.Empty)}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS selection nav failed: " + ex.Message);
+        }
+    }
 }

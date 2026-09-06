@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.AnimeDetailsPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+    </ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+            <Label x:Name="DebugLabel" FontFamily="Inter" FontSize="10" TextColor="Yellow" Margin="8,4" />
+            <Image Source="{Binding DetailImage, Converter={StaticResource ImageConverter}}"
+                   HeightRequest="320" Aspect="AspectFill" />
+            <VerticalStackLayout Padding="16,12" Spacing="6">
+                <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="20"
+                       TextColor="{StaticResource BrushText}" />
+                <HorizontalStackLayout Spacing="8">
+                    <Label Text="{Binding Type}" FontFamily="Inter" FontSize="13" TextColor="{StaticResource BrushText}" />
+                    <Label Text="|" FontFamily="Inter" FontSize="13" TextColor="{StaticResource BrushText}" />
+                    <Label Text="{Binding Status}" FontFamily="Inter" FontSize="13" TextColor="{StaticResource BrushText}" />
+                    <Label Text="|" FontFamily="Inter" FontSize="13" TextColor="{StaticResource BrushText}" />
+                    <Label Text="{Binding StartYear}" FontFamily="Inter" FontSize="13" TextColor="{StaticResource BrushText}" />
+                </HorizontalStackLayout>
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="4" Margin="0,8,0,0">
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4">
+                        <Label Text="Rank:" FontAttributes="Bold" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                        <Label Text="{Binding GeneralRank}" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="4">
+                        <Label Text="Popularity:" FontAttributes="Bold" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                        <Label Text="{Binding GeneralPopularity}" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4">
+                        <Label Text="Favorites:" FontAttributes="Bold" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                        <Label Text="{Binding GeneralFavorites}" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
+                        <Label Text="Members:" FontAttributes="Bold" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                        <Label Text="{Binding GeneralMembers}" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Spacing="4">
+                        <Label Text="Studios:" FontAttributes="Bold" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                        <Label Text="{Binding GeneralStudios}" FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}" />
+                    </HorizontalStackLayout>
+                </Grid>
+                <Label Text="{Binding Synopsis}" FontFamily="Inter" FontSize="13"
+                       TextColor="{StaticResource BrushText}" Margin="0,8,0,24" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

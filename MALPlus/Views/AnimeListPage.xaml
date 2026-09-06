@@ -14,6 +14,8 @@
         <RefreshView x:Name="ListRefresh" Grid.Row="1" IsRefreshing="{Binding Loading, Mode=OneWay}">
             <CollectionView x:Name="AnimeGrid"
                             ItemsSource="{Binding AnimeItems}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnSelectionChanged"
                             RemainingItemsThreshold="4"
                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
                 <CollectionView.ItemsLayout>

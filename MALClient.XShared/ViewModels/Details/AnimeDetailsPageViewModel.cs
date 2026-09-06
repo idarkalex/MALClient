@@ -1456,6 +1456,13 @@ namespace MALClient.XShared.ViewModels.Details
             RaisePropertyChanged(() => Type);
             RaisePropertyChanged(() => StartYear);
             RaisePropertyChanged(() => Status);
+            RaisePropertyChanged(() => Title);
+            RaisePropertyChanged(() => GeneralRank);
+            RaisePropertyChanged(() => GeneralPopularity);
+            RaisePropertyChanged(() => GeneralStudios);
+            RaisePropertyChanged(() => GeneralFavorites);
+            RaisePropertyChanged(() => GeneralMembers);
+            RaisePropertyChanged(() => GeneralSeason);
 
             _synonyms = data.Synonyms;
             _synonyms = _synonyms.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
