@@ -289,7 +289,7 @@ SimpleIoc.Default.Register<Activity>(() => this);
 | Phase | Duration | Notes |
 |---|---|---|
 | **Phase 0: Inventory & Analysis** | ✅ Done | This document |
-| **Phase 1: Core Library (`MALPlus.Core`)** | 2-3 weeks | `XShared` → net8.0/net9.0, SQLite, DI setup |
+| **Phase 1: Core Library (`MALPlus.Core`)** | ✅ Done | `MALPlus.Core/` net8.0, 281 files linked in place (namespaces unchanged), MvvmLight kept, libvideo/ModernHttpClient dropped, STJ 8.0.5 |
 | **Phase 2: MAUI Shell + DI + Services** | 1 week | `MauiProgram`, Handlers registration, Platform services |
 | **Phase 3A: Image Loading Migration (Spike)** | 1-2 weeks | **CRITICAL** — FFImageLoading → MAUI Image + SkiaSharp |
 | **Phase 3B: Core UI Screens (13 screens)** | 10-12 weeks | Discover ⚠️ **EXCLUDED** |

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Phase 1: MALPlus.Core — net8.0 library compiling v2 sources in place (no copy, no rename).
+       Namespaces stay MALClient.* to keep 1:1 diff with v2. Rename later if ever. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>MALPlus.Core</AssemblyName>
+    <RootNamespace>MALPlus.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.28" />
+    <PackageReference Include="MvvmLightLibsStd10" Version="5.4.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- PreserveAtribute.cs excluded: duplicate Android.Runtime.PreserveAttribute shim also
+         defined in Models/Models/Misc/RedditScrappedPosts.cs; Models' copy covers all uses. -->
+    <Compile Include="..\MALClient.XShared\**\*.cs"
+             Exclude="..\MALClient.XShared\obj\**;..\MALClient.XShared\bin\**;..\MALClient.XShared\Properties\AssemblyInfo.cs;..\MALClient.XShared\Utils\PreserveAtribute.cs"
+             Link="XShared\%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Models/Interfaces/IAnimeLibraryDataStorage.cs excluded: dead empty internal stub;
+         the real interface is XShared/Interfaces/IAnimeLibraryDataStorage.cs. -->
+    <Compile Include="..\MALClient.Models\**\*.cs"
+             Exclude="..\MALClient.Models\obj\**;..\MALClient.Models\bin\**;..\MALClient.Models\Properties\AssemblyInfo.cs;..\MALClient.Models\Interfaces\IAnimeLibraryDataStorage.cs"
+             Link="Models\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\MALClient.Utilities.BBCode\**\*.cs"
+             Exclude="..\MALClient.Utilities.BBCode\obj\**;..\MALClient.Utilities.BBCode\bin\**;..\MALClient.Utilities.BBCode\Properties\AssemblyInfo.cs"
+             Link="BBCode\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\MALClient.Adapters\**\*.cs"
+             Exclude="..\MALClient.Adapters\obj\**;..\MALClient.Adapters\bin\**;..\MALClient.Adapters\Properties\AssemblyInfo.cs"
+             Link="Adapters\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
