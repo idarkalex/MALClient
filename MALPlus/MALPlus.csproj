@@ -14,6 +14,8 @@
     <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>200</ApplicationVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <!-- Debug builds must embed assemblies: fast-deploy APKs crash at startup with native SIGABRT (same lesson as v2). -->
+    <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">true</EmbedAssembliesIntoApk>
   </PropertyGroup>
 
   <ItemGroup>

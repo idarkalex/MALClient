@@ -290,7 +290,7 @@ SimpleIoc.Default.Register<Activity>(() => this);
 |---|---|---|
 | **Phase 0: Inventory & Analysis** | ✅ Done | This document |
 | **Phase 1: Core Library (`MALPlus.Core`)** | ✅ Done | `MALPlus.Core/` net8.0, 281 files linked in place (namespaces unchanged), MvvmLight kept, libvideo/ModernHttpClient dropped, STJ 8.0.5 |
-| **Phase 2: MAUI Shell + DI + Services** | 1 week | `MauiProgram`, Handlers registration, Platform services |
+| **Phase 2: MAUI Shell + DI + Services** | ✅ Done, verified on device | Shell boots to 4 tabs, 29/29 page VMs resolve, NavMgr roundtrip OK. Debug requires `EmbedAssembliesIntoApk=true` (fast-deploy APK = native SIGABRT). |
 | **Phase 3A: Image Loading Migration (Spike)** | 1-2 weeks | **CRITICAL** — FFImageLoading → MAUI Image + SkiaSharp |
 | **Phase 3B: Core UI Screens (13 screens)** | 10-12 weeks | Discover ⚠️ **EXCLUDED** |
 | **Phase 4: Windows / WinUI 3** | 2-3 weeks | WinUI 3 desktop, WebView2 video |
