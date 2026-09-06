@@ -51,8 +51,18 @@ public class BoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        if (value is string s)
+        {
+            if (parameter is string p && p == "nonempty")
+                return !string.IsNullOrWhiteSpace(s);
+            return !string.IsNullOrEmpty(s);
+        }
         if (value is bool b)
+        {
+            if (parameter is string p && p == "invert")
+                return !b;
             return b;
+        }
         return false;
     }
 
