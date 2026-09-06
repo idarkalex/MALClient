@@ -9,5 +9,6 @@ public partial class AppShell : Shell
         InitializeComponent();
         Routing.RegisterRoute("animedetails", typeof(AnimeDetailsPage));
         Routing.RegisterRoute("login", typeof(LogInPage));
+        Routing.RegisterRoute("search", typeof(SearchPage));
     }
 }

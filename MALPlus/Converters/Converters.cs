@@ -101,3 +101,20 @@ public class AirCountdownVisibilityConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
+public class BoolTabColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool current && parameter is string param && bool.TryParse(param, out bool target))
+        {
+            return current == target ? "#FF6B00" : "#FFFFFF";
+        }
+        return "#FFFFFF";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}

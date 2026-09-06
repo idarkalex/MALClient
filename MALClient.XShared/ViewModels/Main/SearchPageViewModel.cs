@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.Anime;
 using MALClient.XShared.Comm.Anime;
@@ -18,7 +20,7 @@ namespace MALClient.XShared.ViewModels.Main
     public class SearchPageViewModel : ViewModelBase
     {
         private readonly HashSet<string> _filters = new HashSet<string>();
-        private bool _animeSearch; // default to anime
+        public bool _animeSearch; // default to anime
         private string _currrentFilter;
         private bool _directQueryInputVisibility;
         private bool _isFirstVisitGridVisible = true;
@@ -422,6 +424,50 @@ namespace MALClient.XShared.ViewModels.Main
                 _internalQuery = value;
                 RaisePropertyChanged(() => InternalQuery);
             }
+        }
+
+        public ICommand SearchCommand => _searchCommand ?? (_searchCommand = new RelayCommand(Search));
+        private ICommand _searchCommand;
+
+        public ICommand ToggleSearchModeCommand => _toggleSearchModeCommand ?? (_toggleSearchModeCommand = new RelayCommand<string>(ToggleSearchMode));
+        private ICommand _toggleSearchModeCommand;
+
+        public ICommand SubmitFilterCommand => _submitFilterCommand ?? (_submitFilterCommand = new RelayCommand<string>(SubmitFilter));
+        private ICommand _submitFilterCommand;
+
+        public ICommand LoadMoreCatalogueCommand => _loadMoreCatalogueCommand ?? (_loadMoreCatalogueCommand = new RelayCommand(async () => await LoadMoreCatalogue()));
+        private ICommand _loadMoreCatalogueCommand;
+
+        public string Filter1Label => "TV";
+        public string Filter2Label => "Movie";
+        public string Filter3Label => "OVA";
+        public string Filter4Label => "ONA";
+        public string Filter5Label => "Special";
+
+        public List<string> RecentSearches => new List<string>();
+
+        private void Search()
+        {
+            if (!string.IsNullOrWhiteSpace(InternalQuery))
+            {
+                var navArgs = new SearchPageNavigationArgs
+                {
+                    Query = InternalQuery,
+                    Anime = _animeSearch,
+                    ForceQuery = true,
+                    DisplayMode = SearchPageDisplayModes.Main
+                };
+                Init(navArgs);
+            }
+        }
+
+        private void ToggleSearchMode(string mode)
+        {
+            if (mode == "true")
+                _animeSearch = true;
+            else if (mode == "false")
+                _animeSearch = false;
+            PopulateItems();
         }
 
         #endregion
