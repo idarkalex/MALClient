@@ -210,7 +210,7 @@ namespace MALClient.XShared.ViewModels.Main
                     using var tokenClient = new HttpClient();
                     using var content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                     {
-                        new("client_id", "183063f74126e7551b00c3b4de66986c"),
+                        new("client_id", "030f8e30cb57bce625dda6ca8637b75e"),
                         new("grant_type", "authorization_code"),
                         new("code", apiCode),
                         new("code_verifier", PkceChallenge),

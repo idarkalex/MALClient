@@ -8,7 +8,7 @@ public static class MauiBootDiagnostics
 {
     public static void Run()
     {
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             try
             {
@@ -41,6 +41,16 @@ public static class MauiBootDiagnostics
                 catch (Exception ex)
                 {
                     lines.Add("FAIL NavMgr :: " + ex.GetType().Name + ": " + ex.Message);
+                }
+                try
+                {
+                    var loaded = MALClient.XShared.ViewModels.ResourceLocator.AnimeLibraryDataStorage.AllLoadedAnimeItemAbstractions;
+                    lines.Add("StoreCount=" + (loaded == null ? "null" : loaded.Count.ToString()));
+                    lines.Add("Auth=" + MALClient.XShared.Utils.Credentials.Authenticated + " user=" + MALClient.XShared.Utils.Credentials.UserName);
+                }
+                catch (Exception ex)
+                {
+                    lines.Add("FAIL StoreProbe :: " + ex);
                 }
                 File.WriteAllLines(Path.Combine(FileSystem.CacheDirectory, "maui_boot_diagnostics.txt"), lines);
             }

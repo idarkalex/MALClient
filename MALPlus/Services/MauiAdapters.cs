@@ -26,12 +26,28 @@ public class MauiApplicationDataService : IApplicationDataService
             var raw = Preferences.Get(key, (string)null);
             if (raw == null)
                 return null;
-            if (bool.TryParse(raw, out var b))
-                return b;
-            if (int.TryParse(raw, out var i))
-                return i;
-            if (long.TryParse(raw, out var l))
-                return l;
+            var sep = raw.IndexOf(':');
+            if (sep > 0 && int.TryParse(raw.Substring(0, sep), out var typeCode))
+            {
+                var payload = raw.Substring(sep + 1);
+                switch ((TypeCode)typeCode)
+                {
+                    case TypeCode.Boolean when bool.TryParse(payload, out var b):
+                        return b;
+                    case TypeCode.Int32 when int.TryParse(payload, out var i):
+                        return i;
+                    case TypeCode.Int64 when long.TryParse(payload, out var l):
+                        return l;
+                    case TypeCode.String:
+                        return payload;
+                }
+            }
+            if (bool.TryParse(raw, out var legacyBool))
+                return legacyBool;
+            if (int.TryParse(raw, out var legacyInt))
+                return legacyInt;
+            if (long.TryParse(raw, out var legacyLong))
+                return legacyLong;
             return raw;
         }
         set
@@ -41,7 +57,7 @@ public class MauiApplicationDataService : IApplicationDataService
                 Preferences.Remove(key);
                 return;
             }
-            Preferences.Set(key, value.ToString());
+            Preferences.Set(key, (int)Type.GetTypeCode(value.GetType()) + ":" + value);
         }
     }
 

@@ -119,7 +119,7 @@ namespace MALClient.XShared.Comm.Anime
                 }
             }
             var anonClient = new HttpClient();
-            anonClient.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", "183063f74126e7551b00c3b4de66986c");
+            anonClient.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", "030f8e30cb57bce625dda6ca8637b75e");
             clients.Add(anonClient);
 
             foreach (var client in clients)

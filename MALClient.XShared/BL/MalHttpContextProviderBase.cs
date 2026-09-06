@@ -64,7 +64,7 @@ namespace MALClient.XShared.BL
                 using var tokenClient = new HttpClient();
                 var content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                 {
-                    new("client_id", "183063f74126e7551b00c3b4de66986c"),
+                    new("client_id", "030f8e30cb57bce625dda6ca8637b75e"),
                     new("grant_type", "refresh_token"),
                     new("refresh_token", Settings.RefreshToken)
                 });

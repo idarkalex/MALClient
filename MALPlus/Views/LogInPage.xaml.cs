@@ -61,6 +61,7 @@ public partial class LogInPage : ContentPage
         try
         {
             var url = e.Url ?? string.Empty;
+            Console.WriteLine("MALPLUS auth-navigating " + url);
             if (url.Contains("maloauth?state=signin&error="))
             {
                 e.Cancel = true;
@@ -98,18 +99,24 @@ public partial class LogInPage : ContentPage
                 }
 #endif
                 AuthWebView.Source = "https://myanimelist.net/v1/oauth2/authorize?response_type=code&"
-                    + "client_id=183063f74126e7551b00c3b4de66986c&"
+                    + "client_id=030f8e30cb57bce625dda6ca8637b75e&"
                     + "state=signin&"
                     + $"code_challenge={Vm.PkceChallenge}&"
                     + "code_challenge_method=plain";
                 return;
             }
             if (url == "https://myanimelist.net/register.php"
+                || url.StartsWith("https://myanimelist.net/v1/oauth2/authorize")
+                || url.StartsWith("https://myanimelist.net/dialog/")
                 || url.Contains("google") || url.Contains("facebook") || url.Contains("apple")
                 || url.StartsWith("https://api.twitter") || url.StartsWith("https://myanimelist.net/sns/")
                 || url.StartsWith("https://accounts.google") || url.StartsWith("https://accounts.youtube")
                 || url.StartsWith("https://myanimelist.net/login.php"))
+            {
+                Console.WriteLine("MALPLUS auth-nav allow");
                 return;
+            }
+            Console.WriteLine("MALPLUS auth-nav cancel+login");
             e.Cancel = true;
             AuthWebView.Source = "https://myanimelist.net/login.php";
         }

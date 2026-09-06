@@ -8,10 +8,8 @@
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:ScoreVisibleConverter x:Key="ScoreVisible" />
     </ContentPage.Resources>
-    <Grid RowDefinitions="Auto,*">
-        <Label x:Name="DebugLabel" FontFamily="Inter" FontSize="10" TextColor="Yellow"
-               Margin="8,4" />
-        <RefreshView x:Name="ListRefresh" Grid.Row="1" IsRefreshing="{Binding Loading, Mode=OneWay}">
+    <Grid RowDefinitions="*">
+        <RefreshView x:Name="ListRefresh" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
             <CollectionView x:Name="AnimeGrid"
                             ItemsSource="{Binding AnimeItems}"
                             SelectionMode="Single"
