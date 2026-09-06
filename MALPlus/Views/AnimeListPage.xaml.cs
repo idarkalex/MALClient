@@ -36,12 +36,11 @@ public partial class AnimeListPage : ContentPage
                         break;
                     var text = "mode=" + vm.WorkMode + " items=" + vm.AnimeItems.Count
                         + " grid=" + vm.AnimeGridItems.Count + " loading=" + vm.Loading
-                        + " empty=" + vm.EmptyNoticeVisibility + " src=" + vm.ListSource
+                        + " empty=" + vm.EmptyNoticeVisibility + " more=" + vm.CanLoadMore
+                        + " src=" + vm.ListSource
                         + " " + _probe;
                     Console.WriteLine("MALPLUS " + text);
                     MainThread.BeginInvokeOnMainThread(() => DebugLabel.Text = text);
-                    if (vm.AnimeItems.Count > 0 || vm.AnimeGridItems.Count > 0)
-                        break;
                 }
             }
             catch (Exception ex)
@@ -90,7 +89,15 @@ public partial class AnimeListPage : ContentPage
 
     private async void OnRefreshing(object sender, EventArgs e)
     {
-        if (!Vm.Loading)
-            await Vm.FetchData(force: true);
+        if (Vm.Loading)
+            return;
+        try
+        {
+            await Vm.Init(AnimeListPageNavigationArgs.TopAnime(TopAnimeType.General));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS refresh failed: " + ex.Message);
+        }
     }
 }
