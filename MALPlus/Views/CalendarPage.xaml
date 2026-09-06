@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MALPlus.Views"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.CalendarPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:IntEqualityConverter x:Key="IntEq" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Tab Strip -->
+        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                    Padding="16,8" Margin="0,8,0,4">
+            <HorizontalStackLayout Spacing="16" x:Name="TabStrip">
+                <!-- Days will be added dynamically in code-behind -->
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Loading overlay -->
+        <Grid Grid.Row="1" Grid.RowSpan="2" IsVisible="{Binding CalendarBuildingVisibility}"
+              BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                   WidthRequest="36" HeightRequest="36" />
+                <Label Text="Building calendar..." FontFamily="Inter" FontSize="13"
+                       TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Calendar Content (pivot) -->
+        <Grid Grid.Row="2" IsVisible="{Binding CalendarVisibility}">
+            <CarouselView x:Name="CalendarCarousel"
+                          ItemsSource="{Binding CalendarData}"
+                          Position="{Binding CalendarPivotIndex, Mode=TwoWay}"
+                          Loop="False">
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="12">
+                            <!-- Day Header -->
+                            <HorizontalStackLayout Grid.Row="0" Spacing="8" VerticalOptions="Center">
+                                <Label Text="{Binding Header}" FontFamily="InterBold" FontSize="20"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                <Label Text="{Binding Sub}" FontFamily="Inter" FontSize="14"
+                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+
+                            <!-- Items Grid -->
+                            <CollectionView Grid.Row="1" ItemsSource="{Binding Items}"
+                                            ItemsLayout="VerticalList" Margin="0">
+                                <CollectionView.EmptyView>
+                                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                                        <Label Text="No airing today" FontFamily="Inter" FontSize="14"
+                                               TextColor="#80FFFFFF" HorizontalOptions="Center" />
+                                    </VerticalStackLayout>
+                                </CollectionView.EmptyView>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BackgroundColor="{StaticResource EmSheet}"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                                StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="0">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="12,8" RowSpacing="4">
+                                                <!-- Image -->
+                                                <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                       WidthRequest="70" HeightRequest="100" Aspect="AspectFill" />
+
+                                                <!-- Title + Info -->
+                                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                                    <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="14"
+                                                           TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
+                                                    <HorizontalStackLayout Spacing="8">
+                                                        <Label Text="{Binding Type}" FontFamily="Inter" FontSize="11"
+                                                               TextColor="#80FFFFFF" />
+                                                        <Label Text="{Binding AllEpisodes, StringFormat='{0} eps'}" FontFamily="Inter" FontSize="11"
+                                                               TextColor="#80FFFFFF" />
+                                                        <Label Text="{Binding Status}" FontFamily="Inter" FontSize="11"
+                                                               TextColor="#00C853" />
+                                                    </HorizontalStackLayout>
+                                                    <Label Text="{Binding TimeTillNextAir}" FontFamily="InterBold" FontSize="12"
+                                                           TextColor="#0066FF" />
+                                                </VerticalStackLayout>
+
+                                                <!-- Add/Export buttons -->
+                                                <VerticalStackLayout Grid.Column="2" Spacing="4" VerticalOptions="Center" Padding="0,0,4,0">
+                                                    <Button Text="+"
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:CalendarPage}}, Path=BindingContext.AddToListCommand}"
+                                                            CommandParameter="{Binding .}"
+                                                            FontFamily="InterBold" FontSize="16"
+                                                            BackgroundColor="#0066FF" TextColor="White"
+                                                            CornerRadius="6" WidthRequest="32" HeightRequest="32" Padding="0" />
+                                                    <Button Text="📅"
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:CalendarPage}}, Path=BindingContext.ExportToCalendarCommand}"
+                                                            CommandParameter="{Binding .}"
+                                                            FontFamily="Inter" FontSize="14"
+                                                            BackgroundColor="#141d2b" TextColor="White"
+                                                            BorderColor="#29FFFFFF" BorderWidth="1"
+                                                            CornerRadius="6" WidthRequest="32" HeightRequest="32" Padding="0" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </Grid>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+
+            <!-- Loading overlay -->
+            <Grid IsVisible="{Binding CalendarBuildingVisibility}" BackgroundColor="#80000000"
+                  VerticalOptions="Fill" HorizontalOptions="Fill">
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                    <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                       WidthRequest="36" HeightRequest="36" />
+                    <Label Text="Building calendar..." FontFamily="Inter" FontSize="13"
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

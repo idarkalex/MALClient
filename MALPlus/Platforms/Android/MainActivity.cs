@@ -1,5 +1,7 @@
 using Android.App;
+using Android.Content;
 using Android.Content.PM;
+using Android.OS;
 using Microsoft.Maui;
 
 namespace MALPlus;
@@ -13,4 +15,38 @@ namespace MALPlus;
     DataScheme = "malplus")]
 public class MainActivity : MauiAppCompatActivity
 {
+    protected override void OnNewIntent(Intent intent)
+    {
+        base.OnNewIntent(intent);
+        Intent = intent;
+        System.Diagnostics.Debug.WriteLine($"MALPLUS OnNewIntent: {intent?.Data}");
+        HandleDeepLink(intent);
+    }
+
+    private void HandleDeepLink(Intent intent)
+    {
+        if (intent?.Data != null)
+        {
+            var uri = intent.Data.ToString();
+            System.Diagnostics.Debug.WriteLine($"MALPLUS HandleDeepLink: {uri}");
+            if (uri.StartsWith("malplus://"))
+            {
+                var path = uri.Replace("malplus://", "");
+                System.Diagnostics.Debug.WriteLine($"MALPLUS Deep link path: {path}");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"MALPLUS GoToAsync: {path}");
+                        await Shell.Current.GoToAsync(path);
+                        System.Diagnostics.Debug.WriteLine($"MALPLUS GoToAsync success");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Deep link failed: {ex}");
+                    }
+                });
+            }
+        }
+    }
 }
