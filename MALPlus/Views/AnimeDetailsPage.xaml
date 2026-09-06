@@ -26,6 +26,16 @@
                     </LinearGradientBrush>
                 </BoxView.Background>
             </BoxView>
+            <!-- Loading overlay while global details are being fetched -->
+            <Grid IsVisible="{Binding LoadingGlobal}" BackgroundColor="#80000000">
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                    <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                       WidthRequest="36" HeightRequest="36" />
+                    <Label Text="Loading details..."
+                           FontFamily="Inter" FontSize="12" TextColor="{StaticResource BrushText}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
             <!-- Hero content (overlaid at bottom) -->
             <Grid RowDefinitions="Auto,Auto,Auto,Auto" VerticalOptions="End" Padding="16,0,16,16">
                 <!-- Type badge + Status -->
@@ -53,48 +63,49 @@
                 <HorizontalStackLayout Grid.Row="2" Spacing="16" Margin="0,0,0,12">
                     <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
                         <Label Text="★" FontFamily="InterBold" FontSize="16" TextColor="#FFD700" />
-                        <Label Text="{Binding GlobalScore, StringFormat='{0:N2}'}" FontFamily="InterBold" FontSize="16"
+                        <Label Text="{Binding GlobalScoreBind}" FontFamily="InterBold" FontSize="16"
                                TextColor="White" />
                     </HorizontalStackLayout>
                     <Label Text="{Binding GeneralMembers, StringFormat='Members: {0}'}"
                            FontFamily="Inter" FontSize="12" TextColor="#B3FFFFFF" VerticalOptions="Center" />
                 </HorizontalStackLayout>
-                <!-- Quick actions row -->
-                <Grid Grid.Row="3" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
-                    <!-- "Add to List" shown when anime is NOT in the list (AddAnimeVisibility = false) -->
+                <!-- Quick actions row: 3 columns when not in list (Add+Score+Favorite+Trailer),
+                     3 columns when in list (Status+Score+Favorite+Trailer). Trailer only when URL present. -->
+                <Grid Grid.Row="3" ColumnDefinitions="*,*,*,Auto" ColumnSpacing="8">
+                    <!-- "Add to List" shown when anime is NOT in the list (AddAnimeVisibility = true) -->
                     <Button Grid.Column="0" Text="Add to List"
                             Command="{Binding AddAnimeCommand}"
-                            IsVisible="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                            IsVisible="{Binding AddAnimeVisibility}"
                             IsEnabled="{Binding IsAddAnimeButtonEnabled}"
-                            FontFamily="InterSemiBold" FontSize="12"
+                            FontFamily="InterSemiBold" FontSize="13"
                             BackgroundColor="#0066FF" TextColor="White"
                             CornerRadius="8" HeightRequest="40" Padding="0" />
-                    <!-- "Status" shown when anime IS in the list (AddAnimeVisibility = true) -->
+                    <!-- "Status" shown when anime IS in the list (AddAnimeVisibility = false) -->
                     <Button Grid.Column="0" Text="{Binding MyStatusBind}"
                             Command="{Binding ChangeStatusCommand}"
-                            IsVisible="{Binding AddAnimeVisibility}"
-                            FontFamily="InterSemiBold" FontSize="12"
+                            IsVisible="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                            FontFamily="InterSemiBold" FontSize="13"
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
                             CornerRadius="8" HeightRequest="40" Padding="0" />
                     <Button Grid.Column="1" Text="{Binding MyScoreBind, StringFormat='Score: {0}'}"
                             Command="{Binding ChangeScoreCommand}"
-                            FontFamily="InterSemiBold" FontSize="12"
+                            FontFamily="InterSemiBold" FontSize="13"
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
                             CornerRadius="8" HeightRequest="40" Padding="0" />
                     <Button Grid.Column="2" Text="Favorite"
                             Command="{Binding ToggleFavouriteCommand}"
-                            FontFamily="InterSemiBold" FontSize="12"
+                            FontFamily="InterSemiBold" FontSize="13"
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
                             CornerRadius="8" HeightRequest="40" Padding="0" />
-                    <Button Grid.Column="3" Text="Trailer"
+                    <Button Grid.Column="3" Text="▶"
                             IsVisible="{Binding TrailerUrl, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                            FontFamily="InterSemiBold" FontSize="12"
-                            BackgroundColor="#141d2b" TextColor="White"
+                            FontFamily="InterBold" FontSize="14"
+                            BackgroundColor="#141d2b" TextColor="#FF6B00"
                             BorderColor="#29FFFFFF" BorderWidth="1"
-                            CornerRadius="8" HeightRequest="40" Padding="0" />
+                            CornerRadius="8" HeightRequest="40" WidthRequest="48" Padding="0" />
                 </Grid>
             </Grid>
         </Grid>

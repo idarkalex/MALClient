@@ -163,7 +163,7 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        private float GlobalScore
+        public float GlobalScore
         {
             get { return _globalScore; }
             set
@@ -171,8 +171,12 @@ namespace MALClient.XShared.ViewModels.Details
                 if (_animeItemReference != null)
                     _animeItemReference.GlobalScore = value;
                 _globalScore = value;
+                RaisePropertyChanged(() => GlobalScore);
+                RaisePropertyChanged(() => GlobalScoreBind);
             }
         }
+
+        public string GlobalScoreBind => GlobalScore == 0 ? "—" : GlobalScore.ToString("N2");
 
         private bool _loadingGlobal;
 
