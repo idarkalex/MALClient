@@ -9,6 +9,11 @@ namespace MALPlus.Views;
 public partial class AnimeDetailsPage : ContentPage
 {
     private bool _initialized;
+    private bool _episodesLoaded;
+    private bool _charactersLoaded;
+    private bool _staffLoaded;
+    private bool _recommendationsLoaded;
+    private bool _relatedLoaded;
 
     public string MalId { get; set; }
     public string AnimeTitle { get; set; }
@@ -54,6 +59,72 @@ public partial class AnimeDetailsPage : ContentPage
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine("MALPLUS Details Init failed: " + ex);
+        }
+    }
+
+    protected override void OnBindingContextChanged()
+    {
+        base.OnBindingContextChanged();
+        if (BindingContext is AnimeDetailsPageViewModel vm)
+        {
+            vm.PropertyChanged += OnVmPropertyChanged;
+        }
+    }
+
+    private void OnVmPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AnimeDetailsPageViewModel.DetailsPivotSelectedIndex))
+        {
+            LoadTabData(Vm.DetailsPivotSelectedIndex);
+        }
+    }
+
+    private async void LoadTabData(int tabIndex)
+    {
+        try
+        {
+            switch (tabIndex)
+            {
+                case 1: // Episodes
+                    if (!_episodesLoaded)
+                    {
+                        _episodesLoaded = true;
+                        await Vm.LoadEpisodes(false);
+                    }
+                    break;
+                case 2: // Characters
+                    if (!_charactersLoaded)
+                    {
+                        _charactersLoaded = true;
+                        await Vm.LoadCharacters(false);
+                    }
+                    break;
+                case 3: // Staff
+                    if (!_staffLoaded)
+                    {
+                        _staffLoaded = true;
+                        await Vm.LoadCharacters(false); // LoadCharacters loads both
+                    }
+                    break;
+                case 4: // Recommendations
+                    if (!_recommendationsLoaded)
+                    {
+                        _recommendationsLoaded = true;
+                        await Vm.LoadRecommendations(false);
+                    }
+                    break;
+                case 5: // Related
+                    if (!_relatedLoaded)
+                    {
+                        _relatedLoaded = true;
+                        await Vm.LoadRelatedAnime(false);
+                    }
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("MALPLUS LoadTabData failed: " + ex);
         }
     }
 

@@ -262,12 +262,12 @@
 
         <!-- TAB CONTENT -->
         <Grid Grid.Row="2" BackgroundColor="{StaticResource EmSheet}">
-            <!-- General Tab (0): Stats cards + Synopsis -->
+<!-- General Tab (0): Stats cards + Synopsis (v2 exact layout) -->
             <ScrollView IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=0}"
                         Padding="12,8,12,16">
                 <VerticalStackLayout Spacing="12">
 
-                    <!-- Row 1: Rank + Popularity -->
+                    <!-- Row 1: Rank + Popularity (50/50) -->
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                 BackgroundColor="{StaticResource EmSheet}"
@@ -297,7 +297,7 @@
                         </Border>
                     </Grid>
 
-                    <!-- Row 2: Favorites + Members -->
+                    <!-- Row 1b: Favorites + Members (50/50) -->
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                 BackgroundColor="{StaticResource EmSheet}"
@@ -327,7 +327,7 @@
                         </Border>
                     </Grid>
 
-                    <!-- Row 3: Studios + Premiered -->
+                    <!-- Row 2: Studios + Premiered (50/50) -->
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                 BackgroundColor="{StaticResource EmSheet}"
@@ -359,7 +359,7 @@
                         </Border>
                     </Grid>
 
-                    <!-- Synopsis -->
+                    <!-- Synopsis with icon header -->
                     <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                             BackgroundColor="{StaticResource EmSheet}"
                             Padding="12" StrokeShape="RoundRectangle 8">
