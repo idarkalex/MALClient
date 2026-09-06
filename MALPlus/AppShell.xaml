@@ -5,7 +5,7 @@
        x:Class="MALPlus.AppShell"
        Shell.NavBarIsVisible="False">
     <TabBar>
-        <ShellContent Title="Anime" Route="anime" ContentTemplate="{DataTemplate views:PlaceholderPage}" />
+        <ShellContent Title="Anime" Route="anime" ContentTemplate="{DataTemplate views:AnimeListPage}" />
         <ShellContent Title="Manga" Route="manga" ContentTemplate="{DataTemplate views:PlaceholderPage}" />
         <ShellContent Title="Discover" Route="discover" ContentTemplate="{DataTemplate views:PlaceholderPage}" />
         <ShellContent Title="More" Route="more" ContentTemplate="{DataTemplate views:PlaceholderPage}" />

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.AnimeListPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:ScoreVisibleConverter x:Key="ScoreVisible" />
+    </ContentPage.Resources>
+    <Grid RowDefinitions="Auto,*">
+        <Label x:Name="DebugLabel" FontFamily="Inter" FontSize="10" TextColor="Yellow"
+               Margin="8,4" />
+        <RefreshView x:Name="ListRefresh" Grid.Row="1" IsRefreshing="{Binding Loading, Mode=OneWay}">
+            <CollectionView x:Name="AnimeGrid"
+                            ItemsSource="{Binding AnimeItems}"
+                            RemainingItemsThreshold="4"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="3" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid HeightRequest="195" Padding="2">
+                            <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                   Aspect="AspectFill" />
+                            <Frame Padding="4,1" CornerRadius="4" HasShadow="False"
+                                   BackgroundColor="#B3051522"
+                                   HorizontalOptions="End" VerticalOptions="Start" Margin="4"
+                                   IsVisible="{Binding GlobalScore, Converter={StaticResource ScoreVisible}}">
+                                <Label Text="{Binding GlobalScoreBind}" FontFamily="InterBold"
+                                       FontSize="10" TextColor="White" />
+                            </Frame>
+                            <Label Text="{Binding Title}" FontFamily="Inter" FontSize="11"
+                                   TextColor="White" MaxLines="2" LineBreakMode="TailTruncation"
+                                   VerticalOptions="End" Margin="4,0,4,4" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+        <Label Text="{Binding EmptyNoticeContent}" IsVisible="{Binding EmptyNoticeVisibility}"
+               FontFamily="Inter" FontSize="14" TextColor="{StaticResource BrushText}"
+               HorizontalOptions="Center" VerticalOptions="Center" HorizontalTextAlignment="Center" />
+    </Grid>
+</ContentPage>

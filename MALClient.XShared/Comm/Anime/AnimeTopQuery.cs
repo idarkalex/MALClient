@@ -255,7 +255,10 @@ namespace MALClient.XShared.Comm.Anime
 
                 var endpoint = $"{api}?{query}&page={Math.Max(_page + 1, 1)}";
                 var data = await TenraiClient.GetDataAsync(endpoint);
-                if (!data.TryGetProperty("data", out var items) || items.ValueKind != JsonValueKind.Array)
+                JsonElement items;
+                if (data.ValueKind == JsonValueKind.Array)
+                    items = data;
+                else if (!data.TryGetProperty("data", out items) || items.ValueKind != JsonValueKind.Array)
                     return null;
 
                 var output = new List<TopAnimeData>();
