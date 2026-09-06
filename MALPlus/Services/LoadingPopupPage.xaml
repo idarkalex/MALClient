@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MALPlus.Services.LoadingPopupPage"
+             BackgroundColor="#80000000">
+    <Frame VerticalOptions="Center" HorizontalOptions="Center" Padding="24"
+           BackgroundColor="#0A1F2E" CornerRadius="12" HasShadow="False">
+        <VerticalStackLayout Spacing="12" WidthRequest="220">
+            <Label x:Name="TitleLabel" FontFamily="InterBold" FontSize="16" TextColor="White"
+                   HorizontalOptions="Center" />
+            <Label x:Name="ContentLabel" FontFamily="Inter" FontSize="14" TextColor="White"
+                   HorizontalOptions="Center" />
+            <ActivityIndicator IsRunning="True" Color="#0066FF" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Frame>
+</ContentPage>
