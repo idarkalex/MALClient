@@ -9,6 +9,11 @@ namespace MALPlus.Views;
 public partial class AnimeDetailsPage : ContentPage
 {
     private bool _initialized;
+    private bool _episodesLoaded;
+    private bool _charactersLoaded;
+    private bool _staffLoaded;
+    private bool _recommendationsLoaded;
+    private bool _relatedLoaded;
 
     public string MalId { get; set; }
     public string AnimeTitle { get; set; }
@@ -35,26 +40,84 @@ public partial class AnimeDetailsPage : ContentPage
                 using var c = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(15) };
                 var r = await c.GetAsync("https://api.tenrai.org/v1/anime/" + MalId + "/full");
                 var body = await r.Content.ReadAsStringAsync();
-                DebugLabel.Text += " fullhttp=" + (int)r.StatusCode + " len=" + body.Length
-                    + " hasrank=" + body.Contains("\"rank\"");
+                System.Diagnostics.Debug.WriteLine("MALPLUS Details fullhttp=" + (int)r.StatusCode + " len=" + body.Length
+                    + " hasrank=" + body.Contains("\"rank\""));
             }
             catch (Exception ex)
             {
-                DebugLabel.Text += " fullhttp-FAIL " + ex.GetType().Name;
+                System.Diagnostics.Debug.WriteLine("MALPLUS Details fullhttp-FAIL " + ex.GetType().Name);
             }
         });
         try
         {
             Vm.Init(new AnimeDetailsPageNavigationArgs(int.Parse(MalId), AnimeTitle, null, null, null), fakeDelay: false);
             await Task.Delay(12000);
-            DebugLabel.Text = "loaded title=" + Vm.Title + " synlen=" + (Vm.Synopsis ?? "").Length
-                + " rank=" + Vm.GeneralRank + " pop=" + Vm.GeneralPopularity + " studios=" + Vm.GeneralStudios;
+            System.Diagnostics.Debug.WriteLine("MALPLUS Details Init returned title=" + Vm.Title + " synlen=" + (Vm.Synopsis ?? "").Length
+                + " rank=" + Vm.GeneralRank + " pop=" + Vm.GeneralPopularity + " studios=" + Vm.GeneralStudios);
             Console.WriteLine("MALPLUS Details Init returned title=" + Vm.Title);
         }
         catch (Exception ex)
         {
-            DebugLabel.Text = "details FAILED " + ex.GetType().Name;
-            Console.WriteLine("MALPLUS Details Init failed: " + ex);
+            System.Diagnostics.Debug.WriteLine("MALPLUS Details Init failed: " + ex);
+        }
+    }
+
+    private void OnTabTapped(object sender, TappedEventArgs e)
+    {
+        Console.WriteLine("MALPLUS Tab tapped param=" + e.Parameter);
+        if (e.Parameter is string param && int.TryParse(param, out int tabIndex))
+        {
+            Vm.DetailsPivotSelectedIndex = tabIndex;
+            LoadTabData(tabIndex);
+        }
+    }
+
+    private void LoadTabData(int tabIndex)
+    {
+        try
+        {
+            switch (tabIndex)
+            {
+                case 1: // Episodes
+                    if (!_episodesLoaded)
+                    {
+                        _episodesLoaded = true;
+                        _ = Vm.LoadEpisodes(false);
+                    }
+                    break;
+                case 2: // Characters
+                    if (!_charactersLoaded)
+                    {
+                        _charactersLoaded = true;
+                        _ = Vm.LoadCharacters(false);
+                    }
+                    break;
+                case 3: // Staff
+                    if (!_staffLoaded)
+                    {
+                        _staffLoaded = true;
+                        _ = Vm.LoadCharacters(false); // LoadCharacters loads both characters and staff
+                    }
+                    break;
+                case 4: // Recommendations
+                    if (!_recommendationsLoaded)
+                    {
+                        _recommendationsLoaded = true;
+                        _ = Vm.LoadRecommendations(false);
+                    }
+                    break;
+                case 5: // Related
+                    if (!_relatedLoaded)
+                    {
+                        _relatedLoaded = true;
+                        _ = Vm.LoadRelatedAnime(false);
+                    }
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("MALPLUS LoadTabData failed: " + ex);
         }
     }
 }
