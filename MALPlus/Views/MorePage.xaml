@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MALPlus.Views.MorePage"
+             BackgroundColor="{StaticResource EmBackground}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header: Profile -->
+        <Border Grid.Row="0" x:Name="ProfileHeader" Margin="16,16,16,8" Padding="16"
+                BackgroundColor="{StaticResource EmSheet}"
+                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                StrokeShape="RoundRectangle 12">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnProfileHeaderTapped" />
+            </Border.GestureRecognizers>
+            <HorizontalStackLayout Spacing="16">
+                <Image x:Name="ProfileImage" WidthRequest="60" HeightRequest="60"
+                       Aspect="AspectFill">
+                    <Image.Clip>
+                        <EllipseGeometry Center="30,30" RadiusX="30" RadiusY="30" />
+                    </Image.Clip>
+                </Image>
+                <VerticalStackLayout Spacing="4" VerticalOptions="Center">
+                    <Label x:Name="ProfileUsername" Text="{Binding ProfileUsername}"
+                           FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                    <Label x:Name="ProfileCompleted" Text="{Binding ProfileCompleted}"
+                           FontFamily="Inter" FontSize="12" TextColor="{StaticResource EmAccent}"
+                           IsVisible="{Binding ProfileCompleted, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+        </Border>
+
+        <!-- Content: Scrollable List -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="8" Padding="16" x:Name="MainContent">
+                
+                <!-- Anime List (collapsible) -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="0">
+                    <VerticalStackLayout>
+                        <Border x:Name="AnimeListItem" Padding="16" BackgroundColor="Transparent">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnAnimeListTapped" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout>
+                                <Label Text="Anime List" FontFamily="InterSemiBold" FontSize="16"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                <Label Text="▼" x:Name="AnimeListArrow" FontFamily="InterBold" FontSize="14"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                       HorizontalOptions="EndAndExpand" Rotation="0" />
+                            </HorizontalStackLayout>
+                        </Border>
+                        <Grid x:Name="AnimeListPanel" IsVisible="False" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="1" BackgroundColor="{StaticResource EmBackground}" Padding="0,0,0,8">
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Top Anime (collapsible) -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="0" Margin="0,8,0,0">
+                    <VerticalStackLayout>
+                        <Border x:Name="TopAnimeItem" Padding="16" BackgroundColor="Transparent">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTopAnimeTapped" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout>
+                                <Label Text="Top Anime" FontFamily="InterSemiBold" FontSize="16"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                <Label Text="▼" x:Name="TopAnimeArrow" FontFamily="InterBold" FontSize="14"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                       HorizontalOptions="EndAndExpand" Rotation="0" />
+                            </HorizontalStackLayout>
+                        </Border>
+                        <Grid x:Name="TopAnimePanel" IsVisible="False" RowDefinitions="Auto,Auto,Auto" RowSpacing="1" BackgroundColor="{StaticResource EmBackground}" Padding="0,0,0,8">
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Seasonal -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSeasonalTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Seasonal" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Search -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSearchTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Search" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Recommendations -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRecommendationsTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Recommendations" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Calendar -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCalendarTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Calendar" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Manga List (collapsible) -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="0" Margin="0,8,0,0">
+                    <VerticalStackLayout>
+                        <Border x:Name="MangaListItem" Padding="16" BackgroundColor="Transparent">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnMangaListTapped" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout>
+                                <Label Text="Manga List" FontFamily="InterSemiBold" FontSize="16"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                <Label Text="▼" x:Name="MangaListArrow" FontFamily="InterBold" FontSize="14"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                       HorizontalOptions="EndAndExpand" Rotation="0" />
+                            </HorizontalStackLayout>
+                        </Border>
+                        <Grid x:Name="MangaListPanel" IsVisible="False" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="1" BackgroundColor="{StaticResource EmBackground}" Padding="0,0,0,8">
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Top Manga (collapsible) -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="0" Margin="0,8,0,0">
+                    <VerticalStackLayout>
+                        <Border x:Name="TopMangaItem" Padding="16" BackgroundColor="Transparent">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTopMangaTapped" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout>
+                                <Label Text="Top Manga" FontFamily="InterSemiBold" FontSize="16"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                <Label Text="▼" x:Name="TopMangaArrow" FontFamily="InterBold" FontSize="14"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                       HorizontalOptions="EndAndExpand" Rotation="0" />
+                            </HorizontalStackLayout>
+                        </Border>
+                        <Grid x:Name="TopMangaPanel" IsVisible="False" RowDefinitions="Auto,Auto,Auto" RowSpacing="1" BackgroundColor="{StaticResource EmBackground}" Padding="0,0,0,8">
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Adapted to Anime (collapsible) -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="0" Margin="0,8,0,0">
+                    <VerticalStackLayout>
+                        <Border x:Name="AdaptedItem" Padding="16" BackgroundColor="Transparent">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnAdaptedTapped" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout>
+                                <Label Text="Adapted to Anime" FontFamily="InterSemiBold" FontSize="16"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                <Label Text="▼" x:Name="AdaptedArrow" FontFamily="InterBold" FontSize="14"
+                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                       HorizontalOptions="EndAndExpand" Rotation="0" />
+                            </HorizontalStackLayout>
+                        </Border>
+                        <Grid x:Name="AdaptedPanel" IsVisible="False" RowDefinitions="Auto,Auto,Auto" RowSpacing="1" BackgroundColor="{StaticResource EmBackground}" Padding="0,0,0,8">
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Articles -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnArticlesTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Articles" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Videos -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnVideosTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Videos" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Forums -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnForumsTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Forums" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Settings -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSettingsTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Settings" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
