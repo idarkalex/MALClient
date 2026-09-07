@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.ArticlesPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:HtmlSourceConverter x:Key="HtmlSource" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <!-- Loading -->
+        <Grid IsVisible="{Binding LoadingVisibility}" BackgroundColor="#80000000" ZIndex="99">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                               WidthRequest="36" HeightRequest="36" />
+        </Grid>
+
+        <!-- Article reader (when an article is open) -->
+        <Grid IsVisible="{Binding PendingArticle, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" BackgroundColor="{StaticResource EmSheet}" Padding="12,12" ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0" Text="←" Clicked="OnBackToList"
+                        FontFamily="InterBold" FontSize="18" BackgroundColor="Transparent"
+                        TextColor="{StaticResource EmAccent}" Padding="8,0" />
+                <Label Grid.Column="1" Text="{Binding PendingArticle.Title}"
+                       FontFamily="InterBold" FontSize="14" TextColor="{StaticResource BrushText}"
+                       VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation"
+                       Margin="8,0,8,0" />
+            </Grid>
+            <WebView Grid.Row="1" x:Name="ArticleWebView" />
+        </Grid>
+
+        <!-- List of articles -->
+        <Grid IsVisible="{Binding PendingArticle, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                        Padding="12,12" BackgroundColor="{StaticResource EmBackground}">
+                <HorizontalStackLayout Spacing="8">
+                    <Button x:Name="ArticlesTab" Text="Articles" Clicked="OnWorkModeClicked"
+                            CommandParameter="Articles" FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="#0066FF" TextColor="White"
+                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                            Padding="12,6" HeightRequest="32" />
+                    <Button x:Name="NewsTab" Text="News" Clicked="OnWorkModeClicked"
+                            CommandParameter="News" FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                            Padding="12,6" HeightRequest="32" />
+                    <Button x:Name="AnnTab" Text="ANN" Clicked="OnWorkModeClicked"
+                            CommandParameter="AnnNews" FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                            Padding="12,6" HeightRequest="32" />
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing">
+                <CollectionView ItemsSource="{Binding Articles}" SelectionMode="Single"
+                                SelectionChanged="OnArticleTapped">
+                    <CollectionView.EmptyView>
+                        <Label Text="No articles" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,6" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="0">
+                                <Grid ColumnDefinitions="100,*" ColumnSpacing="0">
+                                    <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                           Aspect="AspectFill" HeightRequest="80" WidthRequest="100" />
+                                    <VerticalStackLayout Grid.Column="1" Padding="10,8" Spacing="4">
+                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="13"
+                                               TextColor="{StaticResource BrushText}" MaxLines="3"
+                                               LineBreakMode="TailTruncation" />
+                                        <HorizontalStackLayout Spacing="6">
+                                            <Label Text="{Binding Source}" FontFamily="Inter" FontSize="10"
+                                                   TextColor="{StaticResource EmAccent}" />
+                                            <Label Text="·" FontFamily="Inter" FontSize="10"
+                                                   TextColor="#80FFFFFF" />
+                                            <Label Text="{Binding Author}" FontFamily="Inter" FontSize="10"
+                                                   TextColor="#80FFFFFF" MaxLines="1"
+                                                   LineBreakMode="TailTruncation" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+    </Grid>
+</ContentPage>

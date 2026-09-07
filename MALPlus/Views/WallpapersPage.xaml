@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.WallpapersPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid IsVisible="{Binding LoadingWallpapersVisibility}" BackgroundColor="#80000000" ZIndex="99">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                               WidthRequest="36" HeightRequest="36" />
+        </Grid>
+
+        <Grid IsVisible="{Binding WallpaperOverlayVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Text="Wallpapers" FontFamily="InterBold" FontSize="22"
+                   TextColor="{StaticResource BrushText}" Padding="16,12" />
+
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingWallpapersVisibility}" Refreshing="OnRefreshing">
+                <CollectionView ItemsSource="{Binding Wallpapers}" SelectionMode="Single"
+                                SelectionChanged="OnWallpaperTapped">
+                    <CollectionView.EmptyView>
+                        <Label Text="No wallpapers" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="8"
+                                          VerticalItemSpacing="8" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="0">
+                                <Grid RowDefinitions="*,Auto" RowSpacing="0">
+                                    <Image Grid.Row="0" Source="{Binding Data.Thumb, Converter={StaticResource ImageConverter}}"
+                                           Aspect="AspectFill" HeightRequest="200" />
+                                    <Label Grid.Row="1" Text="{Binding Data.Title}" FontFamily="InterBold" FontSize="11"
+                                           TextColor="{StaticResource BrushText}" Padding="6,6" MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+
+        <!-- Wallpaper viewer overlay -->
+        <Grid x:Name="WallpaperOverlay" IsVisible="False" BackgroundColor="#FF000000" ZIndex="100">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Text="✕ Close" Clicked="OnClose"
+                    HorizontalOptions="End" Margin="0,12,12,0"
+                    BackgroundColor="Transparent" TextColor="White"
+                    FontFamily="InterBold" FontSize="14" Padding="8,4" />
+            <Image Grid.Row="1" x:Name="FullImage" Aspect="AspectFit" />
+        </Grid>
+    </Grid>
+</ContentPage>

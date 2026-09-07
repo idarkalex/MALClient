@@ -19,14 +19,14 @@ public partial class AppShell : Shell
         // All other routes are placeholders for now and will be replaced
         // as the corresponding MAUI pages are built.
         Routing.RegisterRoute("settings", typeof(ComingSoonPage));
-        Routing.RegisterRoute("recommendations", typeof(ComingSoonPage));
-        Routing.RegisterRoute("articles", typeof(ComingSoonPage));
-        Routing.RegisterRoute("videos", typeof(ComingSoonPage));
+        Routing.RegisterRoute("recommendations", typeof(RecommendationsPage));
+        Routing.RegisterRoute("articles", typeof(ArticlesPage));
+        Routing.RegisterRoute("videos", typeof(VideosPage));
         Routing.RegisterRoute("forums", typeof(ComingSoonPage));
         Routing.RegisterRoute("history", typeof(HistoryPage));
         Routing.RegisterRoute("feeds", typeof(FeedsPage));
         Routing.RegisterRoute("friends", typeof(FriendsPage));
-        Routing.RegisterRoute("wallpapers", typeof(ComingSoonPage));
+        Routing.RegisterRoute("wallpapers", typeof(WallpapersPage));
         Routing.RegisterRoute("messaging", typeof(ComingSoonPage));
         Routing.RegisterRoute("clubs", typeof(ComingSoonPage));
         Routing.RegisterRoute("listcomparison", typeof(ListComparisonPage));

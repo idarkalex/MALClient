@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.VideosPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid IsVisible="{Binding Loading}" BackgroundColor="#80000000" ZIndex="99">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                               WidthRequest="36" HeightRequest="36" />
+        </Grid>
+
+        <Grid IsVisible="{Binding VideoOverlayVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Text="Promotional Videos" FontFamily="InterBold" FontSize="22"
+                   TextColor="{StaticResource BrushText}" Padding="16,12" />
+
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading}" Refreshing="OnRefreshing">
+                <CollectionView ItemsSource="{Binding Videos}" SelectionMode="Single"
+                                SelectionChanged="OnVideoTapped">
+                    <CollectionView.EmptyView>
+                        <Label Text="No videos yet" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,6" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="0">
+                                <Grid ColumnDefinitions="120,*" ColumnSpacing="0">
+                                    <Image Grid.Column="0" Source="{Binding Thumb, Converter={StaticResource ImageConverter}}"
+                                           Aspect="AspectFill" HeightRequest="80" WidthRequest="120" />
+                                    <VerticalStackLayout Grid.Column="1" Padding="10,8" Spacing="4">
+                                        <Label Text="{Binding Name}" FontFamily="InterBold" FontSize="13"
+                                               TextColor="{StaticResource BrushText}" MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding AnimeTitle}" FontFamily="Inter" FontSize="11"
+                                               TextColor="{StaticResource EmAccent}" MaxLines="1"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+
+        <!-- In-app video overlay -->
+        <Grid x:Name="VideoOverlay" IsVisible="False" BackgroundColor="#CC000000" ZIndex="100">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Text="✕ Close" Clicked="OnCloseVideo"
+                    HorizontalOptions="End" Margin="0,12,12,0"
+                    BackgroundColor="Transparent" TextColor="White"
+                    FontFamily="InterBold" FontSize="14" Padding="8,4" />
+            <WebView x:Name="VideoWebView" Grid.Row="1" />
+        </Grid>
+    </Grid>
+</ContentPage>
