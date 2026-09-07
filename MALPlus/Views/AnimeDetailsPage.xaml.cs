@@ -135,4 +135,9 @@ public partial class AnimeDetailsPage : ContentPage
             Vm.DetailsPivotSelectedIndex = tabIndex;
         }
     }
+
+    private void OnHeroScrolled(object sender, ScrolledEventArgs e)
+    {
+        // Hero is fixed in v2 (no collapse animation), so this handler is a no-op
+    }
 }

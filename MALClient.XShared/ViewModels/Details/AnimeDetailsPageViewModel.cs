@@ -324,6 +324,7 @@ namespace MALClient.XShared.ViewModels.Details
         public string GeneralMembers { get; private set; }
         public string GeneralSeason { get; private set; }
         public string TrailerUrl { get; private set; }
+        public bool HasTrailer => !string.IsNullOrEmpty(TrailerUrl);
 
         public string StartYear
         {

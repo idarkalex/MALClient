@@ -25,4 +25,12 @@
   <ItemGroup>
     <ProjectReference Include="..\MALPlus.Core\MALPlus.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="App.Android.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+    <Compile Include="App.Android.cs" />
+  </ItemGroup>
 </Project>
