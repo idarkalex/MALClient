@@ -159,24 +159,6 @@ public class AiringStatusVisibilityConverter : IValueConverter
     }
 }
 
-public class CountdownTextConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is MALClient.XShared.ViewModels.AnimeItemViewModel vm)
-        {
-            var _ = vm.AirDayBrush;
-            return vm.AirDayTillBind ?? "";
-        }
-        return "";
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
-}
-
 public class MultiAndConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
@@ -185,24 +167,6 @@ public class MultiAndConverter : IMultiValueConverter
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
-}
-
-public class CountdownVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is MALClient.XShared.ViewModels.AnimeItemViewModel vm)
-        {
-            var _ = vm.AirDayBrush;
-            return !string.IsNullOrEmpty(vm.AirDayTillBind);
-        }
-        return false;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
     }

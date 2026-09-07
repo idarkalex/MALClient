@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
              x:Class="MALPlus.Views.AnimeDetailsPage"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
@@ -10,8 +11,6 @@
         <converters:IntEqualityConverter x:Key="IntEq" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
         <converters:AiringStatusVisibilityConverter x:Key="AiringStatus" />
-        <converters:CountdownTextConverter x:Key="CountdownText" />
-        <converters:CountdownVisibilityConverter x:Key="CountdownVis" />
         <converters:MultiAndConverter x:Key="MultiAnd" />
     </ContentPage.Resources>
 
@@ -30,12 +29,8 @@
         <!--   - Title section pinned bottom (title, badges, score row)   -->
         <!-- ============================================================== -->
         <Grid Grid.Row="0" x:Name="HeroContainer" HeightRequest="460" BackgroundColor="#000000">
-            <!-- BLURRED BACKGROUND: same poster, centerCrop (v2 BlurredTransformation(25),
-                 simulated with a dark overlay since MAUI has no blur) -->
-            <Image x:Name="HeroBlurredBackground"
-                   Source="{Binding DetailImage, Converter={StaticResource ImageConverter}}"
-                   Aspect="AspectFill" />
-            <BoxView Color="#66000000" />
+            <!-- BLURRED BACKGROUND: same poster, real blur radius 25 (v2 parity) -->
+            <controls:BlurHeroView ImageUrl="{Binding DetailImage}" />
 
             <!-- SHARP CENTERED POSTER (340dp wide, fitCenter, 40dp top/bottom margins) -->
             <Frame x:Name="PosterContainer"
@@ -107,9 +102,14 @@
                                TextColor="White" />
                     </Frame>
                     <Frame Padding="8,2" CornerRadius="6" HasShadow="False"
-                           BackgroundColor="#FF0000" BorderColor="Transparent"
-                           IsVisible="{Binding AnimeItemReference, Converter={StaticResource CountdownVis}}">
-                        <Label Text="{Binding AnimeItemReference, Converter={StaticResource CountdownText}}"
+                           BackgroundColor="#FF0000" BorderColor="Transparent">
+                        <Frame.IsVisible>
+                            <MultiBinding Converter="{StaticResource MultiAnd}">
+                                <Binding Path="Status" Converter="{StaticResource AiringStatus}" />
+                                <Binding Path="TimeTillNextAir" Converter="{StaticResource BoolVis}" ConverterParameter="nonempty" />
+                            </MultiBinding>
+                        </Frame.IsVisible>
+                        <Label Text="{Binding TimeTillNextAir}"
                                FontFamily="InterBold" FontSize="11" TextColor="White" />
                     </Frame>
                     <Label Text="•" FontFamily="Inter" FontSize="11"
@@ -127,32 +127,35 @@
                            FontFamily="Inter" FontSize="12" TextColor="#CCFFFFFF"
                            VerticalOptions="Center" />
                 </HorizontalStackLayout>
-                <!-- Score row: SCORE | STATUS | LAST AIRED | stepper pill -->
-                <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12"
+                <!-- Score block: labels row + values row (v2), stepper right spanning -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,*,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"
                       VerticalOptions="Center">
-                    <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
-                        <Label Text="★" FontFamily="InterBold" FontSize="11" TextColor="#FFD700" VerticalOptions="Center" />
+                    <!-- Labels row -->
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="3" VerticalOptions="Center">
+                        <Label Text="★" FontFamily="InterBold" FontSize="9" TextColor="#FFD700" VerticalOptions="Center" />
                         <Label Text="SCORE" FontFamily="InterBold" FontSize="9"
                                TextColor="#80FFFFFF" VerticalOptions="Center" />
-                        <Label Text="{Binding GlobalScoreBind}" FontFamily="InterBold" FontSize="14"
-                               TextColor="White" VerticalOptions="Center" />
-                        <Label Text="•" FontFamily="Inter" FontSize="11"
-                               TextColor="#80FFFFFF" VerticalOptions="Center" Margin="6,0" />
-                        <Label Text="STATUS" FontFamily="InterBold" FontSize="9"
-                               TextColor="#80FFFFFF" VerticalOptions="Center" />
-                        <Button Text="{Binding MyStatusBind}"
-                                Clicked="OnStatusClicked"
-                                IsEnabled="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
-                                FontFamily="InterBold" FontSize="14"
-                                BackgroundColor="Transparent" TextColor="White"
-                                BorderWidth="0" Padding="0" HeightRequest="22" />
-                        <Label Text="{Binding LastAired}"
-                               FontFamily="InterBold" FontSize="14" TextColor="White"
-                               IsVisible="{Binding LastAired, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                               VerticalOptions="Center" Margin="6,0,0,0" />
                     </HorizontalStackLayout>
-                    <!-- Stepper pill (right) -->
-                    <Border Grid.Column="1" StrokeShape="RoundRectangle 14"
+                    <Label Grid.Row="0" Grid.Column="1" Text="STATUS" FontFamily="InterBold" FontSize="9"
+                           TextColor="#80FFFFFF" VerticalOptions="Center" />
+                    <Label Grid.Row="0" Grid.Column="2" Text="LAST AIRED" FontFamily="InterBold" FontSize="9"
+                           TextColor="#80FFFFFF" VerticalOptions="Center"
+                           IsVisible="{Binding LastAired, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                    <!-- Values row -->
+                    <Label Grid.Row="1" Grid.Column="0" Text="{Binding GlobalScoreBind}"
+                           FontFamily="InterBold" FontSize="14" TextColor="White" VerticalOptions="Center" />
+                    <Button Grid.Row="1" Grid.Column="1" Text="{Binding MyStatusBind}"
+                            Clicked="OnStatusClicked"
+                            IsEnabled="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                            FontFamily="InterBold" FontSize="14"
+                            BackgroundColor="Transparent" TextColor="White"
+                            BorderWidth="0" Padding="0" HeightRequest="24" HorizontalOptions="Start" />
+                    <Label Grid.Row="1" Grid.Column="2" Text="{Binding LastAired}"
+                           FontFamily="InterBold" FontSize="14" TextColor="White"
+                           IsVisible="{Binding LastAired, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
+                           VerticalOptions="Center" />
+                    <!-- Stepper pill (right, spans both rows) -->
+                    <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" StrokeShape="RoundRectangle 14"
                             BackgroundColor="#1A000000" Stroke="#29FFFFFF" StrokeThickness="1"
                             Padding="0" VerticalOptions="Center" HeightRequest="32"
                             IsVisible="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">

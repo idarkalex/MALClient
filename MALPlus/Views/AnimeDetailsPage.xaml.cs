@@ -210,8 +210,6 @@ public partial class AnimeDetailsPage : ContentPage
         var scale = 1 + 0.35 * ratio;
         PosterContainer.ScaleX = scale;
         PosterContainer.ScaleY = scale;
-        PosterContainer.TranslationX = 30 * ratio;
-        PosterContainer.TranslationY = 50 * ratio;
         HeroScrim.Opacity = ratio;
     }
 

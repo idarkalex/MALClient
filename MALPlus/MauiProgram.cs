@@ -1,4 +1,5 @@
 using MALPlus.Services;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace MALPlus;
 
@@ -9,6 +10,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseSkiaSharp()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("inter_regular.ttf", "Inter");

@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MALPlus.Core\MALPlus.Core.csproj" />
+    <PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="2.88.6" />
   </ItemGroup>
 
   <ItemGroup>
