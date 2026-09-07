@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.ForumsIndexPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid IsVisible="{Binding LoadingSideContentVisibility}" BackgroundColor="#80000000" ZIndex="99">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                               WidthRequest="36" HeightRequest="36" />
+        </Grid>
+
+        <ScrollView>
+            <VerticalStackLayout Padding="16,12,16,32" Spacing="20">
+                <Label Text="Forums" FontFamily="InterBold" FontSize="22"
+                       TextColor="{StaticResource BrushText}" />
+
+                <CollectionView x:Name="GroupsList" ItemsSource="{Binding Boards}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <VerticalStackLayout Spacing="8" Margin="0,0,0,8">
+                                <Label Text="{Binding Group}" FontFamily="InterBold" FontSize="11"
+                                       TextColor="#A0FFFFFF" />
+                                <CollectionView ItemsSource="{Binding Items}" SelectionMode="Single"
+                                                SelectionChanged="OnBoardTapped">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BackgroundColor="{StaticResource EmSheet}"
+                                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                                    StrokeShape="RoundRectangle 8" Padding="14,12" Margin="0,0,0,4">
+                                                <VerticalStackLayout Spacing="4">
+                                                    <Label Text="{Binding Entry.Name}" FontFamily="InterBold" FontSize="14"
+                                                           TextColor="{StaticResource BrushText}" />
+                                                    <Label Text="{Binding Entry.Description}" FontFamily="Inter" FontSize="12"
+                                                           TextColor="#80FFFFFF" MaxLines="2"
+                                                           LineBreakMode="TailTruncation" />
+                                                </VerticalStackLayout>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

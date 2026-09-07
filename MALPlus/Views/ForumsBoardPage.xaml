@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.ForumsBoardPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid IsVisible="{Binding LoadingTopics}" BackgroundColor="#80000000" ZIndex="99">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                               WidthRequest="36" HeightRequest="36" />
+        </Grid>
+
+        <Grid RowDefinitions="Auto,*">
+            <Label Grid.Row="0" Text="{Binding Title}" FontFamily="InterBold" FontSize="22"
+                   TextColor="{StaticResource BrushText}" Padding="16,12" />
+
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingTopics}" Refreshing="OnRefreshing">
+                <CollectionView ItemsSource="{Binding Topics}" SelectionMode="Single"
+                                SelectionChanged="OnTopicTapped">
+                    <CollectionView.EmptyView>
+                        <Label Text="No topics" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid RowDefinitions="Auto,Auto" RowSpacing="4">
+                                    <Label Grid.Row="0" Text="{Binding Data.Title}" FontFamily="InterBold" FontSize="14"
+                                           TextColor="{StaticResource BrushText}" MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+                                    <HorizontalStackLayout Grid.Row="1" Spacing="8">
+                                        <Label Text="{Binding Data.Op}" FontFamily="Inter" FontSize="11"
+                                               TextColor="{StaticResource EmAccent}" />
+                                        <Label Text="·" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                                        <Label Text="{Binding Data.Replies}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" />
+                                        <Label Text="replies" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                                        <Label Text="·" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                                        <Label Text="{Binding Data.LastPostDate}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" MaxLines="1" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+    </Grid>
+</ContentPage>

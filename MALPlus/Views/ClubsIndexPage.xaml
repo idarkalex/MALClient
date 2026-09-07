@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.ClubsIndexPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:IntEqualityConverter x:Key="IntEq" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid IsVisible="{Binding Loading}" BackgroundColor="#80000000" ZIndex="99">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                               WidthRequest="36" HeightRequest="36" />
+        </Grid>
+
+        <Grid RowDefinitions="Auto,*">
+            <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                        Padding="12,12">
+                <HorizontalStackLayout Spacing="8">
+                    <Button x:Name="MyClubsTab" Text="My Clubs" Clicked="OnTabClicked"
+                            CommandParameter="my" FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="#0066FF" TextColor="White"
+                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                            Padding="12,6" HeightRequest="32" />
+                    <Button x:Name="SearchTab" Text="Search" Clicked="OnTabClicked"
+                            CommandParameter="search" FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                            Padding="12,6" HeightRequest="32" />
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <!-- My Clubs tab -->
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading}" Refreshing="OnRefreshMy"
+                         IsVisible="{Binding ClubsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
+                <CollectionView ItemsSource="{Binding MyClubs}" SelectionMode="Single"
+                                SelectionChanged="OnClubTapped">
+                    <CollectionView.EmptyView>
+                        <Label Text="No clubs joined" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid ColumnDefinitions="40,*" ColumnSpacing="10">
+                                    <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                           Aspect="AspectFill" WidthRequest="36" HeightRequest="36" />
+                                    <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
+                                           TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                           MaxLines="2" LineBreakMode="TailTruncation" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+
+            <!-- Search tab -->
+            <Grid Grid.Row="1" IsVisible="{Binding ClubsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=1}">
+                <Grid RowDefinitions="Auto,*" Padding="12,0,12,12">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry x:Name="SearchEntry" Placeholder="Search clubs..."
+                               Text="{Binding SearchQuery, Mode=TwoWay}"
+                               FontFamily="Inter" FontSize="14"
+                               BackgroundColor="{StaticResource EmSheet}"
+                               TextColor="{StaticResource BrushText}"
+                               PlaceholderColor="#80FFFFFF"
+                               ReturnType="Search" Completed="OnSearchCompleted" />
+                        <Button Grid.Column="1" Text="🔍" Command="{Binding SearchCommand}"
+                                FontFamily="InterBold" FontSize="16"
+                                BackgroundColor="#0066FF" TextColor="White"
+                                CornerRadius="8" WidthRequest="48" HeightRequest="48" Padding="0" />
+                    </Grid>
+                    <CollectionView Grid.Row="1" ItemsSource="{Binding Clubs}" SelectionMode="Single"
+                                    SelectionChanged="OnClubTapped">
+                        <CollectionView.EmptyView>
+                            <Label Text="No clubs found" FontFamily="Inter" FontSize="13"
+                                   TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,4" BackgroundColor="{StaticResource EmSheet}"
+                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="12">
+                                    <Grid ColumnDefinitions="40,*" ColumnSpacing="10">
+                                        <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" WidthRequest="36" HeightRequest="36" />
+                                        <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
+                                               TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                               MaxLines="2" LineBreakMode="TailTruncation" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.MessageDetailsPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid IsVisible="{Binding LoadingVisibility}" BackgroundColor="#80000000" ZIndex="99">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                               WidthRequest="36" HeightRequest="36" />
+        </Grid>
+
+        <Grid RowDefinitions="Auto,*" IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <Label Grid.Row="0" Text="{Binding MessageSubject}" FontFamily="InterBold" FontSize="18"
+                   TextColor="{StaticResource BrushText}" Padding="16,12" MaxLines="2"
+                   LineBreakMode="TailTruncation" />
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing">
+                <CollectionView ItemsSource="{Binding MessageSet}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <Label Text="No messages" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding Sender}" FontFamily="InterBold" FontSize="13"
+                                               TextColor="{StaticResource EmAccent}" />
+                                        <Label Grid.Column="1" Text="{Binding Date}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" />
+                                    </Grid>
+                                    <Label Grid.Row="1" Text="{Binding Content}" FontFamily="Inter" FontSize="13"
+                                           TextColor="{StaticResource BrushText}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+    </Grid>
+</ContentPage>
