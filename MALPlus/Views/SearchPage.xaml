@@ -9,6 +9,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
         <converters:IntEqualityConverter x:Key="IntEq" />
         <converters:BoolTabColorConverter x:Key="BoolTab" />
+        <converters:TabColorConverter x:Key="TabColorConverter" />
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*">

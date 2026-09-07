@@ -7,7 +7,6 @@
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
-        <converters:HtmlSourceConverter x:Key="HtmlSource" />
     </ContentPage.Resources>
 
     <Grid>
@@ -31,6 +30,10 @@
                        FontFamily="InterBold" FontSize="14" TextColor="{StaticResource BrushText}"
                        VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation"
                        Margin="8,0,8,0" />
+                <Button Grid.Column="2" Text="↗" Clicked="OnShareClicked"
+                        CommandParameter="{Binding PendingArticle}"
+                        FontFamily="InterBold" FontSize="18" BackgroundColor="Transparent"
+                        TextColor="{StaticResource EmAccent}" Padding="8,0" />
             </Grid>
             <WebView Grid.Row="1" x:Name="ArticleWebView" />
         </Grid>
@@ -51,12 +54,12 @@
                             Padding="12,6" HeightRequest="32" />
                     <Button x:Name="NewsTab" Text="News" Clicked="OnWorkModeClicked"
                             CommandParameter="News" FontFamily="InterSemiBold" FontSize="12"
-                            BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                            BackgroundColor="Transparent" TextColor="#A0FFFFFF"
                             BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
                             Padding="12,6" HeightRequest="32" />
                     <Button x:Name="AnnTab" Text="ANN" Clicked="OnWorkModeClicked"
                             CommandParameter="AnnNews" FontFamily="InterSemiBold" FontSize="12"
-                            BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                            BackgroundColor="Transparent" TextColor="#A0FFFFFF"
                             BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
                             Padding="12,6" HeightRequest="32" />
                 </HorizontalStackLayout>

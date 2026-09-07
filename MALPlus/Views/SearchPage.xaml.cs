@@ -63,6 +63,8 @@ public partial class SearchPage : ContentPage
                 // First visit: show recent searches
                 MainVm.Init(new SearchPageNavigationArgs { Anime = true, Query = "" });
             }
+            // Load recent searches
+            MainVm.LoadRecentSearches();
             // Init the character search VM too (it subscribes to the global search query)
             CharVm.Init(new SearchPageNavArgsBase());
         }
@@ -118,6 +120,8 @@ public partial class SearchPage : ContentPage
             {
                 ((CollectionView)sender).SelectedItem = null;
                 MainVm.SubmitFilterCommand.Execute(choice);
+                // Switch to Main tab (index 0) to show results
+                SearchTabIndex = 0;
             }
         }
         catch (Exception ex)

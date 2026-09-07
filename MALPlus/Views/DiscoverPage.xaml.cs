@@ -98,7 +98,13 @@ public partial class DiscoverPage : ContentPage
             if (e.CurrentSelection.FirstOrDefault() is SeasonalAnimeData item)
             {
                 ((CollectionView)sender).SelectedItem = null;
-                await Shell.Current.GoToAsync($"animedetails?id={item.Id}&title={Uri.EscapeDataString(item.Title ?? string.Empty)}");
+                // TopManga + Adapted rows route to manga details; the rest to anime.
+                var isManga = sender is CollectionView cv &&
+                              ((cv as VisualElement)?.AutomationId == "TopMangaRow" ||
+                               (cv as VisualElement)?.AutomationId == "AdaptedRow");
+                var qs = isManga ? "&manga=true" : "";
+                await Shell.Current.GoToAsync(
+                    $"animedetails?id={item.Id}&title={Uri.EscapeDataString(item.Title ?? string.Empty)}{qs}");
             }
         }
         catch { }

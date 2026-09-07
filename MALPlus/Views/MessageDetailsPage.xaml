@@ -14,10 +14,11 @@
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid RowDefinitions="Auto,*" IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+        <Grid RowDefinitions="Auto,*,Auto" IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
             <Label Grid.Row="0" Text="{Binding MessageSubject}" FontFamily="InterBold" FontSize="18"
                    TextColor="{StaticResource BrushText}" Padding="16,12" MaxLines="2"
                    LineBreakMode="TailTruncation" />
+
             <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing">
                 <CollectionView ItemsSource="{Binding MessageSet}" SelectionMode="None">
                     <CollectionView.EmptyView>
@@ -44,6 +45,39 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </RefreshView>
+
+            <!-- Reply / compose composer -->
+            <Border Grid.Row="2" BackgroundColor="{StaticResource EmSheet}"
+                    Stroke="{StaticResource EmBorder}" StrokeThickness="1,1,0,0"
+                    StrokeShape="RoundRectangle 0" Padding="12,8,12,12">
+                <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                    <Label Grid.Row="0" Text="To / Subject" FontFamily="InterBold" FontSize="10"
+                           TextColor="#A0FFFFFF" IsVisible="{Binding NewMessageFieldsVisibility}" />
+                    <VerticalStackLayout Grid.Row="0" Spacing="4" IsVisible="{Binding NewMessageFieldsVisibility}">
+                        <Entry Text="{Binding MessageTarget, Mode=TwoWay}" Placeholder="Recipient username..."
+                               FontFamily="Inter" FontSize="13"
+                               BackgroundColor="{StaticResource EmBackground}"
+                               TextColor="{StaticResource BrushText}"
+                               PlaceholderColor="#80FFFFFF" />
+                        <Entry Text="{Binding MessageSubject, Mode=TwoWay}" Placeholder="Subject..."
+                               FontFamily="Inter" FontSize="13"
+                               BackgroundColor="{StaticResource EmBackground}"
+                               TextColor="{StaticResource BrushText}"
+                               PlaceholderColor="#80FFFFFF" />
+                    </VerticalStackLayout>
+                    <Editor Grid.Row="1" Text="{Binding MessageText, Mode=TwoWay}"
+                            Placeholder="Write a message..." FontFamily="Inter" FontSize="13"
+                            HeightRequest="100" AutoSize="Disabled"
+                            BackgroundColor="{StaticResource EmBackground}"
+                            TextColor="{StaticResource BrushText}"
+                            PlaceholderColor="#80FFFFFF" />
+                    <Button Grid.Row="1" Text="Send" Command="{Binding SendMessageCommand}"
+                            HorizontalOptions="End" Margin="0,8,0,0"
+                            FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="#0066FF" TextColor="White"
+                            CornerRadius="8" HeightRequest="32" Padding="12,0" />
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </ContentPage>

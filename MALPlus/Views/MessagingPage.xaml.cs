@@ -1,4 +1,6 @@
 using MALClient.Models.Models.MalSpecific;
+using MALClient.XShared.NavArgs;
+using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
 
@@ -40,6 +42,20 @@ public partial class MessagingPage : ContentPage
         try { Vm.Init(true); } catch { }
     }
 
+    private async void OnComposeClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            // Compose a new message. The user enters the recipient in the details page
+            // (or we could prompt here — keeping simple: open a blank compose).
+            await Shell.Current.GoToAsync("messagedetails?id=0&subject=");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS compose failed: " + ex.Message);
+        }
+    }
+
     private async void OnMessageTapped(object sender, SelectionChangedEventArgs e)
     {
         try
@@ -47,7 +63,8 @@ public partial class MessagingPage : ContentPage
             if (e.CurrentSelection.FirstOrDefault() is MalMessageModel msg)
             {
                 ((CollectionView)sender).SelectedItem = null;
-                await Shell.Current.GoToAsync($"messagedetails?id={msg.ThreadId}&subject={Uri.EscapeDataString(msg.Subject ?? "")}");
+                await Shell.Current.GoToAsync(
+                    $"messagedetails?id={Uri.EscapeDataString(msg.ThreadId ?? msg.Id)}&subject={Uri.EscapeDataString(msg.Subject ?? "")}");
             }
         }
         catch (Exception ex)

@@ -7,11 +7,13 @@ namespace MALPlus.Views;
 
 [QueryProperty(nameof(ThreadId), "id")]
 [QueryProperty(nameof(Subject), "subject")]
+[QueryProperty(nameof(ToUser), "to")]
 public partial class MessageDetailsPage : ContentPage
 {
     private bool _initialized;
     public string ThreadId { get; set; }
     public string Subject { get; set; }
+    public string ToUser { get; set; }
 
     private MalMessageDetailsViewModel Vm => (MalMessageDetailsViewModel)BindingContext;
 
@@ -28,23 +30,39 @@ public partial class MessageDetailsPage : ContentPage
         _initialized = true;
         try
         {
-            // Build a minimal MalMessageModel from the query so the VM can fetch the thread.
-            var msg = new MalMessageModel
+            var subject = Uri.UnescapeDataString(Subject ?? "");
+            if (string.IsNullOrEmpty(ThreadId) || ThreadId == "0")
             {
-                Id = ThreadId,
-                ThreadId = ThreadId,
-                Subject = Uri.UnescapeDataString(Subject ?? "")
-            };
-            Vm.MessageSubject = msg.Subject;
-            Vm.Init(new MalMessageDetailsNavArgs
+                Vm.NewMessageFieldsVisibility = true;
+                Vm.MessageSubject = subject;
+                if (!string.IsNullOrEmpty(ToUser))
+                    Vm.MessageTarget = Uri.UnescapeDataString(ToUser);
+                Vm.Init(new MalMessageDetailsNavArgs
+                {
+                    WorkMode = MessageDetailsWorkMode.Message,
+                    Arg = (MalMessageModel)null,
+                    NewMessageTarget = Vm.MessageTarget
+                });
+            }
+            else
             {
-                WorkMode = MessageDetailsWorkMode.Message,
-                Arg = msg
-            });
-            for (int i = 0; i < 60; i++)
-            {
-                await Task.Delay(200);
-                if (!Vm.LoadingVisibility) break;
+                var msg = new MalMessageModel
+                {
+                    Id = ThreadId,
+                    ThreadId = ThreadId,
+                    Subject = subject
+                };
+                Vm.MessageSubject = subject;
+                Vm.Init(new MalMessageDetailsNavArgs
+                {
+                    WorkMode = MessageDetailsWorkMode.Message,
+                    Arg = msg
+                });
+                for (int i = 0; i < 60; i++)
+                {
+                    await Task.Delay(200);
+                    if (!Vm.LoadingVisibility) break;
+                }
             }
         }
         catch (Exception ex)
@@ -57,6 +75,7 @@ public partial class MessageDetailsPage : ContentPage
     {
         try
         {
+            if (string.IsNullOrEmpty(ThreadId) || ThreadId == "0") return;
             var msg = new MalMessageModel { Id = ThreadId, ThreadId = ThreadId, Subject = Uri.UnescapeDataString(Subject ?? "") };
             Vm.Init(new MalMessageDetailsNavArgs
             {

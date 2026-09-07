@@ -82,7 +82,7 @@
                 <VerticalStackLayout Spacing="8">
                     <Label Text="TOP MANGA" FontFamily="InterBold" FontSize="11"
                            TextColor="#A0FFFFFF" Padding="16,0" />
-                    <CollectionView x:Name="TopMangaRow" HeightRequest="240"
+                    <CollectionView x:Name="TopMangaRow" AutomationId="TopMangaRow" HeightRequest="240"
                                     SelectionMode="Single" SelectionChanged="OnItemTapped">
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
@@ -112,7 +112,7 @@
                 <VerticalStackLayout Spacing="8">
                     <Label Text="ADAPTED TO ANIME" FontFamily="InterBold" FontSize="11"
                            TextColor="#A0FFFFFF" Padding="16,0" />
-                    <CollectionView x:Name="AdaptedRow" HeightRequest="240"
+                    <CollectionView x:Name="AdaptedRow" AutomationId="AdaptedRow" HeightRequest="240"
                                     SelectionMode="Single" SelectionChanged="OnItemTapped">
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />

@@ -15,9 +15,14 @@
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid RowDefinitions="Auto,*">
-            <Label Grid.Row="0" Text="Messages" FontFamily="InterBold" FontSize="22"
-                   TextColor="{StaticResource BrushText}" Padding="16,12" />
+        <Grid RowDefinitions="Auto,*" IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <Grid Grid.Row="0" Padding="16,12" ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0" Text="Messages" FontFamily="InterBold" FontSize="22"
+                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                <Button Grid.Column="1" Text="✚" Clicked="OnComposeClicked"
+                        FontFamily="InterBold" FontSize="20" BackgroundColor="#0066FF" TextColor="White"
+                        CornerRadius="20" WidthRequest="40" HeightRequest="40" Padding="0" />
+            </Grid>
 
             <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing">
                 <CollectionView ItemsSource="{Binding MessageIndex}" SelectionMode="Single"

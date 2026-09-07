@@ -24,11 +24,17 @@
         <ScrollView IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
             <VerticalStackLayout Spacing="14" Padding="16,12,16,32">
 
+                <!-- Pull-to-refresh wrapper -->
+                <RefreshView IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing">
+                    <Label Text="↓ pull to refresh" FontFamily="Inter" FontSize="11"
+                           TextColor="#40FFFFFF" HorizontalOptions="Center" Padding="0,0,0,4" />
+                </RefreshView>
+
                 <!-- Header: avatar + name + stats summary -->
                 <Border BackgroundColor="{StaticResource EmSheet}"
                         Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                         StrokeShape="RoundRectangle 12" Padding="16">
-                    <Grid ColumnDefinitions="80,*" ColumnSpacing="14">
+                    <Grid ColumnDefinitions="80,*,Auto" ColumnSpacing="14">
                         <Border Grid.Column="0" WidthRequest="72" HeightRequest="72"
                                 StrokeShape="RoundRectangle 36"
                                 Stroke="{StaticResource EmBorder}" StrokeThickness="1">
@@ -44,6 +50,20 @@
                                 <Label Text="{Binding CurrentData.MangaCompleted, StringFormat='{0} manga'}"
                                        FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
                             </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Center">
+                            <Button Text="↻" Clicked="OnRefreshClicked" WidthRequest="36" HeightRequest="36"
+                                    FontFamily="InterBold" FontSize="16"
+                                    BackgroundColor="#141d2b" TextColor="White"
+                                    BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="8" Padding="0" />
+                            <Button Text="⇄" Clicked="OnCompareClicked" WidthRequest="36" HeightRequest="36"
+                                    FontFamily="InterBold" FontSize="16"
+                                    BackgroundColor="#141d2b" TextColor="{StaticResource EmAccent}"
+                                    BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="8" Padding="0" />
+                            <Button Text="↩" Clicked="OnHistoryClicked" WidthRequest="36" HeightRequest="36"
+                                    FontFamily="InterBold" FontSize="16"
+                                    BackgroundColor="#141d2b" TextColor="White"
+                                    BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="8" Padding="0" />
                         </VerticalStackLayout>
                     </Grid>
                 </Border>
@@ -69,8 +89,8 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="FAVOURITE ANIME" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <CollectionView ItemsSource="{Binding FavAnime}" HeightRequest="200"
-                                        SelectionMode="None">
+                        <CollectionView x:Name="FavAnimeList" ItemsSource="{Binding FavAnime}" HeightRequest="200"
+                                        SelectionMode="Single" SelectionChanged="OnFavAnimeTapped">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmBackground}"
@@ -98,8 +118,8 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="FAVOURITE MANGA" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <CollectionView ItemsSource="{Binding FavManga}" HeightRequest="200"
-                                        SelectionMode="None">
+                        <CollectionView x:Name="FavMangaList" ItemsSource="{Binding FavManga}" HeightRequest="200"
+                                        SelectionMode="Single" SelectionChanged="OnFavMangaTapped">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmBackground}"
@@ -127,8 +147,8 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="FAVOURITE CHARACTERS" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <CollectionView ItemsSource="{Binding FavouriteCharacters}" HeightRequest="180"
-                                        SelectionMode="None">
+                        <CollectionView x:Name="FavCharactersList" ItemsSource="{Binding FavouriteCharacters}" HeightRequest="180"
+                                        SelectionMode="Single" SelectionChanged="OnFavCharacterTapped">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmBackground}"
@@ -156,8 +176,8 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="FAVOURITE STAFF" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <CollectionView ItemsSource="{Binding FavouriteStaff}" HeightRequest="180"
-                                        SelectionMode="None">
+                        <CollectionView x:Name="FavStaffList" ItemsSource="{Binding FavouriteStaff}" HeightRequest="180"
+                                        SelectionMode="Single" SelectionChanged="OnFavStaffTapped">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmBackground}"
@@ -185,8 +205,8 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="RECENT ANIME" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <CollectionView ItemsSource="{Binding RecentAnime}" HeightRequest="160"
-                                        SelectionMode="None">
+                        <CollectionView x:Name="RecentAnimeList" ItemsSource="{Binding RecentAnime}" HeightRequest="160"
+                                        SelectionMode="Single" SelectionChanged="OnRecentAnimeTapped">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmBackground}"
@@ -214,8 +234,8 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="RECENT MANGA" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <CollectionView ItemsSource="{Binding RecentManga}" HeightRequest="160"
-                                        SelectionMode="None">
+                        <CollectionView x:Name="RecentMangaList" ItemsSource="{Binding RecentManga}" HeightRequest="160"
+                                        SelectionMode="Single" SelectionChanged="OnRecentMangaTapped">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmBackground}"
@@ -243,8 +263,8 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="FRIENDS" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <CollectionView ItemsSource="{Binding MyFriends}" HeightRequest="160"
-                                        SelectionMode="None">
+                        <CollectionView x:Name="FriendsList" ItemsSource="{Binding MyFriends}" HeightRequest="160"
+                                        SelectionMode="Single" SelectionChanged="OnFriendTapped">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmBackground}"

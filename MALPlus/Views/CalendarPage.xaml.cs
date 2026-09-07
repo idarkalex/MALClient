@@ -15,6 +15,8 @@ public partial class CalendarPage : ContentPage
         BindingContext = ViewModelLocator.CalendarPage;
     }
 
+    private bool _subscribed;
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -37,50 +39,71 @@ public partial class CalendarPage : ContentPage
 
     private void BuildTabStrip()
     {
-        if (Vm?.CalendarData == null)
-            return;
-
-        // Build tab strip after data is loaded - we'll do this in a callback
-        Vm.PropertyChanged += OnVmPropertyChanged;
+        if (Vm == null) return;
+        if (!_subscribed)
+        {
+            Vm.PropertyChanged += OnVmPropertyChanged;
+            _subscribed = true;
+        }
+        // If data is already there (back-nav re-entry), redraw immediately
+        if (Vm.CalendarData != null && Vm.CalendarData.Count > 0)
+        {
+            OnVmPropertyChanged(Vm, new System.ComponentModel.PropertyChangedEventArgs(nameof(CalendarPageViewModel.CalendarData)));
+        }
     }
 
     private void OnVmPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(CalendarPageViewModel.CalendarData) && Vm.CalendarData != null)
+        if (e.PropertyName != nameof(CalendarPageViewModel.CalendarData)) return;
+        if (Vm?.CalendarData == null || Vm.CalendarData.Count == 0) return;
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            Vm.PropertyChanged -= OnVmPropertyChanged;
-            MainThread.BeginInvokeOnMainThread(() =>
+            TabStrip.Children.Clear();
+            for (int i = 0; i < Vm.CalendarData.Count; i++)
             {
-                TabStrip.Children.Clear();
-                for (int i = 0; i < Vm.CalendarData.Count; i++)
+                var page = Vm.CalendarData[i];
+                var index = i;
+                var label = new Label
                 {
-                    var page = Vm.CalendarData[i];
-                    var index = i;
-                    var label = new Label
-                    {
-                        Text = page.Header,
-                        FontFamily = "InterSemiBold",
-                        FontSize = 13,
-                        TextColor = (Color)Application.Current.Resources["BrushText"],
-                        VerticalOptions = LayoutOptions.Center,
-                        Padding = new Thickness(0, 6)
-                    };
+                    Text = page.Header,
+                    FontFamily = "InterSemiBold",
+                    FontSize = 13,
+                    TextColor = Color.FromArgb("#FFFFFF"),
+                    VerticalOptions = LayoutOptions.Center,
+                    Padding = new Thickness(0, 6)
+                };
 
-                    var border = new Border
-                    {
-                        Content = label,
-                        Padding = new Thickness(16, 6),
-                        StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
-                        BackgroundColor = Colors.Transparent
-                    };
+                var border = new Border
+                {
+                    Content = label,
+                    Padding = new Thickness(16, 6),
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                    BackgroundColor = Colors.Transparent
+                };
 
-                    var tap = new TapGestureRecognizer();
-                    tap.Tapped += (s, e) => Vm.CalendarPivotIndex = index;
-                    border.GestureRecognizers.Add(tap);
+                var tap = new TapGestureRecognizer();
+                tap.Tapped += (s, e) => Vm.CalendarPivotIndex = index;
+                border.GestureRecognizers.Add(tap);
 
-                    TabStrip.Children.Add(border);
-                }
-            });
+                TabStrip.Children.Add(border);
+            }
+        });
+    }
+
+    private async void OnItemTapped(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            if (e.CurrentSelection.FirstOrDefault() is MALClient.XShared.ViewModels.AnimeItemViewModel item)
+            {
+                ((CollectionView)sender).SelectedItem = null;
+                await Shell.Current.GoToAsync(
+                    $"animedetails?id={item.Id}&title={Uri.EscapeDataString(item.Title ?? string.Empty)}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS calendar item nav failed: " + ex.Message);
         }
     }
 }

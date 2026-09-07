@@ -181,6 +181,36 @@ public partial class MorePage : ContentPage
         NavigateTo(PageIndex.PageForumIndex, null);
     }
 
+    private void OnMessagingTapped(object sender, TappedEventArgs e)
+    {
+        if (!Credentials.Authenticated) { NavigateToLogin(); return; }
+        NavigateTo(PageIndex.PageMessanging, null);
+    }
+
+    private void OnNotificationsTapped(object sender, TappedEventArgs e)
+    {
+        if (!Credentials.Authenticated) { NavigateToLogin(); return; }
+        NavigateTo(PageIndex.PageNotificationHub, null);
+    }
+
+    private void OnFriendsTapped(object sender, TappedEventArgs e)
+    {
+        if (!Credentials.Authenticated) { NavigateToLogin(); return; }
+        NavigateTo(PageIndex.PageFriends, null);
+    }
+
+    private void OnFeedsTapped(object sender, TappedEventArgs e)
+    {
+        if (!Credentials.Authenticated) { NavigateToLogin(); return; }
+        NavigateTo(PageIndex.PageFeeds, null);
+    }
+
+    private void OnHistoryTapped(object sender, TappedEventArgs e)
+    {
+        if (!Credentials.Authenticated) { NavigateToLogin(); return; }
+        NavigateTo(PageIndex.PageHistory, null);
+    }
+
     private void OnSettingsTapped(object sender, TappedEventArgs e)
     {
         NavigateTo(PageIndex.PageSettings, null);
@@ -188,7 +218,24 @@ public partial class MorePage : ContentPage
 
     private void OnProfileHeaderTapped(object sender, TappedEventArgs e)
     {
+        if (!Credentials.Authenticated) { NavigateToLogin(); return; }
         NavigateTo(PageIndex.PageProfile, new ProfilePageNavigationArgs { TargetUser = Credentials.UserName });
+    }
+
+    private void OnLogOutTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            // Fire-and-forget log out (mirrors v2 LogOutCommand flow).
+            MALClient.XShared.Utils.Credentials.Reset();
+            Shell.Current?.GoToAsync("//login");
+        }
+        catch (Exception ex) { Console.WriteLine("MALPLUS logout failed: " + ex.Message); }
+    }
+
+    private void NavigateToLogin()
+    {
+        try { Shell.Current?.GoToAsync("//login"); } catch { }
     }
 
     #endregion
@@ -270,6 +317,17 @@ public partial class MorePage : ContentPage
         panel.RowDefinitions.Clear();
         panel.Children.Clear();
 
+        // Each item gets its own row; dividers occupy separate rows so they don't paint
+        // over the border of the next item.
+        for (int i = 0; i < items.Count; i++)
+        {
+            panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        }
+        for (int i = 0; i < items.Count - 1; i++)
+        {
+            panel.RowDefinitions.Add(new RowDefinition { Height = 1 });
+        }
+
         for (int i = 0; i < items.Count; i++)
         {
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -302,7 +360,7 @@ public partial class MorePage : ContentPage
             tapGesture.Tapped += (s, e) => item.OnClick();
             row.GestureRecognizers.Add(tapGesture);
 
-            panel.Add(row, 0, i);
+            panel.Add(row, 0, i * 2);
 
             if (i < items.Count - 1)
             {
@@ -310,10 +368,9 @@ public partial class MorePage : ContentPage
                 {
                     HeightRequest = 1,
                     Color = (Color)Application.Current.Resources["EmBorder"],
-                    Margin = new Thickness(16, 0, 16, 0),
-                    VerticalOptions = LayoutOptions.End
+                    Margin = new Thickness(16, 0, 16, 0)
                 };
-                panel.Add(divider, 0, i);
+                panel.Add(divider, 0, i * 2 + 1);
             }
         }
     }

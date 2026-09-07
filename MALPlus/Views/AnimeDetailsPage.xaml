@@ -723,7 +723,6 @@
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
                 <CollectionView x:Name="CharactersList" Grid.Row="1"
-                                ItemsSource="{Binding AnimeStaffData.AnimeCharacterPairs}"
                                 Scrolled="OnTabItemsScrolled"
                                 SelectionMode="None"
                                 EmptyView="No characters" Margin="0">
@@ -785,7 +784,6 @@
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
                 <CollectionView x:Name="StaffList" Grid.Row="1"
-                                ItemsSource="{Binding AnimeStaffData.AnimeStaff}"
                                 Scrolled="OnTabItemsScrolled"
                                 SelectionMode="None"
                                 EmptyView="No staff" Margin="0">

@@ -103,14 +103,8 @@ namespace MALClient.XShared.ViewModels.Main
                     InternalQuery = args.Query;
                 }
             }
-            else
-            {
-                _filters.Clear();
-                CurrentSearchItems.Clear();
-                IsFirstVisitGridVisible = true;
-                ResetQuery();
-            }
-        }
+        LoadRecentSearches();
+    }
 
         public int LastSearchPageIndex { get; set; } = -1;
 
@@ -444,7 +438,52 @@ namespace MALClient.XShared.ViewModels.Main
         public string Filter4Label => "ONA";
         public string Filter5Label => "Special";
 
-        public List<string> RecentSearches => new List<string>();
+        private const int RecentSearchesMax = 8;
+        public System.Collections.ObjectModel.ObservableCollection<string> RecentSearches { get; } =
+            new System.Collections.ObjectModel.ObservableCollection<string>();
+
+        public void PushRecentSearch(string query)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(query)) return;
+                var q = query.Trim();
+                RecentSearches.Remove(q); // dedupe
+                RecentSearches.Insert(0, q);
+                while (RecentSearches.Count > RecentSearchesMax)
+                    RecentSearches.RemoveAt(RecentSearches.Count - 1);
+                PersistRecentSearches();
+            }
+            catch { }
+        }
+
+        private async void PersistRecentSearches()
+        {
+            try
+            {
+                var data = new MALClient.Models.Models.Misc.RoamingData<List<string>>
+                {
+                    Data = new List<string>(RecentSearches)
+                };
+                await ResourceLocator.DataCacheService.SaveDataRoaming(data, "MALPlus_RecentSearches_v1");
+            }
+            catch { }
+        }
+
+public async void LoadRecentSearches()
+        {
+            try
+            {
+                var data = await ResourceLocator.DataCacheService
+                    .RetrieveDataRoaming<MALClient.Models.Models.Misc.RoamingData<List<string>>>("MALPlus_RecentSearches_v1", -1);
+                if (data?.Data != null)
+                {
+                    RecentSearches.Clear();
+                    foreach (var q in data.Data) RecentSearches.Add(q);
+                }
+}
+            catch { }
+        }
 
         private void Search()
         {
@@ -457,6 +496,7 @@ namespace MALClient.XShared.ViewModels.Main
                     ForceQuery = true,
                     DisplayMode = SearchPageDisplayModes.Main
                 };
+                PushRecentSearch(InternalQuery);
                 Init(navArgs);
             }
         }

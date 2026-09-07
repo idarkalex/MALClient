@@ -50,6 +50,8 @@
 
                             <!-- Items Grid -->
                             <CollectionView Grid.Row="1" ItemsSource="{Binding Items}"
+                                            SelectionMode="Single"
+                                            SelectionChanged="OnItemTapped"
                                             ItemsLayout="VerticalList" Margin="0">
                                 <CollectionView.EmptyView>
                                     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">

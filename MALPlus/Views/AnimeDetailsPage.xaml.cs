@@ -8,6 +8,7 @@ namespace MALPlus.Views;
 
 [QueryProperty(nameof(MalId), "id")]
 [QueryProperty(nameof(AnimeTitle), "title")]
+[QueryProperty(nameof(InitialIsManga), "manga")]
 public partial class AnimeDetailsPage : ContentPage
 {
     private bool _initialized;
@@ -19,6 +20,7 @@ public partial class AnimeDetailsPage : ContentPage
 
     public string MalId { get; set; }
     public string AnimeTitle { get; set; }
+    public string InitialIsManga { get; set; }
 
     private AnimeDetailsPageViewModel Vm => (AnimeDetailsPageViewModel)BindingContext;
 
@@ -26,6 +28,37 @@ public partial class AnimeDetailsPage : ContentPage
     {
         InitializeComponent();
         BindingContext = ViewModelLocator.AnimeDetails;
+        if (BindingContext is AnimeDetailsPageViewModel vm)
+        {
+            vm.ShowMoreRequested += OnShowMoreRequested;
+            vm.PropertyChanged += OnVmPropertyChanged;
+        }
+    }
+
+    private async void OnShowMoreRequested()
+    {
+        try
+        {
+            var choice = await DisplayActionSheet("More",
+                "Cancel", null,
+                "Open trailer", "Refresh", "Open in MAL");
+            if (string.IsNullOrEmpty(choice) || choice == "Cancel") return;
+            if (choice == "Open trailer") ShowVideoOverlay(Vm.TrailerUrl);
+            else if (choice == "Refresh")
+            {
+                try { Vm.RefreshData(); } catch (Exception ex) { Console.WriteLine("Refresh failed: " + ex.Message); }
+            }
+            else if (choice == "Open in MAL")
+            {
+                try
+                {
+                    var url = $"https://myanimelist.net/anime/{Vm.Id}";
+                    Microsoft.Maui.ApplicationModel.Launcher.OpenAsync(new Uri(url));
+                }
+                catch (Exception ex) { Console.WriteLine("OpenInMal failed: " + ex.Message); }
+            }
+        }
+        catch (Exception ex) { Console.WriteLine("MALPLUS OnShowMoreRequested failed: " + ex.GetType().Name); }
     }
 
     protected override async void OnAppearing()
@@ -37,7 +70,10 @@ public partial class AnimeDetailsPage : ContentPage
         Console.WriteLine("MALPLUS Details OnAppearing id=" + MalId);
         try
         {
-            Vm.Init(new AnimeDetailsPageNavigationArgs(int.Parse(MalId), AnimeTitle, null, null, null), fakeDelay: false);
+            var isManga = string.Equals(InitialIsManga, "true", StringComparison.OrdinalIgnoreCase);
+            var args = new AnimeDetailsPageNavigationArgs(int.Parse(MalId), AnimeTitle, null, null, null);
+            if (isManga) args.AnimeMode = false;
+            Vm.Init(args, fakeDelay: false);
             // wait for the initial General data to land so we can shape the tab strip
             // (anime vs manga vs movie determines which tabs are visible)
             for (int i = 0; i < 60; i++)
@@ -47,6 +83,7 @@ public partial class AnimeDetailsPage : ContentPage
                     break;
             }
             ApplyTabStripVisibility();
+            ApplyCharacterStaffBindings();
             System.Diagnostics.Debug.WriteLine("MALPLUS Details Init returned title=" + Vm.Title
                 + " rank=" + Vm.GeneralRank + " pop=" + Vm.GeneralPopularity
                 + " studios=" + Vm.GeneralStudios + " animemode=" + Vm.AnimeMode);
@@ -93,6 +130,36 @@ public partial class AnimeDetailsPage : ContentPage
         if (e.PropertyName == nameof(AnimeDetailsPageViewModel.DetailsPivotSelectedIndex))
         {
             LoadTabData(Vm.DetailsPivotSelectedIndex);
+            return;
+        }
+        // Re-bind characters/staff when mode/data changes.
+        if (e.PropertyName == nameof(AnimeDetailsPageViewModel.AnimeMode) ||
+            e.PropertyName == nameof(AnimeDetailsPageViewModel.AnimeStaffData) ||
+            e.PropertyName == nameof(AnimeDetailsPageViewModel.MangaCharacterData))
+        {
+            ApplyCharacterStaffBindings();
+        }
+    }
+
+    private void ApplyCharacterStaffBindings()
+    {
+        try
+        {
+            if (Vm == null) return;
+            if (Vm.AnimeMode)
+            {
+                CharactersList.ItemsSource = Vm.AnimeStaffData?.AnimeCharacterPairs;
+                StaffList.ItemsSource = Vm.AnimeStaffData?.AnimeStaff;
+            }
+            else
+            {
+                CharactersList.ItemsSource = Vm.MangaCharacterData;
+                StaffList.ItemsSource = null; // staff tab is hidden for manga anyway
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS char/staff binding failed: " + ex.Message);
         }
     }
 

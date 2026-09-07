@@ -2072,6 +2072,42 @@ namespace MALClient.XShared.ViewModels.Details
 
         private static DateTime? ComputeNextAirDate(string broadcast, DateTime nowUtc)
             => AirTimeUtils.ComputeNextAirDate(broadcast, nowUtc);
+
+        #region MALPlus MAUI commands
+
+        /// <summary>Pull-to-refresh equivalent in MAUI: re-fetch all data (force=true).</summary>
+        public GalaSoft.MvvmLight.Command.RelayCommand RefreshCommand => _refreshCommand
+            ?? (_refreshCommand = new GalaSoft.MvvmLight.Command.RelayCommand(async () =>
+            {
+                if (LoadingGlobal) return;
+                try { RefreshData(); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine("MALPLUS RefreshCommand failed: " + ex.Message); }
+            }));
+        private GalaSoft.MvvmLight.Command.RelayCommand _refreshCommand;
+
+        /// <summary>Open trailer in the MAUI in-app WebView overlay.</summary>
+        public GalaSoft.MvvmLight.Command.RelayCommand OpenTrailerCommand => _openTrailerCommand
+            ?? (_openTrailerCommand = new GalaSoft.MvvmLight.Command.RelayCommand(() =>
+            {
+                if (string.IsNullOrEmpty(TrailerUrl)) return;
+                PlayVideoInApp(TrailerUrl);
+            }));
+        private GalaSoft.MvvmLight.Command.RelayCommand _openTrailerCommand;
+
+        /// <summary>More menu (⋮) — opens a quick-action sheet mirroring v2's AnimeDetailsPageMoreFlyoutBuilder.
+        /// The XAML code-behind (AnimeDetailsPage.xaml.cs) hooks this to a real MAUI DisplayActionSheet
+        /// by subscribing to ShowMoreRequested; this command just fires the event.</summary>
+        public event Action ShowMoreRequested;
+
+        public GalaSoft.MvvmLight.Command.RelayCommand ShowMoreCommand => _showMoreCommand
+            ?? (_showMoreCommand = new GalaSoft.MvvmLight.Command.RelayCommand(() =>
+            {
+                try { ShowMoreRequested?.Invoke(); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine("MALPLUS ShowMore failed: " + ex.Message); }
+            }));
+        private GalaSoft.MvvmLight.Command.RelayCommand _showMoreCommand;
+
+        #endregion
     }
 }
 

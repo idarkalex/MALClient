@@ -110,7 +110,16 @@ namespace MALClient.XShared.ViewModels.Main
         private bool _loadingData;
         public ArticlePageWorkMode? PrevWorkMode;
         public int CurrentNews = -1;
-        public MalNewsUnitModel PendingArticle;
+        private MalNewsUnitModel _pendingArticle;
+        public MalNewsUnitModel PendingArticle
+        {
+            get { return _pendingArticle; }
+            set
+            {
+                _pendingArticle = value;
+                RaisePropertyChanged(() => PendingArticle);
+            }
+        }
         public DateTime PendingArticleAt { get; set; } = DateTime.MinValue;
         public async void Init(MalArticlesPageNavigationArgs args,bool force = false)
         {

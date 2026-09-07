@@ -7,6 +7,7 @@
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:IntEqualityConverter x:Key="IntEq" />
     </ContentPage.Resources>
 
     <Grid>
@@ -15,12 +16,25 @@
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid RowDefinitions="Auto,*">
-            <Label Grid.Row="0" Text="Notifications" FontFamily="InterBold" FontSize="22"
-                   TextColor="{StaticResource BrushText}" Padding="16,12" />
+        <Grid RowDefinitions="Auto,Auto,*" IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <Grid Grid.Row="0" Padding="16,12" ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0" Text="Notifications" FontFamily="InterBold" FontSize="22"
+                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                <Button Grid.Column="1" Text="✓ All read" Command="{Binding MarkAllAsReadCommand}"
+                        FontFamily="InterSemiBold" FontSize="11"
+                        BackgroundColor="#141d2b" TextColor="{StaticResource BrushText}"
+                        BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="8"
+                        HeightRequest="32" Padding="10,0" />
+            </Grid>
 
-            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading}" Refreshing="OnRefreshing">
-                <CollectionView ItemsSource="{Binding Notifications}" SelectionMode="None">
+            <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                        Padding="12,0,12,8">
+                <HorizontalStackLayout x:Name="TypeTabsStrip" Spacing="6" />
+            </ScrollView>
+
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding Loading}" Refreshing="OnRefreshing">
+                <CollectionView x:Name="NotificationList" ItemsSource="{Binding Notifications}"
+                                SelectionMode="Single" SelectionChanged="OnNotificationTapped">
                     <CollectionView.EmptyView>
                         <Label Text="No notifications" FontFamily="Inter" FontSize="13"
                                TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />

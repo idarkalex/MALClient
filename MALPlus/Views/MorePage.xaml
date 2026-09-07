@@ -226,6 +226,61 @@
                            TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
                 </Border>
 
+                <!-- Messaging -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMessagingTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Messages" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Notifications -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnNotificationsTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Notifications" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Friends -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFriendsTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Friends" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Friends Feeds -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFeedsTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Friends Feeds" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
+                <!-- History -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="16" Margin="0,8,0,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHistoryTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="History" FontFamily="InterSemiBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                </Border>
+
                 <!-- Settings -->
                 <Border BackgroundColor="{StaticResource EmSheet}"
                         Stroke="{StaticResource EmBorder}" StrokeThickness="1"
