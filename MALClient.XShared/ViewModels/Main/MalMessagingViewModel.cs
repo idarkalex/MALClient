@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
@@ -96,57 +97,83 @@ namespace MALClient.XShared.ViewModels.Main
         private async void LoadMore(bool force = false)
         {
             LoadingVisibility = true;
-            if (force)
+            try
             {
-                if (DisplaySentMessages)
+                if (force)
                 {
-                    Outbox = new List<MalMessageModel>();
+                    if (DisplaySentMessages)
+                    {
+                        Outbox = new List<MalMessageModel>();
+                    }
+                    else
+                    {
+                        _loadedPages = 1;
+                        Inbox = new List<MalMessageModel>();
+                    }
                 }
-                else
-                {
-                    _loadedPages = 1;
-                    Inbox = new List<MalMessageModel>();
-                }
-            }
-            if (!DisplaySentMessages)
-                try
+                if (!DisplaySentMessages)
                 {
                     if (!_skipLoading)
                     {
                         _loadedSomething = true;
                         try
                         {
-                            Inbox.AddRange(await AccountMessagesManager.GetMessagesAsync(_loadedPages++));
+                            // Prevent page number from going too high (MAL API typically supports up to ~100 pages)
+                            if (_loadedPages > 100)
+                            {
+                                LoadMorePagesVisibility = false;
+                            }
+                            else
+                            {
+                                var messages = await AccountMessagesManager.GetMessagesAsync(_loadedPages);
+                                if (messages?.Any() ?? false)
+                                {
+                                    Inbox.AddRange(messages);
+                                    _loadedPages++;
+                                }
+                                else
+                                {
+                                    LoadMorePagesVisibility = false;
+                                }
+                            }
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            System.Diagnostics.Debug.WriteLine("MALPLUS LoadMore inbox failed: " + ex.Message);
                             ResourceLocator.MalHttpContextProvider.ErrorMessage("Messages");
+                            LoadMorePagesVisibility = false;
                         }
                     }
                     _skipLoading = false;
                     MessageIndex.Clear();
                     MessageIndex.AddRange(Inbox);
-                    LoadMorePagesVisibility = true;
+                    LoadMorePagesVisibility = Inbox.Any();
                 }
-                catch (ArgumentOutOfRangeException)
+                else
                 {
-                    LoadMorePagesVisibility = false;
+                    try
+                    {
+                        if (Outbox.Count == 0)
+                            Outbox = await AccountMessagesManager.GetSentMessagesAsync();
+                        MessageIndex.Clear();
+                        MessageIndex.AddRange(Outbox);
+                        LoadMorePagesVisibility = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("MALPLUS LoadMore outbox failed: " + ex.Message);
+                        ResourceLocator.MalHttpContextProvider.ErrorMessage("Messages");
+                    }
                 }
-            else
-                try
-                {
-                    if (Outbox.Count == 0)
-                        Outbox = await AccountMessagesManager.GetSentMessagesAsync();
-                    MessageIndex.Clear();
-                    MessageIndex.AddRange(Outbox);
-                    LoadMorePagesVisibility = false;
-                }
-                catch (Exception)
-                {
-                    ResourceLocator.MalHttpContextProvider.ErrorMessage("Messages");
-                }
-
-            LoadingVisibility = false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("MALPLUS LoadMore failed: " + ex.Message);
+            }
+            finally
+            {
+                LoadingVisibility = false;
+            }
         }
 
         private void ComposeNew()

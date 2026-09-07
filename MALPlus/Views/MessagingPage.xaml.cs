@@ -24,16 +24,21 @@ public partial class MessagingPage : ContentPage
         _initialized = true;
         try
         {
+            if (Vm == null)
+            {
+                Console.WriteLine("MALPLUS MessagingPage: VM is null!");
+                return;
+            }
             Vm.Init(false);
             for (int i = 0; i < 60; i++)
             {
                 await Task.Delay(200);
-                if (!Vm.LoadingVisibility) break;
+                if (Vm.LoadingVisibility == false) break;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS MessagingPage Init failed: " + ex.Message);
+            Console.WriteLine("MALPLUS MessagingPage Init failed: " + ex);
         }
     }
 

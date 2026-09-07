@@ -31,20 +31,23 @@ public partial class WallpapersPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        Console.WriteLine("MALPLUS WallpapersPage OnAppearing");
         if (_initialized) return;
         _initialized = true;
         try
         {
+            Console.WriteLine("MALPLUS WallpapersPage calling Vm.Init");
             Vm.Init(new WallpaperPageNavigationArgs { Query = SourceUrl ?? SourceTitle });
             for (int i = 0; i < 60; i++)
             {
                 await Task.Delay(200);
                 if (!Vm.LoadingWallpapersVisibility) break;
             }
+            Console.WriteLine("MALPLUS WallpapersPage Init completed");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS WallpapersPage Init failed: " + ex.Message);
+            Console.WriteLine("MALPLUS WallpapersPage Init failed: " + ex);
         }
     }
 

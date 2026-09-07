@@ -124,6 +124,13 @@ namespace MALClient.XShared.Comm.Anime
             if (string.IsNullOrEmpty(raw))
                 return null;
 
+            // Check if response is HTML (error page) instead of JSON
+            if (raw.TrimStart().StartsWith("<"))
+            {
+                System.Diagnostics.Debug.WriteLine("MALPLUS Wallpapers: Received HTML instead of JSON: " + raw.Substring(0, Math.Min(200, raw.Length)));
+                return null;
+            }
+
             var data = JsonConvert.DeserializeObject<RedditSearchRoot>(raw);
 
             lock (LastThings)

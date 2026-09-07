@@ -10,12 +10,12 @@
     </ContentPage.Resources>
 
     <Grid>
-        <Grid IsVisible="{Binding LoadingWallpapersVisibility}" BackgroundColor="#80000000" ZIndex="99">
+        <Grid IsVisible="{Binding LoadingWallpapersVisibility, FallbackValue=false}" BackgroundColor="#80000000" ZIndex="99">
             <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid IsVisible="{Binding WallpaperOverlayVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+        <Grid IsVisible="{Binding WallpaperOverlayVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -23,7 +23,7 @@
             <Label Grid.Row="0" Text="Wallpapers" FontFamily="InterBold" FontSize="22"
                    TextColor="{StaticResource BrushText}" Padding="16,12" />
 
-            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingWallpapersVisibility}" Refreshing="OnRefreshing">
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingWallpapersVisibility, FallbackValue=false}" Refreshing="OnRefreshing">
                 <CollectionView ItemsSource="{Binding Wallpapers}" SelectionMode="Single"
                                 SelectionChanged="OnWallpaperTapped">
                     <CollectionView.EmptyView>

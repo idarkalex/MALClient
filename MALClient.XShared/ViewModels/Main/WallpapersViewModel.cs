@@ -16,7 +16,7 @@ namespace MALClient.XShared.ViewModels.Main
 {
     public class WallpapersViewModel : ViewModelBase
     {
-        private ObservableCollection<WallpaperItemViewModel> _wallpapers;
+        private ObservableCollection<WallpaperItemViewModel> _wallpapers = new ObservableCollection<WallpaperItemViewModel>();
         private bool _loadingWallpapersVisibility;
         private bool _noWallpapersNoticeVisibility;
         private int _currentPage;
@@ -98,17 +98,24 @@ namespace MALClient.XShared.ViewModels.Main
                 return;
 
             LoadingWallpapersVisibility = true;
-            Wallpapers?.Clear();
-            List<AnimeWallpaperData> wallpapers = null;
-            await Task.Run(async () =>
+            Wallpapers.Clear();
+            try
             {
-                wallpapers = await AnimeWallpapersQuery.GetAllWallpapers(CurrentPage);
-            });
-            
-            if (wallpapers != null)
-                Wallpapers = new ObservableCollection<WallpaperItemViewModel>(wallpapers.Select(data => new WallpaperItemViewModel(data)));
-            LoadingWallpapersVisibility = false;
-            NoWallpapersNoticeVisibility = Wallpapers?.Any() ?? true;
+                var wallpapers = await AnimeWallpapersQuery.GetAllWallpapers(CurrentPage);
+                if (wallpapers != null)
+                {
+                    Wallpapers = new ObservableCollection<WallpaperItemViewModel>(wallpapers.Select(data => new WallpaperItemViewModel(data)));
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("MALPLUS LoadWallpapers failed: " + ex.Message);
+            }
+            finally
+            {
+                LoadingWallpapersVisibility = false;
+                NoWallpapersNoticeVisibility = !Wallpapers.Any();
+            }
         }
     }
 }
