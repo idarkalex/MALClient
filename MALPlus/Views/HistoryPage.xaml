@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.HistoryPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid IsVisible="{Binding LoadingVisibility}" BackgroundColor="#80000000" ZIndex="99">
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                   WidthRequest="36" HeightRequest="36" />
+                <Label Text="Loading history..." FontFamily="Inter" FontSize="13"
+                       TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <RefreshView IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing"
+                     IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <CollectionView x:Name="HistoryList" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <Label Text="No history yet" FontFamily="Inter" FontSize="13"
+                           TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8" Padding="10">
+                            <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                                <Image Grid.Column="0" Source="{Binding Item2.Item1.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                       WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding Item2.Item1.Title}" FontFamily="InterBold" FontSize="13"
+                                           TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
+                                    <Label FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF">
+                                        <Label.Text>
+                                            <MultiBinding StringFormat="{}{0} {1}">
+                                                <Binding Path="Item2.Item2[0].ShowUnit" />
+                                                <Binding Path="Item2.Item2[0].WatchedEpisode" />
+                                            </MultiBinding>
+                                        </Label.Text>
+                                    </Label>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="2" Text="{Binding Item2.Item2[0].Date}"
+                                       FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

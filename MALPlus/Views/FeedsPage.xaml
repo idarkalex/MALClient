@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.FeedsPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <RefreshView IsRefreshing="{Binding Loading}" Refreshing="OnRefreshing">
+        <CollectionView ItemsSource="{Binding Feeds}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                    <Label Text="No activity yet" FontFamily="InterBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                    <Label Text="Follow some friends to see their updates"
+                           FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8" Padding="12">
+                        <Grid ColumnDefinitions="40,*" ColumnSpacing="10">
+                            <Border Grid.Column="0" WidthRequest="36" HeightRequest="36"
+                                    StrokeShape="RoundRectangle 18"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                <Image Source="{Binding User.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                       Aspect="AspectFill" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="{Binding Header}" FontFamily="InterBold" FontSize="13"
+                                       TextColor="{StaticResource BrushText}" />
+                                <Label Text="{Binding Description}" FontFamily="Inter" FontSize="12"
+                                       TextColor="#C0FFFFFF" MaxLines="3" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding Title}" FontFamily="InterSemiBold" FontSize="12"
+                                       TextColor="{StaticResource EmAccent}" MaxLines="2"
+                                       LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

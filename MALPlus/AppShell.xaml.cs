@@ -23,13 +23,13 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("articles", typeof(ComingSoonPage));
         Routing.RegisterRoute("videos", typeof(ComingSoonPage));
         Routing.RegisterRoute("forums", typeof(ComingSoonPage));
-        Routing.RegisterRoute("history", typeof(ComingSoonPage));
-        Routing.RegisterRoute("feeds", typeof(ComingSoonPage));
-        Routing.RegisterRoute("friends", typeof(ComingSoonPage));
+        Routing.RegisterRoute("history", typeof(HistoryPage));
+        Routing.RegisterRoute("feeds", typeof(FeedsPage));
+        Routing.RegisterRoute("friends", typeof(FriendsPage));
         Routing.RegisterRoute("wallpapers", typeof(ComingSoonPage));
         Routing.RegisterRoute("messaging", typeof(ComingSoonPage));
         Routing.RegisterRoute("clubs", typeof(ComingSoonPage));
-        Routing.RegisterRoute("listcomparison", typeof(ComingSoonPage));
+        Routing.RegisterRoute("listcomparison", typeof(ListComparisonPage));
         Routing.RegisterRoute("notifications", typeof(ComingSoonPage));
         Routing.RegisterRoute("character", typeof(CharacterDetailsPage));
         Routing.RegisterRoute("staff", typeof(StaffDetailsPage));

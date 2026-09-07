@@ -7,22 +7,12 @@
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
-        <converters:IntEqualityConverter x:Key="IntEq" />
         <converters:HtmlSourceConverter x:Key="HtmlSource" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*">
-        <!-- Tab Strip -->
-        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
-                    Padding="16,8" Margin="0,8,0,4">
-            <HorizontalStackLayout Spacing="16" x:Name="TabStrip">
-                <!-- Tabs added dynamically in code-behind -->
-            </HorizontalStackLayout>
-        </ScrollView>
-
-        <!-- Loading overlay -->
-        <Grid Grid.Row="1" Grid.RowSpan="2" IsVisible="{Binding LoadingVisibility}"
-              BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
+    <Grid>
+        <Grid IsVisible="{Binding LoadingVisibility}" BackgroundColor="#80000000"
+              VerticalOptions="Fill" HorizontalOptions="Fill" ZIndex="99">
             <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
                 <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
                                    WidthRequest="36" HeightRequest="36" />
@@ -31,304 +21,297 @@
             </VerticalStackLayout>
         </Grid>
 
-        <!-- Content -->
-        <Grid Grid.Row="2" IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-            <CarouselView x:Name="ProfileCarousel"
-                          ItemsSource="{Binding PivotPages}"
-                          Position="{Binding CurrentPivotIndex, Mode=TwoWay}"
-                          Loop="False">
-                <CarouselView.ItemTemplate>
-                    <DataTemplate>
-                        <ScrollView Padding="16">
-                            <VerticalStackLayout Spacing="16">
-                                <!-- About Me Section -->
-                                <Border IsVisible="{Binding IsAboutMeTab}"
-                                        BackgroundColor="{StaticResource EmSheet}"
-                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="16">
-                                    <VerticalStackLayout Spacing="12">
-                                        <Label Text="About Me" FontFamily="InterBold" FontSize="18"
-                                               TextColor="{StaticResource BrushText}" />
-                                        <WebView x:Name="AboutMeWebView"
-                                                 Source="{Binding AboutMeHtmlContent, Converter={StaticResource HtmlSourceConverter}}"
-                                                 HeightRequest="200"
-                                                 IsVisible="{Binding AboutMeWebViewVisibility}" />
-                                    </VerticalStackLayout>
-                                </Border>
+        <ScrollView IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <VerticalStackLayout Spacing="14" Padding="16,12,16,32">
 
-                                <!-- Favorites Section -->
-                                <Border IsVisible="{Binding IsFavsTab}"
-                                        BackgroundColor="{StaticResource EmSheet}"
-                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="16">
-                                    <VerticalStackLayout Spacing="16">
-                                        <Label Text="Favorites" FontFamily="InterBold" FontSize="18"
-                                               TextColor="{StaticResource BrushText}" />
+                <!-- Header: avatar + name + stats summary -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12" Padding="16">
+                    <Grid ColumnDefinitions="80,*" ColumnSpacing="14">
+                        <Border Grid.Column="0" WidthRequest="72" HeightRequest="72"
+                                StrokeShape="RoundRectangle 36"
+                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                            <Image Source="{Binding CurrentData.User.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                   Aspect="AspectFill" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                            <Label Text="{Binding CurrentData.User.Name}" FontFamily="InterBold" FontSize="20"
+                                   TextColor="{StaticResource BrushText}" />
+                            <HorizontalStackLayout Spacing="12">
+                                <Label Text="{Binding CurrentData.AnimeCompleted, StringFormat='{0} anime'}"
+                                       FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                                <Label Text="{Binding CurrentData.MangaCompleted, StringFormat='{0} manga'}"
+                                       FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
 
-                                        <!-- Fav Anime -->
-                                        <VerticalStackLayout IsVisible="{Binding FavAnime, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" Spacing="8">
-                                            <Label Text="Anime" FontFamily="InterBold" FontSize="14"
-                                                   TextColor="{StaticResource EmAccent}" />
-                                            <CollectionView ItemsSource="{Binding FavAnime}"
-                                                            ItemsLayout="VerticalList">
-                                                <CollectionView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border BackgroundColor="{StaticResource EmBackground}"
-                                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                                StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="4">
-                                                                <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                                                       WidthRequest="50" HeightRequest="70" Aspect="AspectFill" />
-                                                                <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="14"
-                                                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
-                                                                <Label Grid.Column="2" Text="{Binding Type}" FontFamily="Inter" FontSize="11"
-                                                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </CollectionView.ItemTemplate>
-                                            </CollectionView>
-                                        </VerticalStackLayout>
+                <!-- About Me -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14"
+                        IsVisible="{Binding AboutMeWebViewVisibility}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="ABOUT ME" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <WebView Source="{Binding AboutMeHtmlContent, Converter={StaticResource HtmlSource}}"
+                                 HeightRequest="200" />
+                    </VerticalStackLayout>
+                </Border>
 
-                                        <!-- Fav Manga -->
-                                        <VerticalStackLayout IsVisible="{Binding FavManga, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" Spacing="8">
-                                            <Label Text="Manga" FontFamily="InterBold" FontSize="14"
-                                                   TextColor="{StaticResource EmAccent}" />
-                                            <CollectionView ItemsSource="{Binding FavManga}"
-                                                            ItemsLayout="VerticalList">
-                                                <CollectionView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border BackgroundColor="{StaticResource EmBackground}"
-                                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                                StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="4">
-                                                                <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                                                       WidthRequest="50" HeightRequest="70" Aspect="AspectFill" />
-                                                                <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="14"
-                                                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
-                                                                <Label Grid.Column="2" Text="{Binding Type}" FontFamily="Inter" FontSize="11"
-                                                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </CollectionView.ItemTemplate>
-                                            </CollectionView>
-                                        </VerticalStackLayout>
+                <!-- Favorites - Anime -->
+                <Border IsVisible="{Binding FavAnime.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="FAVOURITE ANIME" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding FavAnime}" HeightRequest="200"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
+                                        <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
+                                            <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="13"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
 
-                                        <!-- Fav Characters -->
-                                        <VerticalStackLayout IsVisible="{Binding FavouriteCharacters, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" Spacing="8">
-                                            <Label Text="Characters" FontFamily="InterBold" FontSize="14"
-                                                   TextColor="{StaticResource EmAccent}" />
-                                            <CollectionView ItemsSource="{Binding FavouriteCharacters}"
-                                                            ItemsLayout="VerticalList">
-                                                <CollectionView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border BackgroundColor="{StaticResource EmBackground}"
-                                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                                StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="4">
-                                                                <Image Grid.Column="0" Source="{Binding ImageUrl, Converter={StaticResource ImageConverter}}"
-                                                                       WidthRequest="50" HeightRequest="70" Aspect="AspectFill" />
-                                                                <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
-                                                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
-                                                                <Label Grid.Column="2" Text="{Binding Role}" FontFamily="Inter" FontSize="11"
-                                                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </CollectionView.ItemTemplate>
-                                            </CollectionView>
-                                        </VerticalStackLayout>
+                <!-- Favorites - Manga -->
+                <Border IsVisible="{Binding FavManga.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="FAVOURITE MANGA" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding FavManga}" HeightRequest="200"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
+                                        <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
+                                            <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="13"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
 
-                                        <!-- Fav Staff -->
-                                        <VerticalStackLayout IsVisible="{Binding FavouriteStaff, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" Spacing="8">
-                                            <Label Text="Staff" FontFamily="InterBold" FontSize="14"
-                                                   TextColor="{StaticResource EmAccent}" />
-                                            <CollectionView ItemsSource="{Binding FavouriteStaff}"
-                                                            ItemsLayout="VerticalList">
-                                                <CollectionView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border BackgroundColor="{StaticResource EmBackground}"
-                                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                                StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="4">
-                                                                <Image Grid.Column="0" Source="{Binding ImageUrl, Converter={StaticResource ImageConverter}}"
-                                                                       WidthRequest="50" HeightRequest="70" Aspect="AspectFill" />
-                                                                <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
-                                                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
-                                                                <Label Grid.Column="2" Text="{Binding Role}" FontFamily="Inter" FontSize="11"
-                                                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </CollectionView.ItemTemplate>
-                                            </CollectionView>
-                                        </VerticalStackLayout>
-                                    </VerticalStackLayout>
-                                </Border>
+                <!-- Favorites - Characters -->
+                <Border IsVisible="{Binding FavouriteCharacters.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="FAVOURITE CHARACTERS" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding FavouriteCharacters}" HeightRequest="180"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
+                                        <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
+                                            <Label Grid.Column="1" Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="13"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
 
-                                <!-- Recent Section -->
-                                <Border IsVisible="{Binding IsRecentTab}"
-                                        BackgroundColor="{StaticResource EmSheet}"
-                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="16">
-                                    <VerticalStackLayout Spacing="16">
-                                        <Label Text="Recent" FontFamily="InterBold" FontSize="18"
-                                               TextColor="{StaticResource BrushText}" />
+                <!-- Favorites - Staff -->
+                <Border IsVisible="{Binding FavouriteStaff.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="FAVOURITE STAFF" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding FavouriteStaff}" HeightRequest="180"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
+                                        <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
+                                            <Label Grid.Column="1" Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="13"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
 
-                                        <Label Text="Anime" FontFamily="InterBold" FontSize="14"
-                                               TextColor="{StaticResource EmAccent}" />
-                                        <CollectionView ItemsSource="{Binding RecentAnime}" ItemsLayout="VerticalList">
-                                            <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BackgroundColor="{StaticResource EmBackground}"
-                                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="4">
-                                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                                                   WidthRequest="50" HeightRequest="70" Aspect="AspectFill" />
-                                                            <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="14"
-                                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
-                                                            <Label Grid.Column="2" Text="{Binding Type}" FontFamily="Inter" FontSize="11"
-                                                                   TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
+                <!-- Recent Anime -->
+                <Border IsVisible="{Binding RecentAnime.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="RECENT ANIME" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding RecentAnime}" HeightRequest="160"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
+                                        <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
+                                            <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="13"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
 
-                                        <Label Text="Manga" FontFamily="InterBold" FontSize="14"
-                                               TextColor="{StaticResource EmAccent}" Margin="0,16,0,0" />
-                                        <CollectionView ItemsSource="{Binding RecentManga}" ItemsLayout="VerticalList">
-                                            <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BackgroundColor="{StaticResource EmBackground}"
-                                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="4">
-                                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                                                   WidthRequest="50" HeightRequest="70" Aspect="AspectFill" />
-                                                            <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="14"
-                                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
-                                                            <Label Grid.Column="2" Text="{Binding Type}" FontFamily="Inter" FontSize="11"
-                                                                   TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
-                                    </VerticalStackLayout>
-                                </Border>
+                <!-- Recent Manga -->
+                <Border IsVisible="{Binding RecentManga.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="RECENT MANGA" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding RecentManga}" HeightRequest="160"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
+                                        <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
+                                            <Label Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="13"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
 
-                                <!-- Friends Section -->
-                                <Border IsVisible="{Binding IsFriendsTab}"
-                                        BackgroundColor="{StaticResource EmSheet}"
-                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="16">
-                                    <VerticalStackLayout Spacing="12">
-                                        <HorizontalStackLayout>
-                                            <Label Text="Friends" FontFamily="InterBold" FontSize="18"
+                <!-- Friends -->
+                <Border IsVisible="{Binding MyFriends.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="FRIENDS" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding MyFriends}" HeightRequest="160"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
+                                        <Grid ColumnDefinitions="40,*" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding ImageUrl, Converter={StaticResource ImageConverter}}"
+                                                   WidthRequest="36" HeightRequest="36" Aspect="AspectFill" />
+                                            <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="13"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="1" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Comments -->
+                <Border IsVisible="{Binding MalComments.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}"
+                        BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="COMMENTS" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding MalComments}" HeightRequest="200"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmBackground}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10">
+                                        <VerticalStackLayout Spacing="4">
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Image Source="{Binding User.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                       WidthRequest="28" HeightRequest="28" Aspect="AspectFill" />
+                                                <Label Text="{Binding User.Name}" FontFamily="InterBold" FontSize="13"
+                                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                                <Label Text="{Binding Date}" FontFamily="Inter" FontSize="11"
+                                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+                                            <Label Text="{Binding Content}" FontFamily="Inter" FontSize="13"
                                                    TextColor="{StaticResource BrushText}" />
-                                            <Label Text="{Binding MyFriends.Count, StringFormat='({0})'}" FontFamily="Inter" FontSize="14"
-                                                   TextColor="#80FFFFFF" VerticalOptions="Center" Margin="8,0,0,0" />
-                                        </HorizontalStackLayout>
-                                        <CollectionView ItemsSource="{Binding MyFriends}" ItemsLayout="VerticalList">
-                                            <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BackgroundColor="{StaticResource EmBackground}"
-                                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="4">
-                                                            <Image Grid.Column="0" Source="{Binding ImageUrl, Converter={StaticResource ImageConverter}}"
-                                                                   WidthRequest="48" HeightRequest="48" Aspect="AspectFill" />
-                                                            <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
-                                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
-                                    </VerticalStackLayout>
-                                </Border>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
 
-                                <!-- Comments Section -->
-                                <Border IsVisible="{Binding IsCommentsTab}"
-                                        BackgroundColor="{StaticResource EmSheet}"
-                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="16">
-                                    <VerticalStackLayout Spacing="12">
-                                        <Label Text="Comments" FontFamily="InterBold" FontSize="18"
-                                               TextColor="{StaticResource BrushText}" />
-                                        <CollectionView ItemsSource="{Binding MalComments}" ItemsLayout="VerticalList">
-                                            <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BackgroundColor="{StaticResource EmBackground}"
-                                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                            StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="12,8">
-                                                        <VerticalStackLayout Spacing="4">
-                                                            <HorizontalStackLayout Spacing="8">
-                                                                <Image Source="{Binding UserImage, Converter={StaticResource ImageConverter}}"
-                                                                       WidthRequest="32" HeightRequest="32" Aspect="AspectFill" />
-                                                                <Label Text="{Binding UserName}" FontFamily="InterBold" FontSize="14"
-                                                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
-                                                                <Label Text="{Binding Date}" FontFamily="Inter" FontSize="11"
-                                                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                                            </HorizontalStackLayout>
-                                                            <Label Text="{Binding Comment}" FontFamily="Inter" FontSize="13"
-                                                                   TextColor="{StaticResource BrushText}" />
-                                                        </VerticalStackLayout>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
-                                    </VerticalStackLayout>
-                                </Border>
-
-                                <!-- Stats Charts (shown on first tab) -->
-                                <Border IsVisible="{Binding IsStatsTab}"
-                                        BackgroundColor="{StaticResource EmSheet}"
-                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="16">
-                                    <VerticalStackLayout Spacing="16">
-                                        <Label Text="Anime Stats" FontFamily="InterBold" FontSize="18"
-                                               TextColor="{StaticResource BrushText}" />
-                                        <HorizontalStackLayout Spacing="12">
-                                            <Label Text="Watching" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#0066FF" />
-                                            <Label Text="Completed" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#00C853" />
-                                            <Label Text="On Hold" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#FFAA00" />
-                                            <Label Text="Dropped" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#FF3333" />
-                                            <Label Text="Plan to Watch" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#888888" />
-                                        </HorizontalStackLayout>
-
-                                        <Label Text="Manga Stats" FontFamily="InterBold" FontSize="18"
-                                               TextColor="{StaticResource BrushText}" Margin="0,16,0,0" />
-                                        <HorizontalStackLayout Spacing="12">
-                                            <Label Text="Reading" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#0066FF" />
-                                            <Label Text="Completed" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#00C853" />
-                                            <Label Text="On Hold" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#FFAA00" />
-                                            <Label Text="Dropped" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#FF3333" />
-                                            <Label Text="Plan to Read" FontFamily="Inter" FontSize="12"
-                                                   TextColor="#888888" />
-                                        </HorizontalStackLayout>
-
-                                        <Label Text="{Binding ApproxTimeSpentOnAnime}" FontFamily="InterBold" FontSize="16"
-                                               TextColor="{StaticResource EmAccent}" Margin="0,16,0,0" />
-                                    </VerticalStackLayout>
-                                </Border>
-                            </VerticalStackLayout>
-                        </ScrollView>
-                    </DataTemplate>
-                </CarouselView.ItemTemplate>
-            </CarouselView>
-        </Grid>
+                <!-- Stats summary -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="STATS" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Label Text="{Binding ApproxTimeSpentOnAnime}" FontFamily="InterBold" FontSize="14"
+                               TextColor="{StaticResource EmAccent}" />
+                        <Label Text="{Binding ApproxTimeSpentOnAnimeAndMovies}" FontFamily="Inter" FontSize="12"
+                               TextColor="#80FFFFFF" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.FriendsPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:IntEqualityConverter x:Key="IntEq" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <!-- Tab strip: Friends / Requests -->
+        <Grid RowDefinitions="Auto,Auto,*">
+            <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                        Padding="16,12" Margin="0,8,0,4">
+                <HorizontalStackLayout Spacing="16">
+                    <Label x:Name="FriendsTab" Text="Friends" FontFamily="InterSemiBold" FontSize="13"
+                           Padding="0,6" TextColor="#FF6B00">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="0" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label x:Name="RequestsTab" Text="Requests" FontFamily="InterSemiBold" FontSize="13"
+                           Padding="0,6" TextColor="White">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="1" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <!-- Loading overlay -->
+            <Grid Grid.Row="0" Grid.RowSpan="3"
+                  IsVisible="{Binding Loading}" BackgroundColor="#80000000" ZIndex="99">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                   WidthRequest="36" HeightRequest="36" />
+            </Grid>
+
+            <!-- Friends list (tab 0) -->
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding Loading}" Refreshing="OnRefreshFriends"
+                         IsVisible="{Binding FriendsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
+                <CollectionView ItemsSource="{Binding Friends}" SelectionMode="Single"
+                                SelectionChanged="OnFriendTapped">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                            <Label Text="No friends yet" FontFamily="InterBold" FontSize="16"
+                                   TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                            <Label Text="Add some friends on MAL to see them here"
+                                   FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid ColumnDefinitions="48,*,Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" WidthRequest="44" HeightRequest="44"
+                                            StrokeShape="RoundRectangle 22"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding User.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding User.Name}" FontFamily="InterBold" FontSize="14"
+                                               TextColor="{StaticResource BrushText}" />
+                                        <Label Text="{Binding LastOnline}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+
+            <!-- Requests (tab 1) -->
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding LoadingPending}" Refreshing="OnRefreshRequests"
+                         IsVisible="{Binding FriendsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=1}">
+                <CollectionView ItemsSource="{Binding Requests}">
+                    <CollectionView.EmptyView>
+                        <Label Text="No pending requests"
+                               FontFamily="Inter" FontSize="13" TextColor="#80FFFFFF"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid ColumnDefinitions="48,*,Auto,Auto" ColumnSpacing="10">
+                                    <Border Grid.Column="0" WidthRequest="44" HeightRequest="44"
+                                            StrokeShape="RoundRectangle 22"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding User.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding User.Name}" FontFamily="InterBold" FontSize="14"
+                                               TextColor="{StaticResource BrushText}" />
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="2" Text="Accept" Clicked="OnAcceptClicked"
+                                            CommandParameter="{Binding .}"
+                                            FontFamily="InterSemiBold" FontSize="12"
+                                            BackgroundColor="#00C853" TextColor="White"
+                                            CornerRadius="8" HeightRequest="32" Padding="10,0" />
+                                    <Button Grid.Column="3" Text="Deny" Clicked="OnDenyClicked"
+                                            CommandParameter="{Binding .}"
+                                            FontFamily="InterSemiBold" FontSize="12"
+                                            BackgroundColor="#FF3333" TextColor="White"
+                                            CornerRadius="8" HeightRequest="32" Padding="10,0" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+    </Grid>
+</ContentPage>
