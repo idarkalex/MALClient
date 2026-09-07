@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MALPlus.Views.ComingSoonPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <Grid>
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="12">
+            <Label x:Name="TitleLabel" Text="Coming soon"
+                   FontFamily="InterBold" FontSize="22"
+                   TextColor="{StaticResource BrushText}"
+                   HorizontalOptions="Center" />
+            <Label x:Name="SubtitleLabel" Text="This screen will arrive in a later phase."
+                   FontFamily="Inter" FontSize="13"
+                   TextColor="#A0FFFFFF"
+                   HorizontalOptions="Center" />
+            <Button Text="Back" Clicked="OnBackClicked"
+                    FontFamily="InterSemiBold" FontSize="13"
+                    BackgroundColor="#141d2b" TextColor="White"
+                    BorderColor="#29FFFFFF" BorderWidth="1"
+                    CornerRadius="12" HeightRequest="40" Padding="20,0"
+                    HorizontalOptions="Center" Margin="0,16,0,0" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

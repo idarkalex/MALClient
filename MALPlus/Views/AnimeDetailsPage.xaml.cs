@@ -14,7 +14,6 @@ public partial class AnimeDetailsPage : ContentPage
     private bool _episodesLoaded;
     private bool _reviewsLoaded;
     private bool _charactersLoaded;
-    private bool _staffLoaded;
     private bool _recommendationsLoaded;
     private bool _relatedLoaded;
 
@@ -188,6 +187,87 @@ public partial class AnimeDetailsPage : ContentPage
         {
             Console.WriteLine("MALPLUS OnScoreClicked failed: " + ex.GetType().Name);
         }
+    }
+
+    private void OnTrailerClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(Vm.TrailerUrl)) return;
+            ShowVideoOverlay(Vm.TrailerUrl);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnTrailerClicked failed: " + ex.GetType().Name);
+        }
+    }
+
+    private void OnOpEdTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (e.Parameter is string text && !string.IsNullOrWhiteSpace(text))
+            {
+                // Build a YouTube search URL for the OP/ED song
+                var q = Uri.EscapeDataString(text);
+                ShowVideoOverlay($"https://www.youtube.com/results?search_query={q}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnOpEdTapped failed: " + ex.GetType().Name);
+        }
+    }
+
+    private void ShowVideoOverlay(string url)
+    {
+        try
+        {
+            if (VideoOverlay == null || VideoWebView == null) return;
+            VideoOverlay.IsVisible = true;
+            // Convert watch?v= / youtu.be / results?search_query= → /embed/
+            var embed = BuildYouTubeEmbed(url);
+            var html = $"<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>" +
+                       $"<style>html,body{{margin:0;background:#000;height:100%}}iframe{{width:100%;height:100%;border:0}}</style>" +
+                       $"</head><body><iframe src=\"{embed}\" allowfullscreen></iframe></body></html>";
+            VideoWebView.Source = new HtmlWebViewSource { Html = html, BaseUrl = "https://www.youtube.com" };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS ShowVideoOverlay failed: " + ex.GetType().Name);
+        }
+    }
+
+    private void CloseVideoOverlay(object sender, EventArgs e)
+    {
+        try
+        {
+            if (VideoWebView != null) VideoWebView.Source = null;
+            if (VideoOverlay != null) VideoOverlay.IsVisible = false;
+        }
+        catch { }
+    }
+
+    private static string BuildYouTubeEmbed(string url)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(url)) return url;
+            // watch?v=ID
+            var m = System.Text.RegularExpressions.Regex.Match(url, @"youtube\.com/watch\?v=([\w\-]+)");
+            if (m.Success) return $"https://www.youtube.com/embed/{m.Groups[1].Value}";
+            // youtu.be/ID
+            m = System.Text.RegularExpressions.Regex.Match(url, @"youtu\.be/([\w\-]+)");
+            if (m.Success) return $"https://www.youtube.com/embed/{m.Groups[1].Value}";
+            // /embed/ID
+            m = System.Text.RegularExpressions.Regex.Match(url, @"/embed/([\w\-]+)");
+            if (m.Success) return url;
+            // search → list=search query
+            m = System.Text.RegularExpressions.Regex.Match(url, @"search_query=([^&]+)");
+            if (m.Success) return $"https://www.youtube.com/embed/results?search_query={m.Groups[1].Value}";
+            return url;
+        }
+        catch { return url; }
     }
 
     private void OnTabTapped(object sender, TappedEventArgs e)

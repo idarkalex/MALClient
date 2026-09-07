@@ -8,6 +8,7 @@
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
         <converters:IntEqualityConverter x:Key="IntEq" />
+        <converters:BoolTabColorConverter x:Key="BoolTab" />
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*">
@@ -110,11 +111,11 @@
             <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="16,8,16,4"
                   IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
                 <Button Grid.Column="0" Text="Anime" FontFamily="InterSemiBold" FontSize="14"
-                        TextColor="{Binding _animeSearch, Converter={StaticResource TabColorConverter}, ConverterParameter=true}"
+                        TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=true}"
                         BackgroundColor="Transparent"
                         Command="{Binding ToggleSearchModeCommand}" CommandParameter="true" />
                 <Button Grid.Column="1" Text="Manga" FontFamily="InterSemiBold" FontSize="14"
-                        TextColor="{Binding _animeSearch, Converter={StaticResource TabColorConverter}, ConverterParameter=false}"
+                        TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=false}"
                         BackgroundColor="Transparent"
                         Command="{Binding ToggleSearchModeCommand}" CommandParameter="false" />
             </Grid>

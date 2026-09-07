@@ -204,7 +204,7 @@
             <Border Grid.Row="0" BackgroundColor="{StaticResource EmSheet}"
                     StrokeShape="RoundRectangle 24,24,0,0" Stroke="Transparent"
                     Padding="14,12,14,8">
-                <Grid ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="6">
+                <Grid ColumnDefinitions="*,*,Auto,Auto,Auto" ColumnSpacing="6">
                     <Button Grid.Column="0" Text="Add to List"
                             Command="{Binding AddAnimeCommand}"
                             IsVisible="{Binding AddAnimeVisibility}"
@@ -245,13 +245,20 @@
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
                             CornerRadius="12" HeightRequest="40" Padding="10,0" />
-                    <Button Grid.Column="2" Text="↻"
+                    <Button Grid.Column="2" Text="▶"
+                            Clicked="OnTrailerClicked"
+                            IsVisible="{Binding HasTrailer}"
+                            FontFamily="InterBold" FontSize="14"
+                            BackgroundColor="#141d2b" TextColor="#FF6B00"
+                            BorderColor="#29FFFFFF" BorderWidth="1"
+                            CornerRadius="12" HeightRequest="40" WidthRequest="40" Padding="0" />
+                    <Button Grid.Column="3" Text="↻"
                             Command="{Binding RefreshCommand}"
                             FontFamily="InterBold" FontSize="14"
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
                             CornerRadius="12" HeightRequest="40" WidthRequest="40" Padding="0" />
-                    <Button Grid.Column="3" Text="⋮"
+                    <Button Grid.Column="4" Text="⋮"
                             Command="{Binding ShowMoreCommand}"
                             FontFamily="InterBold" FontSize="18"
                             BackgroundColor="#141d2b" TextColor="White"
@@ -536,8 +543,14 @@
                                             HeightRequest="80">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
-                                               TextColor="{StaticResource BrushText}" Padding="0,3" />
+                                        <Border BackgroundColor="#1A0066FF" StrokeShape="RoundRectangle 6"
+                                                Stroke="#330066FF" StrokeThickness="1" Padding="8,4" Margin="0,2">
+                                            <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
+                                                   TextColor="#7AB4FF" Padding="0,3" />
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnOpEdTapped" CommandParameter="{Binding}" />
+                                            </Border.GestureRecognizers>
+                                        </Border>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
@@ -547,8 +560,14 @@
                                             HeightRequest="80">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
-                                               TextColor="{StaticResource BrushText}" Padding="0,3" />
+                                        <Border BackgroundColor="#1AFF6B00" StrokeShape="RoundRectangle 6"
+                                                Stroke="#33FF6B00" StrokeThickness="1" Padding="8,4" Margin="0,2">
+                                            <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
+                                                   TextColor="#FFB47A" Padding="0,3" />
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnOpEdTapped" CommandParameter="{Binding}" />
+                                            </Border.GestureRecognizers>
+                                        </Border>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
@@ -797,6 +816,20 @@
                 <Label Text="Loading..." FontFamily="Inter" FontSize="12"
                        TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
             </VerticalStackLayout>
+        </Grid>
+
+        <!-- Video overlay (trailer + OP/ED playback in-app) -->
+        <Grid x:Name="VideoOverlay" Grid.Row="0" Grid.RowSpan="3"
+              IsVisible="False" BackgroundColor="#CC000000" ZIndex="100">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Text="✕ Close" Clicked="CloseVideoOverlay"
+                    HorizontalOptions="End" Margin="0,12,12,0"
+                    BackgroundColor="Transparent" TextColor="White"
+                    FontFamily="InterBold" FontSize="14" Padding="8,4" />
+            <WebView x:Name="VideoWebView" Grid.Row="1" />
         </Grid>
     </Grid>
 </ContentPage>

@@ -8,6 +8,7 @@
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
         <converters:IntEqualityConverter x:Key="IntEq" />
+        <converters:HtmlSourceConverter x:Key="HtmlSource" />
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*">

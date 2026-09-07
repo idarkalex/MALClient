@@ -2,6 +2,7 @@ using System.Windows.Input;
 using MALClient.Models.Enums;
 using MALClient.XShared.Interfaces;
 using MALClient.XShared.NavArgs;
+using MALClient.XShared.ViewModels;
 
 namespace MALPlus.Services;
 
@@ -66,7 +67,32 @@ public class MauiNavMgr : INavMgr
             return;
         }
         if (_mainStack.Count > 0)
-            _mainStack.Pop();
+        {
+            var entry = _mainStack.Pop();
+            // Use the MauiMainViewModel to navigate back to the registered root.
+            try
+            {
+                var mainVm = (MauiMainViewModel)ViewModelLocator.GeneralMain;
+                mainVm.Navigate(entry.Item1, entry.Item2);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("MALPLUS NavMgr back-nav failed: " + ex.GetType().Name);
+                // Fallback: just pop Shell
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    try { if (Shell.Current != null) await Shell.Current.GoToAsync(".."); } catch { }
+                });
+            }
+        }
+        else
+        {
+            // Nothing on stack: just pop Shell
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                try { if (Shell.Current != null) await Shell.Current.GoToAsync(".."); } catch { }
+            });
+        }
     }
 
     public void CurrentOffViewOnBackRequested()
