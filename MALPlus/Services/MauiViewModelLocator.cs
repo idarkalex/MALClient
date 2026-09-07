@@ -42,5 +42,8 @@ public static class MauiViewModelLocator
         SimpleIoc.Default.Register<ILiveTilesManager, MauiLiveTilesManager>();
         SimpleIoc.Default.Register<IPinTileService, MauiPinTileService>();
         SimpleIoc.Default.Register<ICalendarExportProvider, MauiCalendarExportProvider>();
+        SimpleIoc.Default.Register<MauiSettingsViewModel>();
+        SimpleIoc.Default.Register<MALClient.XShared.ViewModels.SettingsViewModelBase>(
+            () => SimpleIoc.Default.GetInstance<MauiSettingsViewModel>());
     }
 }

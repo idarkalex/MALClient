@@ -40,6 +40,23 @@ public partial class App : Application
                 }
                 else
                 {
+                    // Apply DefaultMenuTab setting (anime/manga/discover)
+                    try
+                    {
+                        var startTab = Settings.DefaultMenuTab ?? "anime";
+                        var route = startTab switch
+                        {
+                            "discover" => "//discover",
+                            "manga" => "//manga",
+                            _ => "//anime"
+                        };
+                        await MainThread.InvokeOnMainThreadAsync(() =>
+                            Shell.Current?.GoToAsync(route));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("MALPLUS start tab nav failed: " + ex.Message);
+                    }
                     try
                     {
                         var client = await MALClient.XShared.ViewModels.ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync();

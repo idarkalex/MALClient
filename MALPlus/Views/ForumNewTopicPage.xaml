@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.ForumNewTopicPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:HtmlSourceConverter x:Key="HtmlSource" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Label Grid.Row="0" Text="{Binding Header}" FontFamily="InterBold" FontSize="18"
+               TextColor="{StaticResource BrushText}" Padding="16,12" />
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,0,16,32" Spacing="12">
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="12">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="TITLE" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Entry Text="{Binding Title, Mode=TwoWay}" Placeholder="Topic title..."
+                               FontFamily="Inter" FontSize="14"
+                               BackgroundColor="{StaticResource EmBackground}"
+                               TextColor="{StaticResource BrushText}"
+                               PlaceholderColor="#80FFFFFF" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="12">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="POLL QUESTION (OPTIONAL)" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Entry Text="{Binding Question, Mode=TwoWay}" Placeholder="Ask a question..."
+                               FontFamily="Inter" FontSize="14"
+                               BackgroundColor="{StaticResource EmBackground}"
+                               TextColor="{StaticResource BrushText}"
+                               PlaceholderColor="#80FFFFFF" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="12"
+                        IsVisible="{Binding AnswersVisibility}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="POLL ANSWERS" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding Answers}" SelectionMode="None"
+                                        HeightRequest="100">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Entry Text="{Binding Answer, Mode=TwoWay}" Placeholder="Answer..."
+                                           FontFamily="Inter" FontSize="13"
+                                           BackgroundColor="{StaticResource EmBackground}"
+                                           TextColor="{StaticResource BrushText}"
+                                           PlaceholderColor="#80FFFFFF" />
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="12">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="MESSAGE (BBCode supported)" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Editor Text="{Binding Message, Mode=TwoWay}" Placeholder="Write your topic..."
+                                FontFamily="Inter" FontSize="14" HeightRequest="240"
+                                BackgroundColor="{StaticResource EmBackground}"
+                                TextColor="{StaticResource BrushText}"
+                                PlaceholderColor="#80FFFFFF"
+                                AutoSize="Disabled" />
+                        <Button Text="Preview" Command="{Binding PreviewCommand}"
+                                HorizontalOptions="End" Margin="0,6,0,0"
+                                FontFamily="InterSemiBold" FontSize="12"
+                                BackgroundColor="#141d2b" TextColor="White"
+                                BorderColor="#29FFFFFF" BorderWidth="1"
+                                CornerRadius="8" HeightRequest="32" Padding="10,0" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="12"
+                        IsVisible="{Binding PreviewAvailable}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="PREVIEW" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Label x:Name="PreviewLabel" Text="" FontFamily="Inter" FontSize="13"
+                               TextColor="{StaticResource BrushText}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button Text="Post Topic" Command="{Binding CreateTopicCommand}"
+                        IsEnabled="{Binding IsSendButtonEnabled}"
+                        FontFamily="InterSemiBold" FontSize="14"
+                        BackgroundColor="#0066FF" TextColor="White"
+                        CornerRadius="12" HeightRequest="44" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

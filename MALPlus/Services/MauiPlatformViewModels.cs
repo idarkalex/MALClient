@@ -1,5 +1,7 @@
+using System.Windows.Input;
 using MALClient.Models.Enums;
 using MALClient.XShared.Comm.Anime;
+using MALClient.XShared.Delegates;
 using MALClient.XShared.Interfaces;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
@@ -229,4 +231,24 @@ public class MauiCssManager : MALClient.XShared.Utils.CssManagerBase
     protected override string AccentColourDark => "#0047B3";
     protected override string NotifyFunction => "function notify(msg){}";
     protected override string ShadowsDefinition => "";
+}
+
+public class MauiSettingsViewModel : MALClient.XShared.ViewModels.SettingsViewModelBase
+{
+    public MauiSettingsViewModel() : base() { }
+
+    public override event SettingsNavigationRequest NavigationRequest
+    {
+        add { }
+        remove { }
+    }
+
+    public override ICommand ReviewCommand => null;
+    public override ICommand RequestNavigationCommand => null;
+
+    public override void LoadCachedEntries()
+    {
+        // MAUI version: no-op (TotalFilesCached comes from base)
+        System.Diagnostics.Debug.WriteLine("MauiSettingsViewModel.LoadCachedEntries (no-op)");
+    }
 }

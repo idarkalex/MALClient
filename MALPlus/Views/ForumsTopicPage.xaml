@@ -16,7 +16,7 @@
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid RowDefinitions="Auto,*" IsVisible="{Binding LoadingTopic, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+        <Grid RowDefinitions="Auto,*,Auto" IsVisible="{Binding LoadingTopic, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
             <Label Grid.Row="0" Text="{Binding Header}" FontFamily="InterBold" FontSize="18"
                    TextColor="{StaticResource BrushText}" Padding="16,12" MaxLines="2"
                    LineBreakMode="TailTruncation" />
@@ -55,6 +55,26 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </RefreshView>
+
+            <!-- Reply composer -->
+            <Border Grid.Row="2" BackgroundColor="{StaticResource EmSheet}"
+                    Stroke="{StaticResource EmBorder}" StrokeThickness="1,1,0,0"
+                    StrokeShape="RoundRectangle 0" Padding="12,8,12,12">
+                <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                    <Editor Grid.Row="0" Text="{Binding ReplyMessage, Mode=TwoWay}"
+                            Placeholder="Write a reply (BBCode supported)..."
+                            FontFamily="Inter" FontSize="13" HeightRequest="80"
+                            BackgroundColor="{StaticResource EmBackground}"
+                            TextColor="{StaticResource BrushText}"
+                            PlaceholderColor="#80FFFFFF"
+                            AutoSize="Disabled" />
+                    <Button Grid.Row="1" Text="Post Reply" Command="{Binding CreateReplyCommand}"
+                            HorizontalOptions="End"
+                            FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="#0066FF" TextColor="White"
+                            CornerRadius="8" HeightRequest="32" Padding="12,0" />
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </ContentPage>
