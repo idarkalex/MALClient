@@ -12,6 +12,7 @@ public partial class AnimeDetailsPage : ContentPage
 {
     private bool _initialized;
     private bool _episodesLoaded;
+    private bool _reviewsLoaded;
     private bool _charactersLoaded;
     private bool _staffLoaded;
     private bool _recommendationsLoaded;
@@ -35,32 +36,47 @@ public partial class AnimeDetailsPage : ContentPage
             return;
         _initialized = true;
         Console.WriteLine("MALPLUS Details OnAppearing id=" + MalId);
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var c = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-                var r = await c.GetAsync("https://api.tenrai.org/v1/anime/" + MalId + "/full");
-                var body = await r.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine("MALPLUS Details fullhttp=" + (int)r.StatusCode + " len=" + body.Length
-                    + " hasrank=" + body.Contains("\"rank\""));
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("MALPLUS Details fullhttp-FAIL " + ex.GetType().Name);
-            }
-        });
         try
         {
             Vm.Init(new AnimeDetailsPageNavigationArgs(int.Parse(MalId), AnimeTitle, null, null, null), fakeDelay: false);
-            await Task.Delay(12000);
-            System.Diagnostics.Debug.WriteLine("MALPLUS Details Init returned title=" + Vm.Title + " synlen=" + (Vm.Synopsis ?? "").Length
-                + " rank=" + Vm.GeneralRank + " pop=" + Vm.GeneralPopularity + " studios=" + Vm.GeneralStudios);
-            Console.WriteLine("MALPLUS Details Init returned title=" + Vm.Title);
+            // wait for the initial General data to land so we can shape the tab strip
+            // (anime vs manga vs movie determines which tabs are visible)
+            for (int i = 0; i < 60; i++)
+            {
+                await Task.Delay(200);
+                if (!Vm.LoadingGlobal && !string.IsNullOrEmpty(Vm.Title))
+                    break;
+            }
+            ApplyTabStripVisibility();
+            System.Diagnostics.Debug.WriteLine("MALPLUS Details Init returned title=" + Vm.Title
+                + " rank=" + Vm.GeneralRank + " pop=" + Vm.GeneralPopularity
+                + " studios=" + Vm.GeneralStudios + " animemode=" + Vm.AnimeMode);
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine("MALPLUS Details Init failed: " + ex);
+        }
+    }
+
+    private void ApplyTabStripVisibility()
+    {
+        // Index 0=General, 1=Details, 2=Episodes, 3=Reviews, 4=Recs, 5=Related, 6=Characters, 7=Staff
+        if (Vm == null || Vm.AnimeMode)
+        {
+            if (Vm != null && Vm.Type?.Equals("Movie", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                // Movie: hide Episodes only
+                TabEpisodes.IsVisible = false;
+            }
+        }
+        else
+        {
+            // Manga: hide Episodes, Reviews, Recs, Related, Staff
+            TabEpisodes.IsVisible = false;
+            TabReviews.IsVisible = false;
+            TabRecs.IsVisible = false;
+            TabRelated.IsVisible = false;
+            TabStaff.IsVisible = false;
         }
     }
 
@@ -87,25 +103,18 @@ public partial class AnimeDetailsPage : ContentPage
         {
             switch (tabIndex)
             {
-                case 1: // Episodes
+                case 2: // Episodes
                     if (!_episodesLoaded)
                     {
                         _episodesLoaded = true;
                         await Vm.LoadEpisodes(false);
                     }
                     break;
-                case 2: // Characters
-                    if (!_charactersLoaded)
+                case 3: // Reviews
+                    if (!_reviewsLoaded)
                     {
-                        _charactersLoaded = true;
-                        await Vm.LoadCharacters(false);
-                    }
-                    break;
-                case 3: // Staff
-                    if (!_staffLoaded)
-                    {
-                        _staffLoaded = true;
-                        await Vm.LoadCharacters(false); // LoadCharacters loads both
+                        _reviewsLoaded = true;
+                        await Vm.LoadReviews(false);
                     }
                     break;
                 case 4: // Recommendations
@@ -120,6 +129,14 @@ public partial class AnimeDetailsPage : ContentPage
                     {
                         _relatedLoaded = true;
                         await Vm.LoadRelatedAnime(false);
+                    }
+                    break;
+                case 6: // Characters
+                case 7: // Staff
+                    if (!_charactersLoaded)
+                    {
+                        _charactersLoaded = true;
+                        await Vm.LoadCharacters(false);
                     }
                     break;
             }
@@ -177,10 +194,53 @@ public partial class AnimeDetailsPage : ContentPage
     {
         if (e.Parameter is string param && int.TryParse(param, out int tabIndex))
         {
-            Vm.DetailsPivotSelectedIndex = tabIndex;
-            ResetHero();
-            ScrollActiveTabToTop();
+            GoToTab(tabIndex);
         }
+    }
+
+    private void OnPagerSwiped(object sender, SwipedEventArgs e)
+    {
+        if (Vm == null) return;
+        var current = Vm.DetailsPivotSelectedIndex;
+        // Map index to next visible tab honoring manga/movie hide rules
+        var max = GetMaxTabIndex();
+        if (e.Direction == SwipeDirection.Left)
+        {
+            var next = current + 1;
+            while (next <= max && !IsTabVisible(next)) next++;
+            if (next <= max) GoToTab(next);
+        }
+        else if (e.Direction == SwipeDirection.Right)
+        {
+            var prev = current - 1;
+            while (prev >= 0 && !IsTabVisible(prev)) prev--;
+            if (prev >= 0) GoToTab(prev);
+        }
+    }
+
+    private void GoToTab(int tabIndex)
+    {
+        Vm.DetailsPivotSelectedIndex = tabIndex;
+        ResetHero();
+        ScrollActiveTabToTop();
+    }
+
+    private int GetMaxTabIndex() => 7;
+
+    private bool IsTabVisible(int index)
+    {
+        if (Vm == null) return true;
+        if (!Vm.AnimeMode)
+        {
+            // manga: hide 2,3,4,5,7
+            if (index == 2 || index == 3 || index == 4 || index == 5 || index == 7) return false;
+        }
+        else if (Vm.Type?.Equals("Movie", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            // movie: hide 2 (Episodes)
+            if (index == 2) return false;
+        }
+        return true;
     }
 
     // v2 hero mechanics (AnimeDetailsPageFragment AppBarOffsetListener):
@@ -226,11 +286,13 @@ public partial class AnimeDetailsPage : ContentPage
             switch (Vm.DetailsPivotSelectedIndex)
             {
                 case 0: _ = GeneralScroll.ScrollToAsync(0, 0, false); break;
-                case 1: EpisodesList.ScrollTo(0, animate: false); break;
-                case 2: CharactersList.ScrollTo(0, animate: false); break;
-                case 3: StaffList.ScrollTo(0, animate: false); break;
+                case 1: _ = DetailsScroll.ScrollToAsync(0, 0, false); break;
+                case 2: EpisodesList.ScrollTo(0, animate: false); break;
+                case 3: ReviewsList.ScrollTo(0, animate: false); break;
                 case 4: RecsList.ScrollTo(0, animate: false); break;
                 case 5: RelatedList.ScrollTo(0, animate: false); break;
+                case 6: CharactersList.ScrollTo(0, animate: false); break;
+                case 7: StaffList.ScrollTo(0, animate: false); break;
             }
         }
         catch (Exception ex)

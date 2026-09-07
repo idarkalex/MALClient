@@ -20,13 +20,17 @@ namespace MALClient.XShared.Comm.Anime
         {
             var output = force ? null : await DataCache.RetrieveAnimeSearchResultsData(id, animeMode);
             if (output != null)
+            {
+                Console.WriteLine($"MALPLUS EpSource id={id} source=search-cache eps={output.AllEpisodes}");
                 return output;
+            }
 
             try
             {
                 var data = await TenraiClient.GetDataAsync($"{(animeMode ? "anime" : "manga")}/{id}/full");
 
                 output = BuildFromFullData(data, animeMode, int.Parse(id));
+                Console.WriteLine($"MALPLUS EpSource id={id} source=tenrai-full eps={output.AllEpisodes}");
 
                 await DataCache.SaveGeneralDetailsByStatus(id, output, animeMode);
             }
@@ -37,7 +41,11 @@ namespace MALClient.XShared.Comm.Anime
             // both online sources failed: serve the expired v3 cache rather than blank data
             // (not re-saved, so the next open still retries the network first)
             if (output == null)
+            {
                 output = await DataCache.RetrieveAnimeSearchResultsDataStale(id, animeMode);
+                if (output != null)
+                    Console.WriteLine($"MALPLUS EpSource id={id} source=stale-cache eps={output.AllEpisodes}");
+            }
 
             return output;
         }

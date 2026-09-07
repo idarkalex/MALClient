@@ -32,12 +32,12 @@
             <!-- BLURRED BACKGROUND: same poster, real blur radius 25 (v2 parity) -->
             <controls:BlurHeroView ImageUrl="{Binding DetailImage}" />
 
-            <!-- SHARP CENTERED POSTER (340dp wide, fitCenter, 40dp top/bottom margins) -->
+            <!-- SHARP CENTERED POSTER (340x380 fixed: never shrinks with the hero,
+                 overflows + scales to fill when collapsed, like v2 clipChildren=false) -->
             <Frame x:Name="PosterContainer"
-                   HorizontalOptions="Center" VerticalOptions="Fill"
-                   WidthRequest="340" Padding="0" HasShadow="False"
-                   BackgroundColor="Transparent" BorderColor="Transparent"
-                   Margin="0,40,0,40">
+                   HorizontalOptions="Center" VerticalOptions="Center"
+                   WidthRequest="340" HeightRequest="380" Padding="0" HasShadow="False"
+                   BackgroundColor="Transparent" BorderColor="Transparent">
                 <Image Source="{Binding DetailImage, Converter={StaticResource ImageConverter}}"
                        Aspect="AspectFit" />
             </Frame>
@@ -139,8 +139,14 @@
                     <Label Grid.Row="0" Grid.Column="1" Text="STATUS" FontFamily="InterBold" FontSize="9"
                            TextColor="#80FFFFFF" VerticalOptions="Center" />
                     <Label Grid.Row="0" Grid.Column="2" Text="LAST AIRED" FontFamily="InterBold" FontSize="9"
-                           TextColor="#80FFFFFF" VerticalOptions="Center"
-                           IsVisible="{Binding LastAired, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                           TextColor="#80FFFFFF" VerticalOptions="Center">
+                        <Label.IsVisible>
+                            <MultiBinding Converter="{StaticResource MultiAnd}">
+                                <Binding Path="Status" Converter="{StaticResource AiringStatus}" />
+                                <Binding Path="LastAired" Converter="{StaticResource BoolVis}" ConverterParameter="nonempty" />
+                            </MultiBinding>
+                        </Label.IsVisible>
+                    </Label>
                     <!-- Values row -->
                     <Label Grid.Row="1" Grid.Column="0" Text="{Binding GlobalScoreBind}"
                            FontFamily="InterBold" FontSize="14" TextColor="White" VerticalOptions="Center" />
@@ -152,8 +158,14 @@
                             BorderWidth="0" Padding="0" HeightRequest="24" HorizontalOptions="Start" />
                     <Label Grid.Row="1" Grid.Column="2" Text="{Binding LastAired}"
                            FontFamily="InterBold" FontSize="14" TextColor="White"
-                           IsVisible="{Binding LastAired, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                           VerticalOptions="Center" />
+                           VerticalOptions="Center" MaxLines="1" LineBreakMode="TailTruncation">
+                        <Label.IsVisible>
+                            <MultiBinding Converter="{StaticResource MultiAnd}">
+                                <Binding Path="Status" Converter="{StaticResource AiringStatus}" />
+                                <Binding Path="LastAired" Converter="{StaticResource BoolVis}" ConverterParameter="nonempty" />
+                            </MultiBinding>
+                        </Label.IsVisible>
+                    </Label>
                     <!-- Stepper pill (right, spans both rows) -->
                     <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" StrokeShape="RoundRectangle 14"
                             BackgroundColor="#1A000000" Stroke="#29FFFFFF" StrokeThickness="1"
@@ -254,46 +266,60 @@
                         Margin="0,0,0,0" Padding="14,4,14,0"
                         BackgroundColor="{StaticResource EmSheet}">
                 <HorizontalStackLayout Spacing="20">
-                    <Label Text="General" FontFamily="InterSemiBold" FontSize="13"
+                    <Label x:Name="TabGeneral" Text="General" FontFamily="InterSemiBold" FontSize="13"
                            TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=0}"
                            HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="0" />
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Text="Episodes" FontFamily="InterSemiBold" FontSize="13"
+                    <Label x:Name="TabDetails" Text="Details" FontFamily="InterSemiBold" FontSize="13"
                            TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=1}"
                            HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="1" />
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Text="Characters" FontFamily="InterSemiBold" FontSize="13"
+                    <Label x:Name="TabEpisodes" Text="Episodes" FontFamily="InterSemiBold" FontSize="13"
                            TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=2}"
                            HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="2" />
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Text="Staff" FontFamily="InterSemiBold" FontSize="13"
+                    <Label x:Name="TabReviews" Text="Reviews" FontFamily="InterSemiBold" FontSize="13"
                            TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=3}"
                            HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="3" />
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Text="Recs" FontFamily="InterSemiBold" FontSize="13"
+                    <Label x:Name="TabRecs" Text="Recs" FontFamily="InterSemiBold" FontSize="13"
                            TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=4}"
                            HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="4" />
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Text="Related" FontFamily="InterSemiBold" FontSize="13"
+                    <Label x:Name="TabRelated" Text="Related" FontFamily="InterSemiBold" FontSize="13"
                            TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=5}"
                            HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="5" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label x:Name="TabCharacters" Text="Characters" FontFamily="InterSemiBold" FontSize="13"
+                           TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=6}"
+                           HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="6" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label x:Name="TabStaff" Text="Staff" FontFamily="InterSemiBold" FontSize="13"
+                           TextColor="{Binding DetailsPivotSelectedIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=7}"
+                           HorizontalOptions="Center" VerticalOptions="Center" Padding="0,6">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTabTapped" CommandParameter="7" />
                         </Label.GestureRecognizers>
                     </Label>
                 </HorizontalStackLayout>
@@ -301,9 +327,14 @@
         </Grid>
 
         <!-- ============================================================== -->
-        <!-- PAGER (each tab scrolls independently)                        -->
+        <!-- PAGER (each tab scrolls independently, swipe lateral)         -->
         <!-- ============================================================== -->
-        <Grid Grid.Row="2" BackgroundColor="{StaticResource EmSheet}">
+        <Grid x:Name="PagerGrid" Grid.Row="2" BackgroundColor="{StaticResource EmSheet}">
+            <Grid.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Left" Swiped="OnPagerSwiped" />
+                <SwipeGestureRecognizer Direction="Right" Swiped="OnPagerSwiped" />
+            </Grid.GestureRecognizers>
+
             <!-- General Tab (0) -->
             <ScrollView x:Name="GeneralScroll"
                         Scrolled="OnTabContentScrolled"
@@ -412,8 +443,122 @@
                 </VerticalStackLayout>
             </ScrollView>
 
-            <!-- Episodes Tab (1) -->
-            <Grid IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=1}"
+            <!-- Details Tab (1) - Genres 2col, Information, Stats, OP, ED -->
+            <ScrollView x:Name="DetailsScroll"
+                        Scrolled="OnTabContentScrolled"
+                        IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=1}"
+                        Padding="12,12,12,16">
+                <VerticalStackLayout Spacing="12">
+                    <!-- Genres: 2-column list of LeftGenres + RightGenres -->
+                    <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                            BackgroundColor="{StaticResource EmSheet}" Padding="12"
+                            StrokeShape="RoundRectangle 8">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <CollectionView Grid.Column="0" ItemsSource="{Binding LeftGenres}"
+                                            SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
+                                               TextColor="{StaticResource BrushText}" Padding="0,4" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <CollectionView Grid.Column="1" ItemsSource="{Binding RightGenres}"
+                                            SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
+                                               TextColor="{StaticResource BrushText}" Padding="0,4" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </Grid>
+                    </Border>
+
+                    <!-- Information: pairs of (Field, Value) -->
+                    <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                            BackgroundColor="{StaticResource EmSheet}" Padding="12"
+                            StrokeShape="RoundRectangle 8">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="INFORMATION" FontFamily="InterBold" FontSize="10"
+                                   TextColor="#A0FFFFFF" />
+                            <CollectionView ItemsSource="{Binding Information}" SelectionMode="None"
+                                            HeightRequest="200">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="110,*" Padding="0,3">
+                                            <Label Grid.Column="0" Text="{Binding Item1}"
+                                                   FontFamily="Inter" FontSize="12"
+                                                   TextColor="#A0FFFFFF" />
+                                            <Label Grid.Column="1" Text="{Binding Item2}"
+                                                   FontFamily="Inter" FontSize="12"
+                                                   TextColor="{StaticResource BrushText}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Stats: pairs of (Field, Value) -->
+                    <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                            BackgroundColor="{StaticResource EmSheet}" Padding="12"
+                            StrokeShape="RoundRectangle 8">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="STATS" FontFamily="InterBold" FontSize="10"
+                                   TextColor="#A0FFFFFF" />
+                            <CollectionView ItemsSource="{Binding Stats}" SelectionMode="None"
+                                            HeightRequest="120">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="110,*" Padding="0,3">
+                                            <Label Grid.Column="0" Text="{Binding Item1}"
+                                                   FontFamily="Inter" FontSize="12"
+                                                   TextColor="#A0FFFFFF" />
+                                            <Label Grid.Column="1" Text="{Binding Item2}"
+                                                   FontFamily="Inter" FontSize="12"
+                                                   TextColor="{StaticResource BrushText}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- OP + ED -->
+                    <Border Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                            BackgroundColor="{StaticResource EmSheet}" Padding="12"
+                            StrokeShape="RoundRectangle 8">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="OPENING" FontFamily="InterBold" FontSize="10"
+                                   TextColor="#A0FFFFFF" />
+                            <CollectionView ItemsSource="{Binding OPs}" SelectionMode="None"
+                                            HeightRequest="80">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
+                                               TextColor="{StaticResource BrushText}" Padding="0,3" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Label Text="ENDING" FontFamily="InterBold" FontSize="10"
+                                   TextColor="#A0FFFFFF" Margin="0,6,0,0" />
+                            <CollectionView ItemsSource="{Binding EDs}" SelectionMode="None"
+                                            HeightRequest="80">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
+                                               TextColor="{StaticResource BrushText}" Padding="0,3" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Episodes Tab (2) -->
+            <Grid IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=2}"
                   RowDefinitions="Auto,*" Padding="0,8,0,16">
                 <ActivityIndicator Grid.Row="0" IsRunning="{Binding LoadingEpisodes}"
                                    IsVisible="{Binding LoadingEpisodes}"
@@ -441,59 +586,48 @@
                 </CollectionView>
             </Grid>
 
-            <!-- Characters Tab (2) -->
-            <Grid IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=2}"
-                  RowDefinitions="Auto,*" Padding="0,8,0,16">
-                <ActivityIndicator Grid.Row="0" IsRunning="{Binding LoadingCharacters}"
-                                   IsVisible="{Binding LoadingCharacters}"
-                                   Color="{StaticResource EmAccent}" VerticalOptions="Center"
-                                   HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView x:Name="CharactersList" Grid.Row="1" ItemsSource="{Binding AnimeCharactersData}"
-                                Scrolled="OnTabItemsScrolled"
-                                EmptyView="No characters" Margin="0">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
-                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 8" Padding="14,10">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                    <Label Grid.Column="0" Text="{Binding Name}"
-                                           FontFamily="Inter" FontSize="14" TextColor="{StaticResource BrushText}"
-                                           VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding Role}"
-                                           FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF"
-                                           VerticalOptions="Center" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Grid>
-
-            <!-- Staff Tab (3) -->
+            <!-- Reviews Tab (3) -->
             <Grid IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=3}"
                   RowDefinitions="Auto,*" Padding="0,8,0,16">
-                <ActivityIndicator Grid.Row="0" IsRunning="{Binding LoadingStaff}"
-                                   IsVisible="{Binding LoadingStaff}"
+                <ActivityIndicator Grid.Row="0" IsRunning="{Binding LoadingReviews}"
+                                   IsVisible="{Binding LoadingReviews}"
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView x:Name="StaffList" Grid.Row="1" ItemsSource="{Binding AnimeStaffData}"
+                <CollectionView x:Name="ReviewsList" Grid.Row="1" ItemsSource="{Binding Reviews}"
                                 Scrolled="OnTabItemsScrolled"
-                                EmptyView="No staff" Margin="0">
+                                EmptyView="No reviews" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="14,10">
-                                <Label Text="{Binding Name}" FontFamily="Inter" FontSize="14"
-                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                <VerticalStackLayout Spacing="4">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <Border Grid.Column="0" WidthRequest="32" HeightRequest="32"
+                                                StrokeShape="RoundRectangle 16"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding AuthorAvatar, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Grid.Column="1" Text="{Binding Author}"
+                                               FontFamily="InterBold" FontSize="13"
+                                               TextColor="{StaticResource BrushText}"
+                                               VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="{Binding OverallRating}"
+                                               FontFamily="InterBold" FontSize="14"
+                                               TextColor="#FFD700" VerticalOptions="Center" />
+                                    </Grid>
+                                    <Label Text="{Binding Review}" FontFamily="Inter" FontSize="12"
+                                           TextColor="#C0FFFFFF" MaxLines="6"
+                                           LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
 
-            <!-- Recs Tab (4) -->
+            <!-- Recs Tab (4) - direct recommendations with cover -->
             <Grid IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=4}"
                   RowDefinitions="Auto,*" Padding="0,8,0,16">
                 <ActivityIndicator Grid.Row="0" IsRunning="{Binding LoadingRecommendations}"
@@ -503,13 +637,23 @@
                 <CollectionView x:Name="RecsList" Grid.Row="1" ItemsSource="{Binding Recommendations}"
                                 Scrolled="OnTabItemsScrolled"
                                 EmptyView="No recommendations" Margin="0">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="8"
+                                          VerticalItemSpacing="8" />
+                    </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                            <Border Margin="4,4" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 8" Padding="14,10">
-                                <Label Text="{Binding Title}" FontFamily="Inter" FontSize="14"
-                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                    StrokeShape="RoundRectangle 8" Padding="0">
+                                <VerticalStackLayout Spacing="0">
+                                    <Image Source="{Binding ImageUrl, Converter={StaticResource ImageConverter}}"
+                                           Aspect="AspectFill" HeightRequest="200" />
+                                    <Label Text="{Binding Title}" FontFamily="InterSemiBold"
+                                           FontSize="12" TextColor="{StaticResource BrushText}"
+                                           Padding="8,6" MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -523,21 +667,119 @@
                                    IsVisible="{Binding LoadingRelated}"
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView x:Name="RelatedList" Grid.Row="1" ItemsSource="{Binding AnimeRelatedData}"
+                <CollectionView x:Name="RelatedList" Grid.Row="1" ItemsSource="{Binding RelatedAnime}"
                                 Scrolled="OnTabItemsScrolled"
                                 EmptyView="No related anime" Margin="0">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="8"
+                                          VerticalItemSpacing="8" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="4,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="0">
+                                <VerticalStackLayout Spacing="0">
+                                    <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                           Aspect="AspectFill" HeightRequest="200" />
+                                    <VerticalStackLayout Padding="8,6" Spacing="2">
+                                        <Label Text="{Binding Title}" FontFamily="InterSemiBold"
+                                               FontSize="12" TextColor="{StaticResource BrushText}"
+                                               MaxLines="2" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding WholeRelation}" FontFamily="Inter"
+                                               FontSize="11" TextColor="#80FFFFFF" />
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+
+            <!-- Characters Tab (6) - pairs: photo + character name | voice actor -->
+            <Grid IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=6}"
+                  RowDefinitions="Auto,*" Padding="0,8,0,16">
+                <ActivityIndicator Grid.Row="0" IsRunning="{Binding LoadingCharactersVisibility}"
+                                   IsVisible="{Binding LoadingCharactersVisibility}"
+                                   Color="{StaticResource EmAccent}" VerticalOptions="Center"
+                                   HorizontalOptions="Center" Margin="0,20" />
+                <CollectionView x:Name="CharactersList" Grid.Row="1"
+                                ItemsSource="{Binding AnimeStaffData.AnimeCharacterPairs}"
+                                Scrolled="OnTabItemsScrolled"
+                                EmptyView="No characters" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 8" Padding="14,10">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                    <Label Grid.Column="0" Text="{Binding Title}"
-                                           FontFamily="Inter" FontSize="14" TextColor="{StaticResource BrushText}"
-                                           VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding RelationType}"
-                                           FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF"
-                                           VerticalOptions="Center" />
+                                    StrokeShape="RoundRectangle 8" Padding="10">
+                                <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="10">
+                                    <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
+                                            StrokeShape="RoundRectangle 6"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding AnimeCharacter.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding AnimeCharacter.Data.Name}"
+                                               FontFamily="InterBold" FontSize="13"
+                                               TextColor="{StaticResource BrushText}"
+                                               MaxLines="2" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding AnimeCharacter.Data.Notes}"
+                                               FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF"
+                                               MaxLines="1" LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                    <Border Grid.Column="2" WidthRequest="56" HeightRequest="80"
+                                            StrokeShape="RoundRectangle 6"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding AnimeStaffPerson.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="3" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding AnimeStaffPerson.Data.Name}"
+                                               FontFamily="InterBold" FontSize="13"
+                                               TextColor="{StaticResource BrushText}"
+                                               MaxLines="2" LineBreakMode="TailTruncation" />
+                                        <Label Text="Voice" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+
+            <!-- Staff Tab (7) - photo + name + role -->
+            <Grid IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=7}"
+                  RowDefinitions="Auto,*" Padding="0,8,0,16">
+                <ActivityIndicator Grid.Row="0" IsRunning="{Binding LoadingCharactersVisibility}"
+                                   IsVisible="{Binding LoadingCharactersVisibility}"
+                                   Color="{StaticResource EmAccent}" VerticalOptions="Center"
+                                   HorizontalOptions="Center" Margin="0,20" />
+                <CollectionView x:Name="StaffList" Grid.Row="1"
+                                ItemsSource="{Binding AnimeStaffData.AnimeStaff}"
+                                Scrolled="OnTabItemsScrolled"
+                                EmptyView="No staff" Margin="0">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="10">
+                                <Grid ColumnDefinitions="60,*" ColumnSpacing="10">
+                                    <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
+                                            StrokeShape="RoundRectangle 6"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Data.Name}" FontFamily="InterBold"
+                                               FontSize="13" TextColor="{StaticResource BrushText}"
+                                               MaxLines="2" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding Data.Notes}" FontFamily="Inter"
+                                               FontSize="11" TextColor="#80FFFFFF" MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
                                 </Grid>
                             </Border>
                         </DataTemplate>
