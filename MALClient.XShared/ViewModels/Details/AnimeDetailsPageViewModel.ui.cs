@@ -64,6 +64,7 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 _animeItemReference.MyScore = value;
                 RaisePropertyChanged(() => MyScoreBind);
+                RaisePropertyChanged(() => IsMyScoreSet);
             }
         }
 

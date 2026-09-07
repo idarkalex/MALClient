@@ -12,6 +12,7 @@
         <converters:AiringStatusVisibilityConverter x:Key="AiringStatus" />
         <converters:CountdownTextConverter x:Key="CountdownText" />
         <converters:CountdownVisibilityConverter x:Key="CountdownVis" />
+        <converters:MultiAndConverter x:Key="MultiAnd" />
     </ContentPage.Resources>
 
     <!-- ============================================================== -->
@@ -20,7 +21,7 @@
     <!--   Row 1: Action bar + Tab strip (STICKY, no scroll)            -->
     <!--   Row 2: Pager (each tab scrolls independently)                -->
     <!-- ============================================================== -->
-    <Grid RowDefinitions="380,Auto,*" BackgroundColor="{StaticResource EmSheet}">
+    <Grid RowDefinitions="Auto,Auto,*" BackgroundColor="{StaticResource EmSheet}">
 
         <!-- ============================================================== -->
         <!-- HERO (600dp, no scroll)                                       -->
@@ -28,21 +29,42 @@
         <!--   - Bottom gradient overlay                                   -->
         <!--   - Title section pinned bottom (title, badges, score row)   -->
         <!-- ============================================================== -->
-        <Grid Grid.Row="0" BackgroundColor="#000000">
-            <!-- POSTER FULL-BLEED (centerCrop) -->
-            <Image x:Name="HeroBackground"
+        <Grid Grid.Row="0" x:Name="HeroContainer" HeightRequest="460" BackgroundColor="#000000">
+            <!-- BLURRED BACKGROUND: same poster, centerCrop (v2 BlurredTransformation(25),
+                 simulated with a dark overlay since MAUI has no blur) -->
+            <Image x:Name="HeroBlurredBackground"
                    Source="{Binding DetailImage, Converter={StaticResource ImageConverter}}"
                    Aspect="AspectFill" />
+            <BoxView Color="#66000000" />
 
-            <!-- Bottom gradient overlay (transparent -> #051522) -->
+            <!-- SHARP CENTERED POSTER (340dp wide, fitCenter, 40dp top/bottom margins) -->
+            <Frame x:Name="PosterContainer"
+                   HorizontalOptions="Center" VerticalOptions="Fill"
+                   WidthRequest="340" Padding="0" HasShadow="False"
+                   BackgroundColor="Transparent" BorderColor="Transparent"
+                   Margin="0,40,0,40">
+                <Image Source="{Binding DetailImage, Converter={StaticResource ImageConverter}}"
+                       Aspect="AspectFit" />
+            </Frame>
+
+            <!-- Bottom gradient overlay (v2 hero_gradient_overlay) -->
             <BoxView>
                 <BoxView.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="Transparent" Offset="0.0" />
-                        <GradientStop Color="Transparent" Offset="0.4" />
-                        <GradientStop Color="#B3051522" Offset="0.75" />
-                        <GradientStop Color="#E6051522" Offset="0.95" />
-                        <GradientStop Color="#051522" Offset="1.0" />
+                        <GradientStop Color="#00051522" Offset="0.0" />
+                        <GradientStop Color="#00051522" Offset="0.5" />
+                        <GradientStop Color="#B3051522" Offset="1.0" />
+                    </LinearGradientBrush>
+                </BoxView.Background>
+            </BoxView>
+
+            <!-- Collapse scrim (v2 hero_collapse_scrim, Opacity = collapse ratio) -->
+            <BoxView x:Name="HeroScrim" Opacity="0">
+                <BoxView.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#00051522" Offset="0.0" />
+                        <GradientStop Color="#4D051522" Offset="0.5" />
+                        <GradientStop Color="#B3051522" Offset="1.0" />
                     </LinearGradientBrush>
                 </BoxView.Background>
             </BoxView>
@@ -119,7 +141,8 @@
                         <Label Text="STATUS" FontFamily="InterBold" FontSize="9"
                                TextColor="#80FFFFFF" VerticalOptions="Center" />
                         <Button Text="{Binding MyStatusBind}"
-                                Command="{Binding ChangeStatusCommand}"
+                                Clicked="OnStatusClicked"
+                                IsEnabled="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
                                 FontFamily="InterBold" FontSize="14"
                                 BackgroundColor="Transparent" TextColor="White"
                                 BorderWidth="0" Padding="0" HeightRequest="22" />
@@ -167,20 +190,40 @@
                     StrokeShape="RoundRectangle 24,24,0,0" Stroke="Transparent"
                     Padding="14,12,14,8">
                 <Grid ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="6">
+                    <Button Grid.Column="0" Text="Add to List"
+                            Command="{Binding AddAnimeCommand}"
+                            IsVisible="{Binding AddAnimeVisibility}"
+                            IsEnabled="{Binding IsAddAnimeButtonEnabled}"
+                            FontFamily="InterSemiBold" FontSize="12"
+                            BackgroundColor="#141d2b" TextColor="White"
+                            BorderColor="#29FFFFFF" BorderWidth="1"
+                            CornerRadius="12" HeightRequest="40" Padding="10,0" />
                     <Button Grid.Column="0" Text="★ Unranked"
-                            Command="{Binding ChangeScoreCommand}"
-                            IsVisible="{Binding IsMyScoreSet, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                            Clicked="OnScoreClicked"
                             FontFamily="InterSemiBold" FontSize="12"
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
-                            CornerRadius="12" HeightRequest="40" Padding="10,0" />
-                    <Button Grid.Column="0" Text="{Binding MyScoreBind, StringFormat='★ {0:N1}'}"
-                            Command="{Binding ChangeScoreCommand}"
-                            IsVisible="{Binding IsMyScoreSet}"
+                            CornerRadius="12" HeightRequest="40" Padding="10,0">
+                        <Button.IsVisible>
+                            <MultiBinding Converter="{StaticResource MultiAnd}">
+                                <Binding Path="AddAnimeVisibility" Converter="{StaticResource BoolVis}" ConverterParameter="invert" />
+                                <Binding Path="IsMyScoreSet" Converter="{StaticResource BoolVis}" ConverterParameter="invert" />
+                            </MultiBinding>
+                        </Button.IsVisible>
+                    </Button>
+                    <Button Grid.Column="0" Text="{Binding MyScoreBind, StringFormat='★ {0}'}"
+                            Clicked="OnScoreClicked"
                             FontFamily="InterSemiBold" FontSize="12"
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
-                            CornerRadius="12" HeightRequest="40" Padding="10,0" />
+                            CornerRadius="12" HeightRequest="40" Padding="10,0">
+                        <Button.IsVisible>
+                            <MultiBinding Converter="{StaticResource MultiAnd}">
+                                <Binding Path="AddAnimeVisibility" Converter="{StaticResource BoolVis}" ConverterParameter="invert" />
+                                <Binding Path="IsMyScoreSet" />
+                            </MultiBinding>
+                        </Button.IsVisible>
+                    </Button>
                     <Button Grid.Column="1" Text="♡ Favorite"
                             Command="{Binding ToggleFavouriteCommand}"
                             FontFamily="InterSemiBold" FontSize="12"
@@ -259,7 +302,9 @@
         <!-- ============================================================== -->
         <Grid Grid.Row="2" BackgroundColor="{StaticResource EmSheet}">
             <!-- General Tab (0) -->
-            <ScrollView IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=0}"
+            <ScrollView x:Name="GeneralScroll"
+                        Scrolled="OnTabContentScrolled"
+                        IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=0}"
                         Padding="12,12,12,16">
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
@@ -371,7 +416,8 @@
                                    IsVisible="{Binding LoadingEpisodes}"
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView Grid.Row="1" ItemsSource="{Binding Episodes}"
+                <CollectionView x:Name="EpisodesList" Grid.Row="1" ItemsSource="{Binding Episodes}"
+                                Scrolled="OnTabItemsScrolled"
                                 EmptyView="No episodes available" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -399,7 +445,8 @@
                                    IsVisible="{Binding LoadingCharacters}"
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView Grid.Row="1" ItemsSource="{Binding AnimeCharactersData}"
+                <CollectionView x:Name="CharactersList" Grid.Row="1" ItemsSource="{Binding AnimeCharactersData}"
+                                Scrolled="OnTabItemsScrolled"
                                 EmptyView="No characters" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -427,7 +474,8 @@
                                    IsVisible="{Binding LoadingStaff}"
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView Grid.Row="1" ItemsSource="{Binding AnimeStaffData}"
+                <CollectionView x:Name="StaffList" Grid.Row="1" ItemsSource="{Binding AnimeStaffData}"
+                                Scrolled="OnTabItemsScrolled"
                                 EmptyView="No staff" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -449,7 +497,8 @@
                                    IsVisible="{Binding LoadingRecommendations}"
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView Grid.Row="1" ItemsSource="{Binding Recommendations}"
+                <CollectionView x:Name="RecsList" Grid.Row="1" ItemsSource="{Binding Recommendations}"
+                                Scrolled="OnTabItemsScrolled"
                                 EmptyView="No recommendations" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -471,7 +520,8 @@
                                    IsVisible="{Binding LoadingRelated}"
                                    Color="{StaticResource EmAccent}" VerticalOptions="Center"
                                    HorizontalOptions="Center" Margin="0,20" />
-                <CollectionView Grid.Row="1" ItemsSource="{Binding AnimeRelatedData}"
+                <CollectionView x:Name="RelatedList" Grid.Row="1" ItemsSource="{Binding AnimeRelatedData}"
+                                Scrolled="OnTabItemsScrolled"
                                 EmptyView="No related anime" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>

@@ -1,4 +1,6 @@
+using MALClient.Models.Enums;
 using MALClient.XShared.NavArgs;
+using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
 
@@ -128,16 +130,114 @@ public partial class AnimeDetailsPage : ContentPage
         }
     }
 
+    // v2 parity: status/score buttons open pickers (AnimeUpdateDialogBuilder),
+    // the VM commands take the picked value as string and crash without one.
+    private async void OnStatusClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var options = new[]
+            {
+                AnimeStatus.Watching, AnimeStatus.Completed, AnimeStatus.OnHold,
+                AnimeStatus.Dropped, AnimeStatus.PlanToWatch
+            };
+            var labels = options.Select(s => Utilities.StatusToString((int)s, !Vm.AnimeMode, false)).ToArray();
+            var choice = await DisplayActionSheet("Set status", "Cancel", null, labels);
+            if (string.IsNullOrEmpty(choice) || choice == "Cancel")
+                return;
+            var index = Array.IndexOf(labels, choice);
+            if (index >= 0)
+                Vm.ChangeStatus(options[index]);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnStatusClicked failed: " + ex.GetType().Name);
+        }
+    }
+
+    private async void OnScoreClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var choice = await DisplayActionSheet("Set score", "Cancel", null,
+                "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0 (clear)");
+            if (string.IsNullOrEmpty(choice) || choice == "Cancel")
+                return;
+            var num = choice.Split(' ')[0];
+            if (int.TryParse(num, out var score))
+                Vm.ChangeScoreCommand.Execute(score.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnScoreClicked failed: " + ex.GetType().Name);
+        }
+    }
+
     private void OnTabTapped(object sender, TappedEventArgs e)
     {
         if (e.Parameter is string param && int.TryParse(param, out int tabIndex))
         {
             Vm.DetailsPivotSelectedIndex = tabIndex;
+            ResetHero();
+            ScrollActiveTabToTop();
         }
     }
 
-    private void OnHeroScrolled(object sender, ScrolledEventArgs e)
+    // v2 hero mechanics (AnimeDetailsPageFragment AppBarOffsetListener):
+    // ratio = scrollY / (460 - 210); poster scale = 1 + 0.35 * ratio; scrim alpha = ratio.
+    private const double HeroExpandedHeight = 460;
+    private const double HeroCollapsedHeight = 210;
+    private const double HeroCollapseRange = HeroExpandedHeight - HeroCollapsedHeight;
+    private double _lastCollapseRatio = -1;
+
+    private void OnTabContentScrolled(object sender, ScrolledEventArgs e)
     {
-        // Hero is fixed in v2 (no collapse animation), so this handler is a no-op
+        ApplyHeroCollapse(e.ScrollY);
+    }
+
+    private void OnTabItemsScrolled(object sender, ItemsViewScrolledEventArgs e)
+    {
+        ApplyHeroCollapse(e.VerticalOffset);
+    }
+
+    private void ApplyHeroCollapse(double scrollY)
+    {
+        var ratio = Math.Clamp(scrollY / HeroCollapseRange, 0, 1);
+        if (Math.Abs(ratio - _lastCollapseRatio) < 0.01)
+            return;
+        _lastCollapseRatio = ratio;
+        HeroContainer.HeightRequest = HeroExpandedHeight - HeroCollapseRange * ratio;
+        var scale = 1 + 0.35 * ratio;
+        PosterContainer.ScaleX = scale;
+        PosterContainer.ScaleY = scale;
+        PosterContainer.TranslationX = 30 * ratio;
+        PosterContainer.TranslationY = 50 * ratio;
+        HeroScrim.Opacity = ratio;
+    }
+
+    private void ResetHero()
+    {
+        _lastCollapseRatio = -1;
+        ApplyHeroCollapse(0);
+    }
+
+    private void ScrollActiveTabToTop()
+    {
+        try
+        {
+            switch (Vm.DetailsPivotSelectedIndex)
+            {
+                case 0: _ = GeneralScroll.ScrollToAsync(0, 0, false); break;
+                case 1: EpisodesList.ScrollTo(0, animate: false); break;
+                case 2: CharactersList.ScrollTo(0, animate: false); break;
+                case 3: StaffList.ScrollTo(0, animate: false); break;
+                case 4: RecsList.ScrollTo(0, animate: false); break;
+                case 5: RelatedList.ScrollTo(0, animate: false); break;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("MALPLUS ScrollActiveTabToTop failed: " + ex.GetType().Name);
+        }
     }
 }
