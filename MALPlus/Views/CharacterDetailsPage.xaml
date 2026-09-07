@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.CharacterDetailsPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <!-- Loading overlay -->
+        <Grid IsVisible="{Binding Loading}" BackgroundColor="#CC000510" ZIndex="99">
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                   WidthRequest="40" HeightRequest="40" />
+                <Label Text="Loading..." FontFamily="Inter" FontSize="12"
+                       TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <ScrollView IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <VerticalStackLayout Spacing="14" Padding="0,0,0,32">
+
+                <!-- Hero: image + name overlay -->
+                <Grid HeightRequest="320" BackgroundColor="#000000">
+                    <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                           Aspect="AspectFill" />
+                    <BoxView>
+                        <BoxView.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#00000000" Offset="0.0" />
+                                <GradientStop Color="#00000000" Offset="0.5" />
+                                <GradientStop Color="#E6051522" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </BoxView.Background>
+                    </BoxView>
+                    <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,16" Spacing="4">
+                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="22"
+                               TextColor="White" MaxLines="2" LineBreakMode="TailTruncation" />
+                        <Label Text="Character" FontFamily="Inter" FontSize="12"
+                               TextColor="#B0FFFFFF" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- About section -->
+                <Border Margin="16,16,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="ABOUT" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Label Text="{Binding Data.Content}" FontFamily="Inter" FontSize="13"
+                               TextColor="{StaticResource BrushText}" LineHeight="1.4" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Spoiler section (collapsible - just hidden by default) -->
+                <Border Margin="16,0,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14"
+                        IsVisible="{Binding SpoilerButtonVisibility}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="SPOILER" FontFamily="InterBold" FontSize="10"
+                               TextColor="#FF6B00" />
+                        <Label Text="{Binding Data.SpoilerContent}" FontFamily="Inter" FontSize="13"
+                               TextColor="{StaticResource BrushText}" LineHeight="1.4" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Voice Actors -->
+                <Border Margin="16,0,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14"
+                        IsVisible="{Binding VoiceActors.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="VOICE ACTORS" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding VoiceActors}" HeightRequest="200"
+                                        SelectionMode="None">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="8"
+                                                  VerticalItemSpacing="8" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="60,*" ColumnSpacing="8">
+                                        <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
+                                                StrokeShape="RoundRectangle 6"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Data.Name}" FontFamily="InterBold"
+                                                   FontSize="12" TextColor="{StaticResource BrushText}"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                            <Label Text="{Binding Data.Notes}" FontFamily="Inter"
+                                                   FontSize="10" TextColor="#80FFFFFF" MaxLines="2"
+                                                   LineBreakMode="TailTruncation" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Animeography -->
+                <Border Margin="16,0,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14"
+                        IsVisible="{Binding AnimeographyVisibility}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="ANIMEOGRAPHY" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding Data.Animeography}" HeightRequest="140"
+                                        SelectionMode="None">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Horizontal" Span="1"
+                                                  HorizontalItemSpacing="8" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid WidthRequest="100" RowDefinitions="140,Auto" RowSpacing="4">
+                                        <Border Grid.Row="0" WidthRequest="100" HeightRequest="140"
+                                                StrokeShape="RoundRectangle 6"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Grid.Row="1" Text="{Binding Title}" FontFamily="InterBold"
+                                               FontSize="11" TextColor="{StaticResource BrushText}"
+                                               MaxLines="2" LineBreakMode="TailTruncation"
+                                               HorizontalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Mangaography -->
+                <Border Margin="16,0,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14"
+                        IsVisible="{Binding MangaographyVisibility}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="MANGAOGRAPHY" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <CollectionView ItemsSource="{Binding Data.Mangaography}" HeightRequest="140"
+                                        SelectionMode="None">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Horizontal" Span="1"
+                                                  HorizontalItemSpacing="8" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid WidthRequest="100" RowDefinitions="140,Auto" RowSpacing="4">
+                                        <Border Grid.Row="0" WidthRequest="100" HeightRequest="140"
+                                                StrokeShape="RoundRectangle 6"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Grid.Row="1" Text="{Binding Title}" FontFamily="InterBold"
+                                               FontSize="11" TextColor="{StaticResource BrushText}"
+                                               MaxLines="2" LineBreakMode="TailTruncation"
+                                               HorizontalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

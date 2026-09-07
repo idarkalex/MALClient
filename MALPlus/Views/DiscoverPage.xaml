@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.DiscoverPage"
+             Title="Discover"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
+        <ScrollView x:Name="MainScroll">
+            <VerticalStackLayout Padding="0,12,0,32" Spacing="20">
+
+                <Label Text="Discover" FontFamily="InterBold" FontSize="24"
+                       TextColor="{StaticResource BrushText}" Padding="16,4" />
+
+                <!-- Seasonal -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="SEASONAL" FontFamily="InterBold" FontSize="11"
+                           TextColor="#A0FFFFFF" Padding="16,0" />
+                    <CollectionView x:Name="SeasonalRow" HeightRequest="240"
+                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid WidthRequest="140" Padding="0,0,0,8">
+                                    <Border WidthRequest="140" HeightRequest="200"
+                                            StrokeShape="RoundRectangle 8"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
+                                                         BackgroundColor="#B3051522"
+                                                         Margin="0,0,0,0">
+                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
+                                               TextColor="White" MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+                <!-- Top Anime -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="TOP ANIME" FontFamily="InterBold" FontSize="11"
+                           TextColor="#A0FFFFFF" Padding="16,0" />
+                    <CollectionView x:Name="TopAnimeRow" HeightRequest="240"
+                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid WidthRequest="140" Padding="0,0,0,8">
+                                    <Border WidthRequest="140" HeightRequest="200"
+                                            StrokeShape="RoundRectangle 8"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
+                                                         BackgroundColor="#B3051522">
+                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
+                                               TextColor="White" MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+                <!-- Top Manga -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="TOP MANGA" FontFamily="InterBold" FontSize="11"
+                           TextColor="#A0FFFFFF" Padding="16,0" />
+                    <CollectionView x:Name="TopMangaRow" HeightRequest="240"
+                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid WidthRequest="140" Padding="0,0,0,8">
+                                    <Border WidthRequest="140" HeightRequest="200"
+                                            StrokeShape="RoundRectangle 8"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
+                                                         BackgroundColor="#B3051522">
+                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
+                                               TextColor="White" MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+                <!-- Adapted -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="ADAPTED TO ANIME" FontFamily="InterBold" FontSize="11"
+                           TextColor="#A0FFFFFF" Padding="16,0" />
+                    <CollectionView x:Name="AdaptedRow" HeightRequest="240"
+                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid WidthRequest="140" Padding="0,0,0,8">
+                                    <Border WidthRequest="140" HeightRequest="200"
+                                            StrokeShape="RoundRectangle 8"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
+                                                         BackgroundColor="#B3051522">
+                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
+                                               TextColor="White" MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.StaffDetailsPage"
+             BackgroundColor="{StaticResource EmBackground}">
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <!-- Loading overlay -->
+        <Grid IsVisible="{Binding Loading}" BackgroundColor="#CC000510" ZIndex="99">
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                   WidthRequest="40" HeightRequest="40" />
+                <Label Text="Loading..." FontFamily="Inter" FontSize="12"
+                       TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <ScrollView IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <VerticalStackLayout Spacing="14" Padding="0,0,0,32">
+
+                <!-- Hero: image + name overlay -->
+                <Grid HeightRequest="320" BackgroundColor="#000000">
+                    <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                           Aspect="AspectFill" />
+                    <BoxView>
+                        <BoxView.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#00000000" Offset="0.0" />
+                                <GradientStop Color="#00000000" Offset="0.5" />
+                                <GradientStop Color="#E6051522" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </BoxView.Background>
+                    </BoxView>
+                    <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,16" Spacing="4">
+                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="22"
+                               TextColor="White" MaxLines="2" LineBreakMode="TailTruncation" />
+                        <Label Text="Person" FontFamily="Inter" FontSize="12"
+                               TextColor="#B0FFFFFF" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Details (key/value lines) -->
+                <Border Margin="16,16,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="INFO" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" Margin="0,0,0,4" />
+                        <CollectionView ItemsSource="{Binding Data.Details}" SelectionMode="None"
+                                        HeightRequest="160">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding}" FontFamily="Inter" FontSize="13"
+                                           TextColor="{StaticResource BrushText}" Padding="0,2" />
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Voice Acting Roles (ShowCharacterPairs) -->
+                <Border Margin="16,0,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14"
+                        IsVisible="{Binding Data.ShowCharacterPairs.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="VOICE ACTING ROLES" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Label Text="No voice acting roles" FontFamily="Inter" FontSize="12"
+                               TextColor="#80FFFFFF"
+                               IsVisible="{Binding IsNoVoiceActingRolesNoticeVisible}" />
+                        <CollectionView ItemsSource="{Binding Data.ShowCharacterPairs}"
+                                        SelectionMode="None" HeightRequest="100">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="8" Padding="0,4">
+                                        <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
+                                                StrokeShape="RoundRectangle 6"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding AnimeLightEntry.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding AnimeLightEntry.Title}" FontFamily="InterBold"
+                                                   FontSize="12" TextColor="{StaticResource BrushText}"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="2" WidthRequest="56" HeightRequest="80"
+                                                StrokeShape="RoundRectangle 6"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding AnimeCharacter.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="3" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding AnimeCharacter.Name}" FontFamily="InterBold"
+                                                   FontSize="12" TextColor="{StaticResource BrushText}"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Staff Positions -->
+                <Border Margin="16,0,16,0" BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8" Padding="14"
+                        IsVisible="{Binding Data.StaffPositions.Count, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="STAFF POSITIONS" FontFamily="InterBold" FontSize="10"
+                               TextColor="#A0FFFFFF" />
+                        <Label Text="No staff positions" FontFamily="Inter" FontSize="12"
+                               TextColor="#80FFFFFF"
+                               IsVisible="{Binding IsNoProductionRolesNoticeVisible}" />
+                        <CollectionView ItemsSource="{Binding Data.StaffPositions}"
+                                        SelectionMode="None" HeightRequest="100">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="60,*" ColumnSpacing="8" Padding="0,4">
+                                        <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
+                                                StrokeShape="RoundRectangle 6"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Title}" FontFamily="InterBold"
+                                                   FontSize="12" TextColor="{StaticResource BrushText}"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                            <Label Text="{Binding Notes}" FontFamily="Inter" FontSize="10"
+                                                   TextColor="#80FFFFFF" MaxLines="1"
+                                                   LineBreakMode="TailTruncation" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

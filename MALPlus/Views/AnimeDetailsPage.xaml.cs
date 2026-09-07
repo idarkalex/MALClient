@@ -219,6 +219,36 @@ public partial class AnimeDetailsPage : ContentPage
         }
     }
 
+    private async void OnCharacterTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (e.Parameter is string idStr && int.TryParse(idStr, out int id))
+            {
+                await Shell.Current.GoToAsync($"character?id={id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnCharacterTapped failed: " + ex.GetType().Name);
+        }
+    }
+
+    private async void OnStaffTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (e.Parameter is string idStr && int.TryParse(idStr, out int id))
+            {
+                await Shell.Current.GoToAsync($"staff?id={id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnStaffTapped failed: " + ex.GetType().Name);
+        }
+    }
+
     private void ShowVideoOverlay(string url)
     {
         try

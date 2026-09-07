@@ -12,72 +12,281 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*">
-        <!-- Search bar (hidden in catalogue mode) -->
-        <Grid Grid.Row="0" IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
-              Padding="16,12" ColumnDefinitions="*,Auto" ColumnSpacing="8">
-            <Entry x:Name="SearchEntry" Placeholder="Search anime, manga..."
-                   Text="{Binding InternalQuery, Mode=TwoWay}"
-                   FontFamily="Inter" FontSize="14"
-                   BackgroundColor="{StaticResource EmSheet}"
-                   TextColor="{StaticResource BrushText}"
-                   PlaceholderColor="#80FFFFFF"
-                   ReturnType="Search"
-                   Completed="OnSearchCompleted" />
-            <Button Grid.Column="1" Text="🔍"
-                    Command="{Binding SearchCommand}"
-                    FontFamily="InterBold" FontSize="16"
-                    BackgroundColor="#0066FF" TextColor="White"
-                    CornerRadius="8" WidthRequest="48" HeightRequest="48" Padding="0" />
-        </Grid>
-
-        <!-- Filter chips (visible during search results) -->
-        <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
-                    IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
-                    Padding="16,0,16,8" Margin="0,0,0,4">
-            <HorizontalStackLayout Spacing="8">
-                <Button Text="All" FontFamily="InterSemiBold" FontSize="12"
-                        BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
-                        BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                        Padding="12,6" HeightRequest="32"
-                        Command="{Binding SubmitFilterCommand}" CommandParameter="" />
-                <Button Text="{Binding Filter1Label}" FontFamily="InterSemiBold" FontSize="12"
-                        IsVisible="{Binding Filter1Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                        BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
-                        BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                        Padding="12,6" HeightRequest="32"
-                        Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter1Label}" />
-                <Button Text="{Binding Filter2Label}" FontFamily="InterSemiBold" FontSize="12"
-                        IsVisible="{Binding Filter2Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                        BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
-                        BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                        Padding="12,6" HeightRequest="32"
-                        Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter2Label}" />
-                <Button Text="{Binding Filter3Label}" FontFamily="InterSemiBold" FontSize="12"
-                        IsVisible="{Binding Filter3Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                        BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
-                        BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                        Padding="12,6" HeightRequest="32"
-                        Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter3Label}" />
-                <Button Text="{Binding Filter4Label}" FontFamily="InterSemiBold" FontSize="12"
-                        IsVisible="{Binding Filter4Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                        BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
-                        BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                        Padding="12,6" HeightRequest="32"
-                        Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter4Label}" />
-                <Button Text="{Binding Filter5Label}" FontFamily="InterSemiBold" FontSize="12"
-                        IsVisible="{Binding Filter5Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
-                        BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
-                        BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                        Padding="12,6" HeightRequest="32"
-                        Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter5Label}" />
+        <!-- Top tab strip: Main / Characters / Genres / Studios -->
+        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                    Padding="12,12,12,0" BackgroundColor="{StaticResource EmBackground}">
+            <HorizontalStackLayout Spacing="6">
+                <Label Text="Main" FontFamily="InterSemiBold" FontSize="13"
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=0}">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="0" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Characters" FontFamily="InterSemiBold" FontSize="13"
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=1}">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="1" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Genres" FontFamily="InterSemiBold" FontSize="13"
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=2}">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="2" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Studios" FontFamily="InterSemiBold" FontSize="13"
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=3}">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="3" />
+                    </Label.GestureRecognizers>
+                </Label>
             </HorizontalStackLayout>
         </ScrollView>
 
-        <!-- Genre/Studio Selection Grid (when ByGenre/ByStudio) -->
+        <!-- ============ Main tab (0) ============ -->
         <Grid Grid.Row="1" Grid.RowSpan="2"
-              IsVisible="{Binding GenreSelectionGridVisibility}">
-            <Grid RowDefinitions="Auto,*" Padding="16,12" RowSpacing="8">
-                <Label Text="{Binding ActiveCatalogueTitle}"
+              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
+            <Grid RowDefinitions="Auto,Auto,*">
+                <!-- Search bar (hidden in catalogue mode) -->
+                <Grid Grid.Row="0" IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                      Padding="16,8" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Entry x:Name="SearchEntry" Placeholder="Search anime, manga..."
+                           Text="{Binding InternalQuery, Mode=TwoWay}"
+                           FontFamily="Inter" FontSize="14"
+                           BackgroundColor="{StaticResource EmSheet}"
+                           TextColor="{StaticResource BrushText}"
+                           PlaceholderColor="#80FFFFFF"
+                           ReturnType="Search"
+                           Completed="OnSearchCompleted" />
+                    <Button Grid.Column="1" Text="🔍"
+                            Command="{Binding SearchCommand}"
+                            FontFamily="InterBold" FontSize="16"
+                            BackgroundColor="#0066FF" TextColor="White"
+                            CornerRadius="8" WidthRequest="48" HeightRequest="48" Padding="0" />
+                </Grid>
+
+                <!-- Filter chips (visible during search results) -->
+                <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                            IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                            Padding="16,0,16,8" Margin="0,0,0,4">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="All" FontFamily="InterSemiBold" FontSize="12"
+                                BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                                BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                                Padding="12,6" HeightRequest="32"
+                                Command="{Binding SubmitFilterCommand}" CommandParameter="" />
+                        <Button Text="{Binding Filter1Label}" FontFamily="InterSemiBold" FontSize="12"
+                                IsVisible="{Binding Filter1Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
+                                BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                                BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                                Padding="12,6" HeightRequest="32"
+                                Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter1Label}" />
+                        <Button Text="{Binding Filter2Label}" FontFamily="InterSemiBold" FontSize="12"
+                                IsVisible="{Binding Filter2Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
+                                BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                                BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                                Padding="12,6" HeightRequest="32"
+                                Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter2Label}" />
+                        <Button Text="{Binding Filter3Label}" FontFamily="InterSemiBold" FontSize="12"
+                                IsVisible="{Binding Filter3Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
+                                BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                                BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                                Padding="12,6" HeightRequest="32"
+                                Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter3Label}" />
+                        <Button Text="{Binding Filter4Label}" FontFamily="InterSemiBold" FontSize="12"
+                                IsVisible="{Binding Filter4Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
+                                BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                                BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                                Padding="12,6" HeightRequest="32"
+                                Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter4Label}" />
+                        <Button Text="{Binding Filter5Label}" FontFamily="InterSemiBold" FontSize="12"
+                                IsVisible="{Binding Filter5Label, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
+                                BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
+                                BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
+                                Padding="12,6" HeightRequest="32"
+                                Command="{Binding SubmitFilterCommand}" CommandParameter="{Binding Filter5Label}" />
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Genre/Studio Selection Grid -->
+                <Grid Grid.Row="1" Grid.RowSpan="2"
+                      IsVisible="{Binding GenreSelectionGridVisibility}">
+                    <Grid RowDefinitions="Auto,*" Padding="16,8" RowSpacing="8">
+                        <Label Text="{Binding ActiveCatalogueTitle}"
+                               FontFamily="InterBold" FontSize="20" TextColor="{StaticResource BrushText}" />
+                        <CollectionView Grid.Row="1" ItemsSource="{Binding AvailableSelectionChoices}"
+                                        SelectionMode="Single" SelectionChanged="OnGenreStudioSelected">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmSheet}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Padding="16,12">
+                                        <Label Text="{Binding .}" FontFamily="InterBold" FontSize="16"
+                                               TextColor="{StaticResource BrushText}"
+                                               HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </Grid>
+
+                <!-- Search Results / Catalogue Results -->
+                <Grid Grid.Row="1" Grid.RowSpan="2"
+                      IsVisible="{Binding GenreSelectionGridVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="16,4,16,4"
+                          IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                        <Button Grid.Column="0" Text="Anime" FontFamily="InterSemiBold" FontSize="14"
+                                TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=true}"
+                                BackgroundColor="Transparent"
+                                Command="{Binding ToggleSearchModeCommand}" CommandParameter="true" />
+                        <Button Grid.Column="1" Text="Manga" FontFamily="InterSemiBold" FontSize="14"
+                                TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=false}"
+                                BackgroundColor="Transparent"
+                                Command="{Binding ToggleSearchModeCommand}" CommandParameter="false" />
+                    </Grid>
+
+                    <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="0">
+                        <Grid Grid.Row="0" IsVisible="{Binding HasMoreCatalogue, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                              HeightRequest="40" BackgroundColor="{StaticResource EmSheet}">
+                            <ActivityIndicator IsRunning="{Binding IsLoadingMoreCatalogue}"
+                                               Color="{StaticResource EmAccent}" HorizontalOptions="Center" VerticalOptions="Center" />
+                            <Label Text="Loading more..."
+                                   FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF"
+                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                   IsVisible="{Binding IsLoadingMoreCatalogue}" />
+                        </Grid>
+
+                        <CollectionView Grid.Row="1" ItemsSource="{Binding CurrentSearchItems}"
+                                        SelectionMode="Single" SelectionChanged="OnResultSelected"
+                                        RemainingItemsThreshold="4" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCatalogueCommand}">
+                            <CollectionView.EmptyView>
+                                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12"
+                                                     IsVisible="{Binding EmptyNoticeVisibility}">
+                                    <Label Text="No results found" FontFamily="InterBold" FontSize="16"
+                                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                                    <Label Text="Try a different search term" FontFamily="Inter" FontSize="13"
+                                           TextColor="#80FFFFFF" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="8" VerticalItemSpacing="8" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmSheet}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Padding="0">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   HeightRequest="180" Aspect="AspectFill" />
+                                            <VerticalStackLayout Padding="8,4,8,8" Spacing="2">
+                                                <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="12"
+                                                       TextColor="{StaticResource BrushText}"
+                                                       HorizontalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
+                                                <Label Text="{Binding Type}" FontFamily="Inter" FontSize="10"
+                                                       TextColor="#0066FF" HorizontalOptions="Center" />
+                                                <Label Text="{Binding Score, StringFormat='Score: {0:N2}'}" FontFamily="Inter" FontSize="10"
+                                                       TextColor="#FFD700" HorizontalOptions="Center" />
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+
+                    <VerticalStackLayout Grid.Row="1" Spacing="16" Padding="16"
+                                         IsVisible="{Binding IsFirstVisitGridVisible}">
+                        <Label Text="Recent Searches" FontFamily="InterBold" FontSize="16"
+                               TextColor="{StaticResource BrushText}" Margin="0,0,0,8" />
+                        <CollectionView ItemsSource="{Binding RecentSearches}" Margin="0">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource EmSheet}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Padding="16,12">
+                                        <HorizontalStackLayout Spacing="12">
+                                            <Label Text="🔍" FontSize="20" VerticalOptions="Center" />
+                                            <Label Text="{Binding .}" FontFamily="Inter" FontSize="14"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- ============ Characters tab (1) ============ -->
+        <Grid Grid.Row="1" Grid.RowSpan="2"
+              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=1}">
+            <Grid RowDefinitions="Auto,*" Padding="16,8">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Entry x:Name="CharSearchEntry" Placeholder="Search characters..."
+                           Text="{Binding CharQuery, Mode=TwoWay}"
+                           FontFamily="Inter" FontSize="14"
+                           BackgroundColor="{StaticResource EmSheet}"
+                           TextColor="{StaticResource BrushText}"
+                           PlaceholderColor="#80FFFFFF"
+                           ReturnType="Search"
+                           Completed="OnCharacterSearchCompleted" />
+                    <Button Grid.Column="1" Text="🔍"
+                            Clicked="OnCharacterSearchClicked"
+                            FontFamily="InterBold" FontSize="16"
+                            BackgroundColor="#0066FF" TextColor="White"
+                            CornerRadius="8" WidthRequest="48" HeightRequest="48" Padding="0" />
+                </Grid>
+                <CollectionView Grid.Row="1" ItemsSource="{Binding CharacterResults}"
+                                SelectionMode="Single" SelectionChanged="OnCharacterSelected">
+                    <CollectionView.EmptyView>
+                        <Label Text="Type a character name to search"
+                               FontFamily="Inter" FontSize="13" TextColor="#80FFFFFF"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="10">
+                                <Grid ColumnDefinitions="56,*,Auto" ColumnSpacing="10">
+                                    <Border Grid.Column="0" WidthRequest="52" HeightRequest="76"
+                                            StrokeShape="RoundRectangle 6"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                               Aspect="AspectFill" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
+                                               TextColor="{StaticResource BrushText}" MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding Notes}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" MaxLines="1"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Grid>
+
+        <!-- ============ Genres tab (2) — reuses Main tab's catalogue by setting mode=Genres ============ -->
+        <Grid Grid.Row="1" Grid.RowSpan="2"
+              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=2}">
+            <Grid RowDefinitions="Auto,*" Padding="16,8">
+                <Label Grid.Row="0" Text="Pick a genre"
                        FontFamily="InterBold" FontSize="20" TextColor="{StaticResource BrushText}" />
                 <CollectionView Grid.Row="1" ItemsSource="{Binding AvailableSelectionChoices}"
                                 SelectionMode="Single" SelectionChanged="OnGenreStudioSelected">
@@ -99,105 +308,35 @@
             </Grid>
         </Grid>
 
-        <!-- Search Results / Catalogue Results -->
+        <!-- ============ Studios tab (3) ============ -->
         <Grid Grid.Row="1" Grid.RowSpan="2"
-              IsVisible="{Binding GenreSelectionGridVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <!-- Anime/Manga tab strip for search results -->
-            <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="16,8,16,4"
-                  IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-                <Button Grid.Column="0" Text="Anime" FontFamily="InterSemiBold" FontSize="14"
-                        TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=true}"
-                        BackgroundColor="Transparent"
-                        Command="{Binding ToggleSearchModeCommand}" CommandParameter="true" />
-                <Button Grid.Column="1" Text="Manga" FontFamily="InterSemiBold" FontSize="14"
-                        TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=false}"
-                        BackgroundColor="Transparent"
-                        Command="{Binding ToggleSearchModeCommand}" CommandParameter="false" />
-            </Grid>
-
-            <!-- Results grid -->
-            <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="0">
-                <!-- Load more indicator -->
-                <Grid Grid.Row="0" IsVisible="{Binding HasMoreCatalogue, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
-                      HeightRequest="40" BackgroundColor="{StaticResource EmSheet}">
-                    <ActivityIndicator IsRunning="{Binding IsLoadingMoreCatalogue}"
-                                       Color="{StaticResource EmAccent}" HorizontalOptions="Center" VerticalOptions="Center" />
-                    <Label Text="Loading more..."
-                           FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF"
-                           HorizontalOptions="Center" VerticalOptions="Center"
-                           IsVisible="{Binding IsLoadingMoreCatalogue}" />
-                </Grid>
-
-                <CollectionView Grid.Row="1" ItemsSource="{Binding CurrentSearchItems}"
-                                SelectionMode="Single" SelectionChanged="OnResultSelected"
-                                RemainingItemsThreshold="4" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCatalogueCommand}">
-                    <CollectionView.EmptyView>
-                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12"
-                                             IsVisible="{Binding EmptyNoticeVisibility}">
-                            <Label Text="No results found" FontFamily="InterBold" FontSize="16"
-                                   TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
-                            <Label Text="Try a different search term" FontFamily="Inter" FontSize="13"
-                                   TextColor="#80FFFFFF" HorizontalOptions="Center" />
-                        </VerticalStackLayout>
-                    </CollectionView.EmptyView>
+              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=3}">
+            <Grid RowDefinitions="Auto,*" Padding="16,8">
+                <Label Grid.Row="0" Text="Pick a studio"
+                       FontFamily="InterBold" FontSize="20" TextColor="{StaticResource BrushText}" />
+                <CollectionView Grid.Row="1" ItemsSource="{Binding AvailableSelectionChoices}"
+                                SelectionMode="Single" SelectionChanged="OnGenreStudioSelected">
                     <CollectionView.ItemsLayout>
-                        <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="8" VerticalItemSpacing="8" />
+                        <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Border BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 8" Padding="0">
-                                <VerticalStackLayout Spacing="4">
-                                    <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                           HeightRequest="180" Aspect="AspectFill" />
-                                    <VerticalStackLayout Padding="8,4,8,8" Spacing="2">
-                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="12"
-                                               TextColor="{StaticResource BrushText}"
-                                               HorizontalOptions="Center" MaxLines="2" LineBreakMode="TailTruncation" />
-                                        <Label Text="{Binding Type}" FontFamily="Inter" FontSize="10"
-                                               TextColor="#0066FF" HorizontalOptions="Center" />
-                                        <Label Text="{Binding Score, StringFormat='Score: {0:N2}'}" FontFamily="Inter" FontSize="10"
-                                               TextColor="#FFD700" HorizontalOptions="Center" />
-                                    </VerticalStackLayout>
-                                </VerticalStackLayout>
+                                    StrokeShape="RoundRectangle 8" Padding="16,12">
+                                <Label Text="{Binding .}" FontFamily="InterBold" FontSize="16"
+                                       TextColor="{StaticResource BrushText}"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
-
-            <!-- First visit grid (empty state with recent searches) -->
-            <VerticalStackLayout Grid.Row="1" Spacing="16" Padding="16"
-                                 IsVisible="{Binding IsFirstVisitGridVisible}">
-                <Label Text="Recent Searches" FontFamily="InterBold" FontSize="16"
-                       TextColor="{StaticResource BrushText}" Margin="0,0,0,8" />
-                <CollectionView ItemsSource="{Binding RecentSearches}" Margin="0">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Border BackgroundColor="{StaticResource EmSheet}"
-                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 8" Padding="16,12">
-                                <HorizontalStackLayout Spacing="12">
-                                    <Label Text="🔍" FontSize="20" VerticalOptions="Center" />
-                                    <Label Text="{Binding .}" FontFamily="Inter" FontSize="14"
-                                           TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
-                                </HorizontalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
         </Grid>
 
         <!-- Loading overlay -->
         <Grid IsVisible="{Binding Loading}" BackgroundColor="#80000000"
-              Grid.RowSpan="3" VerticalOptions="Fill" HorizontalOptions="Fill">
+              Grid.RowSpan="3" VerticalOptions="Fill" HorizontalOptions="Fill" ZIndex="99">
             <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
                                WidthRequest="36" HeightRequest="36" />
         </Grid>

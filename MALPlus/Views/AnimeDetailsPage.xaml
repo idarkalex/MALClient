@@ -725,6 +725,7 @@
                 <CollectionView x:Name="CharactersList" Grid.Row="1"
                                 ItemsSource="{Binding AnimeStaffData.AnimeCharacterPairs}"
                                 Scrolled="OnTabItemsScrolled"
+                                SelectionMode="None"
                                 EmptyView="No characters" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -750,6 +751,10 @@
                                     <Border Grid.Column="2" WidthRequest="56" HeightRequest="80"
                                             StrokeShape="RoundRectangle 6"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnStaffTapped"
+                                                                  CommandParameter="{Binding AnimeStaffPerson.Data.Id}" />
+                                        </Border.GestureRecognizers>
                                         <Image Source="{Binding AnimeStaffPerson.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
                                                Aspect="AspectFill" />
                                     </Border>
@@ -762,6 +767,10 @@
                                                TextColor="#80FFFFFF" />
                                     </VerticalStackLayout>
                                 </Grid>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCharacterTapped"
+                                                          CommandParameter="{Binding AnimeCharacter.Data.Id}" />
+                                </Border.GestureRecognizers>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -778,6 +787,7 @@
                 <CollectionView x:Name="StaffList" Grid.Row="1"
                                 ItemsSource="{Binding AnimeStaffData.AnimeStaff}"
                                 Scrolled="OnTabItemsScrolled"
+                                SelectionMode="None"
                                 EmptyView="No staff" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -800,6 +810,10 @@
                                                LineBreakMode="TailTruncation" />
                                     </VerticalStackLayout>
                                 </Grid>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnStaffTapped"
+                                                          CommandParameter="{Binding Data.Id}" />
+                                </Border.GestureRecognizers>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
