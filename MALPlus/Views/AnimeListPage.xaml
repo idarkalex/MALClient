@@ -7,6 +7,7 @@
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:ScoreVisibleConverter x:Key="ScoreVisible" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
     </ContentPage.Resources>
     <Grid RowDefinitions="*">
         <RefreshView x:Name="ListRefresh" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
@@ -22,15 +23,46 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid HeightRequest="195" Padding="2">
+                            <!-- Poster full-bleed -->
                             <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
                                    Aspect="AspectFill" />
-                            <Frame Padding="4,1" CornerRadius="4" HasShadow="False"
-                                   BackgroundColor="#B3051522"
-                                   HorizontalOptions="End" VerticalOptions="Start" Margin="4"
-                                   IsVisible="{Binding GlobalScore, Converter={StaticResource ScoreVisible}}">
-                                <Label Text="{Binding GlobalScoreBind}" FontFamily="InterBold"
-                                       FontSize="10" TextColor="White" />
-                            </Frame>
+
+                            <!-- Top-right badge: status letter + episodes + countdown -->
+                            <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="6,3" Margin="6,6,6,0"
+                                    HorizontalOptions="End" VerticalOptions="Start">
+                                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                    <!-- Status letter (W/C/H/D/P/?) -->
+                                    <Label Text="{Binding MyStatusBindShort}"
+                                           FontFamily="InterBold" FontSize="9"
+                                           TextColor="{StaticResource EmAccent}"
+                                           VerticalOptions="Center" />
+                                    <!-- Episodes (e.g. 3/11) -->
+                                    <Label Text="{Binding MyEpisodesBindShort}"
+                                           FontFamily="InterBold" FontSize="9"
+                                           TextColor="#FFFFFF"
+                                           VerticalOptions="Center" />
+                                    <!-- Countdown (e.g. 2D, 5H) -->
+                                    <Label Text="{Binding AirDayTillBind}"
+                                           FontFamily="InterBold" FontSize="9"
+                                           TextColor="#FFFFFF"
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding AirDayTillBind, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                                </HorizontalStackLayout>
+                            </Border>
+
+                            <!-- Bottom-left air pill (in Xd Yh) -->
+                            <Border BackgroundColor="#590066FF" Stroke="#4DFFFFFF" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="8,2" Margin="6,0,6,32"
+                                    HorizontalOptions="Start" VerticalOptions="End"
+                                    IsVisible="{Binding TimeTillNextAirCache, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
+                                <Label Text="{Binding TimeTillNextAirCache}"
+                                       FontFamily="Inter" FontSize="9" TextColor="#FFFFFF" />
+                            </Border>
+
+                            <!-- Title overlay bottom -->
                             <Label Text="{Binding Title}" FontFamily="Inter" FontSize="11"
                                    TextColor="White" MaxLines="2" LineBreakMode="TailTruncation"
                                    VerticalOptions="End" Margin="4,0,4,4" />
