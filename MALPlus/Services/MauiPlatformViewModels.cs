@@ -5,6 +5,7 @@ using MALClient.XShared.Delegates;
 using MALClient.XShared.Interfaces;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
+using MALClient.XShared.ViewModels.Main;
 
 namespace MALPlus.Services;
 
@@ -80,16 +81,24 @@ public class MauiMainViewModel : MainViewModelBase
                 break;
             case PageIndex.PageRecomendations:
                 route = "recommendations";
-                query = "?name=Recommendations";
                 break;
             case PageIndex.PageArticles:
             case PageIndex.PageNews:
                 route = "articles";
-                query = "?name=Articles & News";
+                var articleMode = index == PageIndex.PageNews ? "News" : "Articles";
+                if (args is MalArticlesPageNavigationArgs ma)
+                {
+                    articleMode = ma.WorkMode switch
+                    {
+                        ArticlePageWorkMode.News => "News",
+                        ArticlePageWorkMode.AnnNews => "AnnNews",
+                        _ => "Articles"
+                    };
+                }
+                query = $"?mode={articleMode}";
                 break;
             case PageIndex.PagePopularVideos:
                 route = "videos";
-                query = "?name=Promotional Videos";
                 break;
             case PageIndex.PageForumIndex:
                 route = "forums";
@@ -109,7 +118,11 @@ public class MauiMainViewModel : MainViewModelBase
                 break;
             case PageIndex.PageWallpapers:
                 route = "wallpapers";
-                query = "?name=Wallpapers";
+                if (args is WallpaperPageNavigationArgs wp)
+                {
+                    var q = Uri.EscapeDataString(wp.Query ?? "");
+                    query = $"?url={q}&title={q}";
+                }
                 break;
             case PageIndex.PageMessanging:
                 route = "messaging";
@@ -129,11 +142,17 @@ public class MauiMainViewModel : MainViewModelBase
                 break;
             case PageIndex.PageCharacterDetails:
                 route = "character";
-                query = "?name=Character Details";
+                if (args is CharacterDetailsNavigationArgs cn)
+                    query = $"?id={cn.Id}";
+                else if (args is int cid)
+                    query = $"?id={cid}";
                 break;
             case PageIndex.PageStaffDetails:
                 route = "staff";
-                query = "?name=Staff Details";
+                if (args is StaffDetailsNaviagtionArgs sn)
+                    query = $"?id={sn.Id}";
+                else if (args is int sid)
+                    query = $"?id={sid}";
                 break;
             // PageAbout and PageMessageDetails: leave as no-op for now (settings/about opens via Settings page)
         }

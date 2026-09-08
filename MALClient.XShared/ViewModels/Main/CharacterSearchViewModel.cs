@@ -69,6 +69,14 @@ namespace MALClient.XShared.ViewModels.Main
                                 new CharacterDetailsNavigationArgs { Id = int.Parse(entry.Data.Id) });
                         }));
 
+        public void SearchCharacters(string query)
+        {
+            if (Loading || string.IsNullOrWhiteSpace(query))
+                return;
+            _prevQuery = null; // allow re-searching the same query
+            OnOnSearchQuerySubmitted(query);
+        }
+
         public void Init(SearchPageNavArgsBase args)
         {
             if (!Loading && !FoundCharacters.Any())

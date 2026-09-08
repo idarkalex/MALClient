@@ -15,6 +15,7 @@ public partial class SearchPage : ContentPage
 {
     private bool _initialized;
     private int _searchTabIndex;
+    private bool _catalogueModeIsGenre = true;
 
     public string InitialQuery { get; set; }
     public string InitialMode { get; set; }
@@ -32,7 +33,12 @@ public partial class SearchPage : ContentPage
         }
     }
 
-    public string CharQuery { get; set; }
+    private string _charQuery;
+    public string CharQuery
+    {
+        get => _charQuery;
+        set { _charQuery = value; OnPropertyChanged(); }
+    }
 
     // Forwarded property for XAML binding (CharacterSearch VM lives separately)
     public System.Collections.IEnumerable CharacterResults => CharVm.FoundCharacters;
@@ -81,11 +87,12 @@ public partial class SearchPage : ContentPage
             SearchTabIndex = idx;
             if (idx == 2)
             {
-                // Switch to genre catalogue
+                _catalogueModeIsGenre = true;
                 MainVm.Init(new SearchPageNavigationArgs { ByGenre = true, Anime = true, IsCatalogue = true });
             }
             else if (idx == 3)
             {
+                _catalogueModeIsGenre = false;
                 MainVm.Init(new SearchPageNavigationArgs { ByStudio = true, Anime = true, IsCatalogue = true });
             }
         }
@@ -94,6 +101,26 @@ public partial class SearchPage : ContentPage
     private void OnSearchCompleted(object sender, EventArgs e)
     {
         try { MainVm.SearchCommand.Execute(null); } catch { }
+    }
+
+    private void OnRecentSearchSelected(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            if (e.CurrentSelection.FirstOrDefault() is string q)
+            {
+                ((CollectionView)sender).SelectedItem = null;
+                if (!string.IsNullOrWhiteSpace(q))
+                {
+                    SearchEntry.Text = q;
+                    MainVm.SearchCommand.Execute(null);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS recent search failed: " + ex.Message);
+        }
     }
 
     private async void OnResultSelected(object sender, SelectionChangedEventArgs e)
@@ -112,14 +139,27 @@ public partial class SearchPage : ContentPage
         }
     }
 
-    private void OnGenreStudioSelected(object sender, SelectionChangedEventArgs e)
+    private async void OnGenreStudioSelected(object sender, SelectionChangedEventArgs e)
     {
         try
         {
             if (e.CurrentSelection.FirstOrDefault() is Enum choice)
             {
                 ((CollectionView)sender).SelectedItem = null;
-                MainVm.SubmitFilterCommand.Execute(choice);
+                var isGenre = SearchTabIndex == 2 || (SearchTabIndex == 0 && _catalogueModeIsGenre);
+                var args = new SearchPageNavigationArgs
+                {
+                    Anime = true,
+                    IsCatalogue = true,
+                    CatalogueTitle = choice.ToString(),
+                    ByGenre = isGenre,
+                    ByStudio = !isGenre
+                };
+                if (isGenre)
+                    args.Genre = (AnimeGenreSearch)choice;
+                else
+                    args.Studio = (AnimeStudios)choice;
+                await MainVm.LoadCatalogue(args);
                 // Switch to Main tab (index 0) to show results
                 SearchTabIndex = 0;
             }
@@ -138,10 +178,7 @@ public partial class SearchPage : ContentPage
         try
         {
             if (string.IsNullOrWhiteSpace(CharQuery)) return;
-            // The CharacterSearchViewModel listens to GeneralMain.OnSearchQuerySubmitted.
-            // OnSearchInputSubmit sets CurrentSearchQuery + fires the event.
-            ViewModelLocator.GeneralMain.CurrentSearchQuery = CharQuery;
-            ViewModelLocator.GeneralMain.OnSearchInputSubmit();
+            CharVm.SearchCharacters(CharQuery.Trim());
         }
         catch (Exception ex)
         {

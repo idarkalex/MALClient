@@ -16,14 +16,17 @@ namespace MALPlus;
 public class MainActivity : MauiAppCompatActivity
 {
     public static Intent DeepLinkIntent { get; private set; }
+    public static string PendingDeepLinkPath { get; private set; }
 
     protected override void OnCreate(Bundle savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
+        Android.Util.Log.Info("MALPLUS", $"OnCreate intent data: {Intent?.Data}");
         if (Intent?.Data != null && Intent.Data.ToString().StartsWith("malplus://"))
         {
             DeepLinkIntent = Intent;
-            HandleDeepLinkNavigation(Intent.Data.ToString());
+            PendingDeepLinkPath = Intent.Data.ToString().Replace("malplus://", "");
+            Android.Util.Log.Info("MALPLUS", $"Deep link pending (cold start): {PendingDeepLinkPath}");
         }
     }
 
@@ -31,6 +34,7 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnNewIntent(intent);
         Intent = intent;
+        Android.Util.Log.Info("MALPLUS", $"OnNewIntent data: {intent?.Data}");
         if (intent?.Data != null && intent.Data.ToString().StartsWith("malplus://"))
         {
             DeepLinkIntent = intent;
@@ -38,31 +42,56 @@ public class MainActivity : MauiAppCompatActivity
         }
     }
 
+    public static async Task ApplyPendingDeepLinkAsync()
+    {
+        var path = PendingDeepLinkPath;
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+        PendingDeepLinkPath = null;
+        Android.Util.Log.Info("MALPLUS", $"Applying pending deep link: {path}");
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            try
+            {
+                await Shell.Current.GoToAsync(path);
+                Android.Util.Log.Info("MALPLUS", "Pending deep link success");
+            }
+            catch (Exception ex)
+            {
+                Android.Util.Log.Info("MALPLUS", $"Pending deep link failed: {ex.Message} | Stack: {ex.StackTrace}");
+            }
+        });
+    }
+
     private void HandleDeepLinkNavigation(string uri)
     {
         if (uri.StartsWith("malplus://"))
         {
             var path = uri.Replace("malplus://", "");
-            System.Diagnostics.Debug.WriteLine($"MALPLUS Deep link path: {path}");
+            Android.Util.Log.Info("MALPLUS", $"Deep link path: {path}");
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                try
+                for (int attempt = 0; attempt < 20; attempt++)
                 {
-                    System.Diagnostics.Debug.WriteLine($"MALPLUS GoToAsync: {path}");
                     if (Shell.Current != null)
                     {
-                        await Shell.Current.GoToAsync(path);
-                        System.Diagnostics.Debug.WriteLine($"MALPLUS GoToAsync success");
+                        try
+                        {
+                            Android.Util.Log.Info("MALPLUS", $"GoToAsync: {path}");
+                            await Shell.Current.GoToAsync(path);
+                            Android.Util.Log.Info("MALPLUS", "GoToAsync success");
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            Android.Util.Log.Info("MALPLUS", $"Deep link failed: {ex.Message} | Stack: {ex.StackTrace}");
+                            return;
+                        }
                     }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine("MALPLUS Shell.Current is null!");
-                    }
+                    Android.Util.Log.Info("MALPLUS", $"Shell.Current null, retry {attempt + 1}/20");
+                    await System.Threading.Tasks.Task.Delay(250);
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Deep link failed: {ex.Message} | Stack: {ex.StackTrace}");
-                }
+                Android.Util.Log.Info("MALPLUS", "Shell.Current never became ready (20 retries)");
             });
         }
     }

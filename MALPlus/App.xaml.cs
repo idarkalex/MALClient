@@ -72,6 +72,7 @@ public partial class App : Application
             {
                 Console.WriteLine("MALPLUS login nav failed: " + ex.Message);
             }
+            await MainActivity.ApplyPendingDeepLinkAsync();
         });
         MauiBootDiagnostics.Run();
     }

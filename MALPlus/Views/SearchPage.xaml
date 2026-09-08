@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
              x:Class="MALPlus.Views.SearchPage"
+             x:Name="Page"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
@@ -18,25 +19,25 @@
                     Padding="12,12,12,0" BackgroundColor="{StaticResource EmBackground}">
             <HorizontalStackLayout Spacing="6">
                 <Label Text="Main" FontFamily="InterSemiBold" FontSize="13"
-                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=0}">
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource TabColorConverter}, ConverterParameter=0}">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="0" />
                     </Label.GestureRecognizers>
                 </Label>
                 <Label Text="Characters" FontFamily="InterSemiBold" FontSize="13"
-                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=1}">
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource TabColorConverter}, ConverterParameter=1}">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="1" />
                     </Label.GestureRecognizers>
                 </Label>
                 <Label Text="Genres" FontFamily="InterSemiBold" FontSize="13"
-                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=2}">
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource TabColorConverter}, ConverterParameter=2}">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="2" />
                     </Label.GestureRecognizers>
                 </Label>
                 <Label Text="Studios" FontFamily="InterSemiBold" FontSize="13"
-                       Padding="12,8" TextColor="{Binding SearchTabIndex, Converter={StaticResource TabColorConverter}, ConverterParameter=3}">
+                       Padding="12,8" TextColor="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource TabColorConverter}, ConverterParameter=3}">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSearchTabTapped" CommandParameter="3" />
                     </Label.GestureRecognizers>
@@ -46,7 +47,7 @@
 
         <!-- ============ Main tab (0) ============ -->
         <Grid Grid.Row="1" Grid.RowSpan="2"
-              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
+              IsVisible="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource IntEq}, ConverterParameter=0}">
             <Grid RowDefinitions="Auto,Auto,*">
                 <!-- Search bar (hidden in catalogue mode) -->
                 <Grid Grid.Row="0" IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
@@ -59,7 +60,7 @@
                            PlaceholderColor="#80FFFFFF"
                            ReturnType="Search"
                            Completed="OnSearchCompleted" />
-                    <Button Grid.Column="1" Text="🔍"
+                    <Button Grid.Column="1" Text="ðŸ”"
                             Command="{Binding SearchCommand}"
                             FontFamily="InterBold" FontSize="16"
                             BackgroundColor="#0066FF" TextColor="White"
@@ -146,11 +147,11 @@
                     <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="16,4,16,4"
                           IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
                         <Button Grid.Column="0" Text="Anime" FontFamily="InterSemiBold" FontSize="14"
-                                TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=true}"
+                                TextColor="{Binding AnimeSearch, Converter={StaticResource BoolTab}, ConverterParameter=true}"
                                 BackgroundColor="Transparent"
                                 Command="{Binding ToggleSearchModeCommand}" CommandParameter="true" />
                         <Button Grid.Column="1" Text="Manga" FontFamily="InterSemiBold" FontSize="14"
-                                TextColor="{Binding _animeSearch, Converter={StaticResource BoolTab}, ConverterParameter=false}"
+                                TextColor="{Binding AnimeSearch, Converter={StaticResource BoolTab}, ConverterParameter=false}"
                                 BackgroundColor="Transparent"
                                 Command="{Binding ToggleSearchModeCommand}" CommandParameter="false" />
                     </Grid>
@@ -209,14 +210,15 @@
                                          IsVisible="{Binding IsFirstVisitGridVisible}">
                         <Label Text="Recent Searches" FontFamily="InterBold" FontSize="16"
                                TextColor="{StaticResource BrushText}" Margin="0,0,0,8" />
-                        <CollectionView ItemsSource="{Binding RecentSearches}" Margin="0">
+                        <CollectionView ItemsSource="{Binding RecentSearches}" Margin="0"
+                                  SelectionMode="Single" SelectionChanged="OnRecentSearchSelected">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BackgroundColor="{StaticResource EmSheet}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Padding="16,12">
                                         <HorizontalStackLayout Spacing="12">
-                                            <Label Text="🔍" FontSize="20" VerticalOptions="Center" />
+                                            <Label Text="ðŸ”" FontSize="20" VerticalOptions="Center" />
                                             <Label Text="{Binding .}" FontFamily="Inter" FontSize="14"
                                                    TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
                                         </HorizontalStackLayout>
@@ -231,24 +233,24 @@
 
         <!-- ============ Characters tab (1) ============ -->
         <Grid Grid.Row="1" Grid.RowSpan="2"
-              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=1}">
+              IsVisible="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource IntEq}, ConverterParameter=1}">
             <Grid RowDefinitions="Auto,*" Padding="16,8">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <Entry x:Name="CharSearchEntry" Placeholder="Search characters..."
-                           Text="{Binding CharQuery, Mode=TwoWay}"
+                           Text="{Binding CharQuery, Source={x:Reference Page}, Mode=TwoWay}"
                            FontFamily="Inter" FontSize="14"
                            BackgroundColor="{StaticResource EmSheet}"
                            TextColor="{StaticResource BrushText}"
                            PlaceholderColor="#80FFFFFF"
                            ReturnType="Search"
                            Completed="OnCharacterSearchCompleted" />
-                    <Button Grid.Column="1" Text="🔍"
+                    <Button Grid.Column="1" Text="ðŸ”"
                             Clicked="OnCharacterSearchClicked"
                             FontFamily="InterBold" FontSize="16"
                             BackgroundColor="#0066FF" TextColor="White"
                             CornerRadius="8" WidthRequest="48" HeightRequest="48" Padding="0" />
                 </Grid>
-                <CollectionView Grid.Row="1" ItemsSource="{Binding CharacterResults}"
+                <CollectionView Grid.Row="1" ItemsSource="{Binding CharacterResults, Source={x:Reference Page}}"
                                 SelectionMode="Single" SelectionChanged="OnCharacterSelected">
                     <CollectionView.EmptyView>
                         <Label Text="Type a character name to search"
@@ -264,14 +266,14 @@
                                     <Border Grid.Column="0" WidthRequest="52" HeightRequest="76"
                                             StrokeShape="RoundRectangle 6"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                        <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
                                                Aspect="AspectFill" />
                                     </Border>
                                     <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                        <Label Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
+                                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="14"
                                                TextColor="{StaticResource BrushText}" MaxLines="2"
                                                LineBreakMode="TailTruncation" />
-                                        <Label Text="{Binding Notes}" FontFamily="Inter" FontSize="11"
+                                        <Label Text="{Binding Data.Notes}" FontFamily="Inter" FontSize="11"
                                                TextColor="#80FFFFFF" MaxLines="1"
                                                LineBreakMode="TailTruncation" />
                                     </VerticalStackLayout>
@@ -283,9 +285,9 @@
             </Grid>
         </Grid>
 
-        <!-- ============ Genres tab (2) — reuses Main tab's catalogue by setting mode=Genres ============ -->
+        <!-- ============ Genres tab (2) â€” reuses Main tab's catalogue by setting mode=Genres ============ -->
         <Grid Grid.Row="1" Grid.RowSpan="2"
-              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=2}">
+              IsVisible="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource IntEq}, ConverterParameter=2}">
             <Grid RowDefinitions="Auto,*" Padding="16,8">
                 <Label Grid.Row="0" Text="Pick a genre"
                        FontFamily="InterBold" FontSize="20" TextColor="{StaticResource BrushText}" />
@@ -311,7 +313,7 @@
 
         <!-- ============ Studios tab (3) ============ -->
         <Grid Grid.Row="1" Grid.RowSpan="2"
-              IsVisible="{Binding SearchTabIndex, Converter={StaticResource IntEq}, ConverterParameter=3}">
+              IsVisible="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource IntEq}, ConverterParameter=3}">
             <Grid RowDefinitions="Auto,*" Padding="16,8">
                 <Label Grid.Row="0" Text="Pick a studio"
                        FontFamily="InterBold" FontSize="20" TextColor="{StaticResource BrushText}" />

@@ -60,7 +60,7 @@ namespace MALClient.XShared.ViewModels.Main
                 ViewModelLocator.GeneralMain.OnSearchQuerySubmitted += SubmitQuery;
             _queryHandler = true;
             _currrentFilter = null;
-            _animeSearch = args.Anime;
+            AnimeSearch = args.Anime;
             EmptyNoticeVisibility = false;
             IsFirstVisitGridVisible = true;
             if (args.DisplayMode == SearchPageDisplayModes.Off)
@@ -286,7 +286,7 @@ namespace MALClient.XShared.ViewModels.Main
             Loading = false;
         }
 
-        private ObservableCollection<AnimeSearchItemViewModel> CurrentSearchItems =>
+        public ObservableCollection<AnimeSearchItemViewModel> CurrentSearchItems =>
             _animeSearch ? AnimeSearchItemViewModels : MangaSearchItemViewModels;
 
         private void PopulateItems()
@@ -358,6 +358,17 @@ namespace MALClient.XShared.ViewModels.Main
         private bool _genreSelectionGridVisibility;
         private List<Enum> _availableSelectionChoices;
         private string _internalQuery;
+
+        public bool AnimeSearch
+        {
+            get => _animeSearch;
+            set
+            {
+                _animeSearch = value;
+                RaisePropertyChanged(() => AnimeSearch);
+                RaisePropertyChanged(() => CurrentSearchItems);
+            }
+        }
 
         public bool EmptyNoticeVisibility
         {
@@ -504,9 +515,9 @@ public async void LoadRecentSearches()
         private void ToggleSearchMode(string mode)
         {
             if (mode == "true")
-                _animeSearch = true;
+                AnimeSearch = true;
             else if (mode == "false")
-                _animeSearch = false;
+                AnimeSearch = false;
             PopulateItems();
         }
 

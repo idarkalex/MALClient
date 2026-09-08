@@ -35,6 +35,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("clubdetails", typeof(ClubDetailsPage));
         Routing.RegisterRoute("listcomparison", typeof(ListComparisonPage));
         Routing.RegisterRoute("notifications", typeof(NotificationsHubPage));
+        Routing.RegisterRoute("recommendations", typeof(RecommendationsPage));
         Routing.RegisterRoute("character", typeof(CharacterDetailsPage));
         Routing.RegisterRoute("staff", typeof(StaffDetailsPage));
     }
