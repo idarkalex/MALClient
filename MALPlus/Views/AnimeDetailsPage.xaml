@@ -239,12 +239,21 @@
                             </MultiBinding>
                         </Button.IsVisible>
                     </Button>
-                    <Button Grid.Column="1" Text="♡ Favorite"
+                    <Button Grid.Column="1" x:Name="FavouriteButton" Text="♡ Favorite"
                             Command="{Binding ToggleFavouriteCommand}"
+                            IsEnabled="{Binding IsFavouriteButtonEnabled}"
                             FontFamily="InterSemiBold" FontSize="12"
                             BackgroundColor="#141d2b" TextColor="White"
                             BorderColor="#29FFFFFF" BorderWidth="1"
-                            CornerRadius="12" HeightRequest="40" Padding="10,0" />
+                            CornerRadius="12" HeightRequest="40" Padding="10,0">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFavourite}" Value="True">
+                                <Setter Property="Text" Value="♥ Favourited" />
+                                <Setter Property="TextColor" Value="{StaticResource EmAccent}" />
+                                <Setter Property="BorderColor" Value="{StaticResource EmAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
                     <Button Grid.Column="2" Text="▶"
                             Clicked="OnTrailerClicked"
                             IsVisible="{Binding HasTrailer}"

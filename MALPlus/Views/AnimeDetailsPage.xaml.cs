@@ -31,6 +31,9 @@ public partial class AnimeDetailsPage : ContentPage
         if (BindingContext is AnimeDetailsPageViewModel vm)
         {
             vm.ShowMoreRequested += OnShowMoreRequested;
+            // PropertyChanged is subscribed here only; OnBindingContextChanged does NOT
+            // re-subscribe (the VM is a singleton accessor reused across page instances).
+            vm.PropertyChanged -= OnVmPropertyChanged;
             vm.PropertyChanged += OnVmPropertyChanged;
         }
     }
@@ -119,10 +122,8 @@ public partial class AnimeDetailsPage : ContentPage
     protected override void OnBindingContextChanged()
     {
         base.OnBindingContextChanged();
-        if (BindingContext is AnimeDetailsPageViewModel vm)
-        {
-            vm.PropertyChanged += OnVmPropertyChanged;
-        }
+        // PropertyChanged is subscribed in the constructor; do NOT subscribe again here,
+        // otherwise the singleton VM gets a second handler and every property change fires twice.
     }
 
     private void OnVmPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

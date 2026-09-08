@@ -183,10 +183,23 @@ public class MauiMainViewModel : MainViewModelBase
         if (args is AnimeListPageNavigationArgs a)
         {
             sb.Append("mode=").Append((int)a.WorkMode);
-            if (a.Status > 0 || (a.StatusIndex.HasValue && a.StatusIndex.Value > 0))
+            // 'status' carries the StatusSelectorSelectedIndex (0=Watching..5=All);
+            // only meaningful for the user Anime/Manga list modes.
+            if (a.WorkMode == AnimeListWorkModes.Anime || a.WorkMode == AnimeListWorkModes.Manga)
             {
-                sb.Append("&status=").Append(a.StatusIndex ?? a.Status);
+                if (a.StatusIndex.HasValue)
+                    sb.Append("&status=").Append(a.StatusIndex.Value);
             }
+            // Preserve the specific top/adapted type.
+            string type = null;
+            if (a.WorkMode == AnimeListWorkModes.TopAnime)
+                type = a.TopWorkMode.ToString();
+            else if (a.WorkMode == AnimeListWorkModes.TopManga)
+                type = a.MangaTopWorkMode.ToString();
+            else if (a.WorkMode == AnimeListWorkModes.MangaAdapted)
+                type = a.MangaAdaptedWorkMode.ToString();
+            if (type != null)
+                sb.Append("&type=").Append(type);
         }
         else
         {
@@ -196,7 +209,7 @@ public class MauiMainViewModel : MainViewModelBase
                 PageIndex.PageTopAnime => 3, // TopAnime
                 PageIndex.PageMangaList => 2, // Manga
                 PageIndex.PageTopManga => 4, // TopManga
-                PageIndex.PageMangaAdapted => 8, // MangaAdapted
+                PageIndex.PageMangaAdapted => 7, // MangaAdapted
                 _ => 0,
             };
             sb.Append("mode=").Append(mode);
