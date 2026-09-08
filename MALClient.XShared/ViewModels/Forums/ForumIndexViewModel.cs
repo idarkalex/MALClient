@@ -74,6 +74,58 @@ namespace MALClient.XShared.ViewModels.Forums
             {
                 _loadingSideContentVisibility = value;
                 RaisePropertyChanged(() => LoadingSideContentVisibility);
+                RaisePropertyChanged(() => RecentPosts);
+            }
+        }
+
+        // Flattened recent posts from all boards for the "Recent Posts" tab
+        public System.Collections.IEnumerable RecentPosts
+        {
+            get
+            {
+                if (ForumIndexContent == null || ForumIndexContent.ForumBoardEntryPeekPosts == null)
+                    return Array.Empty<ForumBoardEntryPeekPost>();
+                var result = new System.Collections.Generic.List<ForumBoardEntryPeekPost>();
+                // Board order matches ForumIndexContent.ForumBoardEntryPeekPosts index (18 boards flat)
+                var boardIdOrder = new System.Collections.Generic.List<ForumBoards>
+                {
+                    ForumBoards.Updates, ForumBoards.Guidelines, ForumBoards.Support,
+                    ForumBoards.Suggestions, ForumBoards.Contests,
+                    ForumBoards.NewsDisc, ForumBoards.Recomms, ForumBoards.AnimeSeriesDisc,
+                    ForumBoards.MangaSeriesDisc, ForumBoards.AnimeDisc, ForumBoards.MangaDisc,
+                    ForumBoards.Intro, ForumBoards.GamesTech, ForumBoards.Music,
+                    ForumBoards.Events, ForumBoards.CasualDisc, ForumBoards.Creative,
+                    ForumBoards.ForumsGames
+                };
+                var boardNames = new System.Collections.Generic.Dictionary<ForumBoards, string>
+                {
+                    { ForumBoards.Updates, "Updates" }, { ForumBoards.Guidelines, "Guidelines" },
+                    { ForumBoards.Support, "Support" }, { ForumBoards.Suggestions, "Suggestions" },
+                    { ForumBoards.Contests, "Contests" }, { ForumBoards.NewsDisc, "News Discussion" },
+                    { ForumBoards.Recomms, "Recommendations" }, { ForumBoards.AnimeSeriesDisc, "Anime Series" },
+                    { ForumBoards.MangaSeriesDisc, "Manga Series" }, { ForumBoards.AnimeDisc, "Anime Discussion" },
+                    { ForumBoards.MangaDisc, "Manga Discussion" }, { ForumBoards.Intro, "Introductions" },
+                    { ForumBoards.GamesTech, "Games & Tech" }, { ForumBoards.Music, "Music" },
+                    { ForumBoards.Events, "Current Events" }, { ForumBoards.CasualDisc, "Casual Discussion" },
+                    { ForumBoards.Creative, "Creative Corner" }, { ForumBoards.ForumsGames, "Forum Games" },
+                };
+                var lists = ForumIndexContent.ForumBoardEntryPeekPosts;
+                for (int i = 0; i < lists.Count && i < boardIdOrder.Count; i++)
+                {
+                    var board = boardIdOrder[i];
+                    var boardName = boardNames.TryGetValue(board, out var n) ? n : "Board " + (int)board;
+                    var posts = lists[i];
+                    if (posts == null) continue;
+                    foreach (var post in posts)
+                    {
+                        if (post != null && post.Id != null)
+                        {
+                            post.BoardName = boardName;
+                            result.Add(post);
+                        }
+                    }
+                }
+                return result.OrderByDescending(p => p.PostTime).ToList();
             }
         }
 

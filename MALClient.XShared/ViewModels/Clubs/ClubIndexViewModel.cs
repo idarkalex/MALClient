@@ -11,12 +11,24 @@ using GalaSoft.MvvmLight.Command;
 using MALClient.Adapters;
 using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
+using MALClient.XShared.Comm.Forums;
 using MALClient.XShared.Comm.MagicalRawQueries.Clubs;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
+using MALClient.XShared.ViewModels.Forums.Items;
 
 namespace MALClient.XShared.ViewModels.Clubs
 {
+    public class ClubActivityEntry
+    {
+        public string ClubName { get; set; }
+        public string ClubImgUrl { get; set; }
+        public string TopicTitle { get; set; }
+        public string PostDate { get; set; }
+        public string PostPreview { get; set; }
+        public int TopicId { get; set; }
+    }
+
     public class ClubIndexViewModel : ViewModelBase
     {
         private bool _loading;
@@ -228,6 +240,59 @@ namespace MALClient.XShared.ViewModels.Clubs
 
             entry.JoinType = MalClubEntry.JoinAction.None;
         }));
+
+        private ICommand _loadClubActivityCommand;
+        public ICommand LoadClubActivityCommand => _loadClubActivityCommand ?? (_loadClubActivityCommand = new RelayCommand(async () =>
+        {
+            Loading = true;
+            try
+            {
+                var clubs = await MalClubQueries.GetClubs(MalClubQueries.QueryType.My, 0);
+                var activity = new List<ClubActivityEntry>();
+                if (clubs != null)
+                {
+                    foreach (var club in clubs.Take(5)) // limit to first 5 clubs for performance
+                    {
+                        try
+                        {
+                            var topics = await new ForumBoardTopicsQuery(club.Id, 1).GetTopicPosts(null, false);
+                            if (topics?.ForumTopicEntries != null)
+                            {
+                                foreach (var topic in topics.ForumTopicEntries.Take(3)) // 3 topics per club
+                                {
+                                    activity.Add(new ClubActivityEntry
+                                    {
+                                        ClubName = club.Name,
+                                        ClubImgUrl = club.ImgUrl,
+                                        TopicTitle = topic.Title,
+                                        PostDate = topic.LastPostDate,
+                                        PostPreview = topic.Op,
+                                        TopicId = int.Parse(topic.Id)
+                                    });
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                ClubActivity = activity;
+            }
+            finally
+            {
+                Loading = false;
+            }
+        }));
+
+        private List<ClubActivityEntry> _clubActivity;
+        public List<ClubActivityEntry> ClubActivity
+        {
+            get => _clubActivity ?? new List<ClubActivityEntry>();
+            set
+            {
+                _clubActivity = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public async void ReloadMyClubs()
         {

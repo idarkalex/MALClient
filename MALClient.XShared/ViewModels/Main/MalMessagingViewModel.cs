@@ -147,7 +147,7 @@ namespace MALClient.XShared.ViewModels.Main
                     _skipLoading = false;
                     MessageIndex.Clear();
                     MessageIndex.AddRange(Inbox);
-                    LoadMorePagesVisibility = Inbox.Any();
+                    LoadMorePagesVisibility = Inbox.Any() && _loadedPages <= 100;
                 }
                 else
                 {
@@ -157,7 +157,7 @@ namespace MALClient.XShared.ViewModels.Main
                             Outbox = await AccountMessagesManager.GetSentMessagesAsync();
                         MessageIndex.Clear();
                         MessageIndex.AddRange(Outbox);
-                        LoadMorePagesVisibility = false;
+                        LoadMorePagesVisibility = false; // Sent messages don't paginate
                     }
                     catch (Exception ex)
                     {

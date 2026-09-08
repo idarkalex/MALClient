@@ -7,6 +7,7 @@
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:IntEqualityConverter x:Key="IntEq" />
     </ContentPage.Resources>
 
     <Grid>
@@ -15,7 +16,8 @@
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid RowDefinitions="Auto,*" IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
+        <Grid RowDefinitions="Auto,Auto,*" IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
+            <!-- Header with title and compose -->
             <Grid Grid.Row="0" Padding="16,12" ColumnDefinitions="*,Auto">
                 <Label Grid.Column="0" Text="Messages" FontFamily="InterBold" FontSize="22"
                        TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
@@ -24,9 +26,19 @@
                         CornerRadius="20" WidthRequest="40" HeightRequest="40" Padding="0" />
             </Grid>
 
-            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingVisibility, FallbackValue=false}" Refreshing="OnRefreshing">
+            <!-- Tab strip: Inbox / Sent -->
+            <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                        Padding="12,0,12,8">
+                <HorizontalStackLayout x:Name="TabStrip" Spacing="8" />
+            </ScrollView>
+
+            <!-- Inbox tab -->
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding LoadingVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
+                         IsVisible="{Binding DisplaySentMessages, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
                 <CollectionView ItemsSource="{Binding MessageIndex}" SelectionMode="Single"
-                                SelectionChanged="OnMessageTapped">
+                                SelectionChanged="OnMessageTapped"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
                     <CollectionView.EmptyView>
                         <Label Text="No messages" FontFamily="Inter" FontSize="13"
                                TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
@@ -45,6 +57,39 @@
                                                TextColor="#80FFFFFF" />
                                     </Grid>
                                     <Label Grid.Row="1" Text="{Binding Target, StringFormat='From: {0}'}" FontFamily="Inter" FontSize="12"
+                                           TextColor="{StaticResource EmAccent}" />
+                                    <Label Grid.Row="2" Text="{Binding Content}" FontFamily="Inter" FontSize="12"
+                                           TextColor="#C0FFFFFF" MaxLines="2" LineBreakMode="TailTruncation" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+
+            <!-- Sent tab -->
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding LoadingVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
+                         IsVisible="{Binding DisplaySentMessages, FallbackValue=false}">
+                <CollectionView ItemsSource="{Binding MessageIndex}" SelectionMode="Single"
+                                SelectionChanged="OnMessageTapped">
+                    <CollectionView.EmptyView>
+                        <Label Text="No sent messages" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding Subject}" FontFamily="InterBold" FontSize="14"
+                                               TextColor="{StaticResource BrushText}" MaxLines="1"
+                                               LineBreakMode="TailTruncation" />
+                                        <Label Grid.Column="1" Text="{Binding Date}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" />
+                                    </Grid>
+                                    <Label Grid.Row="1" Text="{Binding Target, StringFormat='To: {0}'}" FontFamily="Inter" FontSize="12"
                                            TextColor="{StaticResource EmAccent}" />
                                     <Label Grid.Row="2" Text="{Binding Content}" FontFamily="Inter" FontSize="12"
                                            TextColor="#C0FFFFFF" MaxLines="2" LineBreakMode="TailTruncation" />

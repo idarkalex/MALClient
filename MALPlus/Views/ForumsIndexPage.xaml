@@ -6,19 +6,25 @@
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <converters:IntEqualityConverter x:Key="IntEq" />
     </ContentPage.Resources>
 
     <Grid>
-        <Grid IsVisible="{Binding LoadingSideContentVisibility}" BackgroundColor="#80000000" ZIndex="99">
+        <Grid IsVisible="{Binding LoadingSideContentVisibility, FallbackValue=false}" BackgroundColor="#80000000" ZIndex="99">
             <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <ScrollView>
-            <VerticalStackLayout Padding="16,12,16,32" Spacing="20">
-                <Label Text="Forums" FontFamily="InterBold" FontSize="22"
-                       TextColor="{StaticResource BrushText}" />
+        <Grid RowDefinitions="Auto,*,Auto" IsVisible="{Binding LoadingSideContentVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
+            <!-- Tab strip -->
+            <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                        Padding="12,8,12,0">
+                <HorizontalStackLayout x:Name="TabStrip" Spacing="6" />
+            </ScrollView>
 
+            <!-- Boards tab -->
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingSideContentVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
+                         IsVisible="{Binding ForumsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
                 <CollectionView x:Name="GroupsList" ItemsSource="{Binding Boards}"
                                 SelectionMode="None">
                     <CollectionView.ItemTemplate>
@@ -48,7 +54,55 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-            </VerticalStackLayout>
-        </ScrollView>
+            </RefreshView>
+
+            <!-- Recent Posts tab -->
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingSideContentVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
+                         IsVisible="{Binding ForumsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=1}">
+                <CollectionView ItemsSource="{Binding RecentPosts}" SelectionMode="Single"
+                                SelectionChanged="OnRecentPostTapped">
+                    <CollectionView.EmptyView>
+                        <Label Text="No recent posts" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding BoardName}" FontFamily="InterBold" FontSize="11"
+                                               TextColor="{StaticResource EmAccent}" />
+                                        <Label Grid.Column="1" Text="{Binding PostTime}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" />
+                                    </Grid>
+                                    <Label Grid.Row="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="13"
+                                           TextColor="{StaticResource BrushText}" MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+                                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <Border Grid.Column="0" WidthRequest="24" HeightRequest="24"
+                                                StrokeShape="RoundRectangle 12"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding User.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Grid.Column="1" Text="{Binding User.Name}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" VerticalOptions="Center" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+
+            <!-- Loading indicator at bottom of recent posts -->
+            <Grid Grid.Row="2" HeightRequest="48" IsVisible="{Binding LoadingSideContentVisibility, FallbackValue=false}"
+                  VerticalOptions="End">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                   WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Grid>
+        </Grid>
     </Grid>
 </ContentPage>

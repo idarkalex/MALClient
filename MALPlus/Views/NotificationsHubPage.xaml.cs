@@ -1,3 +1,4 @@
+using MALClient.Models.Enums;
 using MALClient.Models.Models.Notifications;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -11,11 +12,14 @@ public partial class NotificationsHubPage : ContentPage
     private int _activeTab;
     private NotificationsHubViewModel Vm => (NotificationsHubViewModel)BindingContext;
 
-    // MAL notification type tabs (mirrors v2 "All / Airing / Replies / Generic")
-    private static readonly (string Label, MALClient.Models.Enums.MalNotificationsTypes Type)[] Tabs = new (string, MALClient.Models.Enums.MalNotificationsTypes)[]
+    // MAL notification type tabs: All, Airing, Replies, Messages, Others
+    private static readonly (string Label, MalNotificationsTypes? Type)[] Tabs = new (string, MalNotificationsTypes?)[]
     {
-        ("All", MALClient.Models.Enums.MalNotificationsTypes.Generic),
-        ("Generic", MALClient.Models.Enums.MalNotificationsTypes.Generic),
+        ("All", null),
+        ("Airing", MalNotificationsTypes.NowAiring),
+        ("Replies", MalNotificationsTypes.ForumQuoute | MalNotificationsTypes.UserMentions | MalNotificationsTypes.WatchedTopics | MalNotificationsTypes.WatchedTopic),
+        ("Messages", MalNotificationsTypes.Messages),
+        ("Others", MalNotificationsTypes.Generic | MalNotificationsTypes.FriendRequest | MalNotificationsTypes.FriendRequestAcceptDeny | MalNotificationsTypes.ProfileComment | MalNotificationsTypes.BlogComment | MalNotificationsTypes.ClubMessages | MalNotificationsTypes.NewRelatedAnime | MalNotificationsTypes.Payment),
     };
 
     public NotificationsHubPage()
@@ -85,13 +89,12 @@ public partial class NotificationsHubPage : ContentPage
         }
     }
 
-    private void OnTypeTabClicked(int index, MALClient.Models.Enums.MalNotificationsTypes type)
+    private void OnTypeTabClicked(int index, MalNotificationsTypes? type)
     {
         HighlightTab(index);
         try
         {
-            // index 0 == All → null (show everything)
-            Vm.CurrentNotificationType = index == 0 ? null : (MALClient.Models.Enums.MalNotificationsTypes?)type;
+            Vm.CurrentNotificationType = type;
         }
         catch { }
     }
@@ -114,9 +117,6 @@ public partial class NotificationsHubPage : ContentPage
                 // anime/manga/forum/messages routes).
                 try { Vm.NavigateNotificationCommand?.Execute(notif); } catch { }
                 await Task.Delay(200);
-                // The VM command uses GeneralMain.Navigate synchronously; nothing to await,
-                // but if the VM navigation requires the page to load before the next tap,
-                // we wait a moment.
             }
         }
         catch (Exception ex)

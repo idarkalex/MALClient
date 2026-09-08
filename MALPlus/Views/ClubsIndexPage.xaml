@@ -11,33 +11,25 @@
     </ContentPage.Resources>
 
     <Grid>
-        <Grid IsVisible="{Binding Loading}" BackgroundColor="#80000000" ZIndex="99">
+        <Grid IsVisible="{Binding Loading, FallbackValue=false}" BackgroundColor="#80000000" ZIndex="99">
             <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid RowDefinitions="Auto,*">
+        <Grid RowDefinitions="Auto,*,Auto" IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
+            <!-- Tab strip: My Clubs / Search / Activity (forum posts from joined clubs) -->
             <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
                         Padding="12,12">
-                <HorizontalStackLayout Spacing="8">
-                    <Button x:Name="MyClubsTab" Text="My Clubs" Clicked="OnTabClicked"
-                            CommandParameter="my" FontFamily="InterSemiBold" FontSize="12"
-                            BackgroundColor="#0066FF" TextColor="White"
-                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                            Padding="12,6" HeightRequest="32" />
-                    <Button x:Name="SearchTab" Text="Search" Clicked="OnTabClicked"
-                            CommandParameter="search" FontFamily="InterSemiBold" FontSize="12"
-                            BackgroundColor="Transparent" TextColor="{StaticResource BrushText}"
-                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="16"
-                            Padding="12,6" HeightRequest="32" />
-                </HorizontalStackLayout>
+                <HorizontalStackLayout x:Name="TabStrip" Spacing="8" />
             </ScrollView>
 
             <!-- My Clubs tab -->
-            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading}" Refreshing="OnRefreshMy"
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading, FallbackValue=false}" Refreshing="OnRefreshMy"
                          IsVisible="{Binding ClubsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
                 <CollectionView ItemsSource="{Binding MyClubs}" SelectionMode="Single"
-                                SelectionChanged="OnClubTapped">
+                                SelectionChanged="OnClubTapped"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding MoreCommand}">
                     <CollectionView.EmptyView>
                         <Label Text="No clubs joined" FontFamily="Inter" FontSize="13"
                                TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
@@ -76,29 +68,82 @@
                                 BackgroundColor="#0066FF" TextColor="White"
                                 CornerRadius="8" WidthRequest="48" HeightRequest="48" Padding="0" />
                     </Grid>
-                    <CollectionView Grid.Row="1" ItemsSource="{Binding Clubs}" SelectionMode="Single"
-                                    SelectionChanged="OnClubTapped">
-                        <CollectionView.EmptyView>
-                            <Label Text="No clubs found" FontFamily="Inter" FontSize="13"
-                                   TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
-                        </CollectionView.EmptyView>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="0,4" BackgroundColor="{StaticResource EmSheet}"
-                                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="12">
-                                    <Grid ColumnDefinitions="40,*" ColumnSpacing="10">
-                                        <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                               Aspect="AspectFill" WidthRequest="36" HeightRequest="36" />
-                                        <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
-                                               TextColor="{StaticResource BrushText}" VerticalOptions="Center"
-                                               MaxLines="2" LineBreakMode="TailTruncation" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                    <RefreshView IsRefreshing="{Binding Loading, FallbackValue=false}" Refreshing="OnSearchRefresh">
+                        <CollectionView ItemsSource="{Binding Clubs}" SelectionMode="Single"
+                                        SelectionChanged="OnClubTapped"
+                                        RemainingItemsThreshold="3"
+                                        RemainingItemsThresholdReachedCommand="{Binding MoreCommand}">
+                            <CollectionView.EmptyView>
+                                <Label Text="No clubs found" FontFamily="Inter" FontSize="13"
+                                       TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,4" BackgroundColor="{StaticResource EmSheet}"
+                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8" Padding="12">
+                                        <Grid ColumnDefinitions="40,*" ColumnSpacing="10">
+                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" WidthRequest="36" HeightRequest="36" />
+                                            <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="14"
+                                                   TextColor="{StaticResource BrushText}" VerticalOptions="Center"
+                                                   MaxLines="2" LineBreakMode="TailTruncation" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </RefreshView>
                 </Grid>
+            </Grid>
+
+            <!-- Activity tab (forum posts from joined clubs) -->
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading, FallbackValue=false}" Refreshing="OnActivityRefresh"
+                         IsVisible="{Binding ClubsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=2}">
+                <CollectionView ItemsSource="{Binding ClubActivity}" SelectionMode="Single"
+                                SelectionChanged="OnActivityTapped"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding MoreCommand}">
+                    <CollectionView.EmptyView>
+                        <Label Text="No club activity" FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
+                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <Border Grid.Column="0" WidthRequest="28" HeightRequest="28"
+                                                StrokeShape="RoundRectangle 14"
+                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                                            <Image Source="{Binding ClubImgUrl, Converter={StaticResource ImageConverter}}"
+                                                   Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Grid.Column="1" Text="{Binding ClubName}" FontFamily="InterBold" FontSize="11"
+                                               TextColor="{StaticResource EmAccent}" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="{Binding PostDate}" FontFamily="Inter" FontSize="11"
+                                               TextColor="#80FFFFFF" VerticalOptions="Center" />
+                                    </Grid>
+                                    <Label Grid.Row="1" Text="{Binding TopicTitle}" FontFamily="InterBold" FontSize="13"
+                                           TextColor="{StaticResource BrushText}" MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Grid.Row="2" Text="{Binding PostPreview}" FontFamily="Inter" FontSize="11"
+                                           TextColor="#80FFFFFF" MaxLines="1"
+                                           LineBreakMode="TailTruncation" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+
+            <!-- Bottom loading indicator -->
+            <Grid Grid.Row="2" HeightRequest="48" IsVisible="{Binding Loading, FallbackValue=false}"
+                  VerticalOptions="End">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
+                                   WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" />
             </Grid>
         </Grid>
     </Grid>

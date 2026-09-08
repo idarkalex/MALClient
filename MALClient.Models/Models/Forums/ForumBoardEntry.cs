@@ -17,6 +17,7 @@ namespace MALClient.Models.Models.Forums
         public string Title { get; set; }
         public string PostTime { get; set; }
         public string Id { get; set; }
+        public string BoardName { get; set; }
     }
 
     public class ForumIndexContent

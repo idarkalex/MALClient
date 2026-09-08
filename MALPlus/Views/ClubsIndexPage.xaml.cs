@@ -27,6 +27,7 @@ public partial class ClubsIndexPage : ContentPage
         base.OnAppearing();
         if (_initialized) return;
         _initialized = true;
+        BuildTabs();
         try
         {
             Vm.ReloadMyClubs();
@@ -35,6 +36,7 @@ public partial class ClubsIndexPage : ContentPage
                 await Task.Delay(200);
                 if (!Vm.Loading) break;
             }
+            HighlightTab(0);
         }
         catch (Exception ex)
         {
@@ -42,35 +44,64 @@ public partial class ClubsIndexPage : ContentPage
         }
     }
 
-    private void OnTabClicked(object sender, EventArgs e)
+    private void BuildTabs()
     {
-        try
+        TabStrip.Children.Clear();
+        var tabs = new[] { ("My Clubs", 0), ("Search", 1), ("Activity", 2) };
+        for (int i = 0; i < tabs.Length; i++)
         {
-            if (sender is Button b && b.CommandParameter is string s)
+            var (label, index) = tabs[i];
+            var button = new Button
             {
-                ClubsTabIndex = s == "my" ? 0 : 1;
-                if (s == "my")
-                {
-                    MyClubsTab.BackgroundColor = Color.FromArgb("#0066FF");
-                    MyClubsTab.TextColor = Colors.White;
-                    SearchTab.BackgroundColor = Colors.Transparent;
-                    SearchTab.TextColor = Color.FromArgb("#FFFFFF");
-                }
-                else
-                {
-                    SearchTab.BackgroundColor = Color.FromArgb("#0066FF");
-                    SearchTab.TextColor = Colors.White;
-                    MyClubsTab.BackgroundColor = Colors.Transparent;
-                    MyClubsTab.TextColor = Color.FromArgb("#FFFFFF");
-                }
+                Text = label,
+                FontFamily = "InterSemiBold",
+                FontSize = 12,
+                Padding = new Thickness(12, 6),
+                HeightRequest = 32,
+                CornerRadius = 16,
+                BorderColor = Color.FromArgb("#29FFFFFF"),
+                BorderWidth = 1,
+                BackgroundColor = Colors.Transparent,
+                TextColor = Color.FromArgb("#FFFFFF")
+            };
+            int captured = index;
+            button.Clicked += (s, e) => OnTabClicked(captured);
+            TabStrip.Children.Add(button);
+        }
+    }
+
+    private void HighlightTab(int activeIndex)
+    {
+        for (int i = 0; i < TabStrip.Children.Count; i++)
+        {
+            if (TabStrip.Children[i] is Button b)
+            {
+                b.BackgroundColor = i == activeIndex ? Color.FromArgb("#0066FF") : Colors.Transparent;
+                b.TextColor = i == activeIndex ? Colors.White : Color.FromArgb("#FFFFFF");
             }
         }
-        catch { }
+    }
+
+    private void OnTabClicked(int index)
+    {
+        _clubsTabIndex = index;
+        OnPropertyChanged(nameof(ClubsTabIndex));
+        HighlightTab(index);
     }
 
     private void OnRefreshMy(object sender, EventArgs e)
     {
         try { Vm.ReloadMyClubs(); } catch { }
+    }
+
+    private void OnSearchRefresh(object sender, EventArgs e)
+    {
+        try { Vm.SearchCommand?.Execute(null); } catch { }
+    }
+
+    private void OnActivityRefresh(object sender, EventArgs e)
+    {
+        try { Vm.LoadClubActivityCommand?.Execute(null); } catch { }
     }
 
     private void OnSearchCompleted(object sender, EventArgs e)
@@ -91,6 +122,22 @@ public partial class ClubsIndexPage : ContentPage
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS club nav failed: " + ex.Message);
+        }
+    }
+
+    private async void OnActivityTapped(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            if (e.CurrentSelection.FirstOrDefault() is ClubActivityEntry entry)
+            {
+                ((CollectionView)sender).SelectedItem = null;
+                await Shell.Current.GoToAsync($"forumtopic?id={entry.TopicId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS activity nav failed: " + ex.Message);
         }
     }
 }
