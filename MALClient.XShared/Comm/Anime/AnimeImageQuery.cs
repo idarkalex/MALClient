@@ -18,7 +18,7 @@ namespace MALClient.XShared.Comm.Anime
         private static Dictionary<int, string> CachedMangaImages { get; set; } 
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(2);
 
-        public static async void Init()
+        public static async Task Init()
         {
             CachedAnimeImages = await DataCache.RetrieveData<Dictionary<int, string>>("id_to_img", "Anime", -1) ?? new Dictionary<int, string>();
             CachedMangaImages = await DataCache.RetrieveData<Dictionary<int, string>>("id_to_img", "Manga", -1) ?? new Dictionary<int, string>();

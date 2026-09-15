@@ -81,7 +81,19 @@ public class MauiClipboardProvider : IClipboardProvider
 
 public class MauiConnectionInfoProvider : IConnectionInfoProvider
 {
+    private bool _subscribed;
+
     public void Init()
+    {
+        UpdateConnectionStatus();
+        if (_subscribed)
+            return;
+
+        Connectivity.Current.ConnectivityChanged += (_, e) => HasInternetConnection = e.NetworkAccess != NetworkAccess.None;
+        _subscribed = true;
+    }
+
+    private void UpdateConnectionStatus()
     {
         HasInternetConnection = Connectivity.NetworkAccess != NetworkAccess.None;
     }

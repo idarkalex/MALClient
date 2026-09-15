@@ -27,14 +27,13 @@ namespace MALClient.XShared.BL
             ResourceLocator.ConnectionInfoProvider.Init();
             Credentials.Init();
             FavouritesManager.LoadData();
-            AnimeImageQuery.Init();
+            await AnimeImageQuery.Init();
             ViewModelLocator.ForumsMain.LoadPinnedTopics();
-            if (Credentials.Authenticated)
-            {
-                // preload access token
-                await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync();
-            }
 
+            var tokenTask = Credentials.Authenticated
+                ? ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync()
+                : Task.CompletedTask;
+            var englishTask = ResourceLocator.EnglishTitlesProvider.Init();
             var forceAiring = false;
             try
             {
@@ -45,7 +44,6 @@ namespace MALClient.XShared.BL
                 if (DateTime.UtcNow - lastDt > TimeSpan.FromMinutes(30))
                     forceAiring = true;
             } catch { }
-            var englishTask = ResourceLocator.EnglishTitlesProvider.Init();
             var airingTask = ResourceLocator.AiringInfoProvider.Init(false, forceAiring);
             await englishTask;
             // airing refresh is progressive: don't block grid, update in background when ready
@@ -57,6 +55,10 @@ namespace MALClient.XShared.BL
                     ResourceLocator.AiringInfoProvider.NotifyUpdated();
                     DiagnosticsReporter.Info("Startup", $"airing refresh done force={forceAiring} success={ResourceLocator.AiringInfoProvider.InitializationSuccess}");
                 } catch { }
+            });
+            _ = Task.Run(async () =>
+            {
+                try { await tokenTask; } catch { }
             });
 
             if (Settings.NotificationCheckInRuntime && Credentials.Authenticated)

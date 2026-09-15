@@ -3,11 +3,15 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:views="clr-namespace:MALPlus.Views"
        x:Class="MALPlus.AppShell"
-       Shell.NavBarIsVisible="False">
-    <TabBar>
-        <ShellContent Title="Anime" Route="anime" ContentTemplate="{DataTemplate views:AnimeListPage}" />
-        <ShellContent Title="Manga" Route="manga" ContentTemplate="{DataTemplate views:AnimeListPage}" />
-        <ShellContent Title="Discover" Route="discover" ContentTemplate="{DataTemplate views:DiscoverPage}" />
-        <ShellContent Title="More" Route="more" ContentTemplate="{DataTemplate views:MorePage}" />
+       Shell.NavBarIsVisible="False"
+       Shell.TabBarIsVisible="False">
+    <TabBar Shell.TabBarBackgroundColor="{StaticResource EmSheet}"
+            Shell.TabBarTitleColor="{StaticResource BrushText}"
+            Shell.TabBarUnselectedColor="#80FFFFFF"
+            Shell.TabBarForegroundColor="{StaticResource EmAccent}">
+        <ShellContent Title="Anime" Route="anime" Icon="anime_list.svg" ContentTemplate="{DataTemplate views:AnimeListPage}" />
+        <ShellContent Title="Manga" Route="manga" Icon="manga_books.svg" ContentTemplate="{DataTemplate views:AnimeListPage}" />
+        <ShellContent Title="Discover" Route="discover" Icon="discover_home.svg" ContentTemplate="{DataTemplate views:DiscoverPage}" />
+        <ShellContent Title="More" Route="more" Icon="more_dots.svg" ContentTemplate="{DataTemplate views:MorePage}" />
     </TabBar>
 </Shell>
