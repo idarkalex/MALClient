@@ -14,12 +14,24 @@
     <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>200</ApplicationVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <RuntimeIdentifier Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64</RuntimeIdentifier>
+    <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <AndroidIncludeDebugSymbols>false</AndroidIncludeDebugSymbols>
     <!-- Debug builds must embed assemblies: fast-deploy APKs crash at startup with native SIGABRT (same lesson as v2). -->
     <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">true</EmbedAssembliesIntoApk>
   </PropertyGroup>
 
   <ItemGroup>
     <MauiFont Include="Resources\Fonts\*" />
+    <MauiImage Include="Resources\Images\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Splash + launcher icon: original MAL brand (navy #000D1A + white MAL+), ported as LIGHTWEIGHT SVGs. -->
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#000D1A" BaseSize="128,128" />
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#000D1A" />
   </ItemGroup>
 
   <ItemGroup>
