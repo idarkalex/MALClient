@@ -5,6 +5,7 @@ using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
+using MALPlus.Services;
 
 namespace MALPlus.Views;
 
@@ -19,8 +20,6 @@ public partial class AnimeListPage : ContentPage
     private bool _modeApplied;
     private int _lastMode = -1;
     private int _lastStatus = -1;
-    private bool _lastQueryEmpty = true;
-    private string _lastSearch = "";
     private TopAnimeType _topType = TopAnimeType.General;
     private MangaTopType _mangaTopType = MangaTopType.All;
     private MangaAdaptedType _adaptedType = MangaAdaptedType.AiringNow;
@@ -114,7 +113,6 @@ public partial class AnimeListPage : ContentPage
             AnimeListPageNavigationArgs args = BuildArgs(mode, _lastStatus);
             Vm.Init(args);
             _refreshArmed = true;
-            UpdateSubtitle();
         }
         catch (Exception ex)
         {
@@ -202,25 +200,11 @@ public partial class AnimeListPage : ContentPage
             HighlightStatus(statusSelectorIndex, _lastMode);
             var args = BuildArgs(_lastMode, statusSelectorIndex);
             Vm.Init(args);
-            UpdateSubtitle();
         }
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS status tab failed: " + ex.Message);
         }
-    }
-
-    private void UpdateSubtitle()
-    {
-        try
-        {
-            if (!string.IsNullOrWhiteSpace(_lastSearch))
-                SubtitleLabel.Text = $"Search: \"{_lastSearch}\"";
-            else
-                SubtitleLabel.Text = "";
-            SubtitleLabel.IsVisible = !string.IsNullOrWhiteSpace(SubtitleLabel.Text);
-        }
-        catch { }
     }
 
     private AnimeListPageNavigationArgs BuildArgs(int mode, int statusSelectorIndex)
@@ -251,25 +235,6 @@ public partial class AnimeListPage : ContentPage
         }
     }
 
-    private void OnSearchCompleted(object sender, EventArgs e) => DoSearch();
-    private void OnSearchClicked(object sender, EventArgs e) => DoSearch();
-
-    private void DoSearch()
-    {
-        try
-        {
-            _lastSearch = SearchEntry.Text ?? "";
-            // Search is local-only (Recent Searches isn't implemented yet): re-Init with a query
-            // would clear the user list. Instead, just filter the visible collection client-side.
-            UpdateSubtitle();
-            // No-op for now: this is documented as a known limitation in MAUI.
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("MALPLUS search failed: " + ex.Message);
-        }
-    }
-
     private void OnRefreshing(object sender, EventArgs e)
     {
         try
@@ -288,31 +253,49 @@ public partial class AnimeListPage : ContentPage
         }
     }
 
+    private bool _navigatingToDetails;
+
     private async void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         try
         {
             if (e.CurrentSelection.FirstOrDefault() is AnimeItemViewModel item)
             {
+                if (_navigatingToDetails) return;
+                _navigatingToDetails = true;
                 AnimeGrid.SelectedItem = null;
                 var wm = (AnimeListWorkModes)_lastMode;
                 var manga = wm == AnimeListWorkModes.Manga || wm == AnimeListWorkModes.TopManga || wm == AnimeListWorkModes.MangaAdapted;
                 var titleQs = Uri.EscapeDataString(item.Title ?? string.Empty);
-                if (manga)
-                    await Shell.Current.GoToAsync($"animedetails?id={item.Id}&title={titleQs}&manga=true");
-                else
-                    await Shell.Current.GoToAsync($"animedetails?id={item.Id}&title={titleQs}");
+                var source = wm == AnimeListWorkModes.Manga
+                    ? PageIndex.PageMangaList
+                    : PageIndex.PageAnimeList;
+                var detailsArgs = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, item,
+                    BuildArgs(_lastMode, _lastStatus))
+                {
+                    Source = source,
+                    AnimeMode = !manga
+                };
+                MauiDetailsNavigationHandoff.Set(detailsArgs);
+                var route = manga
+                    ? $"animedetails?id={item.Id}&title={titleQs}&manga=true"
+                    : $"animedetails?id={item.Id}&title={titleQs}";
+                await Shell.Current.GoToAsync(route);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS selection nav failed: " + ex.Message);
         }
+        finally
+        {
+            _navigatingToDetails = false;
+        }
     }
 
     private sealed class MauiDimensionsProvider : MALClient.XShared.ViewModels.Interfaces.IDimensionsProvider
     {
-        public double ActualWidth => -1;
-        public double ActualHeight => -1;
+        public double ActualWidth => DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
+        public double ActualHeight => DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
     }
 }

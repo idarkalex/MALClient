@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
              x:Class="MALPlus.Views.AnimeListPage"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
@@ -10,35 +11,21 @@
         <converters:IntEqualityConverter x:Key="IntEq" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*">
-        <!-- Search bar (above the status tabs) -->
-        <Grid Grid.Row="0" Padding="12,8,12,0" ColumnDefinitions="*,Auto" ColumnSpacing="6">
-            <Entry x:Name="SearchEntry" Placeholder="Search your list..." FontSize="13"
-                   BackgroundColor="{StaticResource EmSheet}" TextColor="{StaticResource BrushText}"
-                   PlaceholderColor="#80FFFFFF" ReturnType="Search"
-                   Completed="OnSearchCompleted" />
-            <Button Grid.Column="1" Text="🔍" Clicked="OnSearchClicked"
-                    BackgroundColor="#0066FF" TextColor="White" CornerRadius="6"
-                    WidthRequest="40" HeightRequest="40" Padding="0" />
-        </Grid>
-
+    <Grid RowDefinitions="Auto,*,Auto">
         <!-- Status tabs (All / Watching / Completed / On Hold / Dropped / Planned) -->
-        <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
                     Padding="12,8" Margin="0,4,0,0">
             <HorizontalStackLayout x:Name="StatusTabsStrip" Spacing="6" />
         </ScrollView>
 
-        <!-- Subtitle showing current filter / search -->
-        <Label Grid.Row="2" x:Name="SubtitleLabel" FontFamily="Inter" FontSize="11"
-               TextColor="#A0FFFFFF" Padding="16,0,16,4" IsVisible="False" />
-
-        <RefreshView x:Name="ListRefresh" Grid.Row="3" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
+        <RefreshView x:Name="ListRefresh" Grid.Row="1" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
             <CollectionView x:Name="AnimeGrid"
                             ItemsSource="{Binding AnimeItems}"
                             SelectionMode="Single"
-                            SelectionChanged="OnSelectionChanged"
-                            RemainingItemsThreshold="4"
-                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                             SelectionChanged="OnSelectionChanged"
+                             RemainingItemsThreshold="4"
+                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical" Span="3" />
                 </CollectionView.ItemsLayout>
@@ -90,6 +77,8 @@
         <Label Text="{Binding EmptyNoticeContent}" IsVisible="{Binding EmptyNoticeVisibility}"
                FontFamily="Inter" FontSize="14" TextColor="{StaticResource BrushText}"
                HorizontalOptions="Center" VerticalOptions="Center"
-               Grid.Row="3" />
+               Grid.Row="1" />
+
+        <controls:BottomNavBar Grid.Row="2" />
     </Grid>
 </ContentPage>

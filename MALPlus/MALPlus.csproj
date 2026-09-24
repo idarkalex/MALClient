@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <!-- Splash + launcher icon: original MAL brand (navy #000D1A + white MAL+), ported as LIGHTWEIGHT SVGs. -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#000D1A" BaseSize="128,128" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#000D1A" BaseSize="256,256" />
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#000D1A" />
   </ItemGroup>
 

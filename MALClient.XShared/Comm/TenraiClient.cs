@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -10,7 +11,7 @@ namespace MALClient.XShared.Comm
 {
     public static class TenraiClient
     {
-        private static readonly HttpClient Client = new HttpClient();
+        private static readonly HttpClient Client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
         private static readonly SemaphoreSlim RateLimiter = new SemaphoreSlim(1, 1);
         private static DateTime _lastRequest = DateTime.MinValue;
 
@@ -29,7 +30,7 @@ namespace MALClient.XShared.Comm
         };
 
         private static readonly Dictionary<string, (JsonElement data, DateTime fetchedAt)> _dataCache = new Dictionary<string, (JsonElement, DateTime)>();
-        private static readonly Dictionary<string, Task<JsonElement>> _inFlight = new Dictionary<string, Task<JsonElement>>();
+        private static readonly ConcurrentDictionary<string, Task<JsonElement>> _inFlight = new();
         private static readonly object _cacheLock = new object();
         private const int DataCacheTtlMinutes = 5;
 
@@ -38,42 +39,37 @@ namespace MALClient.XShared.Comm
             Client.DefaultRequestHeaders.Add("User-Agent", "MALClient/3.0");
         }
 
-        private static async Task<string> GetStringAsync(string endpoint)
+        private static Task<string> GetStringAsync(string endpoint)
         {
-            Exception lastError = null;
-            foreach (var baseUrl in BaseUrls)
-            {
-                try
-                {
-                    return await GetStringCoreAsync($"{baseUrl}/{endpoint}");
-                }
-                catch (HttpRequestException e)
-                {
-                    lastError = e;
-                }
-                catch (TaskCanceledException e)
-                {
-                    lastError = e;
-                }
-            }
-
-            throw lastError ?? new HttpRequestException("All Tenrai mirrors failed.");
+            return GetStringAsync(endpoint, CancellationToken.None);
         }
 
-        private static async Task<string> GetStringCoreAsync(string url)
+        private static async Task<string> GetStringCoreAsync(string url, CancellationToken cancellationToken = default)
         {
             for (int attempt = 1; attempt <= MaxAttempts; attempt++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 HttpResponseMessage response;
-                await RateLimiter.WaitAsync();
+                await RateLimiter.WaitAsync(cancellationToken);
                 try
                 {
                     var sinceLast = DateTime.UtcNow - _lastRequest;
                     if (sinceLast.TotalMilliseconds < RequestSpacingMs)
-                        await Task.Delay(RequestSpacingMs - (int)sinceLast.TotalMilliseconds);
+                        await Task.Delay(RequestSpacingMs - (int)sinceLast.TotalMilliseconds, cancellationToken);
 
                     _lastRequest = DateTime.UtcNow;
-                    response = await Client.GetAsync(url);
+                    response = await Client.GetAsync(url, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (HttpRequestException)
+                {
+                    if (attempt >= MaxAttempts)
+                        throw;
+                    await Task.Delay(TimeSpan.FromSeconds(attempt), cancellationToken);
+                    continue;
                 }
                 finally
                 {
@@ -90,7 +86,7 @@ namespace MALClient.XShared.Comm
                         var delay = retryAfterSeconds ?? 2.0 * attempt;
                         if (attempt < MaxAttempts)
                         {
-                            await Task.Delay(TimeSpan.FromSeconds(Math.Min(delay, 15)));
+                            await Task.Delay(TimeSpan.FromSeconds(Math.Min(delay, 15)), cancellationToken);
                             continue;
                         }
                         throw new HttpRequestException("Tenrai rate limit exceeded (429).");
@@ -100,7 +96,7 @@ namespace MALClient.XShared.Comm
                     {
                         if (attempt < MaxAttempts)
                         {
-                            await Task.Delay(TimeSpan.FromSeconds(2 * attempt));
+                            await Task.Delay(TimeSpan.FromSeconds(2 * attempt), cancellationToken);
                             continue;
                         }
                         throw new HttpRequestException($"Tenrai server error {(int)response.StatusCode}.");
@@ -109,44 +105,87 @@ namespace MALClient.XShared.Comm
                     if (!response.IsSuccessStatusCode)
                         throw new HttpRequestException($"Tenrai request failed: {(int)response.StatusCode}");
 
-                    return await response.Content.ReadAsStringAsync();
+                    return await response.Content.ReadAsStringAsync(cancellationToken);
                 }
             }
 
             throw new HttpRequestException("Unexpected retry exhaustion.");
         }
 
-        public static async Task<string> GetRawJsonAsync(string endpoint)
+        public static Task<string> GetRawJsonAsync(string endpoint)
         {
-            return await GetStringAsync(endpoint);
+            return GetStringAsync(endpoint);
         }
 
         public static async Task<JsonElement> GetDataAsync(string endpoint)
         {
-            lock (_cacheLock)
-            {
-                if (_dataCache.TryGetValue(endpoint, out var cached) && DateTime.UtcNow - cached.fetchedAt < TimeSpan.FromMinutes(DataCacheTtlMinutes))
-                    return cached.data.Clone();
-            }
-            var json = await GetStringAsync(endpoint);
-            using var doc = JsonDocument.Parse(json);
-            var result = doc.RootElement.GetProperty("data").Clone();
-            lock (_cacheLock) _dataCache[endpoint] = (result.Clone(), DateTime.UtcNow);
-            return result;
+            return await GetDataSingleFlightAsync(endpoint, null);
         }
 
         public static async Task<JsonElement> GetDataAsync(string endpoint, TimeSpan timeout)
+        {
+            return await GetDataSingleFlightAsync(endpoint, timeout);
+        }
+
+        private static async Task<JsonElement> GetDataSingleFlightAsync(string endpoint, TimeSpan? timeout)
         {
             lock (_cacheLock)
             {
                 if (_dataCache.TryGetValue(endpoint, out var cached) && DateTime.UtcNow - cached.fetchedAt < TimeSpan.FromMinutes(DataCacheTtlMinutes))
                     return cached.data.Clone();
             }
-            var json = await GetStringAsync(endpoint, timeout);
+
+            if (_inFlight.TryGetValue(endpoint, out var existing))
+                return (await existing).Clone();
+
+            var task = GetDataCoreAsync(endpoint, timeout);
+            if (!_inFlight.TryAdd(endpoint, task))
+                return (await _inFlight[endpoint]).Clone();
+
+            try
+            {
+                var result = await task;
+                return result.Clone();
+            }
+            finally
+            {
+                _inFlight.TryRemove(endpoint, out _);
+            }
+        }
+
+        private static async Task<JsonElement> GetDataCoreAsync(string endpoint, TimeSpan? timeout)
+        {
+            var json = timeout.HasValue ? await GetStringAsync(endpoint, timeout.Value) : await GetStringAsync(endpoint);
             using var doc = JsonDocument.Parse(json);
             var result = doc.RootElement.GetProperty("data").Clone();
             lock (_cacheLock) _dataCache[endpoint] = (result.Clone(), DateTime.UtcNow);
             return result;
+        }
+
+        private static async Task<string> GetStringAsync(string endpoint, CancellationToken cancellationToken)
+        {
+            Exception lastError = null;
+            foreach (var baseUrl in BaseUrls)
+            {
+                try
+                {
+                    return await GetStringCoreAsync($"{baseUrl}/{endpoint}", cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (HttpRequestException e)
+                {
+                    lastError = e;
+                }
+                catch (TaskCanceledException e)
+                {
+                    lastError = e;
+                }
+            }
+
+            throw lastError ?? new HttpRequestException("All Tenrai mirrors failed.");
         }
 
         private static async Task<string> GetStringAsync(string endpoint, TimeSpan timeout)
@@ -182,14 +221,14 @@ namespace MALClient.XShared.Comm
         }
 
         private static readonly Dictionary<string, (List<JsonElement> items, bool hasNext, DateTime fetchedAt)> _paginatedCache = new Dictionary<string, (List<JsonElement>, bool, DateTime)>();
-        public static async Task<(List<JsonElement> Items, bool HasNextPage)> GetPaginatedAsync(string endpoint)
+        public static async Task<(List<JsonElement> Items, bool HasNextPage)> GetPaginatedAsync(string endpoint, CancellationToken cancellationToken = default)
         {
             lock (_cacheLock)
             {
                 if (_paginatedCache.TryGetValue(endpoint, out var cached) && DateTime.UtcNow - cached.fetchedAt < TimeSpan.FromMinutes(5))
                     return (cached.items.Select(e => e.Clone()).ToList(), cached.hasNext);
             }
-            var json = await GetStringAsync(endpoint);
+            var json = await GetStringAsync(endpoint, cancellationToken);
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
             var data = root.GetProperty("data");

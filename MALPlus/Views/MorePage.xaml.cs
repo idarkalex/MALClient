@@ -5,7 +5,6 @@ using Microsoft.Maui.Controls.Shapes;
 
 using System.Collections.Generic;
 using System.Linq;
-using MALClient.Models.Models.Favourites;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -305,7 +304,7 @@ public partial class MorePage : ContentPage
             var status = statusValues[i];
             var index = i;
             var workMode = manga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
-            var label = Utilities.StatusToString((int)status, manga);
+            var label = MALClient.XShared.Utils.Utilities.StatusToString((int)status, manga);
             items.Add((label, (Action)(() => NavigateTo(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs(index, workMode)))));
         }
 

@@ -75,7 +75,7 @@
                                TextColor="#80FFFFFF"
                                IsVisible="{Binding IsNoVoiceActingRolesNoticeVisible}" />
                         <CollectionView ItemsSource="{Binding Data.ShowCharacterPairs}"
-                                        SelectionMode="None" HeightRequest="100">
+                                        SelectionMode="None" HeightRequest="460">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="8" Padding="0,4">
@@ -120,7 +120,7 @@
                                TextColor="#80FFFFFF"
                                IsVisible="{Binding IsNoProductionRolesNoticeVisible}" />
                         <CollectionView ItemsSource="{Binding Data.StaffPositions}"
-                                        SelectionMode="None" HeightRequest="100">
+                                        SelectionMode="None" HeightRequest="360">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid ColumnDefinitions="60,*" ColumnSpacing="8" Padding="0,4">

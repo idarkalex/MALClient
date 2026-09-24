@@ -3,12 +3,14 @@ using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALPlus.Services;
 
 namespace MALPlus.Views;
 
 [QueryProperty(nameof(MalId), "id")]
 [QueryProperty(nameof(AnimeTitle), "title")]
 [QueryProperty(nameof(InitialIsManga), "manga")]
+[QueryProperty(nameof(InitialTabIndex), "tab")]
 public partial class AnimeDetailsPage : ContentPage
 {
     private bool _initialized;
@@ -21,6 +23,7 @@ public partial class AnimeDetailsPage : ContentPage
     public string MalId { get; set; }
     public string AnimeTitle { get; set; }
     public string InitialIsManga { get; set; }
+    public int InitialTabIndex { get; set; }
 
     private AnimeDetailsPageViewModel Vm => (AnimeDetailsPageViewModel)BindingContext;
 
@@ -49,7 +52,7 @@ public partial class AnimeDetailsPage : ContentPage
             if (choice == "Open trailer") ShowVideoOverlay(Vm.TrailerUrl);
             else if (choice == "Refresh")
             {
-                try { Vm.RefreshData(); } catch (Exception ex) { Console.WriteLine("Refresh failed: " + ex.Message); }
+                try { await Vm.RefreshDataAsync(); } catch (Exception ex) { Console.WriteLine("Refresh failed: " + ex.Message); }
             }
             else if (choice == "Open in MAL")
             {
@@ -74,27 +77,54 @@ public partial class AnimeDetailsPage : ContentPage
         try
         {
             var isManga = string.Equals(InitialIsManga, "true", StringComparison.OrdinalIgnoreCase);
-            var args = new AnimeDetailsPageNavigationArgs(int.Parse(MalId), AnimeTitle, null, null, null);
-            if (isManga) args.AnimeMode = false;
-            Vm.Init(args, fakeDelay: false);
-            // wait for the initial General data to land so we can shape the tab strip
-            // (anime vs manga vs movie determines which tabs are visible)
-            for (int i = 0; i < 60; i++)
+            var handoff = MauiDetailsNavigationHandoff.Take(int.Parse(MalId), !isManga);
+            var args = handoff ?? new AnimeDetailsPageNavigationArgs(int.Parse(MalId), AnimeTitle, null, null, null)
             {
-                await Task.Delay(200);
-                if (!Vm.LoadingGlobal && !string.IsNullOrEmpty(Vm.Title))
-                    break;
-            }
-            ApplyTabStripVisibility();
+                SourceTabIndex = Math.Clamp(InitialTabIndex, 0, 7)
+            };
+            if (isManga) args.AnimeMode = false;
+            if (handoff != null) args.AnimeMode = handoff.AnimeMode;
+            ApplyTabStripVisibilityFromParams(isManga);
             ApplyCharacterStaffBindings();
-            System.Diagnostics.Debug.WriteLine("MALPLUS Details Init returned title=" + Vm.Title
-                + " rank=" + Vm.GeneralRank + " pop=" + Vm.GeneralPopularity
-                + " studios=" + Vm.GeneralStudios + " animemode=" + Vm.AnimeMode);
+            _ = InitAsyncSafe(Vm, args);
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine("MALPLUS Details Init failed: " + ex);
         }
+    }
+
+    private async Task InitAsyncSafe(AnimeDetailsPageViewModel vm, AnimeDetailsPageNavigationArgs args)
+    {
+        try
+        {
+            await vm.InitAsync(args, fakeDelay: false);
+            while (vm.LoadingGlobal)
+                await Task.Delay(100);
+            var initialTab = Math.Clamp(args.SourceTabIndex, 0, 7);
+            vm.DetailsPivotSelectedIndex = IsTabVisible(initialTab) ? initialTab : 0;
+            ApplyTabStripVisibility();
+            ApplyCharacterStaffBindings();
+            System.Diagnostics.Debug.WriteLine("MALPLUS Details Init returned title=" + vm.Title
+                + " rank=" + vm.GeneralRank + " pop=" + vm.GeneralPopularity
+                + " studios=" + vm.GeneralStudios + " animemode=" + vm.AnimeMode);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("MALPLUS Details Init failed: " + ex);
+        }
+    }
+
+    private void ApplyTabStripVisibilityFromParams(bool isManga)
+    {
+        TabGeneral.IsVisible = true;
+        TabDetails.IsVisible = true;
+        TabEpisodes.IsVisible = !isManga;
+        TabReviews.IsVisible = !isManga;
+        TabRecs.IsVisible = !isManga;
+        TabRelated.IsVisible = !isManga;
+        TabCharacters.IsVisible = true;
+        TabStaff.IsVisible = !isManga;
     }
 
     private void ApplyTabStripVisibility()
@@ -119,12 +149,22 @@ public partial class AnimeDetailsPage : ContentPage
         }
     }
 
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            if (BindingContext is AnimeDetailsPageViewModel vm)
+            {
+                vm.ShowMoreRequested -= OnShowMoreRequested;
+                vm.PropertyChanged -= OnVmPropertyChanged;
+            }
+        }
     protected override void OnBindingContextChanged()
     {
         base.OnBindingContextChanged();
         // PropertyChanged is subscribed in the constructor; do NOT subscribe again here,
         // otherwise the singleton VM gets a second handler and every property change fires twice.
     }
+
 
     private void OnVmPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
@@ -225,7 +265,7 @@ public partial class AnimeDetailsPage : ContentPage
                 AnimeStatus.Watching, AnimeStatus.Completed, AnimeStatus.OnHold,
                 AnimeStatus.Dropped, AnimeStatus.PlanToWatch
             };
-            var labels = options.Select(s => Utilities.StatusToString((int)s, !Vm.AnimeMode, false)).ToArray();
+            var labels = options.Select(s => MALClient.XShared.Utils.Utilities.StatusToString((int)s, !Vm.AnimeMode, false)).ToArray();
             var choice = await DisplayActionSheet("Set status", "Cancel", null, labels);
             if (string.IsNullOrEmpty(choice) || choice == "Cancel")
                 return;

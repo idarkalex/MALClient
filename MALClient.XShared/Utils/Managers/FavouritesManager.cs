@@ -13,7 +13,7 @@ namespace MALClient.XShared.Utils.Managers
         private static bool _changedSth;
         private static Dictionary<FavouriteType,List<string>> KnownFavourites { get; set; } = new Dictionary<FavouriteType, List<string>>();
 
-        public static async void LoadData()
+        public static async Task LoadDataAsync()
         {
             if (Settings.SyncFavsFromTimeToTime && Credentials.Authenticated && Utilities.ConvertToUnixTimestamp(DateTime.Now) - Settings.LastFavTimeSync > 36000)
             {

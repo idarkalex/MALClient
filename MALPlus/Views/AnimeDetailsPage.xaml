@@ -4,6 +4,7 @@
              xmlns:converters="clr-namespace:MALPlus.Converters"
              xmlns:controls="clr-namespace:MALPlus.Controls"
              x:Class="MALPlus.Views.AnimeDetailsPage"
+             Shell.PresentationMode="NotAnimated"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />

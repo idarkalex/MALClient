@@ -99,9 +99,10 @@ public partial class MessagingPage : ContentPage
     }
 
     private void OnRefreshing(object sender, EventArgs e)
-    {
-        try { Vm.Init(true); } catch { }
-    }
+        {
+            if (Vm.LoadingVisibility) return;
+            try { Vm.Init(true); } catch { }
+        }
 
     private async void OnComposeClicked(object sender, EventArgs e)
     {

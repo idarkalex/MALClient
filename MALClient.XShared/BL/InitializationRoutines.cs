@@ -26,7 +26,7 @@ namespace MALClient.XShared.BL
         {
             ResourceLocator.ConnectionInfoProvider.Init();
             Credentials.Init();
-            FavouritesManager.LoadData();
+            _ = FavouritesManager.LoadDataAsync();
             await AnimeImageQuery.Init();
             ViewModelLocator.ForumsMain.LoadPinnedTopics();
 

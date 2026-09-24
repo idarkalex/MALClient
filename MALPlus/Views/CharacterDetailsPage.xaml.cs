@@ -44,4 +44,19 @@ public partial class CharacterDetailsPage : ContentPage
             Console.WriteLine("MALPLUS CharacterDetails Init failed: " + ex);
         }
     }
+
+    private async void OnVoiceActorTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (e.Parameter is string idStr && int.TryParse(idStr, out int id))
+            {
+                await Shell.Current.GoToAsync($"staff?id={id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnVoiceActorTapped failed: " + ex.GetType().Name);
+        }
+    }
 }

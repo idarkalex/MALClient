@@ -1,6 +1,7 @@
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
+using Microsoft.Maui.ApplicationModel;
 
 namespace MALPlus.Views;
 
@@ -20,7 +21,53 @@ public partial class VideosPage : ContentPage
     {
         InitializeComponent();
         BindingContext = ViewModelLocator.PopularVideos;
+#if ANDROID
+        VideoWebView.HandlerChanged += OnVideoWebViewHandlerChanged;
+#endif
     }
+
+#if ANDROID
+    private void OnVideoWebViewHandlerChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            var pv = VideoWebView?.Handler?.PlatformView as global::Android.Views.View;
+            if (pv != null)
+            {
+                MALPlus.Services.VideoWebViewHelper.ConfigurePlatformView(pv);
+                MALPlus.Services.VideoWebViewHelper.Resume(pv);
+            }
+        }
+        catch { }
+    }
+
+    private void ResumeVideoWebView()
+    {
+        try
+        {
+            var pv = VideoWebView?.Handler?.PlatformView as global::Android.Views.View;
+            if (pv != null) MALPlus.Services.VideoWebViewHelper.Resume(pv);
+        }
+        catch { }
+    }
+
+    private static void SetSystemBars(bool video)
+    {
+        try
+        {
+            var window = Platform.CurrentActivity?.Window;
+            if (window == null) return;
+            window.SetStatusBarColor(video
+                ? global::Android.Graphics.Color.Black
+                : global::Android.Graphics.Color.ParseColor("#051522"));
+            window.SetNavigationBarColor(global::Android.Graphics.Color.Black);
+        }
+        catch { }
+    }
+#else
+    private void ResumeVideoWebView() { }
+    private static void SetSystemBars(bool video) { }
+#endif
 
     protected override async void OnAppearing()
     {
@@ -54,11 +101,14 @@ public partial class VideosPage : ContentPage
             if (e.CurrentSelection.FirstOrDefault() is AnimeVideoData video && !string.IsNullOrEmpty(video.YtLink))
             {
                 ((CollectionView)sender).SelectedItem = null;
-                var embed = ToYouTubeEmbed(video.YtLink);
-                var html = $"<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>" +
-                           $"<style>html,body{{margin:0;background:#000;height:100%}}iframe{{width:100%;height:100%;border:0}}</style>" +
-                           $"</head><body><iframe src=\"{embed}\" allowfullscreen></iframe></body></html>";
-                VideoWebView.Source = new HtmlWebViewSource { Html = html, BaseUrl = "https://www.youtube.com" };
+                ResumeVideoWebView();
+                var embed = MALPlus.Services.VideoWebViewHelper.ToEmbedUrl(video.YtLink, autoplay: true);
+                VideoWebView.Source = new HtmlWebViewSource
+                {
+                    Html = MALPlus.Services.VideoWebViewHelper.BuildEmbedHtml(embed),
+                    BaseUrl = "https://myanimelist.net"
+                };
+                SetSystemBars(true);
                 VideoOverlayVisibility = true;
                 VideoOverlay.IsVisible = true;
             }
@@ -76,20 +126,8 @@ public partial class VideosPage : ContentPage
             VideoWebView.Source = null;
             VideoOverlay.IsVisible = false;
             VideoOverlayVisibility = false;
+            SetSystemBars(false);
         }
         catch { }
-    }
-
-    private static string ToYouTubeEmbed(string url)
-    {
-        try
-        {
-            var m = System.Text.RegularExpressions.Regex.Match(url, @"youtube\.com/watch\?v=([\w\-]+)");
-            if (m.Success) return $"https://www.youtube.com/embed/{m.Groups[1].Value}";
-            m = System.Text.RegularExpressions.Regex.Match(url, @"youtu\.be/([\w\-]+)");
-            if (m.Success) return $"https://www.youtube.com/embed/{m.Groups[1].Value}";
-            return url;
-        }
-        catch { return url; }
     }
 }

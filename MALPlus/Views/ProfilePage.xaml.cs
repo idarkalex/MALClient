@@ -2,7 +2,6 @@ using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
-using MALClient.XShared.ViewModels.Items;
 
 namespace MALPlus.Views;
 

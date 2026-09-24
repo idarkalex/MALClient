@@ -8,6 +8,9 @@ public static class MauiBootDiagnostics
 {
     public static void Run()
     {
+#if !DEBUG
+        return;
+#else
         Task.Run(async () =>
         {
             try
@@ -65,5 +68,6 @@ public static class MauiBootDiagnostics
                 }
             }
         });
+#endif
     }
 }

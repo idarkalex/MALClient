@@ -21,6 +21,8 @@ public class MauiMalHttpContextProvider : MALClient.XShared.BL.MalHttpContextPro
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("authority", "myanimelist.net");
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Host", "myanimelist.net");
         _httpClient.DefaultRequestHeaders.Add("X-Requested-With", new[] { "XMLHttpRequest" });
+        _httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
         _httpClient.Handler.CookieContainer.Add(new Cookie("anime_update_advanced", "0", "/", "myanimelist.net"));
 
         var existingCookies = Credentials.Password;

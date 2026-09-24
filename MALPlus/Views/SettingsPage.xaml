@@ -67,6 +67,13 @@
                         <Switch Grid.Column="1" IsToggled="{Binding DisplaySeasonWithType}"
                                 OnColor="{StaticResource EmAccent}" />
                     </Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                        <Label Grid.Column="0" Text="Start page" FontFamily="Inter" FontSize="14"
+                               TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" Title="Start page" WidthRequest="110"
+                                SelectedItem="{Binding StartPageOption}"
+                                TextColor="{StaticResource BrushText}" />
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
 
@@ -112,10 +119,25 @@
                                 OnColor="{StaticResource EmAccent}" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" Padding="0,4">
-                        <Label Grid.Column="0" Text="Pull exact airing time" FontFamily="Inter" FontSize="14"
+                        <Label Grid.Column="0" Text="Show season with type" FontFamily="Inter" FontSize="14"
                                TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
-                        <Switch Grid.Column="1" IsToggled="{Binding CalendarPullExactAiringTime}"
+                        <Switch Grid.Column="1" IsToggled="{Binding DisplaySeasonWithType}"
                                 OnColor="{StaticResource EmAccent}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                        <Label Grid.Column="0" Text="Start page" FontFamily="Inter" FontSize="14"
+                               TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" SelectedItem="{Binding DefaultMenuTabOption}"
+                                TitleColor="#A0FFFFFF" TextColor="{StaticResource BrushText}"
+                                WidthRequest="130">
+                            <Picker.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                    <x:String>anime</x:String>
+                                    <x:String>manga</x:String>
+                                    <x:String>discover</x:String>
+                                </x:Array>
+                            </Picker.ItemsSource>
+                        </Picker>
                     </Grid>
                 </VerticalStackLayout>
             </Border>

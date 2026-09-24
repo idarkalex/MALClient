@@ -33,6 +33,7 @@ public partial class ForumsTopicPage : ContentPage
                 await Task.Delay(200);
                 if (!Vm.LoadingTopic) break;
             }
+            Console.WriteLine($"MALPLUS ForumsTopicPage load done LoadingTopic={Vm.LoadingTopic} Msgs={Vm.Messages?.Count} DataMsgs={Vm.CurrentTopicData?.Messages?.Count}");
         }
         catch (Exception ex)
         {

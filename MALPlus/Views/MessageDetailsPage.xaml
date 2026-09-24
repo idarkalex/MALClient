@@ -46,10 +46,10 @@
                 </CollectionView>
             </RefreshView>
 
-            <!-- Reply / compose composer -->
-            <Border Grid.Row="2" BackgroundColor="{StaticResource EmSheet}"
-                    Stroke="{StaticResource EmBorder}" StrokeThickness="1,1,0,0"
-                    StrokeShape="RoundRectangle 0" Padding="12,8,12,12">
+            <!-- Reply / compose composer (plain Grid in its own Auto row. A Border here
+                 silently killed the whole grid on Android, so avoid Border for pinned bars) -->
+            <Grid Grid.Row="2" BackgroundColor="{StaticResource EmSheet}"
+                  Padding="12,8,12,12">
                 <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
                     <Label Grid.Row="0" Text="To / Subject" FontFamily="InterBold" FontSize="10"
                            TextColor="#A0FFFFFF" IsVisible="{Binding NewMessageFieldsVisibility}" />
@@ -77,7 +77,7 @@
                             BackgroundColor="#0066FF" TextColor="White"
                             CornerRadius="8" HeightRequest="32" Padding="12,0" />
                 </Grid>
-            </Border>
+            </Grid>
         </Grid>
     </Grid>
 </ContentPage>

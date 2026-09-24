@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
              x:Class="MALPlus.Views.DiscoverPage"
              Title="Discover"
              BackgroundColor="{StaticResource EmBackground}">
@@ -10,7 +11,8 @@
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
     </ContentPage.Resources>
 
-    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
+    <Grid RowDefinitions="*,Auto">
+    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing" Grid.Row="0">
         <ScrollView x:Name="MainScroll">
             <VerticalStackLayout Padding="0,12,0,32" Spacing="20">
 
@@ -140,4 +142,6 @@
             </VerticalStackLayout>
         </ScrollView>
     </RefreshView>
+    <controls:BottomNavBar Grid.Row="1" />
+    </Grid>
 </ContentPage>

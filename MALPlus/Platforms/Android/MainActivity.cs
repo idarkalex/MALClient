@@ -82,11 +82,11 @@ public class MainActivity : MauiAppCompatActivity
                             Android.Util.Log.Info("MALPLUS", "GoToAsync success");
                             return;
                         }
-                        catch (Exception ex)
-                        {
-                            Android.Util.Log.Info("MALPLUS", $"Deep link failed: {ex.Message} | Stack: {ex.StackTrace}");
-                            return;
-                        }
+                            catch (Exception ex)
+                            {
+                                Android.Util.Log.Error("MALPLUS", $"Deep link failed: {ex}");
+                                return;
+                            }
                     }
                     Android.Util.Log.Info("MALPLUS", $"Shell.Current null, retry {attempt + 1}/20");
                     await System.Threading.Tasks.Task.Delay(250);

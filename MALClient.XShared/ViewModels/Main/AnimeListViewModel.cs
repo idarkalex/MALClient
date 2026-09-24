@@ -391,9 +391,8 @@ namespace MALClient.XShared.ViewModels.Main
         {
             ResourceLocator.DispatcherAdapter.Run(() =>
             {
-                foreach (var vm in AnimeItems)
+                foreach (var vm in AnimeItems.Take(12))
                     vm.RefreshTimeTillNextAirInBackground();
-                RaisePropertyChanged(() => AnimeItems);
             });
         }
 
@@ -764,10 +763,20 @@ namespace MALClient.XShared.ViewModels.Main
 
         private async void LoadMore()
         {
+            if (_animeItemsSet.Count > 0)
+            {
+                var count = Math.Max(10, GetGridItemsToLoad());
+                var items = _animeItemsSet.Take(count).ToList();
+                _animeItemsSet.RemoveRange(0, items.Count);
+                AnimeItems.AddRange(items.Select(item => item.ViewModel));
+                PrefetchAirTimesAsync();
+                return;
+            }
+
             if (CurrentPage > 10 || !CanLoadMore)
             {
                 CanLoadMore = false;
-                return; //we have reached max 
+                return;
             }
             var prevCount = AnimeItems.Count + _animeItemsSet.Count;
 
@@ -775,7 +784,7 @@ namespace MALClient.XShared.ViewModels.Main
             await FetchSeasonalData(true, CurrentPage);
             if (prevCount == AnimeItems.Count + _animeItemsSet.Count)
             {
-                CanLoadMore = false; // no items were added
+                CanLoadMore = false;
             }
             else
             {
@@ -842,7 +851,7 @@ namespace MALClient.XShared.ViewModels.Main
             }
             RaisePropertyChanged(() => AnimeItems);
             AddScrollHandler();
-            _ = PrefetchAirTimesAsync();
+            PrefetchAirTimesAsync();
             if (CurrentIndexPosition != -1)
             {
                 try
@@ -865,16 +874,12 @@ namespace MALClient.XShared.ViewModels.Main
             _randomedIds = new List<int>();
         }
 
-        private async System.Threading.Tasks.Task PrefetchAirTimesAsync()
+        private void PrefetchAirTimesAsync()
         {
-            foreach (var item in AnimeItems)
+            foreach (var item in AnimeItems.Take(12))
             {
                 if (item.ParentAbstraction.RepresentsAnime && string.IsNullOrEmpty(item.TimeTillNextAirCache))
-                {
-                    var nextAir = await item.GetTimeTillNextAirAsync(null);
-                    if (nextAir.HasValue)
-                        item.SetNextAirCache(nextAir);
-                }
+                    item.RefreshTimeTillNextAirInBackground();
             }
         }
 

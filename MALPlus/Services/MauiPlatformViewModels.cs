@@ -9,6 +9,32 @@ using MALClient.XShared.ViewModels.Main;
 
 namespace MALPlus.Services;
 
+public static class MauiDetailsNavigationHandoff
+{
+    private static readonly object Sync = new();
+    private static readonly Dictionary<(int Id, bool AnimeMode), AnimeDetailsPageNavigationArgs> Pending = new();
+
+        public static void Set(AnimeDetailsPageNavigationArgs args)
+        {
+            if (args == null)
+                return;
+            lock (Sync)
+                Pending[(args.Id, args.AnimeMode)] = args;
+        }
+
+
+    public static AnimeDetailsPageNavigationArgs Take(int id, bool animeMode)
+    {
+        lock (Sync)
+        {
+            if (!Pending.TryGetValue((id, animeMode), out var args))
+                return null;
+            Pending.Remove((id, animeMode));
+            return args;
+        }
+    }
+}
+
 public class MauiMainViewModel : MainViewModelBase
 {
     protected override void CurrentStatusStoryboardBegin()
@@ -51,7 +77,14 @@ public class MauiMainViewModel : MainViewModelBase
             // Off-page (push) routes
             case PageIndex.PageAnimeDetails:
                 if (args is AnimeDetailsPageNavigationArgs ad)
+                {
+                    MauiDetailsNavigationHandoff.Set(ad);
                     query = $"?id={ad.Id}&title={Uri.EscapeDataString(ad.Title ?? "")}";
+                    if (!ad.AnimeMode)
+                        query += "&manga=true";
+                    if (ad.SourceTabIndex > 0)
+                        query += $"&tab={ad.SourceTabIndex}";
+                }
                 else if (args is int idd)
                     query = $"?id={idd}";
                 route = "animedetails";

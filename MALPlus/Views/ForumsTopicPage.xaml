@@ -33,22 +33,12 @@
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="12">
                                 <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
-                                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                        <Border Grid.Column="0" WidthRequest="36" HeightRequest="36"
-                                                StrokeShape="RoundRectangle 18"
-                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                                            <Image Source="{Binding Data.Poster.MalUser.ImgUrl, Converter={StaticResource ImageConverter}}"
-                                                   Aspect="AspectFill" />
-                                        </Border>
-                                        <Label Grid.Column="1" Text="{Binding Data.Poster.MalUser.Name}" FontFamily="InterBold" FontSize="14"
-                                               TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="{Binding Data.CreateDate}" FontFamily="Inter" FontSize="11"
-                                               TextColor="#80FFFFFF" VerticalOptions="Center" />
-                                    </Grid>
+                                    <Label Grid.Row="0" Text="{Binding Data.Poster.MalUser.Name}" FontFamily="InterBold" FontSize="14"
+                                           TextColor="{StaticResource BrushText}" />
                                     <Label Grid.Row="1" Text="{Binding Data.MessageNumber, StringFormat='#{0}'}"
                                            FontFamily="InterBold" FontSize="10" TextColor="#A0FFFFFF" />
-                                    <WebView Grid.Row="2" Source="{Binding Data.HtmlContent, Converter={StaticResource HtmlSource}}"
-                                             HeightRequest="200" />
+                                    <Label Grid.Row="2" Text="{Binding Data.HtmlContent}" FontFamily="Inter" FontSize="12"
+                                           TextColor="#E0FFFFFF" MaxLines="6" LineBreakMode="TailTruncation" />
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -56,10 +46,9 @@
                 </CollectionView>
             </RefreshView>
 
-            <!-- Reply composer -->
-            <Border Grid.Row="2" BackgroundColor="{StaticResource EmSheet}"
-                    Stroke="{StaticResource EmBorder}" StrokeThickness="1,1,0,0"
-                    StrokeShape="RoundRectangle 0" Padding="12,8,12,12">
+            <!-- Reply composer (plain Grid in its own Auto row. A Border here silently
+                 killed the whole grid on Android, so avoid Border for this pinned bar) -->
+            <Grid Grid.Row="2" Padding="12,8,12,12" BackgroundColor="#051522">
                 <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
                     <Editor Grid.Row="0" Text="{Binding ReplyMessage, Mode=TwoWay}"
                             Placeholder="Write a reply (BBCode supported)..."
@@ -74,7 +63,7 @@
                             BackgroundColor="#0066FF" TextColor="White"
                             CornerRadius="8" HeightRequest="32" Padding="12,0" />
                 </Grid>
-            </Border>
+            </Grid>
         </Grid>
     </Grid>
 </ContentPage>

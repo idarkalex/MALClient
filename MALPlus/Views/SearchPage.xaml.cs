@@ -6,6 +6,7 @@ using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Items;
 using MALClient.XShared.ViewModels.Main;
+using MALPlus.Services;
 
 namespace MALPlus.Views;
 
@@ -123,6 +124,16 @@ public partial class SearchPage : ContentPage
         }
     }
 
+    private static void HideKeyboard()
+    {
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+        var inputManager = activity?.GetSystemService(global::Android.Content.Context.InputMethodService)
+            as global::Android.Views.InputMethods.InputMethodManager;
+        var token = activity?.Window?.DecorView?.WindowToken;
+        if (inputManager != null && token != null)
+            inputManager.HideSoftInputFromWindow(token, global::Android.Views.InputMethods.HideSoftInputFlags.None);
+    }
+
     private async void OnResultSelected(object sender, SelectionChangedEventArgs e)
     {
         try
@@ -130,7 +141,26 @@ public partial class SearchPage : ContentPage
             if (e.CurrentSelection.FirstOrDefault() is AnimeSearchItemViewModel item)
             {
                 ((CollectionView)sender).SelectedItem = null;
-                await Shell.Current.GoToAsync($"animedetails?id={item.Id}&title={Uri.EscapeDataString(item.Title ?? string.Empty)}");
+                SearchEntry.Unfocus();
+                HideKeyboard();
+                var titleQs = Uri.EscapeDataString(item.Title ?? string.Empty);
+                var manga = !item.AnimeMode;
+                var handoffArgs = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, item,
+                    new SearchPageNavigationArgs
+                    {
+                        Query = MainVm.PrevQuery,
+                        Anime = item.AnimeMode,
+                        DisplayMode = MainVm.PrevArgs?.DisplayMode ?? SearchPageDisplayModes.Main
+                    })
+                {
+                    Source = item.AnimeMode ? PageIndex.PageSearch : PageIndex.PageMangaSearch,
+                    AnimeMode = item.AnimeMode
+                };
+                MauiDetailsNavigationHandoff.Set(handoffArgs);
+                var route = manga
+                    ? $"animedetails?id={item.Id}&title={titleQs}&manga=true"
+                    : $"animedetails?id={item.Id}&title={titleQs}";
+                await Shell.Current.GoToAsync(route);
             }
         }
         catch (Exception ex)
@@ -193,6 +223,8 @@ public partial class SearchPage : ContentPage
             if (e.CurrentSelection.FirstOrDefault() is FavouriteViewModel item)
             {
                 ((CollectionView)sender).SelectedItem = null;
+                CharSearchEntry.Unfocus();
+                HideKeyboard();
                 if (int.TryParse(item.Data.Id, out int id))
                     await Shell.Current.GoToAsync($"character?id={id}");
             }

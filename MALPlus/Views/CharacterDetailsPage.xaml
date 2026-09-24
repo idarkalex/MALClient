@@ -41,6 +41,10 @@
                                TextColor="White" MaxLines="2" LineBreakMode="TailTruncation" />
                         <Label Text="Character" FontFamily="Inter" FontSize="12"
                                TextColor="#B0FFFFFF" />
+                        <Label Text="{Binding Data.TotalFavs, StringFormat='Member Favorites: {0}'}"
+                               FontFamily="InterSemiBold" FontSize="12"
+                               TextColor="#FFD700"
+                               IsVisible="{Binding Data.TotalFavs, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
                     </VerticalStackLayout>
                 </Grid>
 
@@ -86,6 +90,10 @@
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid ColumnDefinitions="60,*" ColumnSpacing="8">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnVoiceActorTapped"
+                                                                  CommandParameter="{Binding Data.Id}" />
+                                        </Grid.GestureRecognizers>
                                         <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
                                                 StrokeShape="RoundRectangle 6"
                                                 Stroke="{StaticResource EmBorder}" StrokeThickness="1">

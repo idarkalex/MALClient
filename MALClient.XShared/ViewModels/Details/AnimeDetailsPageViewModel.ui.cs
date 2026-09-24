@@ -38,6 +38,8 @@ namespace MALClient.XShared.ViewModels.Details
 
         public string MyStatusBind => Utils.Utilities.StatusToString((int)MyStatus, !AnimeMode, IsRewatching);
 
+        public string StatusDisplayBind => AddAnimeVisibility ? "Not on list" : MyStatusBind;
+
         private AnimeStatus MyStatus
         {
             get { return _animeItemReference?.MyStatus ?? AnimeStatus.AllOrAiring; }
@@ -276,6 +278,18 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 _detailedDataVisibility = value;
                 RaisePropertyChanged(() => DetailedDataVisibility);
+            }
+        }
+
+        private bool _detailsAvailable;
+
+        public bool DetailsAvailable
+        {
+            get { return _detailsAvailable; }
+            private set
+            {
+                _detailsAvailable = value;
+                RaisePropertyChanged(() => DetailsAvailable);
             }
         }
 

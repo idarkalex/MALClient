@@ -7,6 +7,7 @@
     <ContentPage.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
         <converters:IntEqualityConverter x:Key="IntEq" />
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
     </ContentPage.Resources>
 
     <Grid>
@@ -24,41 +25,53 @@
 
             <!-- Boards tab -->
             <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingSideContentVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
-                         IsVisible="{Binding ForumsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
-                <CollectionView x:Name="GroupsList" ItemsSource="{Binding Boards}"
-                                SelectionMode="None">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <VerticalStackLayout Spacing="8" Margin="0,0,0,8">
-                                <Label Text="{Binding Group}" FontFamily="InterBold" FontSize="11"
-                                       TextColor="#A0FFFFFF" />
-                                <CollectionView ItemsSource="{Binding Items}" SelectionMode="Single"
-                                                SelectionChanged="OnBoardTapped">
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border BackgroundColor="{StaticResource EmSheet}"
-                                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                    StrokeShape="RoundRectangle 8" Padding="14,12" Margin="0,0,0,4">
-                                                <VerticalStackLayout Spacing="4">
-                                                    <Label Text="{Binding Entry.Name}" FontFamily="InterBold" FontSize="14"
-                                                           TextColor="{StaticResource BrushText}" />
-                                                    <Label Text="{Binding Entry.Description}" FontFamily="Inter" FontSize="12"
-                                                           TextColor="#80FFFFFF" MaxLines="2"
-                                                           LineBreakMode="TailTruncation" />
-                                                </VerticalStackLayout>
-                                            </Border>
-                                        </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
-                            </VerticalStackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                         IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=ForumsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
+                <ScrollView>
+                    <VerticalStackLayout Padding="12,4">
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Boards}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <VerticalStackLayout Spacing="8" Margin="0,0,0,8">
+                                        <Label Text="{Binding Group}" FontFamily="InterBold" FontSize="11"
+                                               TextColor="#A0FFFFFF" Margin="4,8,4,4" />
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BackgroundColor="{StaticResource EmSheet}"
+                                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                                                            StrokeShape="RoundRectangle 8" Padding="14,12" Margin="0,0,0,4">
+                                                        <Grid>
+                                                            <VerticalStackLayout Spacing="4">
+                                                                <Label Text="{Binding Entry.Name}" FontFamily="InterBold" FontSize="14"
+                                                                       TextColor="{StaticResource BrushText}" />
+                                                                <Label Text="{Binding Entry.Description}" FontFamily="Inter" FontSize="12"
+                                                                       TextColor="#80FFFFFF" MaxLines="2"
+                                                                       LineBreakMode="TailTruncation" />
+                                                            </VerticalStackLayout>
+                                                            <Button Text=""
+                                                                    BackgroundColor="Transparent"
+                                                                    BorderWidth="0"
+                                                                    Padding="0"
+                                                                    HorizontalOptions="Fill"
+                                                                    VerticalOptions="Fill"
+                                                                    Clicked="OnBoardButtonClicked"
+                                                                    CommandParameter="{Binding .}" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </ScrollView>
             </RefreshView>
 
             <!-- Recent Posts tab -->
             <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingSideContentVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
-                         IsVisible="{Binding ForumsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=1}">
+                         IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=ForumsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=1}">
                 <CollectionView ItemsSource="{Binding RecentPosts}" SelectionMode="Single"
                                 SelectionChanged="OnRecentPostTapped">
                     <CollectionView.EmptyView>

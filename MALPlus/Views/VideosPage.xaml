@@ -55,16 +55,14 @@
         </Grid>
 
         <!-- In-app video overlay -->
-        <Grid x:Name="VideoOverlay" IsVisible="False" BackgroundColor="#CC000000" ZIndex="100">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Button Grid.Row="0" Text="✕ Close" Clicked="OnCloseVideo"
-                    HorizontalOptions="End" Margin="0,12,12,0"
-                    BackgroundColor="Transparent" TextColor="White"
-                    FontFamily="InterBold" FontSize="14" Padding="8,4" />
-            <WebView x:Name="VideoWebView" Grid.Row="1" />
+        <Grid x:Name="VideoOverlay" IsVisible="False" BackgroundColor="#000000" ZIndex="100">
+            <WebView x:Name="VideoWebView" BackgroundColor="#000000" />
+            <Button x:Name="VideoCloseButton" Text="✕" Clicked="OnCloseVideo"
+                    HorizontalOptions="End" VerticalOptions="Start"
+                    Margin="0,16,16,0"
+                    BackgroundColor="#66000000" TextColor="White"
+                    FontFamily="InterBold" FontSize="16" CornerRadius="20"
+                    WidthRequest="40" HeightRequest="40" Padding="0" />
         </Grid>
     </Grid>
 </ContentPage>

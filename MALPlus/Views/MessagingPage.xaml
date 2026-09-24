@@ -33,7 +33,7 @@
             </ScrollView>
 
             <!-- Inbox tab -->
-            <RefreshView Grid.Row="2" IsRefreshing="{Binding LoadingVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding LoadingVisibility, Mode=OneWay}" Refreshing="OnRefreshing"
                          IsVisible="{Binding DisplaySentMessages, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
                 <CollectionView ItemsSource="{Binding MessageIndex}" SelectionMode="Single"
                                 SelectionChanged="OnMessageTapped"
@@ -68,7 +68,7 @@
             </RefreshView>
 
             <!-- Sent tab -->
-            <RefreshView Grid.Row="2" IsRefreshing="{Binding LoadingVisibility, FallbackValue=false}" Refreshing="OnRefreshing"
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding LoadingVisibility, Mode=OneWay}" Refreshing="OnRefreshing"
                          IsVisible="{Binding DisplaySentMessages, FallbackValue=false}">
                 <CollectionView ItemsSource="{Binding MessageIndex}" SelectionMode="Single"
                                 SelectionChanged="OnMessageTapped">

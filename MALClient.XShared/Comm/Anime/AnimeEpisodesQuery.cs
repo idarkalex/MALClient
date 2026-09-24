@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using AnimeEpisode = MALClient.Models.Models.Anime.AnimeEpisode;
 
@@ -17,7 +18,7 @@ namespace MALClient.XShared.Comm.Anime
             return false;
         }
 
-        public async Task<List<AnimeEpisode>> GetEpisodes(int animeId, bool force = false)
+        public async Task<List<AnimeEpisode>> GetEpisodes(int animeId, bool force = false, CancellationToken cancellationToken = default)
         {
             if (!force && _cache.TryGetValue(animeId, out var cachedFull))
             {
@@ -32,9 +33,10 @@ namespace MALClient.XShared.Comm.Anime
                 int page = 1;
                 while (true)
                 {
+                    var attempt = 0;
                     try
                     {
-                        var (items, hasNext) = await TenraiClient.GetPaginatedAsync($"anime/{animeId}/episodes?page={page}");
+                        var (items, hasNext) = await TenraiClient.GetPaginatedAsync($"anime/{animeId}/episodes?page={page}", cancellationToken);
                         foreach (var ep in items)
                         {
                             result.Add(new AnimeEpisode
@@ -56,9 +58,16 @@ namespace MALClient.XShared.Comm.Anime
 
                         page++;
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
                     catch
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        attempt++;
+                        if (attempt >= 3)
+                            return result;
+                        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
                     }
                 }
 

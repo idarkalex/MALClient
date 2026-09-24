@@ -1,10 +1,6 @@
-using MALClient.Models.Enums;
-using MALClient.Models.Models.Forums;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Forums;
 using MALClient.XShared.ViewModels.Forums.Items;
-using MALClient.XShared.NavArgs;
-using ForumBoardEntryPeekPost = MALClient.Models.Models.Forums.ForumBoardEntryPeekPost;
 
 namespace MALPlus.Views;
 
@@ -31,6 +27,7 @@ public partial class ForumsIndexPage : ContentPage
         base.OnAppearing();
         if (_initialized) return;
         _initialized = true;
+        Console.WriteLine("MALPLUS ForumsIndexPage.OnAppearing init=true calling Vm.Init");
         BuildTabs();
         try
         {
@@ -93,20 +90,59 @@ public partial class ForumsIndexPage : ContentPage
         HighlightTab(index);
     }
 
-    private async void OnBoardTapped(object sender, SelectionChangedEventArgs e)
+    private async void OnBoardTapped2(object sender, TappedEventArgs e)
     {
+        Console.WriteLine("MALPLUS OnBoardTapped2 FIRED sender=" + (sender?.GetType().Name ?? "null") +
+                          " bindingContext=" + (sender is BindableObject bo ? bo.BindingContext?.GetType().Name ?? "null" : "null"));
         try
         {
-            if (e.CurrentSelection.FirstOrDefault() is ForumBoardEntryViewModel item)
+            if (sender is Microsoft.Maui.Controls.Border border &&
+                border.BindingContext is ForumBoardEntryViewModel item2)
             {
-                ((CollectionView)sender).SelectedItem = null;
+                Console.WriteLine("MALPLUS navigating to forumboard board=" + (int)item2.Board);
+                await Shell.Current.GoToAsync(
+                    $"forumboard?board={(int)item2.Board}");
+                Console.WriteLine("MALPLUS board nav success");
+            }
+            else if (sender is Microsoft.Maui.Controls.BindableObject b &&
+                     b.BindingContext is ForumBoardEntryViewModel item)
+            {
+                Console.WriteLine("MALPLUS navigating to forumboard board=" + (int)item.Board);
                 await Shell.Current.GoToAsync(
                     $"forumboard?board={(int)item.Board}");
+                Console.WriteLine("MALPLUS board nav success");
+            }
+            else
+            {
+                Console.WriteLine("MALPLUS OnBoardTapped2: sender not Border or bad bindingContext");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS board nav failed: " + ex.Message);
+            Console.WriteLine("MALPLUS board nav failed: " + ex.Message + " | " + ex.StackTrace);
+        }
+    }
+
+    private async void OnBoardButtonClicked(object sender, EventArgs e)
+    {
+        Console.WriteLine("MALPLUS OnBoardButtonClicked FIRED sender=" + (sender?.GetType().Name ?? "null"));
+        try
+        {
+            if (sender is Button b && b.BindingContext is ForumBoardEntryViewModel item)
+            {
+                Console.WriteLine("MALPLUS navigating to forumboard board=" + (int)item.Board);
+                await Shell.Current.GoToAsync($"forumboard?board={(int)item.Board}");
+                Console.WriteLine("MALPLUS board nav success");
+            }
+            else
+            {
+                Console.WriteLine("MALPLUS OnBoardButtonClicked: sender not Button with correct bindingContext. bc=" +
+                                  (sender is BindableObject bib ? bib.BindingContext?.GetType().Name ?? "null" : "null"));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS board nav failed: " + ex.Message + " | " + ex.StackTrace);
         }
     }
 

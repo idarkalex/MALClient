@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
              x:Class="MALPlus.Views.MorePage"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
@@ -9,7 +10,7 @@
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*,Auto">
         <!-- Header: Profile -->
         <Border Grid.Row="0" x:Name="ProfileHeader" Margin="16,16,16,8" Padding="16"
                 BackgroundColor="{StaticResource EmSheet}"
@@ -293,5 +294,6 @@
                 </Border>
             </VerticalStackLayout>
         </ScrollView>
+        <controls:BottomNavBar Grid.Row="2" />
     </Grid>
 </ContentPage>

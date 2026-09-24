@@ -48,7 +48,7 @@
         <!-- ============ Main tab (0) ============ -->
         <Grid Grid.Row="1" Grid.RowSpan="2"
               IsVisible="{Binding SearchTabIndex, Source={x:Reference Page}, Converter={StaticResource IntEq}, ConverterParameter=0}">
-            <Grid RowDefinitions="Auto,Auto,*">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
                 <!-- Search bar (hidden in catalogue mode) -->
                 <Grid Grid.Row="0" IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
                       Padding="16,8" ColumnDefinitions="*,Auto" ColumnSpacing="8">
@@ -60,7 +60,7 @@
                            PlaceholderColor="#80FFFFFF"
                            ReturnType="Search"
                            Completed="OnSearchCompleted" />
-                    <Button Grid.Column="1" Text="ðŸ”"
+                    <Button Grid.Column="1" Text="Go"
                             Command="{Binding SearchCommand}"
                             FontFamily="InterBold" FontSize="16"
                             BackgroundColor="#0066FF" TextColor="White"
@@ -110,8 +110,20 @@
                     </HorizontalStackLayout>
                 </ScrollView>
 
+                <Grid Grid.Row="2" ColumnDefinitions="*,*" Margin="16,4,16,4"
+                      IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                    <Button Grid.Column="0" Text="Anime" FontFamily="InterSemiBold" FontSize="14"
+                            TextColor="{Binding AnimeSearch, Converter={StaticResource BoolTab}, ConverterParameter=true}"
+                            BackgroundColor="Transparent"
+                            Command="{Binding ToggleSearchModeCommand}" CommandParameter="true" />
+                    <Button Grid.Column="1" Text="Manga" FontFamily="InterSemiBold" FontSize="14"
+                            TextColor="{Binding AnimeSearch, Converter={StaticResource BoolTab}, ConverterParameter=false}"
+                            BackgroundColor="Transparent"
+                            Command="{Binding ToggleSearchModeCommand}" CommandParameter="false" />
+                </Grid>
+
                 <!-- Genre/Studio Selection Grid -->
-                <Grid Grid.Row="1" Grid.RowSpan="2"
+                <Grid Grid.Row="3"
                       IsVisible="{Binding GenreSelectionGridVisibility}">
                     <Grid RowDefinitions="Auto,*" Padding="16,8" RowSpacing="8">
                         <Label Text="{Binding ActiveCatalogueTitle}"
@@ -137,24 +149,12 @@
                 </Grid>
 
                 <!-- Search Results / Catalogue Results -->
-                <Grid Grid.Row="1" Grid.RowSpan="2"
+                <Grid Grid.Row="3"
                       IsVisible="{Binding GenreSelectionGridVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="16,4,16,4"
-                          IsVisible="{Binding DirectQueryInputVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-                        <Button Grid.Column="0" Text="Anime" FontFamily="InterSemiBold" FontSize="14"
-                                TextColor="{Binding AnimeSearch, Converter={StaticResource BoolTab}, ConverterParameter=true}"
-                                BackgroundColor="Transparent"
-                                Command="{Binding ToggleSearchModeCommand}" CommandParameter="true" />
-                        <Button Grid.Column="1" Text="Manga" FontFamily="InterSemiBold" FontSize="14"
-                                TextColor="{Binding AnimeSearch, Converter={StaticResource BoolTab}, ConverterParameter=false}"
-                                BackgroundColor="Transparent"
-                                Command="{Binding ToggleSearchModeCommand}" CommandParameter="false" />
-                    </Grid>
 
                     <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="0">
                         <Grid Grid.Row="0" IsVisible="{Binding HasMoreCatalogue, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
@@ -218,7 +218,7 @@
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Padding="16,12">
                                         <HorizontalStackLayout Spacing="12">
-                                            <Label Text="ðŸ”" FontSize="20" VerticalOptions="Center" />
+                                            <Label Text="Search" FontSize="12" VerticalOptions="Center" />
                                             <Label Text="{Binding .}" FontFamily="Inter" FontSize="14"
                                                    TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
                                         </HorizontalStackLayout>
@@ -244,7 +244,7 @@
                            PlaceholderColor="#80FFFFFF"
                            ReturnType="Search"
                            Completed="OnCharacterSearchCompleted" />
-                    <Button Grid.Column="1" Text="ðŸ”"
+                    <Button Grid.Column="1" Text="Go"
                             Clicked="OnCharacterSearchClicked"
                             FontFamily="InterBold" FontSize="16"
                             BackgroundColor="#0066FF" TextColor="White"

@@ -385,7 +385,7 @@ public class MauiDataCache : IDataCache
         var path = Resolve(filename, originFolder);
         if (!File.Exists(path))
             return default;
-        if (expiration > 0 && (DateTime.UtcNow - File.GetLastWriteTimeUtc(path)).TotalSeconds > expiration)
+        if (expiration > 0 && DateTime.UtcNow - File.GetLastWriteTimeUtc(path) > TimeSpan.FromDays(expiration))
             return default;
         var json = await File.ReadAllTextAsync(path);
         return JsonSerializer.Deserialize<T>(json);

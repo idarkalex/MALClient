@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MALPlus.Controls.BottomNavBar"
+             BackgroundColor="{StaticResource EmSheet}">
+    <Border Stroke="#14FFFFFF" StrokeThickness="1"
+            StrokeShape="RoundRectangle 0" Padding="0,6,0,8">
+        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="0">
+
+            <!-- Discover -->
+            <Grid Grid.Column="0">
+                <Button Clicked="OnDiscoverTapped"
+                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
+                        MinimumHeightRequest="0" MinimumWidthRequest="0"
+                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+                <VerticalStackLayout InputTransparent="True" Spacing="2"
+                                     HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image x:Name="DiscoverIcon" Source="discover_home.svg"
+                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                    <Label x:Name="DiscoverLabel" Text="Discover" FontFamily="InterSemiBold" FontSize="10"
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Anime + dots -->
+            <Grid Grid.Column="1">
+                <Button Clicked="OnAnimeTapped"
+                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
+                        MinimumHeightRequest="0" MinimumWidthRequest="0"
+                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+                <VerticalStackLayout InputTransparent="True" Spacing="2"
+                                     HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image x:Name="AnimeIcon" Source="anime_list.svg"
+                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                    <Label x:Name="AnimeLabel" Text="Anime" FontFamily="InterSemiBold" FontSize="10"
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1" x:Name="AnimeDots" Text="⋮" Clicked="OnAnimeDotsClicked"
+                        FontFamily="InterBold" FontSize="20"
+                        BackgroundColor="Transparent" TextColor="#A0FFFFFF"
+                        BorderWidth="0" Padding="0"
+                        WidthRequest="24"
+                        VerticalOptions="Fill" HorizontalOptions="End" />
+            </Grid>
+
+            <!-- Manga + dots -->
+            <Grid Grid.Column="2">
+                <Button Clicked="OnMangaTapped"
+                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
+                        MinimumHeightRequest="0" MinimumWidthRequest="0"
+                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+                <VerticalStackLayout InputTransparent="True" Spacing="2"
+                                     HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image x:Name="MangaIcon" Source="manga_books.svg"
+                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                    <Label x:Name="MangaLabel" Text="Manga" FontFamily="InterSemiBold" FontSize="10"
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1" x:Name="MangaDots" Text="⋮" Clicked="OnMangaDotsClicked"
+                        FontFamily="InterBold" FontSize="20"
+                        BackgroundColor="Transparent" TextColor="#A0FFFFFF"
+                        BorderWidth="0" Padding="0"
+                        WidthRequest="24"
+                        VerticalOptions="Fill" HorizontalOptions="End" />
+            </Grid>
+
+            <!-- More -->
+            <Grid Grid.Column="3">
+                <Button Clicked="OnMoreTapped"
+                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
+                        MinimumHeightRequest="0" MinimumWidthRequest="0"
+                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+                <VerticalStackLayout InputTransparent="True" Spacing="2"
+                                     HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image x:Name="MoreIcon" Source="more_dots.svg"
+                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                    <Label x:Name="MoreLabel" Text="More" FontFamily="InterSemiBold" FontSize="10"
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+
+        </Grid>
+    </Border>
+</ContentView>

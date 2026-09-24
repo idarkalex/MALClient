@@ -29,9 +29,12 @@ namespace MALClient.XShared.Utils
 
         public void AddRange(IEnumerable<T> range)
         {
+            if (range == null)
+                return;
+
             // get out if no new items
             var enumerable = range as T[] ?? range.ToArray();
-            if (range == null || !enumerable.Any()) return;
+            if (!enumerable.Any()) return;
 
             // prepare data for firing the events
             var newStartingIndex = Count;
@@ -60,6 +63,29 @@ namespace MALClient.XShared.Utils
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
 
+        }
+
+        public void ReplaceRange(IEnumerable<T> range)
+        {
+            var enumerable = range?.ToArray() ?? Array.Empty<T>();
+
+            IsObserving = false;
+            try
+            {
+                Clear();
+                foreach (var item in enumerable)
+                {
+                    Add(item);
+                }
+            }
+            finally
+            {
+                IsObserving = true;
+            }
+
+            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)

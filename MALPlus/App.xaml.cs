@@ -20,9 +20,10 @@ public partial class App : Application
 
         Task.Run(async () =>
         {
+            var initTask = InitializationRoutines.InitApp();
             try
             {
-                await Task.WhenAny(InitializationRoutines.InitApp(), Task.Delay(TimeSpan.FromSeconds(30)));
+                await Task.WhenAny(InitializationRoutines.AwaitableCompletion.Task, Task.Delay(TimeSpan.FromSeconds(10)));
             }
             catch
             {
@@ -30,10 +31,11 @@ public partial class App : Application
             finally
             {
                 InitializationRoutines.AwaitableCompletion.TrySetResult(true);
+                initTask.ContinueWith(t => { var ignored = t.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
             }
             try
             {
-                if (!Credentials.Authenticated)
+                if (!Credentials.Authenticated || string.IsNullOrWhiteSpace(Credentials.UserName))
                 {
                     await MainThread.InvokeOnMainThreadAsync(() =>
                         Shell.Current?.GoToAsync("login"));
@@ -74,7 +76,6 @@ public partial class App : Application
             }
             await MainActivity.ApplyPendingDeepLinkAsync();
         });
-        MauiBootDiagnostics.Run();
     }
 
     protected override void OnAppLinkRequestReceived(Uri uri)

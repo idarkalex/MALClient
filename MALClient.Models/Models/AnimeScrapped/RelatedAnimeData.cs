@@ -10,5 +10,7 @@ namespace MALClient.Models.Models.AnimeScrapped
         public string Title { get; set; }
         public RelatedItemType Type { get; set; }
         public string ImgUrl { get; set; }
+        public string MediaType { get; set; }
+        public string AirDayTillBind { get; set; }
     }
 }
