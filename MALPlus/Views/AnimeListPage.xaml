@@ -11,14 +11,8 @@
         <converters:IntEqualityConverter x:Key="IntEq" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto">
-        <!-- Status tabs (All / Watching / Completed / On Hold / Dropped / Planned) -->
-        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
-                    Padding="12,8" Margin="0,4,0,0">
-            <HorizontalStackLayout x:Name="StatusTabsStrip" Spacing="6" />
-        </ScrollView>
-
-        <RefreshView x:Name="ListRefresh" Grid.Row="1" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
+    <Grid RowDefinitions="*,Auto">
+        <RefreshView x:Name="ListRefresh" Grid.Row="0" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
             <CollectionView x:Name="AnimeGrid"
                             ItemsSource="{Binding AnimeItems}"
                             SelectionMode="Single"
@@ -56,18 +50,11 @@
                                 </HorizontalStackLayout>
                             </Border>
 
-                            <Border BackgroundColor="#590066FF" Stroke="#4DFFFFFF" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 10"
-                                    Padding="8,2" Margin="6,0,6,32"
-                                    HorizontalOptions="Start" VerticalOptions="End"
-                                    IsVisible="{Binding TimeTillNextAirCache, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
-                                <Label Text="{Binding TimeTillNextAirCache}"
-                                       FontFamily="Inter" FontSize="9" TextColor="#FFFFFF" />
-                            </Border>
-
-                            <Label Text="{Binding Title}" FontFamily="Inter" FontSize="11"
-                                   TextColor="White" MaxLines="2" LineBreakMode="TailTruncation"
-                                   VerticalOptions="End" Margin="4,0,4,4" />
+                            <controls:OutlinedLabel Text="{Binding Title}" FontFamily="Inter" FontSize="11"
+                                                   TextColor="White" OutlineColor="Black" OutlineWidth="2.5"
+                                                   MaxLines="2" HeightRequest="32"
+                                                   VerticalOptions="End" Margin="4,0,4,4"
+                                                   InputTransparent="True" />
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
@@ -77,8 +64,8 @@
         <Label Text="{Binding EmptyNoticeContent}" IsVisible="{Binding EmptyNoticeVisibility}"
                FontFamily="Inter" FontSize="14" TextColor="{StaticResource BrushText}"
                HorizontalOptions="Center" VerticalOptions="Center"
-               Grid.Row="1" />
+               Grid.Row="0" />
 
-        <controls:BottomNavBar Grid.Row="2" />
+        <controls:BottomNavBar x:Name="BottomNav" Grid.Row="1" />
     </Grid>
 </ContentPage>

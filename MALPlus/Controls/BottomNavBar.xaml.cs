@@ -6,6 +6,7 @@ public partial class BottomNavBar : ContentView
 
     private static readonly Color SelectedColor = Color.FromArgb("#0066FF");
     private static readonly Color UnselectedColor = Color.FromArgb("#A0FFFFFF");
+    private Shell _subscribedShell;
 
     public BottomNavBar()
     {
@@ -17,10 +18,13 @@ public partial class BottomNavBar : ContentView
         base.OnParentSet();
         try
         {
-            if (Parent != null && Shell.Current != null)
-                Shell.Current.Navigated += OnShellNavigated;
-            else if (Shell.Current != null)
-                Shell.Current.Navigated -= OnShellNavigated;
+            if (Parent != null && Shell.Current != null && !ReferenceEquals(_subscribedShell, Shell.Current))
+            {
+                if (_subscribedShell != null)
+                    _subscribedShell.Navigated -= OnShellNavigated;
+                _subscribedShell = Shell.Current;
+                _subscribedShell.Navigated += OnShellNavigated;
+            }
             RefreshSelection();
         }
         catch { }
@@ -72,6 +76,35 @@ public partial class BottomNavBar : ContentView
             return btn.Bounds;
         }
         catch { return Rect.Zero; }
+    }
+
+    public void OpenStatusMenu(bool manga, IEnumerable<(string Label, int Index)> items, Action<int> selected)
+    {
+        _ = ShowStatusMenuAsync(manga, items.ToArray(), selected);
+    }
+
+    private async Task ShowStatusMenuAsync(bool manga, IReadOnlyList<(string Label, int Index)> items, Action<int> selected)
+    {
+        try
+        {
+            var page = Application.Current?.MainPage;
+            if (page == null || items.Count == 0)
+                return;
+            var result = await page.DisplayActionSheet(
+                manga ? "Manga status" : "Anime status",
+                "Cancel",
+                null,
+                items.Select(item => item.Label).ToArray());
+            if (result == null)
+                return;
+            var index = items.ToList().FindIndex(item => item.Label == result);
+            if (index >= 0)
+                selected(items[index].Index);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS status menu failed: " + ex.Message);
+        }
     }
 
     private void OnDiscoverTapped(object o, EventArgs e)

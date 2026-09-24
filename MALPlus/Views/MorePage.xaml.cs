@@ -297,13 +297,16 @@ public partial class MorePage : ContentPage
         panel.Children.Clear();
 
         var statusValues = new[] { AnimeStatus.Watching, AnimeStatus.Completed, AnimeStatus.OnHold, AnimeStatus.Dropped, AnimeStatus.PlanToWatch };
-        var items = new List<(string Label, Action OnClick)>();
+        var workMode = manga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
+        var items = new List<(string Label, Action OnClick)>
+        {
+            ("All", () => NavigateTo(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs(5, workMode)))
+        };
 
         for (int i = 0; i < statusValues.Length; i++)
         {
             var status = statusValues[i];
             var index = i;
-            var workMode = manga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
             var label = MALClient.XShared.Utils.Utilities.StatusToString((int)status, manga);
             items.Add((label, (Action)(() => NavigateTo(PageIndex.PageAnimeList, new AnimeListPageNavigationArgs(index, workMode)))));
         }

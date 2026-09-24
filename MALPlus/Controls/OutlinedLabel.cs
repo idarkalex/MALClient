@@ -126,6 +126,8 @@ public class OutlinedLabel : SKCanvasView
             stroke.Color = OutlineColor.ToSKColor();
             stroke.StrokeWidth = (float)(OutlineWidth * scale);
             stroke.StrokeJoin = SKStrokeJoin.Round;
+            using var shadow = fill.Clone();
+            shadow.Color = new SKColor(0, 0, 0, 190);
 
             var maxLines = Math.Max(1, MaxLines);
             var lines = WrapText(fill, text, e.Info.Width, maxLines);
@@ -144,6 +146,7 @@ public class OutlinedLabel : SKCanvasView
             for (var i = 0; i < lines.Count; i++)
             {
                 var y = e.Info.Height - metrics.Descent - ((lines.Count - 1 - i) * lineHeight);
+                canvas.DrawText(lines[i], x + 1.5f * scale, y + 1.5f * scale, shadow);
                 canvas.DrawText(lines[i], x, y, stroke);
                 canvas.DrawText(lines[i], x, y, fill);
             }

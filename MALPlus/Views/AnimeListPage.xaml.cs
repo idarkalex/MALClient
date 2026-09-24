@@ -12,6 +12,7 @@ namespace MALPlus.Views;
 [QueryProperty(nameof(Mode), "mode")]
 [QueryProperty(nameof(Status), "status")]
 [QueryProperty(nameof(Type), "type")]
+[QueryProperty(nameof(Menu), "menu")]
 public partial class AnimeListPage : ContentPage
 {
     private bool _authedAtLoad;
@@ -20,6 +21,7 @@ public partial class AnimeListPage : ContentPage
     private bool _modeApplied;
     private int _lastMode = -1;
     private int _lastStatus = -1;
+    private bool _dotsConnected;
     private TopAnimeType _topType = TopAnimeType.General;
     private MangaTopType _mangaTopType = MangaTopType.All;
     private MangaAdaptedType _adaptedType = MangaAdaptedType.AiringNow;
@@ -27,6 +29,7 @@ public partial class AnimeListPage : ContentPage
     public string Mode { get; set; }
     public string Status { get; set; }
     public string Type { get; set; }
+    public string Menu { get; set; }
 
     private AnimeListViewModel Vm => (AnimeListViewModel)BindingContext;
 
@@ -65,6 +68,11 @@ public partial class AnimeListPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        if (!_dotsConnected)
+        {
+            BottomNav.DotsClicked += OnBottomNavDotsClicked;
+            _dotsConnected = true;
+        }
         var authed = Credentials.Authenticated;
         var user = Credentials.UserName;
         if (!InitializationRoutines.AwaitableCompletion.Task.IsCompleted)
@@ -92,27 +100,29 @@ public partial class AnimeListPage : ContentPage
         // Resolve the specific top-type / adapted-type from the query param (e.g. TopAnimeType.Airing).
         ParseTypeQuery(mode, Type);
 
-        // Re-initialise when mode changes (e.g. switching Anime/Manga tabs)
+        var openStatusMenu = string.Equals(Menu, "status", StringComparison.OrdinalIgnoreCase);
+        Menu = null;
         if (_modeApplied && _lastMode == mode && (Vm.AnimeItems?.Count ?? 0) > 0)
+        {
+            if (openStatusMenu)
+                OpenStatusMenu(mode);
             return;
+        }
         _modeApplied = true;
         _lastMode = mode;
 
-        BuildStatusStrip(mode);
-
         try
         {
-            // Default status tab: All (StatusSelector index 5). 'status' query carries the
-            // StatusSelectorSelectedIndex when routing in.
             int statusIdx = 5;
             int.TryParse(Status, out statusIdx);
             if (statusIdx < 0 || statusIdx > 5)
                 statusIdx = 5;
             _lastStatus = statusIdx;
-            HighlightStatus(_lastStatus, mode);
             AnimeListPageNavigationArgs args = BuildArgs(mode, _lastStatus);
-            Vm.Init(args);
+            _ = Vm.Init(args);
             _refreshArmed = true;
+            if (openStatusMenu)
+                MainThread.BeginInvokeOnMainThread(() => OpenStatusMenu(mode));
         }
         catch (Exception ex)
         {
@@ -148,58 +158,27 @@ public partial class AnimeListPage : ContentPage
         }
     }
 
-    private void BuildStatusStrip(int mode)
+    private void OpenStatusMenu(int mode)
     {
-        StatusTabsStrip.Children.Clear();
         var tabs = mode == (int)AnimeListWorkModes.Manga ? MangaStatusTabs : AnimeStatusTabs;
-        for (int i = 0; i < tabs.Length; i++)
-        {
-            var (label, statusIdx) = tabs[i];
-            var button = new Button
-            {
-                Text = label,
-                FontFamily = "InterSemiBold",
-                FontSize = 12,
-                Padding = new Thickness(12, 6),
-                HeightRequest = 32,
-                CornerRadius = 16,
-                BorderColor = Color.FromArgb("#29FFFFFF"),
-                BorderWidth = 1,
-                BackgroundColor = Colors.Transparent,
-                TextColor = Color.FromArgb("#FFFFFF")
-            };
-            int capturedStatus = statusIdx;
-            button.Clicked += (s, e) => OnStatusTabClicked(capturedStatus);
-            StatusTabsStrip.Children.Add(button);
-        }
+        BottomNav.OpenStatusMenu(
+            mode == (int)AnimeListWorkModes.Manga,
+            tabs.Select(tab => (tab.Label, tab.StatusSelectorIndex)),
+            OnStatusTabClicked);
     }
 
-    private void HighlightStatus(int statusSelectorIndex, int mode)
+    private void OnBottomNavDotsClicked(string section)
     {
-        var activeColor = Color.FromArgb("#0066FF");
-        var inactiveColor = Colors.Transparent;
-        var activeText = Colors.White;
-        var inactiveText = Color.FromArgb("#FFFFFF");
-        var tabs = mode == (int)AnimeListWorkModes.Manga ? MangaStatusTabs : AnimeStatusTabs;
-        for (int i = 0; i < StatusTabsStrip.Children.Count && i < tabs.Length; i++)
-        {
-            if (StatusTabsStrip.Children[i] is Button b)
-            {
-                var isActive = tabs[i].StatusSelectorIndex == statusSelectorIndex;
-                b.BackgroundColor = isActive ? activeColor : inactiveColor;
-                b.TextColor = isActive ? activeText : inactiveText;
-            }
-        }
+        OpenStatusMenu(section == "manga" ? (int)AnimeListWorkModes.Manga : (int)AnimeListWorkModes.Anime);
     }
 
-    private void OnStatusTabClicked(int statusSelectorIndex)
+    private async void OnStatusTabClicked(int statusSelectorIndex)
     {
         try
         {
             _lastStatus = statusSelectorIndex;
-            HighlightStatus(statusSelectorIndex, _lastMode);
             var args = BuildArgs(_lastMode, statusSelectorIndex);
-            Vm.Init(args);
+            await Vm.Init(args);
         }
         catch (Exception ex)
         {
@@ -250,6 +229,16 @@ public partial class AnimeListPage : ContentPage
         {
             Console.WriteLine("MALPLUS refresh failed: " + ex.Message);
             ListRefresh.IsRefreshing = false;
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (_dotsConnected)
+        {
+            BottomNav.DotsClicked -= OnBottomNavDotsClicked;
+            _dotsConnected = false;
         }
     }
 
