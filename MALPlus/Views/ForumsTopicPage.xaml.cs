@@ -115,6 +115,20 @@ public partial class ForumsTopicPage : ContentPage, ForumTopicViewModel.IScrollI
             {
                 TopicWebView.HeightRequest = targetHeight;
             });
+            // Images inside posts finish loading after the first pass and grow the
+            // document, so measure again once they have settled.
+            await Task.Delay(350);
+            var second = await MainThread.InvokeOnMainThreadAsync(() =>
+                TopicWebView.EvaluateJavaScriptAsync(
+                    "Math.max(1, Math.ceil(Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0)));"));
+            if (double.TryParse(second, NumberStyles.Float, CultureInfo.InvariantCulture, out var secondHeight) &&
+                secondHeight > targetHeight - 4)
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    TopicWebView.HeightRequest = Math.Max(1, Math.Ceiling(secondHeight) + 4);
+                });
+            }
         }
         catch { }
     }

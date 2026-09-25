@@ -21,10 +21,18 @@ namespace MALClient.XShared.Comm
         protected static HttpClient _client;
 
         /// <summary>
+        ///     Desktop Chrome on purpose. With a mobile User-Agent MAL serves a
+        ///     different variant of several pages: /featured and /news lose the
+        ///     article list entirely and a forum board answers with a
+        ///     JavaScript-only shell, so those screens looked empty no matter how
+        ///     they were parsed. Cookies, auth and the parser were never the cause.
+        /// </summary>
+        private const string DesktopUserAgent =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+        /// <summary>
         ///     Cookie-free client for pages MAL server-renders to signed-out
-        ///     visitors. Note: the forum board still comes back as the JS-only
-        ///     shell for this client (same length with and without cookies, and
-        ///     with a browser User-Agent), so the session is NOT the cause there.
+        ///     visitors.
         /// </summary>
         protected static readonly HttpClient _anonymousClient = CreateAnonymousClient();
 
@@ -38,8 +46,11 @@ namespace MALClient.XShared.Comm
             {
                 Timeout = TimeSpan.FromSeconds(100)
             };
-            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
-                "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36");
+            // Desktop on purpose: with a mobile User-Agent MAL serves a different,
+            // stripped variant of /featured and /news (no article list at all) and
+            // the forum board comes back as a JavaScript-only shell, which is why
+            // those pages looked empty no matter how they were parsed.
+            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", DesktopUserAgent);
             client.DefaultRequestHeaders.TryAddWithoutValidation("Accept",
                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
             client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.9");
@@ -72,7 +83,7 @@ namespace MALClient.XShared.Comm
             _client = new HttpClient(ResourceLocator.MalHttpContextProvider.GetHandler());
             // Several sources reject requests without a browser User-Agent outright.
             _client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
-                "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36");
+                DesktopUserAgent);
             RefreshClientAuthHeader();
         }
 
