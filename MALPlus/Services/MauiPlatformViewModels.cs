@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using MALClient.Models.Enums;
+using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Delegates;
 using MALClient.XShared.Interfaces;
@@ -110,7 +111,6 @@ public class MauiMainViewModel : MainViewModelBase
                 break;
             case PageIndex.PageSettings:
                 route = "settings";
-                query = "?name=Settings";
                 break;
             case PageIndex.PageRecomendations:
                 route = "recommendations";
@@ -134,20 +134,25 @@ public class MauiMainViewModel : MainViewModelBase
                 route = "videos";
                 break;
             case PageIndex.PageForumIndex:
-                route = "forums";
-                query = "?name=Forums";
+                // Notification links carry a topic id: open the topic, not the index.
+                if (args is ForumsTopicNavigationArgs ftn && !string.IsNullOrEmpty(ftn.TopicId))
+                {
+                    route = "forumtopic";
+                    query = $"?id={Uri.EscapeDataString(ftn.TopicId)}";
+                }
+                else
+                {
+                    route = "forums";
+                }
                 break;
             case PageIndex.PageHistory:
                 route = "history";
-                query = "?name=History";
                 break;
             case PageIndex.PageFeeds:
                 route = "feeds";
-                query = "?name=Friends Feeds";
                 break;
             case PageIndex.PageFriends:
                 route = "friends";
-                query = "?name=Friends";
                 break;
             case PageIndex.PageWallpapers:
                 route = "wallpapers";
@@ -159,19 +164,43 @@ public class MauiMainViewModel : MainViewModelBase
                 break;
             case PageIndex.PageMessanging:
                 route = "messaging";
-                query = "?name=Messaging";
+                break;
+            case PageIndex.PageMessageDetails:
+                route = "messagedetails";
+                if (args is MalMessageDetailsNavArgs mdn)
+                {
+                    switch (mdn.Arg)
+                    {
+                        case MalMessageModel thread when !string.IsNullOrEmpty(thread.ThreadId ?? thread.Id):
+                            query = $"?id={Uri.EscapeDataString(thread.ThreadId ?? thread.Id)}" +
+                                    $"&subject={Uri.EscapeDataString(thread.Subject ?? "")}";
+                            break;
+                        default:
+                            query = $"?id=0&subject={Uri.EscapeDataString(mdn.NewMessageTarget ?? "")}" +
+                                    $"&to={Uri.EscapeDataString(mdn.NewMessageTarget ?? "")}";
+                            break;
+                    }
+                }
+                else
+                {
+                    query = "?id=0&subject=";
+                }
                 break;
             case PageIndex.PageClubIndex:
                 route = "clubs";
-                query = "?name=Clubs";
+                break;
+            case PageIndex.PageClubDetails:
+                route = "clubdetails";
+                if (args is ClubDetailsPageNavArgs cdn)
+                    query = $"?id={Uri.EscapeDataString(cdn.Id ?? string.Empty)}";
                 break;
             case PageIndex.PageListComparison:
                 route = "listcomparison";
-                query = "?name=List Comparison";
+                if (args is ListComparisonPageNavigationArgs lcn && lcn.CompareWith?.Name != null)
+                    query = $"?user={Uri.EscapeDataString(lcn.CompareWith.Name)}";
                 break;
             case PageIndex.PageNotificationHub:
                 route = "notifications";
-                query = "?name=Notifications";
                 break;
             case PageIndex.PageCharacterDetails:
                 route = "character";
@@ -191,7 +220,12 @@ public class MauiMainViewModel : MainViewModelBase
         }
 
         if (string.IsNullOrEmpty(route))
+        {
+            // A PageIndex without a case here is a silent no-op: the user taps
+            // something and nothing happens. Make it loud instead.
+            Console.WriteLine($"MALPLUS Navigate: no route mapped for PageIndex {index} (args={args?.GetType().Name ?? "null"})");
             return;
+        }
 
         var final = string.IsNullOrEmpty(query) ? route : route + query;
         MainThread.BeginInvokeOnMainThread(async () =>
@@ -201,8 +235,9 @@ public class MauiMainViewModel : MainViewModelBase
                 if (Shell.Current != null)
                     await Shell.Current.GoToAsync(final);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"MALPLUS Navigate failed for '{final}': {ex.GetType().Name} {ex.Message}");
             }
         });
     }

@@ -377,6 +377,10 @@ namespace MALClient.XShared.ViewModels.Main
             finally
             {
                 Initializing = false;
+                // Loading is only cleared inside UpdatePageSetup, so any path that
+                // throws or returns early used to leave the spinner on permanently.
+                if (Loading && (AnimeItems == null || AnimeItems.Count == 0))
+                    Loading = false;
             }
         }
 
@@ -1013,7 +1017,30 @@ namespace MALClient.XShared.ViewModels.Main
             if(_fetchingSeasonal)
                 return;
             _fetchingSeasonal = true;
+            try
+            {
+                await FetchSeasonalDataCore(force, page);
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("AnimeList", $"seasonal fetch FAILED: mode={WorkMode} page={page} {ex.GetType().Name} {ex.Message}", ex);
+                LoadError = "Could not load this list. Pull down to try again.";
+                LoadErrorVisibility = true;
+            }
+            finally
+            {
+                // Same as FetchData: an unhandled exception here used to leave the
+                // guard latched and the spinner on forever.
+                _fetchingSeasonal = false;
+                if (AnimeItems == null || AnimeItems.Count == 0)
+                    Loading = false;
+            }
+        }
 
+        private async Task FetchSeasonalDataCore(bool force, int page)
+        {
+            LoadError = null;
+            LoadErrorVisibility = false;
 
             Loading = true;
             EmptyNoticeVisibility = false;
@@ -1076,7 +1103,6 @@ namespace MALClient.XShared.ViewModels.Main
             //if we don't have any we cannot do anything I guess...
             if (data.Count == 0)
             {
-                _fetchingSeasonal = false;
                 RefreshList();
                 return;
             }
@@ -1146,6 +1172,8 @@ namespace MALClient.XShared.ViewModels.Main
 
             _fetchingSeasonal = false;
             RefreshList();
+            LoadError = null;
+            LoadErrorVisibility = false;
         }
 
         private async Task LoadSeasonSelection(bool setDefaultSeason)
@@ -1297,22 +1325,45 @@ namespace MALClient.XShared.ViewModels.Main
             if(_fetching)
                 return;
             _fetching = true;
+            try
+            {
+                await FetchDataCore(force, modeOverride);
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsReporter.Error("AnimeList", $"fetch FAILED: mode={modeOverride ?? WorkMode} source={ListSource} {ex.GetType().Name} {ex.Message}", ex);
+                LoadError = "Could not load your list. Pull down to try again.";
+                LoadErrorVisibility = true;
+            }
+            finally
+            {
+                // Without this the re-entrancy guard stays latched and the
+                // loading indicator stays on forever after any failure.
+                _fetching = false;
+                if (AnimeItems == null || AnimeItems.Count == 0)
+                    Loading = false;
+            }
+        }
 
+        private async Task FetchDataCore(bool force, AnimeListWorkModes? modeOverride)
+        {
             var requestedMode = modeOverride ?? WorkMode;
 
             DiagnosticsReporter.Info("AnimeList", $"fetch: source={ListSource} mode={requestedMode} force={force} auth={Credentials.Authenticated}");
+            global::System.Diagnostics.Debug.WriteLine($"MALPLUS fetch: source={ListSource} mode={requestedMode} force={force} auth={Credentials.Authenticated}");
 
             if (!force && _prevListSource == ListSource && _prevWorkMode == requestedMode)
             {
                 if (_prevWorkMode != modeOverride)
                     RefreshList();
-                _fetching = false;
                 return;
             }
             if (WorkMode == requestedMode)
                 _prevWorkMode = WorkMode;
             _prevListSource = ListSource;
 
+            LoadError = null;
+            LoadErrorVisibility = false;
             Loading = modeOverride == null;
             BtnSetSourceVisibility = false;
             EmptyNoticeVisibility = false;
@@ -1372,7 +1423,6 @@ namespace MALClient.XShared.ViewModels.Main
                     DiagnosticsReporter.Error("AnimeList", $"fetch: library query returned 0 items (mode={requestedMode} source={ListSource}) - empty grid first run", null);
                     //no data?
                     RefreshList();
-                    _fetching = false;
                     return;
                 }
 
@@ -1477,6 +1527,8 @@ namespace MALClient.XShared.ViewModels.Main
             //load tags
             ViewModelLocator.GeneralMain.SearchHints = _animeLibraryDataStorage.AllLoadedAuthAnimeItems.Concat(_animeLibraryDataStorage.AllLoadedAuthMangaItems).SelectMany(abs => abs.Tags).Distinct().ToList();
             RefreshList();
+            LoadError = null;
+            LoadErrorVisibility = false;
         }
 
         /// <summary>

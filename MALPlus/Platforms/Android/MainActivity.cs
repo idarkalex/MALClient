@@ -38,6 +38,7 @@ public class MainActivity : MauiAppCompatActivity
         if (intent?.Data != null && intent.Data.ToString().StartsWith("malplus://"))
         {
             DeepLinkIntent = intent;
+            PendingDeepLinkPath = intent.Data.ToString().Replace("malplus://", "");
             HandleDeepLinkNavigation(intent.Data.ToString());
         }
     }
@@ -47,20 +48,25 @@ public class MainActivity : MauiAppCompatActivity
         var path = PendingDeepLinkPath;
         if (string.IsNullOrWhiteSpace(path))
             return;
-        PendingDeepLinkPath = null;
         Android.Util.Log.Info("MALPLUS", $"Applying pending deep link: {path}");
-        await MainThread.InvokeOnMainThreadAsync(async () =>
+        var succeeded = await MainThread.InvokeOnMainThreadAsync(async () =>
         {
             try
             {
                 await Shell.Current.GoToAsync(path);
                 Android.Util.Log.Info("MALPLUS", "Pending deep link success");
+                return true;
             }
             catch (Exception ex)
             {
-                Android.Util.Log.Info("MALPLUS", $"Pending deep link failed: {ex.Message} | Stack: {ex.StackTrace}");
+                Android.Util.Log.Error("MALPLUS", $"Pending deep link failed: {ex}");
+                return false;
             }
         });
+        // Only clear on success: a link dropped while Shell was still building
+        // would otherwise be lost with no way to retry.
+        if (succeeded)
+            PendingDeepLinkPath = null;
     }
 
     private void HandleDeepLinkNavigation(string uri)

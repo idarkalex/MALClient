@@ -55,6 +55,30 @@ namespace MALClient.XShared.ViewModels.Main
             }
         }
 
+        private string _loadError;
+
+        public string LoadError
+        {
+            get { return _loadError; }
+            set
+            {
+                _loadError = value;
+                RaisePropertyChanged(() => LoadError);
+            }
+        }
+
+        private bool _loadErrorVisibility;
+
+        public bool LoadErrorVisibility
+        {
+            get { return _loadErrorVisibility; }
+            set
+            {
+                _loadErrorVisibility = value;
+                RaisePropertyChanged(() => LoadErrorVisibility);
+            }
+        }
+
         private bool _updateNoticeVisibility;
 
         public bool UpdateNoticeVisibility

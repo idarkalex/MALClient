@@ -1,3 +1,5 @@
+using MALClient.Models.Enums;
+using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Main;
 
@@ -100,7 +102,21 @@ public partial class RecommendationsPage : ContentPage
                 var rec = item.Content as RecommendationItemViewModel;
                 if (rec != null)
                 {
-                    await Shell.Current.GoToAsync($"animedetails?id={rec.Data.DependentId}&title={System.Uri.EscapeDataString(rec.Data.DependentTitle ?? "")}");
+                    // Manga entries were opening in anime mode: AnimeMode defaults to
+                    // true and this route never carried manga=true.
+                    var anime = rec.Data.IsAnime;
+                    if (anime)
+                    {
+                        MALPlus.Services.MauiDetailsNavigationHandoff.Set(
+                            new AnimeDetailsPageNavigationArgs(rec.Data.DependentId, rec.Data.DependentTitle, null, null, null)
+                            {
+                                AnimeMode = true,
+                                Source = PageIndex.PageRecomendations
+                            });
+                    }
+                    var query = anime ? string.Empty : "&manga=true";
+                    await Shell.Current.GoToAsync(
+                        $"animedetails?id={rec.Data.DependentId}&title={System.Uri.EscapeDataString(rec.Data.DependentTitle ?? "")}{query}");
                 }
             }
         }

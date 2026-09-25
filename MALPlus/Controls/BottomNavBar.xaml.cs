@@ -4,6 +4,11 @@ public partial class BottomNavBar : ContentView
 {
     public event Action<string> DotsClicked;
 
+    // Fired after a successful tab navigation with the exact route used. MAUI does
+    // not raise Navigated when only the query changes on an already-visible
+    // ShellContent, so pages that need to react to a re-tap rely on this.
+    public event Action<string> SectionActivated;
+
     private static readonly Color SelectedColor = Color.FromArgb("#0066FF");
     private static readonly Color UnselectedColor = Color.FromArgb("#A0FFFFFF");
     private static readonly Color SelectedButtonColor = Color.FromArgb("#1F0066FF");
@@ -193,8 +198,29 @@ public partial class BottomNavBar : ContentView
     private void OnMangaDotsClicked(object sender, EventArgs e)
         => OpenDotsMenu("manga");
 
+    private static bool IsListSection(string section)
+        => string.Equals(section, "anime", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(section, "manga", StringComparison.OrdinalIgnoreCase);
+
+    // The list tabs must always carry an explicit work mode and status. A bare
+    // "///anime" would let the page keep whatever [QueryProperty] the previous
+    // route left behind, which is how "Anime" ended up showing the Top list.
+    private static string SectionRoute(string section, bool reset)
+    {
+        var query = section switch
+        {
+            "anime" => "mode=0&status=0",
+            "manga" => "mode=2&status=0",
+            _ => null
+        };
+        if (query == null)
+            return $"///{section}";
+        return reset ? $"///{section}?{query}&reset=1" : $"///{section}?{query}";
+    }
+
     private void NavigateToSection(string section)
-        => NavigateToRoute($"///{section}", section, false);
+        => NavigateToRoute(SectionRoute(section, OnSection(section) && IsListSection(section)),
+            section, IsListSection(section));
 
     private void OpenDotsMenu(string section)
     {
@@ -209,7 +235,9 @@ public partial class BottomNavBar : ContentView
             return;
         }
 
-        NavigateToRoute($"///{section}?menu=status", section, true);
+        NavigateToRoute(IsListSection(section) ? $"///{section}?menu=status&{SectionRoute(section, false).Split('?')[1]}"
+                                               : $"///{section}?menu=status",
+            section, true);
     }
 
     private void NavigateToRoute(string route, string section, bool allowCurrent)
@@ -270,9 +298,19 @@ public partial class BottomNavBar : ContentView
             _navigationInFlight = true;
             _lastNavigationAt = DateTime.UtcNow;
             ownsNavigation = true;
+            Android.Util.Log.Info("MALPLUS", $"BottomNav GoToAsync '{route}' (allowCurrent={allowCurrent})");
             await shell.GoToAsync(route);
+            Android.Util.Log.Info("MALPLUS", $"BottomNav GoToAsync ok '{route}' -> {CurrentLocation()}");
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                try { SectionActivated?.Invoke(route); }
+                catch { }
+            });
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Android.Util.Log.Error("MALPLUS", $"BottomNav GoToAsync failed '{route}': {ex}");
+        }
         finally
         {
             if (ownsNavigation && navigationVersion == _navigationVersion)

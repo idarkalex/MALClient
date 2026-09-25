@@ -13,12 +13,16 @@ namespace MALPlus.Views;
 [QueryProperty(nameof(Status), "status")]
 [QueryProperty(nameof(Type), "type")]
 [QueryProperty(nameof(Menu), "menu")]
+[QueryProperty(nameof(Reset), "reset")]
 public partial class AnimeListPage : ContentPage
 {
     private bool _authedAtLoad;
     private string _userAtLoad;
     private bool _refreshArmed;
-    private bool _modeApplied;
+    private bool _applied;
+    private int _appliedMode = -1;
+    private int _appliedStatus = -1;
+    private string _appliedType;
     private int _lastMode = -1;
     private int _lastStatus = -1;
     private bool _dotsConnected;
@@ -26,10 +30,14 @@ public partial class AnimeListPage : ContentPage
     private MangaTopType _mangaTopType = MangaTopType.All;
     private MangaAdaptedType _adaptedType = MangaAdaptedType.AiringNow;
 
+    private const int DefaultStatusIndex = 0;
+    private const int MaxStatusIndex = 5;
+
     public string Mode { get; set; }
     public string Status { get; set; }
     public string Type { get; set; }
     public string Menu { get; set; }
+    public string Reset { get; set; }
 
     private AnimeListViewModel Vm => (AnimeListViewModel)BindingContext;
 
@@ -71,64 +79,163 @@ public partial class AnimeListPage : ContentPage
         if (!_dotsConnected)
         {
             BottomNav.DotsClicked += OnBottomNavDotsClicked;
+            BottomNav.SectionActivated += OnSectionActivated;
             _dotsConnected = true;
         }
-        var authed = Credentials.Authenticated;
-        var user = Credentials.UserName;
-        if (!InitializationRoutines.AwaitableCompletion.Task.IsCompleted)
-        {
-            // Initialise synchronously; the user is still on the loading screen.
-        }
-        else if (!authed)
-        {
-            // not yet authenticated (e.g. login still pending)
-        }
+        ApplyRoute(null);
+    }
 
-        // Resolve work mode: query string first, then fall back to Shell tab title.
-        int mode = 0;
-        int.TryParse(Mode, out mode);
-        if (mode == 0)
-        {
-            try
-            {
-                var title = Shell.Current?.CurrentItem?.CurrentItem?.Title;
-                if (title == "Manga") mode = (int)AnimeListWorkModes.Manga;
-            }
-            catch { }
-        }
+    private void OnSectionActivated(string route)
+    {
+        ApplyRoute(route);
+    }
 
-        // Resolve the specific top-type / adapted-type from the query param (e.g. TopAnimeType.Airing).
-        ParseTypeQuery(mode, Type);
-
-        var openStatusMenu = string.Equals(Menu, "status", StringComparison.OrdinalIgnoreCase);
-        Menu = null;
-        if (_modeApplied && _lastMode == mode && (Vm.AnimeItems?.Count ?? 0) > 0)
-        {
-            if (openStatusMenu)
-                OpenStatusMenu(mode);
-            return;
-        }
-        _modeApplied = true;
-        _lastMode = mode;
-
+    private void ApplyRoute(string route)
+    {
         try
         {
-            int statusIdx = 5;
-            int.TryParse(Status, out statusIdx);
-            if (statusIdx < 0 || statusIdx > 5)
-                statusIdx = 5;
-            _lastStatus = statusIdx;
-            AnimeListPageNavigationArgs args = BuildArgs(mode, _lastStatus);
-            _ = Vm.Init(args);
-            _refreshArmed = true;
-            if (openStatusMenu)
-                MainThread.BeginInvokeOnMainThread(() => OpenStatusMenu(mode));
+            var query = ParseQuery(route);
+            var mode = ResolveMode(query, out var modeFromQuery);
+            var status = ResolveStatus(query, modeFromQuery);
+            var type = ResolveType(query, modeFromQuery);
+            ParseTypeQuery(mode, type);
+
+            var openStatusMenu = string.Equals(QueryValue(query, "menu", Menu), "status", StringComparison.OrdinalIgnoreCase);
+            var forceReset = string.Equals(QueryValue(query, "reset", Reset), "1", StringComparison.Ordinal);
+            Menu = null;
+            Reset = null;
+
+            var alreadyShowing =
+                !forceReset &&
+                _applied &&
+                _appliedMode == mode &&
+                _appliedStatus == status &&
+                string.Equals(_appliedType, type, StringComparison.Ordinal) &&
+                (Vm.AnimeItems?.Count ?? 0) > 0;
+            Android.Util.Log.Info("MALPLUS",
+                $"AnimeList apply route='{route ?? "(properties)"}' -> mode={mode} status={status} type={type} reset={forceReset} skip={alreadyShowing} applied=({_appliedMode},{_appliedStatus},{_appliedType})");
+            if (alreadyShowing)
+            {
+                if (openStatusMenu)
+                    OpenStatusMenu(mode);
+                return;
+            }
+
+            _applied = true;
+            _appliedMode = mode;
+            _appliedStatus = status;
+            _appliedType = type;
+            _lastMode = mode;
+            _lastStatus = status;
+
+            _ = InitAndObserveAsync(mode, status, openStatusMenu);
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS AnimeListPage Init failed: " + ex);
+            Console.WriteLine("MALPLUS AnimeListPage ApplyRoute failed: " + ex);
         }
     }
+
+    private static Dictionary<string, string> ParseQuery(string route)
+    {
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(route))
+            return result;
+        var parts = route.Split(new[] { '?' }, 2);
+        if (parts.Length < 2)
+            return result;
+        foreach (var pair in parts[1].Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kv = pair.Split(new[] { '=' }, 2);
+            var key = Uri.UnescapeDataString(kv[0]);
+            if (result.ContainsKey(key))
+                continue;
+            result[key] = kv.Length > 1 ? Uri.UnescapeDataString(kv[1]) : string.Empty;
+        }
+        return result;
+    }
+
+    private static string QueryValue(Dictionary<string, string> query, string key, string fallback)
+        => query.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? value : fallback;
+
+    private async Task InitAndObserveAsync(int mode, int status, bool openStatusMenu)
+    {
+        try
+        {
+            var args = BuildArgs(mode, status);
+            await Vm.Init(args);
+            _refreshArmed = true;
+        }
+        catch (Exception ex)
+        {
+            _applied = false;
+            Console.WriteLine("MALPLUS AnimeListPage Init failed: " + ex);
+        }
+        finally
+        {
+            if (openStatusMenu)
+                MainThread.BeginInvokeOnMainThread(() => OpenStatusMenu(mode));
+        }
+    }
+
+    private int ResolveMode(Dictionary<string, string> query, out bool fromQuery)
+    {
+        fromQuery = false;
+        if (query.TryGetValue("mode", out var raw) &&
+            int.TryParse(raw, out var parsed) &&
+            System.Enum.IsDefined(typeof(AnimeListWorkModes), parsed))
+        {
+            fromQuery = true;
+            return parsed;
+        }
+        if (!string.IsNullOrWhiteSpace(Mode) &&
+            int.TryParse(Mode, out var fromProperty) &&
+            System.Enum.IsDefined(typeof(AnimeListWorkModes), fromProperty))
+        {
+            fromQuery = true;
+            return fromProperty;
+        }
+        return IsMangaLocation() ? (int) AnimeListWorkModes.Manga : (int) AnimeListWorkModes.Anime;
+    }
+
+    private static bool IsMangaLocation()
+    {
+        var location = Shell.Current?.CurrentState?.Location?.OriginalString ?? string.Empty;
+        var path = location.Split(new[] { '?' }, 2)[0];
+        foreach (var segment in path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (string.Equals(segment, "manga", StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
+
+    private int ResolveStatus(Dictionary<string, string> query, bool fromQuery)
+    {
+        if (fromQuery && query.TryGetValue("status", out var raw) &&
+            int.TryParse(raw, out var parsed) && parsed >= 0 && parsed <= MaxStatusIndex)
+            return parsed;
+        return ResolveStatus();
+    }
+
+    private int ResolveStatus()
+    {
+        if (string.IsNullOrWhiteSpace(Status))
+            return DefaultStatusIndex;
+        if (int.TryParse(Status, out var parsed) && parsed >= 0 && parsed <= MaxStatusIndex)
+            return parsed;
+        return DefaultStatusIndex;
+    }
+
+    private string ResolveType(Dictionary<string, string> query, bool fromQuery)
+    {
+        if (fromQuery && query.TryGetValue("type", out var raw) && !string.IsNullOrWhiteSpace(raw))
+            return raw.Trim();
+        return ResolveType();
+    }
+
+    private string ResolveType()
+        => string.IsNullOrWhiteSpace(Type) ? null : Type.Trim();
 
     private void ParseTypeQuery(int mode, string type)
     {
@@ -194,13 +301,12 @@ public partial class AnimeListPage : ContentPage
             case AnimeListWorkModes.Manga:
                 return new AnimeListPageNavigationArgs(statusSelectorIndex, AnimeListWorkModes.Manga);
             case AnimeListWorkModes.Anime:
-                if (Credentials.Authenticated && !string.IsNullOrWhiteSpace(Credentials.UserName))
-                    return new AnimeListPageNavigationArgs(statusSelectorIndex, AnimeListWorkModes.Anime)
-                    {
-                        ListSource = Credentials.UserName
-                    };
-                // Unauthenticated: fall back to the Top anime list.
-                return AnimeListPageNavigationArgs.TopAnime(_topType);
+                // Never silently switch work mode when there is no session: let the
+                // ViewModel surface its "log in or set it manually" notice instead.
+                return new AnimeListPageNavigationArgs(statusSelectorIndex, AnimeListWorkModes.Anime)
+                {
+                    ListSource = Credentials.UserName
+                };
             case AnimeListWorkModes.SeasonalAnime:
                 return AnimeListPageNavigationArgs.Seasonal;
             case AnimeListWorkModes.TopAnime:
@@ -238,8 +344,18 @@ public partial class AnimeListPage : ContentPage
         if (_dotsConnected)
         {
             BottomNav.DotsClicked -= OnBottomNavDotsClicked;
+            BottomNav.SectionActivated -= OnSectionActivated;
             _dotsConnected = false;
         }
+        // MAUI re-applies query attributes on re-navigation but never clears a
+        // [QueryProperty] that the new route omits, which would leak the previous
+        // work mode into this page. Drop them so the next apply resolves fresh.
+        Mode = null;
+        Status = null;
+        Type = null;
+        Menu = null;
+        Reset = null;
+        _applied = false;
     }
 
     private bool _navigatingToDetails;

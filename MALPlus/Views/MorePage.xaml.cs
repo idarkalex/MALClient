@@ -221,20 +221,40 @@ public partial class MorePage : ContentPage
         NavigateTo(PageIndex.PageProfile, new ProfilePageNavigationArgs { TargetUser = Credentials.UserName });
     }
 
-    private void OnLogOutTapped(object sender, TappedEventArgs e)
+    private async void OnLogOutTapped(object sender, TappedEventArgs e)
     {
         try
         {
             // Fire-and-forget log out (mirrors v2 LogOutCommand flow).
             MALClient.XShared.Utils.Credentials.Reset();
-            Shell.Current?.GoToAsync("//login");
+            _initialized = false;
+            await NavigateToLoginAsync();
         }
-        catch (Exception ex) { Console.WriteLine("MALPLUS logout failed: " + ex.Message); }
+        catch (Exception ex) { Console.WriteLine("MALPLUS logout failed: " + ex); }
     }
 
     private void NavigateToLogin()
     {
-        try { Shell.Current?.GoToAsync("//login"); } catch { }
+        _ = NavigateToLoginAsync();
+    }
+
+    // "login" is a global route, so it must be addressed relatively. Absolute
+    // routing ("//login") throws inside ShellNavigationManager and the faulted
+    // task was being discarded, which left logout and every auth-gated row as
+    // a silent no-op.
+    private static async Task NavigateToLoginAsync()
+    {
+        var shell = Shell.Current;
+        if (shell == null)
+            return;
+        try
+        {
+            await shell.GoToAsync("login");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS login navigation failed: " + ex);
+        }
     }
 
     #endregion

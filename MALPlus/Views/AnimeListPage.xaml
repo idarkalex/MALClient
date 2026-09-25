@@ -66,6 +66,14 @@
                HorizontalOptions="Center" VerticalOptions="Center"
                Grid.Row="0" />
 
+        <VerticalStackLayout IsVisible="{Binding LoadErrorVisibility}" Grid.Row="0"
+                             HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+            <Label Text="{Binding LoadError}" FontFamily="InterSemiBold" FontSize="15"
+                   TextColor="{StaticResource EmAccent}" HorizontalOptions="Center" />
+            <Label Text="Pull down to retry" FontFamily="Inter" FontSize="12"
+                   TextColor="#B3FFFFFF" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
         <controls:BottomNavBar x:Name="BottomNav" Grid.Row="1" />
     </Grid>
 </ContentPage>

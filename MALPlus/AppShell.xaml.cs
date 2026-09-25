@@ -14,7 +14,6 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("search", typeof(SearchPage));
         Routing.RegisterRoute("calendar", typeof(CalendarPage));
         Routing.RegisterRoute("profile", typeof(ProfilePage));
-        Routing.RegisterRoute("morehub", typeof(MorePage));
 
         // All other routes are placeholders for now and will be replaced
         // as the corresponding MAUI pages are built.
