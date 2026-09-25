@@ -525,15 +525,15 @@ namespace MALClient.XShared.Utils
 
         #region DirectRecommendations
 
-        public static async void SaveDirectRecommendationsData(int id, List<DirectRecommendationData> data,
+        public static async Task SaveDirectRecommendationsData(int id, List<DirectRecommendationData> data,
             bool anime)
         {
             try
             {
                 await Task.Run(async () =>
                 {
-                        await DataCacheService.SaveData(data, $"direct_recommendations_{id}.json",
-                            anime ? "AnimeDetails" : "MangaDetails");
+                    await DataCacheService.SaveData(data, $"direct_recommendations_v2_{id}.json",
+                        anime ? "AnimeDetails" : "MangaDetails");
                 });
             }
             catch (Exception)
@@ -548,7 +548,7 @@ namespace MALClient.XShared.Utils
             try
             {
                 return await DataCacheService.RetrieveData<List<DirectRecommendationData>>(
-                    $"direct_recommendations_{id}.json", anime ? "AnimeDetails" : "MangaDetails", 14);
+                    $"direct_recommendations_v2_{id}.json", anime ? "AnimeDetails" : "MangaDetails", 14);
             }
             catch (Exception)
             {
@@ -561,7 +561,7 @@ namespace MALClient.XShared.Utils
 
         #region RelatedAnime
 
-        public static async void SaveRelatedAnimeData(int id, List<RelatedAnimeData> data, bool anime)
+        public static async Task SaveRelatedAnimeData(int id, List<RelatedAnimeData> data, bool anime)
         {
             try
             {
@@ -569,7 +569,7 @@ namespace MALClient.XShared.Utils
                 {
 
                     await
-                        DataCacheService.SaveData(data, $"related_anime_v3_{id}.json",
+                        DataCacheService.SaveData(data, $"related_anime_v4_{id}.json",
                             anime ? "AnimeDetails" : "MangaDetails");
                 });
             }
@@ -585,7 +585,7 @@ namespace MALClient.XShared.Utils
             {
                 return
                     await
-                        DataCacheService.RetrieveData<List<RelatedAnimeData>>($"related_anime_v3_{animeId}.json",
+                        DataCacheService.RetrieveData<List<RelatedAnimeData>>($"related_anime_v4_{animeId}.json",
                             anime ? "AnimeDetails" : "MangaDetails", 14);
             }
             catch (Exception)

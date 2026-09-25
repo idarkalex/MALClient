@@ -27,20 +27,24 @@ namespace MALClient.XShared.Comm.Details
 
         public async Task<CharacterDetailsData> GetCharacterDetails(bool force = false)
         {
-            var possibleData = force ? null : await DataCache.RetrieveData<CharacterDetailsData>(_id.ToString(), "character_details", 30);
-            if (possibleData != null)
+            var possibleData = force
+                ? null
+                : await DataCache.RetrieveData<CharacterDetailsData>($"character_details_v2_{_id}.json",
+                    "character_details", 30);
+            if (possibleData != null && possibleData.Id == _id && !string.IsNullOrWhiteSpace(possibleData.Name))
                 return possibleData;
 
             var output = await FetchFromTenraiAsync();
-            if (output != null && output.Name != null)
+            if (!string.IsNullOrWhiteSpace(output?.Name))
             {
-                DataCache.SaveData(output, _id.ToString(), "character_details");
+                await DataCache.SaveData(output, $"character_details_v2_{_id}.json", "character_details");
                 return output;
             }
 
             output = await FetchFromHtmlAsync();
-            DataCache.SaveData(output, _id.ToString(), "character_details");
-            return output;
+            if (!string.IsNullOrWhiteSpace(output?.Name))
+                await DataCache.SaveData(output, $"character_details_v2_{_id}.json", "character_details");
+            return output ?? new CharacterDetailsData();
         }
 
         private async Task<CharacterDetailsData> FetchFromTenraiAsync()
@@ -53,10 +57,38 @@ namespace MALClient.XShared.Comm.Details
 
                 var output = new CharacterDetailsData { Id = _id };
                 output.Name = GetString(data, "name");
-                if (string.IsNullOrEmpty(output.Name))
+                if (string.IsNullOrWhiteSpace(output.Name))
                     return null;
 
                 output.ImgUrl = GetNestedImageUrl(data);
+
+                var favorites = GetInt(data, "favorites");
+                if (favorites > 0)
+                    output.TotalFavs = favorites.ToString("N0");
+
+                var content = new List<string>();
+                var nativeName = GetString(data, "name_kanji");
+                if (string.IsNullOrEmpty(nativeName))
+                    nativeName = GetString(data, "native_name");
+                if (!string.IsNullOrEmpty(nativeName) &&
+                    !string.Equals(nativeName, output.Name, StringComparison.OrdinalIgnoreCase))
+                    content.Add("Native name: " + nativeName);
+
+                var alternateNames = GetStringList(data, "alternate_names")
+                    .Where(name => !string.IsNullOrWhiteSpace(name) &&
+                                    !string.Equals(name, output.Name, StringComparison.OrdinalIgnoreCase) &&
+                                    !string.Equals(name, nativeName, StringComparison.OrdinalIgnoreCase))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                if (alternateNames.Count > 0)
+                    content.Add("Alternate names: " + string.Join(", ", alternateNames));
+
+                var nicknames = GetStringList(data, "nicknames")
+                    .Where(nickname => !string.IsNullOrWhiteSpace(nickname))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                if (nicknames.Count > 0)
+                    content.Add("Nicknames: " + string.Join(", ", nicknames));
 
                 var about = GetString(data, "about");
                 if (!string.IsNullOrEmpty(about))
@@ -66,13 +98,11 @@ namespace MALClient.XShared.Comm.Details
                     if (bracketPos > 0)
                         about = about.Substring(0, bracketPos).Trim();
                     about = Regex.Replace(about, "\r?\n+", "\n").Trim();
-                    output.Content = about;
-                    output.SpoilerContent = "";
+                    if (!string.IsNullOrEmpty(about))
+                        content.Add(about);
                 }
-                else
-                {
-                    output.Content = output.SpoilerContent = "";
-                }
+                output.Content = string.Join("\n\n", content);
+                output.SpoilerContent = "";
 
                 ParseAnimeography(data, "anime", output.Animeography, true);
                 ParseAnimeography(data, "manga", output.Mangaography, false);
@@ -114,28 +144,47 @@ namespace MALClient.XShared.Comm.Details
         {
             if (!data.TryGetProperty(prop, out var entries) || entries.ValueKind != JsonValueKind.Array)
                 return;
-            foreach (var entry in entries.EnumerateArray())
+            foreach (var wrapper in entries.EnumerateArray())
             {
                 try
                 {
-                    if (entry.ValueKind != JsonValueKind.Object)
+                    if (wrapper.ValueKind != JsonValueKind.Object)
                         continue;
+                    var entry = wrapper;
+                    if (!wrapper.TryGetProperty(prop, out var nested) || nested.ValueKind != JsonValueKind.Object)
+                        nested = wrapper;
+                    entry = nested;
+
                     var current = new AnimeLightEntry { IsAnime = isAnime };
                     current.Id = GetInt(entry, "mal_id");
                     current.Title = WebUtility.HtmlDecode(GetString(entry, "title"));
                     current.ImgUrl = GetNestedImageUrl(entry);
-                    if (current.Id > 0 && current.Title != null)
+                    var mediaType = NormalizeMediaType(GetString(entry, "media_type"));
+                    if (string.IsNullOrEmpty(mediaType))
+                    {
+                        var entryType = GetString(entry, "type");
+                        if (!string.Equals(entryType, "anime", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(entryType, "manga", StringComparison.OrdinalIgnoreCase))
+                            mediaType = NormalizeMediaType(entryType);
+                    }
+                    current.Notes = BuildNotes(GetString(wrapper, "role"), mediaType);
+                    if (current.Id > 0 && !string.IsNullOrEmpty(current.Title))
                         collection.Add(current);
                 }
                 catch (Exception)
                 {
-                    // skip malformed entry
                 }
             }
         }
 
-        private static int GetInt(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() : 0;
+        private static int GetInt(JsonElement el, string prop)
+        {
+            if (!el.TryGetProperty(prop, out var p))
+                return 0;
+            if (p.ValueKind == JsonValueKind.Number)
+                return p.GetInt32();
+            return p.ValueKind == JsonValueKind.String && int.TryParse(p.GetString(), out var value) ? value : 0;
+        }
 
         private static string GetIntString(JsonElement el, string prop)
         {
@@ -151,6 +200,58 @@ namespace MALClient.XShared.Comm.Details
             if (el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String)
                 return p.GetString();
             return null;
+        }
+
+        private static List<string> GetStringList(JsonElement element, string property)
+        {
+            var output = new List<string>();
+            if (!element.TryGetProperty(property, out var values))
+                return output;
+            if (values.ValueKind == JsonValueKind.String)
+            {
+                if (!string.IsNullOrWhiteSpace(values.GetString()))
+                    output.Add(values.GetString());
+                return output;
+            }
+            if (values.ValueKind != JsonValueKind.Array)
+                return output;
+            foreach (var value in values.EnumerateArray())
+                if (value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()))
+                    output.Add(value.GetString());
+            return output;
+        }
+
+        private static string BuildNotes(string role, string mediaType)
+        {
+            return string.Join(" | ", new[] {role, mediaType}.Where(value => !string.IsNullOrWhiteSpace(value)));
+        }
+
+        private static string NormalizeMediaType(string type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+                return type;
+            return type switch
+            {
+                "tv" => "TV",
+                "tv_special" => "TV Special",
+                "movie" => "Movie",
+                "ova" => "OVA",
+                "ona" => "ONA",
+                "special" => "Special",
+                "music" => "Music",
+                "cm" => "Commercial",
+                "pv" => "PV",
+                "manga" => "Manga",
+                "novel" => "Novel",
+                "light_novel" => "Light Novel",
+                "one_shot" => "One-shot",
+                "oneshot" => "One-shot",
+                "doujinshi" => "Doujinshi",
+                "doujin" => "Doujinshi",
+                "manhwa" => "Manhwa",
+                "manhua" => "Manhua",
+                _ => type
+            };
         }
 
         private static string GetNestedImageUrl(JsonElement entry)

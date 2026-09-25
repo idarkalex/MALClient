@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
              x:Class="MALPlus.Views.ForumsTopicPage"
+             x:Name="Page"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
-        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
         <converters:HtmlSourceConverter x:Key="HtmlSource" />
     </ContentPage.Resources>
@@ -21,33 +21,64 @@
                    TextColor="{StaticResource BrushText}" Padding="16,12" MaxLines="2"
                    LineBreakMode="TailTruncation" />
 
-            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingTopic}" Refreshing="OnRefreshing">
-                <CollectionView ItemsSource="{Binding Messages}" SelectionMode="None">
-                    <CollectionView.EmptyView>
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingTopic, Mode=OneWay}" Refreshing="OnRefreshing">
+                <ScrollView x:Name="TopicScrollView" VerticalScrollBarVisibility="Never">
+                    <VerticalStackLayout Padding="16,4,16,20" Spacing="10">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
+                            <Button Text="Previous" Command="{Binding PreviousPageCommand}"
+                                    IsEnabled="{Binding CanPreviousPage}"
+                                    FontFamily="InterSemiBold" FontSize="12"
+                                    BackgroundColor="#141d2b" TextColor="{StaticResource BrushText}"
+                                    BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="8"
+                                    HeightRequest="36" Padding="10,0" />
+                            <Label Grid.Column="1" Text="{Binding PageText}" FontFamily="InterSemiBold"
+                                   FontSize="12" TextColor="{StaticResource EmAccent}"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                            <Button Grid.Column="2" Text="Next" Command="{Binding NextPageCommand}"
+                                    IsEnabled="{Binding CanNextPage}"
+                                    FontFamily="InterSemiBold" FontSize="12"
+                                    BackgroundColor="#141d2b" TextColor="{StaticResource BrushText}"
+                                    BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="8"
+                                    HeightRequest="36" Padding="10,0" />
+                        </Grid>
+
+                        <FlexLayout BindableLayout.ItemsSource="{Binding AvailablePages}"
+                                    Wrap="Wrap" AlignItems="Center" JustifyContent="Center">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Text="{Binding Item1}" WidthRequest="38" HeightRequest="32" Margin="2"
+                                            Padding="0" CornerRadius="8"
+                                            FontFamily="InterSemiBold" FontSize="12"
+                                            BackgroundColor="#141d2b" TextColor="{StaticResource BrushText}"
+                                            BorderColor="#29FFFFFF" BorderWidth="1"
+                                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.LoadPageCommand}"
+                                            CommandParameter="{Binding Item1}">
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding Item2}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="#0066FF" />
+                                                <Setter Property="TextColor" Value="White" />
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+
                         <Label Text="No messages" FontFamily="Inter" FontSize="13"
-                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
-                    </CollectionView.EmptyView>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
-                                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 8" Padding="12">
-                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
-                                    <Label Grid.Row="0" Text="{Binding Data.Poster.MalUser.Name}" FontFamily="InterBold" FontSize="14"
-                                           TextColor="{StaticResource BrushText}" />
-                                    <Label Grid.Row="1" Text="{Binding Data.MessageNumber, StringFormat='#{0}'}"
-                                           FontFamily="InterBold" FontSize="10" TextColor="#A0FFFFFF" />
-                                    <Label Grid.Row="2" Text="{Binding Data.HtmlContent}" FontFamily="Inter" FontSize="12"
-                                           TextColor="#E0FFFFFF" MaxLines="6" LineBreakMode="TailTruncation" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                               TextColor="#80FFFFFF" HorizontalOptions="Center"
+                               IsVisible="{Binding HasMessages, Converter={StaticResource BoolVis}, ConverterParameter=invert}" />
+                        <Label Text="{Binding LoadError}" FontFamily="Inter" FontSize="13"
+                               TextColor="#FFB4B4" HorizontalOptions="Center"
+                               IsVisible="{Binding HasLoadError}" />
+                        <WebView x:Name="TopicWebView"
+                                  Source="{Binding PageHtml, Converter={StaticResource HtmlSource}}"
+                                  HeightRequest="1" MinimumHeightRequest="1"
+                                  BackgroundColor="{StaticResource EmSheet}"
+                                  Navigated="OnTopicWebViewNavigated" />
+                    </VerticalStackLayout>
+                </ScrollView>
             </RefreshView>
 
-            <!-- Reply composer (plain Grid in its own Auto row. A Border here silently
-                 killed the whole grid on Android, so avoid Border for this pinned bar) -->
             <Grid Grid.Row="2" Padding="12,8,12,12" BackgroundColor="#051522">
                 <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
                     <Editor Grid.Row="0" Text="{Binding ReplyMessage, Mode=TwoWay}"

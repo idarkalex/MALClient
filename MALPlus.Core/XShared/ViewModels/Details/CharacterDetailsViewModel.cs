@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -23,9 +24,15 @@ namespace MALClient.XShared.ViewModels.Details
         private CharacterDetailsNavigationArgs _prevArgs;
         private ICommand _navigateMangaDetailsCommand;
         private bool _mangaographyVisibility;
-        private List<FavouriteViewModel> _voiceActors;
+        private List<FavouriteViewModel> _voiceActors = new List<FavouriteViewModel>();
         private ICommand _navigateStaffDetailsCommand;
         private bool _loading;
+        private bool _hasAboutContent;
+        private bool _isAboutExpanded = true;
+        private bool _isSpoilerExpanded;
+        private bool _isOverviewEmpty = true;
+        private ICommand _toggleAboutCommand;
+        private ICommand _toggleSpoilerCommand;
 
         public CharacterDetailsData Data
         {
@@ -42,13 +49,12 @@ namespace MALClient.XShared.ViewModels.Details
             get { return _voiceActors; }
             set
             {
-                _voiceActors = value;
+                _voiceActors = value ?? new List<FavouriteViewModel>();
                 RaisePropertyChanged(() => VoiceActors);
             }
         }
 
-
-        public bool SpoilerButtonVisibility //one could say that this is first boolish visibility property in preparation for xamarin - 14.08.2016
+        public bool SpoilerButtonVisibility
         {
             get { return _spoilerButtonVisibility; }
             set
@@ -57,7 +63,6 @@ namespace MALClient.XShared.ViewModels.Details
                 RaisePropertyChanged(() => SpoilerButtonVisibility);
             }
         }
-
 
         public bool AnimeographyVisibility
         {
@@ -79,46 +84,116 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        public ICommand NavigateStaffDetailsCommand
-            =>
-                _navigateStaffDetailsCommand ??
-                (_navigateStaffDetailsCommand =
-                    new RelayCommand<FavouriteBase>(
-                        entry =>
-                        {
-                            RegisterSelfBackNav();
-                            ViewModelLocator.GeneralMain.Navigate(PageIndex.PageStaffDetails,
-                                new StaffDetailsNaviagtionArgs {Id = int.Parse(entry.Id)});
-                        }));
-
-
-        public ICommand NavigateAnimeDetailsCommand
-            =>
-                _navigateAnimeDetailsCommand ??
-                (_navigateAnimeDetailsCommand =
-                    new RelayCommand<AnimeLightEntry>(
-                        entry =>
-                        {
-                            ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeDetails,
-                                new AnimeDetailsPageNavigationArgs(entry.Id, entry.Title, null, null,_prevArgs) {Source = PageIndex.PageCharacterDetails});
-                        }));
-
-        public ICommand NavigateMangaDetailsCommand
-            =>
-                _navigateMangaDetailsCommand ??
-                (_navigateMangaDetailsCommand =
-                    new RelayCommand<AnimeLightEntry>(
-                        entry =>
-                            ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeDetails,
-                                new AnimeDetailsPageNavigationArgs(entry.Id, entry.Title, null,null, _prevArgs) { Source = PageIndex.PageCharacterDetails, AnimeMode = false})));
-
-
-        public ICommand OpenInMalCommand => _openInMalCommand ?? (_openInMalCommand = new RelayCommand(() =>
+        public bool HasAboutContent
         {
-            ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri($"https://myanimelist.net/character/{Data.Id}"));
-        }));
+            get { return _hasAboutContent; }
+            set
+            {
+                _hasAboutContent = value;
+                RaisePropertyChanged(() => HasAboutContent);
+            }
+        }
 
-        public FavouriteViewModel FavouriteViewModel => Data == null ? null : new FavouriteViewModel(new AnimeCharacter { Id = Data.Id.ToString()});
+        public bool IsAboutExpanded
+        {
+            get { return _isAboutExpanded; }
+            set
+            {
+                _isAboutExpanded = value;
+                RaisePropertyChanged(() => IsAboutExpanded);
+            }
+        }
+
+        public string AboutToggleText => IsAboutExpanded ? "ABOUT  -" : "ABOUT  +";
+
+        public bool IsSpoilerExpanded
+        {
+            get { return _isSpoilerExpanded; }
+            set
+            {
+                _isSpoilerExpanded = value;
+                RaisePropertyChanged(() => IsSpoilerExpanded);
+            }
+        }
+
+        public string SpoilerToggleText => IsSpoilerExpanded ? "SPOILER  -" : "SPOILER  +";
+
+        public bool IsOverviewEmpty
+        {
+            get { return _isOverviewEmpty; }
+            set
+            {
+                _isOverviewEmpty = value;
+                RaisePropertyChanged(() => IsOverviewEmpty);
+            }
+        }
+
+        public ICommand ToggleAboutCommand =>
+            _toggleAboutCommand ??
+            (_toggleAboutCommand = new RelayCommand(() =>
+            {
+                IsAboutExpanded = !IsAboutExpanded;
+                RaisePropertyChanged(() => AboutToggleText);
+            }));
+
+        public ICommand ToggleSpoilerCommand =>
+            _toggleSpoilerCommand ??
+            (_toggleSpoilerCommand = new RelayCommand(() =>
+            {
+                IsSpoilerExpanded = !IsSpoilerExpanded;
+                RaisePropertyChanged(() => SpoilerToggleText);
+            }));
+
+        public ICommand NavigateStaffDetailsCommand =>
+            _navigateStaffDetailsCommand ??
+            (_navigateStaffDetailsCommand = new RelayCommand<FavouriteBase>(entry =>
+            {
+                if (entry == null || !int.TryParse(entry.Id, out int id) || id <= 0)
+                    return;
+                RegisterSelfBackNav();
+                ViewModelLocator.GeneralMain.Navigate(PageIndex.PageStaffDetails,
+                    new StaffDetailsNaviagtionArgs {Id = id});
+            }));
+
+        public ICommand NavigateAnimeDetailsCommand =>
+            _navigateAnimeDetailsCommand ??
+            (_navigateAnimeDetailsCommand = new RelayCommand<AnimeLightEntry>(entry =>
+            {
+                if (entry == null || entry.Id <= 0)
+                    return;
+                ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeDetails,
+                    new AnimeDetailsPageNavigationArgs(entry.Id, entry.Title, null, null, _prevArgs)
+                    {
+                        AnimeMode = true,
+                        Source = PageIndex.PageCharacterDetails
+                    });
+            }));
+
+        public ICommand NavigateMangaDetailsCommand =>
+            _navigateMangaDetailsCommand ??
+            (_navigateMangaDetailsCommand = new RelayCommand<AnimeLightEntry>(entry =>
+            {
+                if (entry == null || entry.Id <= 0)
+                    return;
+                ViewModelLocator.GeneralMain.Navigate(PageIndex.PageAnimeDetails,
+                    new AnimeDetailsPageNavigationArgs(entry.Id, entry.Title, null, null, _prevArgs)
+                    {
+                        AnimeMode = false,
+                        Source = PageIndex.PageCharacterDetails
+                    });
+            }));
+
+        public ICommand OpenInMalCommand =>
+            _openInMalCommand ??
+            (_openInMalCommand = new RelayCommand(() =>
+            {
+                if (Data == null || Data.Id <= 0)
+                    return;
+                ResourceLocator.SystemControlsLauncherService.LaunchUri(new Uri($"https://myanimelist.net/character/{Data.Id}"));
+            }));
+
+        public FavouriteViewModel FavouriteViewModel =>
+            Data == null ? null : new FavouriteViewModel(new AnimeCharacter {Id = Data.Id.ToString()});
 
         public bool Loading
         {
@@ -130,49 +205,74 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-
-
-        public async void Init(CharacterDetailsNavigationArgs args,bool force = false)
+        public async Task Init(CharacterDetailsNavigationArgs args, bool force = false)
         {
+            if (args == null)
+                return;
+            if (!force && Data != null && (_prevArgs?.Equals(args) ?? false))
+                return;
             if (Data != null)
             {
                 ViewModelLocator.GeneralMain.CurrentOffStatus = Data.Name;
                 ViewModelLocator.GeneralMain.IsCurrentStatusSelectable = true;
             }
-            if (!force && (_prevArgs?.Equals(args) ?? false))
-                return;
-
             if (args.ResetNav && !ViewModelLocator.NavMgr.HasSomethingOnStack())
             {
                 ViewModelLocator.NavMgr.ResetMainBackNav();
-                ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList,null);
+                ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageAnimeList, null);
             }
+
             Loading = true;
             _prevArgs = args;
-
-            Data = await new CharacterDetailsQuery(args.Id).GetCharacterDetails(force);
-            SpoilerButtonVisibility = !string.IsNullOrEmpty(Data.SpoilerContent);
-            AnimeographyVisibility = Data.Animeography.Any();
-            MangaographyVisibility = Data.Mangaography.Any();
-            VoiceActors = Data.VoiceActors.Select(actor => new FavouriteViewModel(actor)).ToList();
-            RaisePropertyChanged(() => FavouriteViewModel);
-            ViewModelLocator.GeneralMain.CurrentOffStatus = Data.Name;
-            ViewModelLocator.GeneralMain.IsCurrentStatusSelectable = true;
-            Loading = false;
+            try
+            {
+                ResetState();
+                var data = await new CharacterDetailsQuery(args.Id).GetCharacterDetails(force) ?? new CharacterDetailsData();
+                Data = data;
+                HasAboutContent = !string.IsNullOrWhiteSpace(data.Content);
+                SpoilerButtonVisibility = !string.IsNullOrWhiteSpace(data.SpoilerContent);
+                IsOverviewEmpty = !HasAboutContent && !SpoilerButtonVisibility;
+                AnimeographyVisibility = data.Animeography?.Any() == true;
+                MangaographyVisibility = data.Mangaography?.Any() == true;
+                VoiceActors = data.VoiceActors?
+                    .Where(actor => actor != null)
+                    .Select(actor => new FavouriteViewModel(actor))
+                    .ToList();
+                RaisePropertyChanged(() => FavouriteViewModel);
+                ViewModelLocator.GeneralMain.CurrentOffStatus = data.Name ?? string.Empty;
+                ViewModelLocator.GeneralMain.IsCurrentStatusSelectable = true;
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
 
-        public void RefreshData()
+        public Task RefreshData()
         {
-            Init(_prevArgs,true);
+            return Init(_prevArgs, true);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="targetId">Don't duplicate nav back</param>
+        private void ResetState()
+        {
+            Data = null;
+            VoiceActors = new List<FavouriteViewModel>();
+            HasAboutContent = false;
+            SpoilerButtonVisibility = false;
+            IsOverviewEmpty = true;
+            IsAboutExpanded = true;
+            IsSpoilerExpanded = false;
+            RaisePropertyChanged(() => AboutToggleText);
+            RaisePropertyChanged(() => SpoilerToggleText);
+            AnimeographyVisibility = false;
+            MangaographyVisibility = false;
+            ViewModelLocator.GeneralMain.CurrentOffStatus = string.Empty;
+            ViewModelLocator.GeneralMain.IsCurrentStatusSelectable = false;
+        }
+
         public void RegisterSelfBackNav(int targetId = 0)
         {
-            if (targetId == Data.Id)
+            if (Data == null || targetId == Data.Id)
                 return;
             ViewModelLocator.NavMgr.RegisterBackNav(PageIndex.PageCharacterDetails, _prevArgs);
         }

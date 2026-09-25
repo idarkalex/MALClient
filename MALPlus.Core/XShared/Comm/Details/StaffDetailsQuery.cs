@@ -28,55 +28,81 @@ namespace MALClient.XShared.Comm.Details
 
         public async Task<StaffDetailsData> GetStaffDetails(bool force)
         {
-            var possibleData = force ? null : await DataCache.RetrieveData<StaffDetailsData>(_id.ToString(), "staff_details", 30);
-            if (possibleData != null)
+            var possibleData = force
+                ? null
+                : await DataCache.RetrieveData<StaffDetailsData>($"staff_details_v2_{_id}.json",
+                    "staff_details", 30);
+            if (IsStructuredDataValid(possibleData))
                 return possibleData;
 
             var output = await FetchFromTenraiAsync();
-            if (output != null && output.Name != null)
+            if (IsStructuredDataValid(output))
             {
-                DataCache.SaveData(output, _id.ToString(), "staff_details");
+                await DataCache.SaveData(output, $"staff_details_v2_{_id}.json", "staff_details");
                 return output;
             }
 
-            output = await FetchFromHtmlAsync();
-            DataCache.SaveData(output, _id.ToString(), "staff_details");
-            return output;
+            return await FetchFromHtmlAsync();
         }
 
         private async Task<StaffDetailsData> FetchFromTenraiAsync()
         {
             try
             {
-                var data = await TenraiClient.GetDataAsync($"people/{_id}");
+                var data = await TenraiClient.GetDataAsync($"people/{_id}/full");
                 if (data.ValueKind != JsonValueKind.Object)
                     return null;
 
                 var output = new StaffDetailsData { Id = _id };
+                var givenName = GetString(data, "given_name");
+                var familyName = GetString(data, "family_name");
                 output.Name = GetString(data, "name");
-                if (string.IsNullOrEmpty(output.Name))
+                if (string.IsNullOrWhiteSpace(output.Name))
+                    output.Name = $"{givenName} {familyName}".Trim();
+                if (string.IsNullOrWhiteSpace(output.Name))
                     return null;
                 output.ImgUrl = GetNestedImageUrl(data);
 
-                var alternateNames = GetStringArray(data, "alternate_names");
+                if (!string.IsNullOrWhiteSpace(givenName))
+                    output.Details.Add("Given name: " + givenName);
+                if (!string.IsNullOrWhiteSpace(familyName))
+                    output.Details.Add("Family name: " + familyName);
+
+                var nativeName = GetString(data, "native_name");
+                if (string.IsNullOrEmpty(nativeName))
+                    nativeName = GetString(data, "name_native");
+                if (!string.IsNullOrWhiteSpace(nativeName) &&
+                    !string.Equals(nativeName, output.Name, StringComparison.OrdinalIgnoreCase))
+                    output.Details.Add("Native name: " + nativeName);
+
+                var alternateNames = GetStringArray(data, "alternate_names")
+                    .Where(name => !string.IsNullOrWhiteSpace(name) &&
+                                    !string.Equals(name, output.Name, StringComparison.OrdinalIgnoreCase) &&
+                                    !string.Equals(name, nativeName, StringComparison.OrdinalIgnoreCase))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
                 if (alternateNames.Count > 0)
                     output.Details.Add("Alternate names: " + string.Join(", ", alternateNames));
 
+                var birthday = GetString(data, "birthday");
+                if (!string.IsNullOrWhiteSpace(birthday))
+                    output.Details.Add("Birthday: " + birthday);
                 if (data.TryGetProperty("birthdays", out var birthdays) && birthdays.ValueKind == JsonValueKind.Array)
                 {
-                    foreach (var birthday in birthdays.EnumerateArray())
+                    foreach (var birthdayEntry in birthdays.EnumerateArray())
                     {
                         try
                         {
-                            var bday = GetString(birthday, "birthday");
-                            if (!string.IsNullOrEmpty(bday))
-                            {
-                                output.Details.Add((GetString(birthday, "type") ?? "Birthday") + ": " + bday);
-                            }
+                            var value = GetString(birthdayEntry, "birthday");
+                            if (string.IsNullOrWhiteSpace(value) ||
+                                output.Details.Any(detail => detail.EndsWith(": " + value,
+                                    StringComparison.OrdinalIgnoreCase)))
+                                continue;
+                            var type = GetString(birthdayEntry, "type");
+                            output.Details.Add((string.IsNullOrWhiteSpace(type) ? "Birthday" : type) + ": " + value);
                         }
                         catch (Exception)
                         {
-                            // skip malformed birthday
                         }
                     }
                 }
@@ -89,7 +115,8 @@ namespace MALClient.XShared.Comm.Details
                     if (bracketPos > 0)
                         about = about.Substring(0, bracketPos).Trim();
                     about = Regex.Replace(about, "\r?\n+", "\n").Trim();
-                    output.Details.Add(about);
+                    if (!string.IsNullOrEmpty(about))
+                        output.Details.Add(about);
                 }
 
                 ParseVoiceRoles(data, output);
@@ -102,6 +129,13 @@ namespace MALClient.XShared.Comm.Details
             {
                 return null;
             }
+        }
+
+        private bool IsStructuredDataValid(StaffDetailsData data)
+        {
+            return data != null && data.Id == _id && !string.IsNullOrWhiteSpace(data.Name) &&
+                   ((data.Details?.Count ?? 0) > 0 || (data.ShowCharacterPairs?.Count ?? 0) > 0 ||
+                    (data.StaffPositions?.Count ?? 0) > 0);
         }
 
         private static void ParseVoiceRoles(JsonElement data, StaffDetailsData output)
@@ -122,6 +156,15 @@ namespace MALClient.XShared.Comm.Details
                         show.Id = GetInt(animeEl, "mal_id");
                         show.Title = WebUtility.HtmlDecode(GetString(animeEl, "title"));
                         show.ImgUrl = GetNestedImageUrl(animeEl);
+                        var mediaType = NormalizeMediaType(GetString(animeEl, "media_type"));
+                        if (string.IsNullOrEmpty(mediaType))
+                        {
+                            var entryType = GetString(animeEl, "type");
+                            if (!string.Equals(entryType, "anime", StringComparison.OrdinalIgnoreCase) &&
+                                !string.Equals(entryType, "manga", StringComparison.OrdinalIgnoreCase))
+                                mediaType = NormalizeMediaType(entryType);
+                        }
+                        show.Notes = BuildNotes(mediaType, GetString(voice, "role"));
                         if (show.Id > 0 && show.Title != null)
                             pair.AnimeLightEntry = show;
                     }
@@ -171,7 +214,17 @@ namespace MALClient.XShared.Comm.Details
                     show.Title = WebUtility.HtmlDecode(GetString(entry, "title"));
                     show.ImgUrl = GetNestedImageUrl(entry);
                     var role = GetString(position, "position");
-                    show.Notes = !string.IsNullOrEmpty(role) ? role : WebUtility.HtmlDecode(GetString(position, "role"));
+                    if (string.IsNullOrEmpty(role))
+                        role = WebUtility.HtmlDecode(GetString(position, "role"));
+                    var mediaType = NormalizeMediaType(GetString(entry, "media_type"));
+                    if (string.IsNullOrEmpty(mediaType))
+                    {
+                        var entryType = GetString(entry, "type");
+                        if (!string.Equals(entryType, "anime", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(entryType, "manga", StringComparison.OrdinalIgnoreCase))
+                            mediaType = NormalizeMediaType(entryType);
+                    }
+                    show.Notes = BuildNotes(role, mediaType);
                     if (show.Id > 0 && show.Title != null)
                         output.StaffPositions.Add(show);
                 }
@@ -182,17 +235,55 @@ namespace MALClient.XShared.Comm.Details
             }
         }
 
+        private static string BuildNotes(string role, string mediaType)
+        {
+            return string.Join(" | ", new[] {role, mediaType}.Where(value => !string.IsNullOrWhiteSpace(value)));
+        }
+
+        private static string NormalizeMediaType(string type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+                return type;
+            return type switch
+            {
+                "tv" => "TV",
+                "tv_special" => "TV Special",
+                "movie" => "Movie",
+                "ova" => "OVA",
+                "ona" => "ONA",
+                "special" => "Special",
+                "music" => "Music",
+                "cm" => "Commercial",
+                "pv" => "PV",
+                "manga" => "Manga",
+                "novel" => "Novel",
+                "light_novel" => "Light Novel",
+                "one_shot" => "One-shot",
+                "oneshot" => "One-shot",
+                "doujinshi" => "Doujinshi",
+                "doujin" => "Doujinshi",
+                "manhwa" => "Manhwa",
+                "manhua" => "Manhua",
+                _ => type
+            };
+        }
+
         private static List<string> GetStringArray(JsonElement el, string prop)
         {
             var output = new List<string>();
-            if (el.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.Array)
+            if (!el.TryGetProperty(prop, out var p))
+                return output;
+            if (p.ValueKind == JsonValueKind.String)
             {
-                foreach (var item in p.EnumerateArray())
-                {
-                    if (item.ValueKind == JsonValueKind.String)
-                        output.Add(item.GetString());
-                }
+                if (!string.IsNullOrWhiteSpace(p.GetString()))
+                    output.Add(p.GetString());
+                return output;
             }
+            if (p.ValueKind != JsonValueKind.Array)
+                return output;
+            foreach (var item in p.EnumerateArray())
+                if (item.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(item.GetString()))
+                    output.Add(item.GetString());
             return output;
         }
 

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using MALClient.Adapters;
 using MALClient.Adapters.Credentials;
 using MALClient.Models.AdapterModels;
@@ -360,6 +361,8 @@ public class MauiCalendarExportProvider : ICalendarExportProvider
 
 public class MauiDataCache : IDataCache
 {
+    private static readonly JsonSerializerOptions CacheSerializerOptions = new();
+
     private static string Root => FileSystem.AppDataDirectory;
 
     private static string Resolve(string filename, string folder)
@@ -371,7 +374,7 @@ public class MauiDataCache : IDataCache
 
     public async Task SaveData<T>(T data, string filename, string targetFolder)
     {
-        var json = JsonSerializer.Serialize(data);
+        var json = JsonSerializer.Serialize(data, CacheSerializerOptions);
         await File.WriteAllTextAsync(Resolve(filename, targetFolder), json);
     }
 
@@ -388,7 +391,7 @@ public class MauiDataCache : IDataCache
         if (expiration > 0 && DateTime.UtcNow - File.GetLastWriteTimeUtc(path) > TimeSpan.FromDays(expiration))
             return default;
         var json = await File.ReadAllTextAsync(path);
-        return JsonSerializer.Deserialize<T>(json);
+        return JsonSerializer.Deserialize<T>(json, CacheSerializerOptions);
     }
 
     public Task<T> RetrieveDataRoaming<T>(string filename, int expiration)

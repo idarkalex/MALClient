@@ -8,8 +8,13 @@
 
         public override bool Equals(object obj)
         {
-            var arg = obj as CharacterDetailsNavigationArgs;
+            var arg = obj as StaffDetailsNaviagtionArgs;
             return arg?.Id == Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
         }
     }
 }

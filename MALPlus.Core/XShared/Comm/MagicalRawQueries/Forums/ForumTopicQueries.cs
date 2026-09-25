@@ -192,9 +192,22 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Forums
                     return null;
 
 
-                return
-                    JsonConvert.DeserializeObject<MessageHtmlResponse>(await response.Content.ReadAsStringAsync())
-                        .message_html;
+                var responseData = JsonConvert.DeserializeObject<MessageHtmlResponse>(await response.Content.ReadAsStringAsync());
+                if (string.IsNullOrWhiteSpace(responseData?.message_html))
+                    return null;
+                var presentationHtml = SanitizePresentationHtml(responseData.message_html);
+                var normalizedId = NormalizeMessageId(id);
+                if (!string.IsNullOrWhiteSpace(topicId) && normalizedId != null &&
+                    CachedMessagesDictionary.TryGetValue(topicId, out var topicCache))
+                {
+                    foreach (var cachedPage in topicCache.Values)
+                    {
+                        var cachedMessage = cachedPage?.Messages?.FirstOrDefault(entry => entry.Id == normalizedId);
+                        if (cachedMessage != null)
+                            cachedMessage.HtmlContent = presentationHtml;
+                    }
+                }
+                return presentationHtml;
             }
             catch (Exception)
             {
@@ -280,242 +293,563 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Forums
 
         #region GetTopicData
 
+        public static string BuildTopicPresentationHtml(ForumTopicData data)
+        {
+            var builder = new StringBuilder();
+            builder.Append("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><base href=\"https://myanimelist.net/\"><style>");
+            builder.Append("html,body{margin:0;padding:0;background:#051522;color:#d4e4f7;}body{font-family:Inter,Arial,sans-serif;font-size:15px;line-height:1.5;overflow:hidden;word-wrap:break-word;}.message{background:#0d1d2c;border:1px solid #1e3a52;border-radius:10px;margin:0 0 10px;padding:12px;}.message-header{color:#fff;font-weight:600;margin-bottom:4px;}.message-meta{color:#a0b5c8;font-size:12px;font-weight:400;margin-top:2px;}.message-content{overflow-wrap:anywhere;}.message-content p{margin:0 0 8px;}.message-content p:last-child{margin-bottom:0;}.message-content blockquote{border-left:3px solid #0066ff;background:#10283d;color:#b9cde0;margin:10px 0;padding:8px 12px;}.message-content a{color:#4da3ff;}.message-content img{max-width:100%;height:auto;}.message-content pre,.message-content code{font-family:monospace;white-space:pre-wrap;}");
+            builder.Append("</style></head><body>");
+            if (data?.Messages != null)
+            {
+                foreach (var message in data.Messages)
+                {
+                    if (message == null)
+                        continue;
+                    builder.Append("<article class=\"message\" data-id=\"");
+                    builder.Append(WebUtility.HtmlEncode(NormalizeMessageId(message.Id) ?? string.Empty));
+                    builder.Append("\"><header class=\"message-header\">");
+                    builder.Append(WebUtility.HtmlEncode(message.Poster?.MalUser?.Name ?? "Unknown"));
+                    builder.Append("</header>");
+                    var messageNumber = NormalizeMessageNumber(message.MessageNumber);
+                    if (!string.IsNullOrWhiteSpace(messageNumber))
+                    {
+                        builder.Append("<p class=\"message-meta\">#");
+                        builder.Append(WebUtility.HtmlEncode(messageNumber));
+                        builder.Append(" · ");
+                        builder.Append(WebUtility.HtmlEncode(message.CreateDate ?? string.Empty));
+                        builder.Append("</p>");
+                    }
+                    if (!string.IsNullOrWhiteSpace(message.EditDate))
+                    {
+                        builder.Append("<p class=\"message-meta\">");
+                        builder.Append(WebUtility.HtmlEncode(message.EditDate));
+                        builder.Append("</p>");
+                    }
+                    builder.Append("<section class=\"message-content\">");
+                    builder.Append(SanitizePresentationHtml(message.HtmlContent));
+                    builder.Append("</section></article>");
+                }
+            }
+            builder.Append("</body></html>");
+            return builder.ToString();
+        }
+
+        public static string SanitizePresentationHtml(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            try
+            {
+                var document = new HtmlDocument();
+                document.LoadHtml(html);
+                var root = document.DocumentNode.SelectSingleNode("//body") ?? document.DocumentNode;
+                var builder = new StringBuilder();
+                foreach (var child in root.ChildNodes)
+                    AppendPresentationNode(child, builder);
+                return builder.ToString().Trim();
+            }
+            catch (Exception)
+            {
+                return WebUtility.HtmlEncode(html);
+            }
+        }
+
+        private static void AppendPresentationNode(HtmlNode node, StringBuilder builder)
+        {
+            if (node == null)
+                return;
+            if (node.NodeType == HtmlNodeType.Text)
+            {
+                AppendPresentationText(WebUtility.HtmlDecode(node.InnerText), builder);
+                return;
+            }
+            if (node.NodeType != HtmlNodeType.Element)
+                return;
+
+            var name = node.Name.ToLowerInvariant();
+            if (IsIgnoredPresentationNode(node, name))
+                return;
+            if (name == "br")
+            {
+                builder.Append("<br />");
+                return;
+            }
+            if (name == "img")
+            {
+                AppendPresentationImage(node, builder);
+                return;
+            }
+            if (name == "hr")
+            {
+                builder.Append("<hr />");
+                return;
+            }
+            if (name == "a")
+            {
+                var href = GetSafePresentationUrl(GetAttributeValue(node, "href"));
+                if (href == null)
+                {
+                    foreach (var child in node.ChildNodes)
+                        AppendPresentationNode(child, builder);
+                    return;
+                }
+                builder.Append("<a href=\"");
+                builder.Append(WebUtility.HtmlEncode(href));
+                builder.Append("\" target=\"_blank\" rel=\"nofollow noopener noreferrer\">");
+                foreach (var child in node.ChildNodes)
+                    AppendPresentationNode(child, builder);
+                builder.Append("</a>");
+                return;
+            }
+
+            var outputTag = name switch
+            {
+                "b" or "strong" or "i" or "em" or "u" or "s" or "strike" or "p" or "blockquote" or
+                "code" or "pre" or "ul" or "ol" or "li" or "dl" or "dt" or "dd" or "q" or "cite" or
+                "h1" or "h2" or "h3" or "h4" or "h5" or "h6" or "small" or "mark" or "span" => name,
+                "font" => "span",
+                _ => null
+            };
+            if (name == "div" && HasClass(node, "quotetext"))
+                outputTag = "blockquote";
+
+            if (outputTag != null)
+                builder.Append('<').Append(outputTag).Append('>');
+            foreach (var child in node.ChildNodes)
+                AppendPresentationNode(child, builder);
+            if (outputTag != null)
+                builder.Append("</").Append(outputTag).Append('>');
+        }
+
+        private static void AppendPresentationText(string text, StringBuilder builder)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                if (!string.IsNullOrEmpty(text) && text.IndexOf('\n') < 0 && text.IndexOf('\r') < 0)
+                    builder.Append(' ');
+                return;
+            }
+            var normalized = text.Replace("\r\n", "\n").Replace('\r', '\n');
+            builder.Append(WebUtility.HtmlEncode(normalized).Replace("\n", "<br />"));
+        }
+
+        private static void AppendPresentationImage(HtmlNode node, StringBuilder builder)
+        {
+            var source = GetSafePresentationUrl(GetAttributeValue(node, "data-src") ?? GetAttributeValue(node, "src"));
+            if (source == null)
+                return;
+            builder.Append("<img src=\"");
+            builder.Append(WebUtility.HtmlEncode(source));
+            builder.Append("\" loading=\"eager\" alt=\"");
+            builder.Append(WebUtility.HtmlEncode(GetAttributeValue(node, "alt") ?? string.Empty));
+            builder.Append("\" />");
+        }
+
+        private static bool IsIgnoredPresentationNode(HtmlNode node, string name)
+        {
+            if (name == "script" || name == "style" || name == "noscript" || name == "iframe" ||
+                name == "object" || name == "embed" || name == "form" || name == "input" ||
+                name == "button" || name == "select" || name == "textarea")
+                return true;
+            var classes = (GetAttributeValue(node, "class") ?? string.Empty)
+                .Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            return classes.Any(value => value.Equals("postActions", StringComparison.OrdinalIgnoreCase) ||
+                                        value.Equals("sig", StringComparison.OrdinalIgnoreCase) ||
+                                        value.Equals("sig-container", StringComparison.OrdinalIgnoreCase) ||
+                                        value.Equals("signature", StringComparison.OrdinalIgnoreCase) ||
+                                        value.StartsWith("sig-", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string GetSafePresentationUrl(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+            var url = WebUtility.HtmlDecode(value).Trim();
+            if (url.StartsWith("//", StringComparison.Ordinal))
+                return "https:" + url;
+            if (Uri.TryCreate(url, UriKind.Absolute, out var absolute))
+            {
+                if (absolute.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                    absolute.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+                    absolute.Scheme.Equals(Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase))
+                    return absolute.AbsoluteUri;
+                return null;
+            }
+            if (url.StartsWith("/", StringComparison.Ordinal) || url.StartsWith("#", StringComparison.Ordinal) ||
+                url.StartsWith("?", StringComparison.Ordinal))
+                return url;
+            if (url.IndexOf(':') < 0)
+                return url;
+            return null;
+        }
+
+        private static string GetAttributeValue(HtmlNode node, string name)
+        {
+            return node?.Attributes != null && node.Attributes.Contains(name) ? node.Attributes[name].Value : null;
+        }
+
+        private static bool HasClass(HtmlNode node, string className)
+        {
+            var classes = (GetAttributeValue(node, "class") ?? string.Empty)
+                .Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            if (className.IndexOf(' ') >= 0)
+                return string.Join(" ", classes).IndexOf(className, StringComparison.OrdinalIgnoreCase) >= 0;
+            return classes.Any(value => value.Equals(className, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string NormalizeMessageId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+            var match = Regex.Match(WebUtility.HtmlDecode(value), @"(?:forumMsg|msg)?([0-9]+)", RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups[1].Value : null;
+        }
+
+        private static string NormalizeMessageNumber(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+            var match = Regex.Match(WebUtility.HtmlDecode(value), @"\d+");
+            return match.Success ? match.Value : null;
+        }
+
         private static readonly Dictionary<string, Dictionary<int, ForumTopicData>> CachedMessagesDictionary =
             new Dictionary<string, Dictionary<int, ForumTopicData >>();
 
-        /// <summary>
-        /// Returns tons of data about topic.
-        /// </summary>
-        /// <param name="topicId">Self explanatory</param>
-        /// <param name="page">Page starting from 1</param>
-        /// <param name="lastpage">Override page to last page?</param>
-        /// <param name="messageId"></param>
-        /// <param name="force">Forces cache ignore</param>
-        /// <returns></returns>
         public static async Task<ForumTopicData> GetTopicData(string topicId,int page,bool lastpage = false,long? messageId = null,bool force = false)
         {
-            if(!force && !lastpage && messageId == null && topicId != null && CachedMessagesDictionary.ContainsKey(topicId))
-                if (CachedMessagesDictionary[topicId].ContainsKey(page))
-                    return CachedMessagesDictionary[topicId][page];
+            page = Math.Max(1, page);
+            if (string.IsNullOrWhiteSpace(topicId))
+                topicId = null;
+            if (topicId == null && messageId == null)
+                return null;
+
+            if (!force && !lastpage && messageId == null && topicId != null &&
+                CachedMessagesDictionary.TryGetValue(topicId, out var cachedTopic) &&
+                cachedTopic.TryGetValue(page, out var cachedData))
+                return cachedData;
 
             try
             {
                 var client = await ResourceLocator.MalHttpContextProvider.GetHttpContextAsync();
+                if (client == null)
+                    return null;
 
-                var response =
-                    await client.GetAsync(
-                        lastpage
-                            ? $"https://myanimelist.net/forum/?topicid={topicId}&goto=lastpost"
-                            : messageId != null
-                                ? $"https://myanimelist.net/forum/message/{messageId}?goto=topic"
-                                : $"https://myanimelist.net/forum/?topicid={topicId}&show={(page - 1) * 50}");
-
-                if ((lastpage || messageId != null) && response.StatusCode == HttpStatusCode.RedirectMethod)
+                var requestUri = new Uri(lastpage
+                    ? $"https://myanimelist.net/forum/?topicid={topicId}&goto=lastpost"
+                    : messageId != null
+                        ? $"https://myanimelist.net/forum/message/{messageId}?goto=topic"
+                        : $"https://myanimelist.net/forum/?topicid={topicId}&show={(page - 1) * 50}");
+                var response = await client.GetAsync(requestUri.AbsoluteUri);
+                var currentUri = requestUri;
+                var redirectCount = 0;
+                while (response != null && IsRedirect(response.StatusCode) && redirectCount++ < 3)
                 {
-                    response =
-                        await client.GetAsync(response.Headers.Location);
+                    var location = response.Headers.Location;
+                    if (location == null)
+                    {
+                        response.Dispose();
+                        return null;
+                    }
+                    currentUri = location.IsAbsoluteUri ? location : new Uri(currentUri, location);
+                    response.Dispose();
+                    response = await client.GetAsync(currentUri.AbsoluteUri);
                 }
+
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    response?.Dispose();
+                    return null;
+                }
+
+                var finalUri = response.RequestMessage?.RequestUri ?? currentUri;
+                var html = await response.Content.ReadAsStringAsync();
+                response.Dispose();
+                if (string.IsNullOrWhiteSpace(html))
+                    return null;
 
                 var doc = new HtmlDocument();
-                var html = await response.Content.ReadAsStreamAsync();
-                doc.Load(html);
-
-                var foundMembers = new Dictionary<string,MalForumUser>();
-                var output = new ForumTopicData {Id = topicId};
-                if (messageId != null && messageId != -1)
-                    output.TargetMessageId = messageId.ToString();
-
-                try
+                doc.LoadHtml(html);
+                topicId = topicId ?? GetQueryValue(finalUri, "topicid");
+                if (string.IsNullOrWhiteSpace(topicId))
                 {
-                    var pager = doc.FirstOfDescendantsWithClass("div", "fl-r pb4");
-                    var lastLinkNode = pager.Descendants("a").LastOrDefault(node => node.InnerText.Contains("Last"));
-                    if (lastLinkNode != null)
-                    {
-                        output.AllPages = (int.Parse(lastLinkNode
-                                                .Attributes["href"]
-                                                .Value.Split('=').Last()) / 50) + 1;
-                    }
-                    else
-                    {
-                        var nodes = pager.ChildNodes.Where(node => !string.IsNullOrWhiteSpace(node.InnerText) && node.InnerText != "&raquo;");
-                        output.AllPages = int.Parse(nodes.Last().InnerText.Replace("[","").Replace("]","").Trim());
-                    }
+                    var canonical = doc.DocumentNode.Descendants("link")
+                        .FirstOrDefault(node => string.Equals(GetAttributeValue(node, "rel"), "canonical", StringComparison.OrdinalIgnoreCase));
+                    if (Uri.TryCreate(new Uri("https://myanimelist.net/"), GetAttributeValue(canonical, "href"), out var canonicalUri))
+                        topicId = GetQueryValue(canonicalUri, "topicid");
                 }
-                catch (Exception)
+                if (string.IsNullOrWhiteSpace(topicId))
                 {
-                    output.AllPages = 1;
+                    var topicMatch = Regex.Match(html, @"topicid=(\d+)", RegexOptions.IgnoreCase);
+                    if (topicMatch.Success)
+                        topicId = topicMatch.Groups[1].Value;
                 }
+                if (string.IsNullOrWhiteSpace(topicId))
+                    return null;
 
-                if(!lastpage)
-                    try
-                    {
-                        var pageNodes = doc.FirstOfDescendantsWithClass("div", "fl-r pb4").ChildNodes.Where(node => node.Name != "a");
-                        output.CurrentPage =
-                            int.Parse(
-                                pageNodes.First(node => Regex.IsMatch(node.InnerText.Trim(), @"\[.*\]"))
-                                    .InnerText.Replace("[", "").Replace("]", "").Trim());
-                    }
-                    catch (Exception e)
-                    {
-                        output.CurrentPage = output.AllPages;
-                    }
-                else
+                var output = new ForumTopicData { Id = topicId };
+                if (messageId != null && messageId > 0)
+                    output.TargetMessageId = NormalizeMessageId(messageId.ToString());
+
+                var pagination = ReadPagination(doc, finalUri, page, lastpage);
+                output.AllPages = pagination.AllPages;
+                output.CurrentPage = pagination.CurrentPage;
+
+                var titleNode = doc.DocumentNode.Descendants("h1")
+                    .FirstOrDefault(node => HasClass(node, "forum_locheader"));
+                output.Title = WebUtility.HtmlDecode(titleNode?.InnerText?.Trim());
+                output.IsLocked = titleNode != null && HasClass(titleNode, "icon-forum-locked");
+                if (string.IsNullOrWhiteSpace(output.Title))
                 {
-                    output.CurrentPage = output.AllPages;
+                    titleNode = doc.DocumentNode.Descendants("h1")
+                        .FirstOrDefault(node => HasClass(node, "forum_locheader") && HasClass(node, "icon-forum-locked"));
+                    output.Title = WebUtility.HtmlDecode(titleNode?.InnerText?.Trim());
+                    output.IsLocked = titleNode != null;
                 }
 
-                output.Title = WebUtility.HtmlDecode(doc.FirstOrDefaultOfDescendantsWithClass("h1", "forum_locheader")?.InnerText.Trim());
-                if (output.Title == null)
+                var breadcrumb = FindFirstByClass(doc.DocumentNode, "breadcrumb");
+                if (breadcrumb != null)
                 {
-                    output.Title = WebUtility.HtmlDecode(doc.FirstOrDefaultOfDescendantsWithClass("h1", "forum_locheader icon-forum-locked")?.InnerText.Trim());
-                    if (output.Title != null)
+                    foreach (var breadcrumbNode in breadcrumb.ChildNodes.Where(node => node.Name.Equals("div", StringComparison.OrdinalIgnoreCase)))
                     {
-                        output.IsLocked = true;
+                        var link = breadcrumbNode.Descendants("a").FirstOrDefault();
+                        if (link == null)
+                            continue;
+                        output.Breadcrumbs.Add(new ForumBreadcrumb
+                        {
+                            Name = WebUtility.HtmlDecode(breadcrumbNode.InnerText?.Trim() ?? string.Empty),
+                            Link = GetAttributeValue(link, "href") ?? string.Empty
+                        });
                     }
                 }
-                foreach (var bradcrumb in doc
-                    .FirstOfDescendantsWithClassContaining("div", "breadcrumb")
-                    .ChildNodes.Where(node => node.Name == "div"))
-                {
-                    output.Breadcrumbs.Add(new ForumBreadcrumb
-                    {
-                        Name = WebUtility.HtmlDecode(bradcrumb.InnerText.Trim()),
-                        Link = bradcrumb.Descendants("a").First().Attributes["href"].Value
-                    });
-                }
 
-                if (topicId == null) //in case of redirection
+                var foundMembers = new Dictionary<string, MalForumUser>();
+                foreach (var row in doc.DocumentNode.Descendants("div")
+                    .Where(node => HasClass(node, "forum-topic-message")))
                 {
-                    var uri = response.RequestMessage.RequestUri.AbsoluteUri;
-                    output.TargetMessageId = uri.Split('#').Last().Replace("msg", "");
-                    var pos = uri.IndexOf('&');
-                    if (pos != -1)
+                    var messageIdValue = NormalizeMessageId(GetAttributeValue(row, "data-id")) ??
+                                        NormalizeMessageId(GetAttributeValue(row, "id"));
+                    if (string.IsNullOrWhiteSpace(messageIdValue))
+                        continue;
+
+                    var current = new ForumMessageEntry { TopicId = topicId, Id = messageIdValue };
+                    var dateNode = FindFirstByClass(row, "date");
+                    current.CreateDate = WebUtility.HtmlDecode(dateNode?.InnerText?.Trim() ?? string.Empty);
+                    var postNode = FindFirstByClass(row, "postnum");
+                    current.MessageNumber = NormalizeMessageNumber(postNode?.InnerText) ??
+                                            NormalizeMessageNumber(GetAttributeValue(postNode, "data-postnum"));
+                    if (current.MessageNumber == null)
                     {
-                        uri = uri.Substring(0, pos);
-                        topicId = uri.Split('=').Last();
+                        var postLink = postNode?.Descendants("a").FirstOrDefault();
+                        current.MessageNumber = NormalizeMessageNumber(postLink?.InnerText);
                     }
-                    output.Id = topicId;
-                }
 
-                foreach (var row in doc.WhereOfDescendantsWithContainingClass("div", "forum-topic-message"))
-                {
-                    if (!row.Attributes.Contains("id"))
-                        continue; //it's an ad
-
-                    var current = new ForumMessageEntry {TopicId = topicId};
-
-                    current.Id = row.Attributes["id"].Value.Replace("forumMsg", "");
-
-                    var divs = row.ChildNodes.Where(node => node.Name == "div").ToList();
-                    var headerDivs = divs[0].Descendants("div").ToList();
-
-                    current.CreateDate = WebUtility.HtmlDecode(headerDivs[0].InnerText.Trim());
-                    current.MessageNumber = WebUtility.HtmlDecode(headerDivs[1].InnerText.Trim());
-
-                    var posterName = WebUtility.HtmlDecode(row.FirstOfDescendantsWithClass("div", "username").InnerText);
-
-                    if (foundMembers.ContainsKey(posterName))
+                    var posterName = WebUtility.HtmlDecode(FindFirstByClass(row, "username")?.InnerText?.Trim());
+                    if (string.IsNullOrWhiteSpace(posterName))
+                        posterName = "Unknown";
+                    if (foundMembers.TryGetValue(posterName, out var foundPoster))
                     {
-                        current.Poster = foundMembers[posterName];
+                        current.Poster = foundPoster;
                     }
                     else
                     {
                         var poster = new MalForumUser();
-
                         poster.MalUser.Name = posterName;
-                        var titleNode = row.FirstOrDefaultOfDescendantsWithClass("div", "custom-forum-title");
-                        if (titleNode != null)
-                        {
-                            poster.Title = WebUtility.HtmlDecode(titleNode.InnerText).Trim();
-                        }
-
-                        var forumIcon = row.WhereOfDescendantsWithContainingClass("a", "forum-icon").FirstOrDefault();
-
-                        if (forumIcon != default)
-                        {
-                            poster.MalUser.ImgUrl =
-                                forumIcon.Descendants("img")
-                                .FirstOrDefault(
-                                    node =>
-                                        node.Attributes.Contains("data-src") &&
-                                        node.Attributes["data-src"].Value.Contains("useravatars"))?.Attributes["data-src"].Value;
-                        }
-
-                        poster.Status = WebUtility.HtmlDecode(row.FirstOfDescendantsWithClassContaining("div", "userstatus").InnerText).Trim();
-                        poster.Joined = WebUtility.HtmlDecode(row.FirstOfDescendantsWithClass("div", "userinfo joined").InnerText).Trim();
-                        poster.Posts = WebUtility.HtmlDecode(row.FirstOfDescendantsWithClass("div", "userinfo posts").InnerText).Trim();
-
-                        try
-                        {
-                            poster.SignatureHtml = row.FirstOfDescendantsWithClass("div", "sig").OuterHtml;
-                        }
-                        catch (Exception)
-                        {
-                            //no signature
-                        }
-
-                        foundMembers.Add(posterName,poster);
+                        var titlePosterNode = FindFirstByClass(row, "custom-forum-title");
+                        poster.Title = WebUtility.HtmlDecode(titlePosterNode?.InnerText?.Trim());
+                        var forumIcon = row.Descendants("a").FirstOrDefault(node => HasClass(node, "forum-icon"));
+                        var posterImage = forumIcon?.Descendants("img")
+                            .FirstOrDefault(node => !string.IsNullOrWhiteSpace(GetAttributeValue(node, "data-src")) &&
+                                                    GetAttributeValue(node, "data-src").Contains("useravatars", StringComparison.OrdinalIgnoreCase))
+                            ?? forumIcon?.Descendants("img").FirstOrDefault();
+                        poster.MalUser.ImgUrl = GetAttributeValue(posterImage, "data-src") ??
+                                                 GetAttributeValue(posterImage, "src");
+                        poster.Status = WebUtility.HtmlDecode(FindFirstByClass(row, "userstatus")?.InnerText?.Trim());
+                        poster.Joined = WebUtility.HtmlDecode(FindFirstByClass(row, "userinfo joined")?.InnerText?.Trim());
+                        poster.Posts = WebUtility.HtmlDecode(FindFirstByClass(row, "userinfo posts")?.InnerText?.Trim());
+                        poster.SignatureHtml = null;
+                        foundMembers[posterName] = poster;
                         current.Poster = poster;
                     }
 
-                    var editNode = row.FirstOrDefaultOfDescendantsWithClass("div", "modified");
-                    if (editNode != default)
-                    {
-                        current.EditDate = "Modified by " + string.Join(" ", editNode.ChildNodes.Select(n => WebUtility.HtmlDecode(n.InnerText).Trim()));
-                    }
+                    var editNode = FindFirstByClass(row, "modified");
+                    if (editNode != null)
+                        current.EditDate = "Modified by " + string.Join(" ", editNode.ChildNodes.Select(node => WebUtility.HtmlDecode(node.InnerText)?.Trim() ?? string.Empty));
 
-                    current.HtmlContent = row.FirstOfDescendantsWithClassContaining("div", "content").OuterHtml;
-
-                    var actions = row.FirstOfDescendantsWithClass("div", "postActions");
-                    if (actions != null && actions.ChildNodes.Count > 0)
+                    var contentNode = FindFirstByClass(row, "content") ?? FindFirstByClassContaining(row, "message-text");
+                    current.HtmlContent = SanitizePresentationHtml(contentNode?.OuterHtml);
+                    var actions = FindFirstByClass(row, "postActions");
+                    if (actions != null)
                     {
-                        current.CanEdit = actions.ChildNodes[0].ChildNodes.Any(node => node.InnerText?.Contains("Edit") ?? false);
-                        current.CanDelete = actions.ChildNodes[0].ChildNodes.Any(node => node.InnerText?.Contains("Delete") ?? false);
+                        current.CanEdit = actions.Descendants().Any(node => node.InnerText?.IndexOf("Edit", StringComparison.OrdinalIgnoreCase) >= 0);
+                        current.CanDelete = actions.Descendants().Any(node => node.InnerText?.IndexOf("Delete", StringComparison.OrdinalIgnoreCase) >= 0);
                     }
                     output.Messages.Add(current);
                 }
 
+                if (output.Messages.Count == 0)
+                    return null;
 
-
-                if (!CachedMessagesDictionary.ContainsKey(topicId))
+                var responsePage = GetPageFromUri(finalUri, 0);
+                var canCache = (!lastpage && messageId == null) ||
+                               (lastpage && messageId == null && responsePage > 1 && output.CurrentPage == responsePage);
+                if (canCache && topicId != null)
                 {
-                    CachedMessagesDictionary.Add(topicId, new Dictionary<int, ForumTopicData>
+                    if (!CachedMessagesDictionary.TryGetValue(topicId, out var topicCache))
                     {
-                        {output.CurrentPage, output}
-                    });
-
+                        topicCache = new Dictionary<int, ForumTopicData>();
+                        CachedMessagesDictionary[topicId] = topicCache;
+                    }
+                    topicCache[output.CurrentPage] = output;
                 }
-                else
-                {
-                    if (CachedMessagesDictionary[topicId].ContainsKey(output.CurrentPage))
-                        CachedMessagesDictionary[topicId][output.CurrentPage] = output;
-                    else
-                        CachedMessagesDictionary[topicId].Add(output.CurrentPage, output);
-                }
-
 
                 return output;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return new ForumTopicData();
+                return null;
+            }
+        }
+
+        private static bool IsRedirect(HttpStatusCode statusCode)
+        {
+            return statusCode == HttpStatusCode.MovedPermanently ||
+                   statusCode == HttpStatusCode.Found ||
+                   statusCode == HttpStatusCode.SeeOther ||
+                   statusCode == HttpStatusCode.TemporaryRedirect ||
+                   (int)statusCode == 308;
+        }
+
+        private static string GetQueryValue(Uri uri, string name)
+        {
+            if (uri == null || string.IsNullOrEmpty(uri.Query))
+                return null;
+            foreach (var part in uri.Query.TrimStart('?').Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var pair = part.Split(new[] { '=' }, 2);
+                if (!string.Equals(WebUtility.UrlDecode(pair[0]), name, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                return pair.Length > 1 ? WebUtility.UrlDecode(pair[1]) : string.Empty;
+            }
+            return null;
+        }
+
+        private static int GetPageFromUri(Uri uri, int fallback)
+        {
+            var show = GetQueryValue(uri, "show");
+            if (int.TryParse(show, out var offset) && offset >= 0)
+                return offset / 50 + 1;
+            var page = GetQueryValue(uri, "page");
+            if (int.TryParse(page, out var pageNumber) && pageNumber > 0)
+                return pageNumber;
+            return fallback;
+        }
+
+        private static (int AllPages, int CurrentPage) ReadPagination(HtmlDocument document, Uri responseUri, int requestedPage, bool lastpage)
+        {
+            var allPages = 0;
+            var currentPage = 0;
+            var pager = document.DocumentNode.Descendants("div")
+                .FirstOrDefault(node => HasClass(node, "pages") || HasClass(node, "fl-r pb4"));
+            if (pager != null)
+            {
+                var pagerText = WebUtility.HtmlDecode(pager.InnerText) ?? string.Empty;
+                var totalMatch = Regex.Match(pagerText, @"Pages\s*\(\s*(\d+)\s*\)", RegexOptions.IgnoreCase);
+                if (totalMatch.Success && int.TryParse(totalMatch.Groups[1].Value, out var parsedTotal))
+                    allPages = parsedTotal;
+
+                foreach (var anchor in pager.Descendants("a"))
+                {
+                    var text = WebUtility.HtmlDecode(anchor.InnerText)?.Trim() ?? string.Empty;
+                    var hrefPage = GetPageFromHref(GetAttributeValue(anchor, "href"));
+                    var textPage = NormalizeMessageNumber(text);
+                    var dataPage = NormalizeMessageNumber(GetAttributeValue(anchor, "data-page") ??
+                                                         GetAttributeValue(anchor, "data-page-number"));
+                    if (int.TryParse(textPage, out var parsedTextPage))
+                        allPages = Math.Max(allPages, parsedTextPage);
+                    if (int.TryParse(dataPage, out var parsedDataPage))
+                        allPages = Math.Max(allPages, parsedDataPage);
+                    if (text.IndexOf("last", StringComparison.OrdinalIgnoreCase) >= 0 && hrefPage > 0)
+                        allPages = Math.Max(allPages, hrefPage);
+                    if (HasClass(anchor, "current") || HasClass(anchor, "selected") || HasClass(anchor, "active"))
+                    {
+                        if (int.TryParse(textPage, out var parsedCurrentPage))
+                            currentPage = parsedCurrentPage;
+                        else if (int.TryParse(dataPage, out var parsedCurrentDataPage))
+                            currentPage = parsedCurrentDataPage;
+                        else if (hrefPage > 0)
+                            currentPage = hrefPage;
+                    }
+                }
+
+                foreach (var currentNode in pager.Descendants()
+                    .Where(node => HasClass(node, "current") || HasClass(node, "selected") || HasClass(node, "active")))
+                {
+                    var currentText = NormalizeMessageNumber(WebUtility.HtmlDecode(currentNode.InnerText));
+                    if (int.TryParse(currentText, out var parsedCurrentNode))
+                        currentPage = parsedCurrentNode;
+                }
+
+                foreach (Match match in Regex.Matches(pagerText, @"\[\s*(\d+)\s*\]", RegexOptions.IgnoreCase))
+                {
+                    if (int.TryParse(match.Groups[1].Value, out var markerPage))
+                        currentPage = markerPage;
+                }
             }
 
+            var uriPage = GetPageFromUri(responseUri, 0);
+            if (lastpage && uriPage > 0)
+                currentPage = uriPage;
+            else if (currentPage <= 0)
+                currentPage = uriPage;
+            if (currentPage <= 0)
+                currentPage = Math.Max(1, requestedPage);
+            if (allPages <= 0)
+                allPages = currentPage;
+            if (lastpage && uriPage <= 0)
+                currentPage = allPages;
+            if (allPages > 0 && currentPage > allPages)
+                currentPage = allPages;
+            allPages = Math.Max(allPages, currentPage);
+            return (allPages, currentPage);
+        }
 
+        private static int GetPageFromHref(string href)
+        {
+            if (string.IsNullOrWhiteSpace(href) ||
+                !Uri.TryCreate(new Uri("https://myanimelist.net/"), WebUtility.HtmlDecode(href), out var uri))
+                return 0;
+            return GetPageFromUri(uri, 0);
+        }
+
+        private static HtmlNode FindFirstByClass(HtmlNode root, string className)
+        {
+            return root?.Descendants().FirstOrDefault(node => HasClass(node, className));
+        }
+
+        private static HtmlNode FindFirstByClassContaining(HtmlNode root, string className)
+        {
+            return root?.Descendants().FirstOrDefault(node =>
+                (GetAttributeValue(node, "class") ?? string.Empty)
+                .Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Any(value => value.IndexOf(className, StringComparison.OrdinalIgnoreCase) >= 0));
         }
 
         public static void NotifyMessageRemoved(ForumMessageEntry forumMessage)
         {
-            if (CachedMessagesDictionary.ContainsKey(forumMessage.TopicId))
+            if (forumMessage == null || string.IsNullOrWhiteSpace(forumMessage.TopicId) ||
+                !CachedMessagesDictionary.TryGetValue(forumMessage.TopicId, out var topicCache))
+                return;
+            foreach (var page in topicCache)
             {
-                foreach (var page in CachedMessagesDictionary[forumMessage.TopicId])
+                if (page.Value?.Messages == null)
+                    continue;
+                var index = page.Value.Messages.FindIndex(entry => entry.Id == forumMessage.Id);
+                if (index != -1)
                 {
-                    var index = page.Value.Messages.FindIndex(entry => entry.Id == forumMessage.Id);
-                    if (index != -1)
-                    {
-                        page.Value.Messages.RemoveAt(index);
-                        break;
-                    }
+                    page.Value.Messages.RemoveAt(index);
+                    break;
                 }
             }
         }

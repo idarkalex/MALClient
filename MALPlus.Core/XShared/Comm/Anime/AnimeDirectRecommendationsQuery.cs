@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MALClient.Models.Enums;
@@ -14,6 +15,10 @@ namespace MALClient.XShared.Comm.Anime
 {
     public class AnimeDirectRecommendationsQuery : Query
     {
+        private static readonly SemaphoreSlim MediaTypeEnrichmentGate = new SemaphoreSlim(4);
+        private static readonly TimeSpan EnrichmentTimeout = TimeSpan.FromSeconds(8);
+        private static readonly TimeSpan MediaTypeRequestTimeout = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan DescriptionRequestTimeout = TimeSpan.FromSeconds(4);
         private readonly int _animeId;
         private readonly bool _animeMode;
 
@@ -37,14 +42,33 @@ namespace MALClient.XShared.Comm.Anime
             output = await FetchFromTenraiAsync();
             if (output != null && output.Count > 0)
             {
-                EnrichWithDescriptionsFromMal(output);
-                DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
+                try
+                {
+                    await EnrichRecommendationsAsync(output);
+                }
+                catch (Exception)
+                {
+                }
+                await DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
                 return output;
             }
 
-            output = await FetchDescriptionsFromMalAsync();
+            output = await FetchDescriptionsFromMalAsync(CancellationToken.None);
             if (output != null && output.Count > 0)
-                DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
+            {
+                using var cancellation = new CancellationTokenSource(EnrichmentTimeout);
+                try
+                {
+                    await PopulateMediaTypesAsync(output, cancellation.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception)
+                {
+                }
+                await DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
+            }
             return output ?? new List<DirectRecommendationData>();
         }
 
@@ -86,6 +110,14 @@ namespace MALClient.XShared.Comm.Anime
                             current.Type = RelatedItemType.Anime;
                         else
                             current.Type = RelatedItemType.Unknown;
+                        current.MediaType = NormalizeMediaType(GetString(entry, "media_type"));
+                        if (string.IsNullOrEmpty(current.MediaType))
+                        {
+                            var entryType = GetString(entry, "type");
+                            if (!string.Equals(entryType, "anime", StringComparison.OrdinalIgnoreCase) &&
+                                !string.Equals(entryType, "manga", StringComparison.OrdinalIgnoreCase))
+                                current.MediaType = NormalizeMediaType(entryType);
+                        }
 
                         if (entry.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object &&
                             images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object &&
@@ -107,32 +139,124 @@ namespace MALClient.XShared.Comm.Anime
             }
         }
 
-        private void EnrichWithDescriptionsFromMal(List<DirectRecommendationData> output)
+        private async Task EnrichRecommendationsAsync(List<DirectRecommendationData> output)
         {
             if (output == null || output.Count == 0)
                 return;
+
+            using var cancellation = new CancellationTokenSource(EnrichmentTimeout);
             try
             {
-                var scraped = FetchDescriptionsFromMalAsync().GetAwaiter().GetResult();
-                if (scraped == null || scraped.Count == 0)
-                    return;
-                var byId = scraped.Where(r => r.Id > 0).ToDictionary(r => r.Id, r => r.Description);
-                foreach (var item in output)
-                {
-                    if (byId.TryGetValue(item.Id, out var desc) && !string.IsNullOrEmpty(desc))
-                        item.Description = desc;
-                }
+                var work = Task.WhenAll(
+                    EnrichDescriptionsAsync(output, cancellation.Token),
+                    PopulateMediaTypesAsync(output, cancellation.Token));
+                var completed = await Task.WhenAny(work, Task.Delay(EnrichmentTimeout));
+                if (completed == work)
+                    await work;
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception)
             {
-                // enrichment is best-effort
             }
         }
 
-        private async Task<List<DirectRecommendationData>> FetchDescriptionsFromMalAsync()
+        private async Task EnrichDescriptionsAsync(List<DirectRecommendationData> output,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var scraped = await FetchDescriptionsFromMalAsync(cancellationToken);
+                if (scraped == null || scraped.Count == 0)
+                    return;
+                cancellationToken.ThrowIfCancellationRequested();
+                var byKey = scraped.Where(r => r.Id > 0)
+                    .GroupBy(r => (r.Type, r.Id))
+                    .ToDictionary(g => g.Key, g => g.First().Description);
+                var byId = scraped.Where(r => r.Id > 0)
+                    .GroupBy(r => r.Id)
+                    .ToDictionary(g => g.Key, g => g.First().Description);
+                cancellationToken.ThrowIfCancellationRequested();
+                foreach (var item in output)
+                {
+                    if (!byKey.TryGetValue((item.Type, item.Id), out var description))
+                        byId.TryGetValue(item.Id, out description);
+                    if (!string.IsNullOrEmpty(description))
+                        item.Description = description;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private async Task PopulateMediaTypesAsync(List<DirectRecommendationData> output,
+            CancellationToken cancellationToken)
+        {
+            var tasks = output
+                .Where(item => item.Id > 0 && string.IsNullOrEmpty(item.MediaType))
+                .Select(item => PopulateMediaTypeAsync(item, cancellationToken))
+                .ToArray();
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task PopulateMediaTypeAsync(DirectRecommendationData item,
+            CancellationToken cancellationToken)
+        {
+            await MediaTypeEnrichmentGate.WaitAsync(cancellationToken);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var animeMode = item.Type == RelatedItemType.Manga ? false : _animeMode;
+                var cached = await DataCache.RetrieveAnimeSearchResultsData(item.Id.ToString(), animeMode);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!string.IsNullOrEmpty(cached?.Type))
+                {
+                    item.MediaType = NormalizeMediaType(cached.Type);
+                    return;
+                }
+                var endpoint = animeMode ? $"anime/{item.Id}/full" : $"manga/{item.Id}/full";
+                var data = await TenraiClient.GetDataAsync(endpoint, MediaTypeRequestTimeout);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (data.ValueKind == JsonValueKind.Object)
+                    item.MediaType = NormalizeMediaType(GetString(data, "type"));
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                MediaTypeEnrichmentGate.Release();
+            }
+        }
+
+        private async Task<List<DirectRecommendationData>> FetchDescriptionsFromMalAsync(
+            CancellationToken cancellationToken)
         {
             var output = new List<DirectRecommendationData>();
-            var raw = await GetRequestResponse();
+            string raw;
+            try
+            {
+                using var timeout = new CancellationTokenSource(DescriptionRequestTimeout);
+                using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken, timeout.Token);
+                using var response = await _client.GetAsync(Request, cancellation.Token);
+                if (!response.IsSuccessStatusCode)
+                    return output;
+                raw = await response.Content.ReadAsStringAsync(cancellation.Token);
+            }
+            catch (Exception)
+            {
+                return output;
+            }
+
             if (string.IsNullOrEmpty(raw))
                 return output;
 
@@ -191,6 +315,41 @@ namespace MALClient.XShared.Comm.Anime
             }
 
             return output;
+        }
+
+        private static string GetString(JsonElement element, string property)
+        {
+            return element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String
+                ? value.GetString()
+                : "";
+        }
+
+        private static string NormalizeMediaType(string type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+                return type;
+            return type switch
+            {
+                "tv" => "TV",
+                "tv_special" => "TV Special",
+                "movie" => "Movie",
+                "ova" => "OVA",
+                "ona" => "ONA",
+                "special" => "Special",
+                "music" => "Music",
+                "cm" => "Commercial",
+                "pv" => "PV",
+                "manga" => "Manga",
+                "novel" => "Novel",
+                "light_novel" => "Light Novel",
+                "one_shot" => "One-shot",
+                "oneshot" => "One-shot",
+                "doujinshi" => "Doujinshi",
+                "doujin" => "Doujinshi",
+                "manhwa" => "Manhwa",
+                "manhua" => "Manhua",
+                _ => type
+            };
         }
 
         private static string NormalizeImageUrl(string url)

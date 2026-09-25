@@ -63,7 +63,7 @@ public class MauiMainViewModel : MainViewModelBase
             case PageIndex.PageMangaList:
             case PageIndex.PageTopManga:
             case PageIndex.PageMangaAdapted:
-                route = "///anime";
+                route = IsMangaWorkMode(index, args) ? "///manga" : "///anime";
                 query = BuildAnimeListQuery(index, args);
                 break;
             case PageIndex.PageDiscover:
@@ -201,11 +201,24 @@ public class MauiMainViewModel : MainViewModelBase
                 if (Shell.Current != null)
                     await Shell.Current.GoToAsync(final);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"MALPLUS Navigate failed index={index} route={final}: {ex.GetType().Name} {ex.Message}");
             }
         });
+    }
+
+    private static bool IsMangaWorkMode(PageIndex index, object args)
+    {
+        if (args is AnimeListPageNavigationArgs a)
+        {
+            return a.WorkMode == AnimeListWorkModes.Manga ||
+                   a.WorkMode == AnimeListWorkModes.TopManga ||
+                   a.WorkMode == AnimeListWorkModes.MangaAdapted;
+        }
+
+        return index == PageIndex.PageMangaList ||
+               index == PageIndex.PageTopManga ||
+               index == PageIndex.PageMangaAdapted;
     }
 
     private static string BuildAnimeListQuery(PageIndex index, object args)
@@ -313,7 +326,5 @@ public class MauiSettingsViewModel : MALClient.XShared.ViewModels.SettingsViewMo
 
     public override void LoadCachedEntries()
     {
-        // MAUI version: no-op (TotalFilesCached comes from base)
-        System.Diagnostics.Debug.WriteLine("MauiSettingsViewModel.LoadCachedEntries (no-op)");
     }
 }

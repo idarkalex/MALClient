@@ -32,16 +32,19 @@ namespace MALClient.XShared.Comm.Anime
             var output = force
                 ? new List<RelatedAnimeData>()
                 : await DataCache.RetrieveRelatedAnimeData(_animeId, _animeMode) ?? new List<RelatedAnimeData>();
-            if (output.Count != 0) return output;
+            if (output.Count != 0) return Deduplicate(output);
 
             output = await FetchFromTenraiAsync();
             if (output != null && output.Count > 0)
             {
-                DataCache.SaveRelatedAnimeData(_animeId, output, _animeMode);
+                await DataCache.SaveRelatedAnimeData(_animeId, output, _animeMode);
                 return output;
             }
 
-            return await FetchFromHtmlScraperAsync();
+            output = await FetchFromHtmlScraperAsync();
+            if (output != null && output.Count > 0)
+                await DataCache.SaveRelatedAnimeData(_animeId, output, _animeMode);
+            return output ?? new List<RelatedAnimeData>();
         }
 
         private async Task<List<RelatedAnimeData>> FetchFromTenraiAsync()
@@ -66,6 +69,8 @@ namespace MALClient.XShared.Comm.Anime
                             continue;
 
                         var relation = WebUtility.HtmlDecode(relationProp.GetString());
+                        if (string.IsNullOrWhiteSpace(relation))
+                            continue;
                         IEnumerable<JsonElement> entries;
                         if (entry.ValueKind == JsonValueKind.Array)
                             entries = entry.EnumerateArray().ToList();
@@ -92,9 +97,11 @@ namespace MALClient.XShared.Comm.Anime
 
                                 var current = new RelatedAnimeData();
                                 current.WholeRelation = relation;
-                                current.Type = typeStr == "anime"
+                                current.Relations.Add(relation);
+                                current.Type = typeStr?.ToLowerInvariant() == "anime"
                                     ? RelatedItemType.Anime
-                                    : typeStr == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
+                                    : typeStr?.ToLowerInvariant() == "manga" ? RelatedItemType.Manga : RelatedItemType.Unknown;
+                                current.MediaType = NormalizeMediaType(GetString(ent, "media_type"));
                                 current.Id = malId;
                                 current.Title = WebUtility.HtmlDecode(
                                     ent.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
@@ -119,7 +126,7 @@ namespace MALClient.XShared.Comm.Anime
                     }
                 }
 
-                return output.Count > 0 ? output : null;
+                return Deduplicate(output);
             }
             catch (Exception)
             {
@@ -173,6 +180,8 @@ namespace MALClient.XShared.Comm.Anime
 
                         var relation = WebUtility.HtmlDecode(relationDiv.InnerText.Trim());
                         relation = Regex.Replace(relation.Trim(), @"\t|\n|\r|  ", "");
+                        if (string.IsNullOrWhiteSpace(relation))
+                            continue;
 
                         var titleDiv = content.Descendants("div")
                         .First(
@@ -185,6 +194,7 @@ namespace MALClient.XShared.Comm.Anime
 
                         var current = new RelatedAnimeData();
                         current.WholeRelation = relation;
+                        current.Relations.Add(relation);
                         var link = linkNode.Attributes["href"].Value.Split('/');
                         current.Type = link[3] == "anime"
                             ? RelatedItemType.Anime
@@ -222,10 +232,13 @@ namespace MALClient.XShared.Comm.Anime
                     {
                         var tds = t.Descendants("td").ToList();
                         var relation = WebUtility.HtmlDecode(tds[0].InnerText.Trim());
+                        if (string.IsNullOrWhiteSpace(relation))
+                            continue;
                         foreach (var linkNode in tds[1].Descendants("a"))
                         {
                             var current = new RelatedAnimeData();
                             current.WholeRelation = relation;
+                            current.Relations.Add(relation);
                             var link = linkNode.Attributes["href"].Value.Split('/');
                             current.Type = link[3] == "anime"
                                 ? RelatedItemType.Anime
@@ -247,12 +260,101 @@ namespace MALClient.XShared.Comm.Anime
                 DiagnosticsReporter.Info("Related", $"parse failed for anime {_animeId}: {ex.Message}");
             }
 
-            if (output.Count > 0)
-                DataCache.SaveRelatedAnimeData(_animeId, output, _animeMode);
-            else
+            output = Deduplicate(output);
+            if (output.Count == 0)
                 DiagnosticsReporter.Warn("Related", $"no related entries found for anime {_animeId}");
 
             return output;
+        }
+
+        private static List<RelatedAnimeData> Deduplicate(List<RelatedAnimeData> entries)
+        {
+            var output = new List<RelatedAnimeData>();
+            var byTypeAndId = new Dictionary<(RelatedItemType Type, int Id), RelatedAnimeData>();
+            foreach (var entry in entries)
+            {
+                if (entry == null || entry.Id <= 0)
+                    continue;
+                entry.Relations = (entry.Relations ?? new List<string>())
+                    .Where(relation => !string.IsNullOrWhiteSpace(relation))
+                    .Select(relation => relation.Trim())
+                    .Distinct()
+                    .ToList();
+                if (!string.IsNullOrWhiteSpace(entry.WholeRelation))
+                {
+                    entry.WholeRelation = entry.WholeRelation.Trim();
+                    entry.Relations.Remove(entry.WholeRelation);
+                    entry.Relations.Insert(0, entry.WholeRelation);
+                }
+                else if (entry.Relations.Count > 0)
+                {
+                    entry.WholeRelation = entry.Relations[0];
+                }
+                entry.MediaType = NormalizeMediaType(entry.MediaType);
+
+                var key = (entry.Type, entry.Id);
+                if (!byTypeAndId.TryGetValue(key, out var existing))
+                {
+                    byTypeAndId[key] = entry;
+                    output.Add(entry);
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(existing.Title))
+                    existing.Title = entry.Title;
+                if (string.IsNullOrEmpty(existing.ImgUrl))
+                    existing.ImgUrl = entry.ImgUrl;
+                if (string.IsNullOrEmpty(existing.MediaType))
+                    existing.MediaType = entry.MediaType;
+                if (string.IsNullOrEmpty(existing.WholeRelation))
+                {
+                    existing.WholeRelation = entry.WholeRelation;
+                    if (!string.IsNullOrEmpty(entry.WholeRelation))
+                    {
+                        existing.Relations.Remove(entry.WholeRelation);
+                        existing.Relations.Insert(0, entry.WholeRelation);
+                    }
+                }
+                foreach (var relation in entry.Relations)
+                    if (!string.IsNullOrEmpty(relation) && !existing.Relations.Contains(relation))
+                        existing.Relations.Add(relation);
+            }
+            return output;
+        }
+
+        private static string GetString(JsonElement element, string property)
+        {
+            return element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String
+                ? value.GetString()
+                : "";
+        }
+
+        private static string NormalizeMediaType(string type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+                return type;
+            return type switch
+            {
+                "tv" => "TV",
+                "tv_special" => "TV Special",
+                "movie" => "Movie",
+                "ova" => "OVA",
+                "ona" => "ONA",
+                "special" => "Special",
+                "music" => "Music",
+                "cm" => "Commercial",
+                "pv" => "PV",
+                "manga" => "Manga",
+                "novel" => "Novel",
+                "light_novel" => "Light Novel",
+                "one_shot" => "One-shot",
+                "oneshot" => "One-shot",
+                "doujinshi" => "Doujinshi",
+                "doujin" => "Doujinshi",
+                "manhwa" => "Manhwa",
+                "manhua" => "Manhua",
+                _ => type
+            };
         }
 
         private static string GetNestedImageUrl(JsonElement entry)

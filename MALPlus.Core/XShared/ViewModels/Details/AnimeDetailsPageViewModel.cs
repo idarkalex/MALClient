@@ -16,6 +16,7 @@ using MALClient.Models.Models.Anime;
 using MALClient.Models.Models.AnimeScrapped;
 using MALClient.Models.Models.Favourites;
 using MALClient.Models.Models.Library;
+using MALClient.Models.Models.Misc;
 using MALClient.XShared.Comm;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Comm.MagicalRawQueries;
@@ -96,7 +97,13 @@ namespace MALClient.XShared.ViewModels.Details
         private bool _loadedRecomm;
         private bool _loadedRelated;
         private bool _loadedReviews;
+        private bool _loadedCharacters;
         private bool _loadedVideos;
+        public bool EpisodesLoaded => _loadedEpisodes;
+        public bool ReviewsLoaded => _loadedReviews;
+        public bool RecommendationsLoaded => _loadedRecomm;
+        public bool RelatedLoaded => _loadedRelated;
+        public bool CharactersLoaded => _loadedCharacters;
 
         private bool _loadingAlternate;
 
@@ -105,7 +112,6 @@ namespace MALClient.XShared.ViewModels.Details
         public AnimeDetailsPageNavigationArgs PrevArgs { get; private set; }
         private List<string> _synonyms = new List<string>(); //used to increase ann's search reliability
         private bool _animeMode;
-        private bool _loadedCharacters;
         private string _broadcast = "";
 
         public AnimeDetailsPageViewModel(IClipboardProvider clipboardProvider,
@@ -370,19 +376,24 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 public FavouriteViewModel AnimeCharacter { get; set; }
                 public FavouriteViewModel AnimeStaffPerson { get; set; }
+                public List<FavouriteViewModel> VoiceActors { get; set; }
 
                 public AnimeCharacterStaffModelViewModel(AnimeCharacterStaffModel data)
                 {
                     AnimeCharacter = new FavouriteViewModel(data.AnimeCharacter);
                     AnimeStaffPerson = new FavouriteViewModel(data.AnimeStaffPerson);
+                    VoiceActors = data.VoiceActors?.Select(actor => new FavouriteViewModel(actor)).ToList() ??
+                                  new List<FavouriteViewModel>();
                 }
             }
 
             public AnimeStaffDataViewModels(AnimeStaffData data)
             {
                 AnimeCharacterPairs =
-                    data.AnimeCharacterPairs.Select(pair => new AnimeCharacterStaffModelViewModel(pair)).ToList();
-                AnimeStaff = data.AnimeStaff.Select(person => new FavouriteViewModel(person)).ToList();
+                    (data.AnimeCharacterPairs ?? new List<AnimeCharacterStaffModel>())
+                    .Select(pair => new AnimeCharacterStaffModelViewModel(pair)).ToList();
+                AnimeStaff = (data.AnimeStaff ?? new List<AnimeStaffPerson>())
+                    .Select(person => new FavouriteViewModel(person)).ToList();
             }
 
         }
@@ -473,8 +484,7 @@ namespace MALClient.XShared.ViewModels.Details
             _loadingAlternate = false;
 
             //details reset - only for a DIFFERENT entry; back-nav to the same entry keeps loaded data
-            var sameEntry = _animeItemReference != null && param.AnimeItem != null &&
-                            _animeItemReference.Id == param.AnimeItem.Id && AnimeMode == param.AnimeMode;
+            var sameEntry = Id > 0 && Id == param.Id && AnimeMode == param.AnimeMode;
             if (!sameEntry)
             {
                 _loadedDetails = _loadedEpisodes = _loadedReviews = _loadedRecomm = _loadedRelated = _loadedVideos = _loadedCharacters = false;
@@ -500,11 +510,6 @@ namespace MALClient.XShared.ViewModels.Details
                 _alternateImgUrl = null;
                 _broadcast = "";
                 _synonyms.Clear();
-                LeftGenres.Clear();
-                Information.Clear();
-                Stats.Clear();
-                OPs.Clear();
-                EDs.Clear();
                 Episodes.Clear();
                 Recommendations.ReplaceRange(Array.Empty<DirectRecommendationData>());
                 RelatedAnime.Clear();
@@ -1326,14 +1331,6 @@ namespace MALClient.XShared.ViewModels.Details
 
         private void PopulateData(bool clearEnrichment = true)
         {
-            //purge scraped data possibly left over from the previously viewed entry
-            LeftGenres.Clear();
-            RightGenres.Clear();
-            Information.Clear();
-            Stats.Clear();
-            OPs.Clear();
-            EDs.Clear();
-
             if (clearEnrichment)
             {
                 Reviews.Clear();
@@ -1580,13 +1577,13 @@ namespace MALClient.XShared.ViewModels.Details
             LoadingDetails = true;
             try
             {
-                await LoadDetailsCoreAsync(force);
+                if (await LoadDetailsCoreAsync(force))
+                    ++PivotVersion;
             }
             finally
             {
                 LoadingDetails = false;
             }
-            ++PivotVersion;
 
             // No open-time prefetch of the network tabs (Reviews/Recomms/Related/
             // Characters/Staff): each tab self-loads on selection via TabSelected, and
@@ -1595,28 +1592,31 @@ namespace MALClient.XShared.ViewModels.Details
             // (RefreshData) still reloads everything explicitly.
         }
 
-        private async Task LoadDetailsCoreAsync(bool force)
+        private async Task<bool> LoadDetailsCoreAsync(bool force)
         {
-            LeftGenres.Clear();
-            RightGenres.Clear();
-            Information.Clear();
-            Stats.Clear();
-            OPs.Clear();
-            EDs.Clear();
-            var isAiring = AnimeMode
+            var leftGenres = new List<string>();
+            var rightGenres = new List<string>();
+            var information = new List<Tuple<string, string>>();
+            var stats = new List<Tuple<string, string>>();
+            var openings = new List<string>();
+            var endings = new List<string>();
+            var studiosBackfill = "";
+            var seasonBackfill = "";
+            var rankBackfill = "";
+            var popularityBackfill = "";
+            var membersBackfill = "";
+            var favoritesBackfill = "";
+            var hasBroadcast = false;
+            ExactAiringTimeData airingTime = null;
+            var requestId = Id;
+            var requestMalId = MalId;
+            var requestAnimeMode = AnimeMode;
+            var isAiring = requestAnimeMode
                 ? !string.Equals(Status, "Finished Airing", StringComparison.CurrentCultureIgnoreCase)
                 : !string.Equals(Status, "Finished", StringComparison.CurrentCultureIgnoreCase);
-            var data = await new AnimeDetailsMalQuery(MalId, AnimeMode).GetDetails(force, isAiring);
-            if (data == null)
-            {
-                DetailedDataVisibility = false;
-                DetailsAvailable = false;
-                return;
-            }
-            _loadedDetails = true;
-            DetailedDataVisibility = true;
-            DetailsAvailable = true;
-            //Now we can build elements here
+            var data = await new AnimeDetailsMalQuery(requestMalId, requestAnimeMode).GetDetails(force, isAiring);
+            if (data == null || requestId != Id || requestMalId != MalId || requestAnimeMode != AnimeMode)
+                return false;
 
             try
             {
@@ -1624,9 +1624,9 @@ namespace MALClient.XShared.ViewModels.Details
                 foreach (var genre in data.Information.FirstOrDefault(s => s.StartsWith("Genres:"))?.Substring(7).Split(',') ?? Enumerable.Empty<string>())
                 {
                     if (i % 2 == 0)
-                        LeftGenres.Add(Utils.Utilities.FirstCharToUpper(genre));
+                        leftGenres.Add(Utils.Utilities.FirstCharToUpper(genre));
                     else
-                        RightGenres.Add(Utils.Utilities.FirstCharToUpper(genre));
+                        rightGenres.Add(Utils.Utilities.FirstCharToUpper(genre));
                     i++;
                 }
             }
@@ -1637,29 +1637,16 @@ namespace MALClient.XShared.ViewModels.Details
 
             try
             {
-                //Umm... K-ON is NOT music anime
                 if (Id == 5680 || Id == 7791 || Id == 9617)
                 {
-                    bool truthHadBeenTold = false;
-                    for (int j = 0; j < LeftGenres.Count; j++)
+                    var musicIndex = leftGenres.FindIndex(genre => genre.Trim() == "Music");
+                    if (musicIndex >= 0)
+                        leftGenres[musicIndex] = "Certainly NOT Music Anime...";
+                    else
                     {
-                        if (LeftGenres[j].Trim() == "Music")
-                        {
-                            LeftGenres[j] = "Certainly NOT Music Anime...";
-                            truthHadBeenTold = true;
-                            break;
-                        }
-                    }
-                    if (!truthHadBeenTold)
-                    {
-                        for (int j = 0; j < RightGenres.Count; j++)
-                        {
-                            if (RightGenres[j].Trim() == "Music")
-                            {
-                                RightGenres[j] = "Certainly NOT Music Anime...";
-                                break;
-                            }
-                        }
+                        musicIndex = rightGenres.FindIndex(genre => genre.Trim() == "Music");
+                        if (musicIndex >= 0)
+                            rightGenres[musicIndex] = "Certainly NOT Music Anime...";
                     }
                 }
             }
@@ -1676,37 +1663,26 @@ namespace MALClient.XShared.ViewModels.Details
                     if (info.StartsWith("Genres:"))
                         continue;
                     infoString = infoString.Replace(", add some", "");
-                    var parts = infoString.Split(':');
+                    var parts = infoString.Split(':', 2);
+                    if (parts.Length <= 1)
+                        continue;
 
-                    if (parts[0] == "Broadcast" && parts.Length > 1 && parts[1] != "Unknown")
+                    var label = parts[0].Trim();
+                    var value = parts[1].Trim();
+                    if (label == "Broadcast" && value != "Unknown")
                     {
-                        if (_animeItemReference is AnimeItemViewModel vm)
-                        {
-                            var time = data.ExtractAiringTime();
-                            if (time != null)
-                            {
-                                if (!DataCache.TryRetrieveDataForId(Id, out _))
-                                {
-                                    DataCache.RegisterVolatileData(Id, new VolatileDataCache());
-                                }
-                                DataCache.UpdateVolatileDataWithExactDate(Id, time);
-                                vm.ParentAbstraction.ExactAiringTime = time;
-                            }
-                            else
-                                DataCache.RegisterVolatileDataAiringTimeFetchFailure(Id);
-                        }
+                        hasBroadcast = true;
+                        airingTime = data.ExtractAiringTime();
                     }
 
-                    // fields duplicated by General tab cards / hero stay out of Details
-                    var duplicated = parts[0] == "Type" || parts[0] == "Episodes" || parts[0] == "Status"
-                                     || parts[0] == "Aired" || parts[0] == "Premiered" || parts[0] == "Studios";
-                    // backfill General cards when official API/Tenrai /full failed for this entry
-                    if (string.IsNullOrEmpty(GeneralStudios) && parts[0] == "Studios")
-                        GeneralStudios = string.Join(":", parts.Skip(1)).Trim();
-                    if (string.IsNullOrEmpty(GeneralSeason) && parts[0] == "Premiered")
-                        GeneralSeason = string.Join(":", parts.Skip(1)).Trim();
+                    var duplicated = label == "Type" || label == "Episodes" || label == "Status"
+                                     || label == "Aired" || label == "Premiered" || label == "Studios";
+                    if (label == "Studios" && string.IsNullOrEmpty(GeneralStudios))
+                        studiosBackfill = value;
+                    if (label == "Premiered" && string.IsNullOrEmpty(GeneralSeason))
+                        seasonBackfill = value;
                     if (!duplicated)
-                        Information.Add(new Tuple<string, string>(parts[0], string.Join(":", parts.Skip(1))));
+                        information.Add(new Tuple<string, string>(label, value));
                 }
                 catch (Exception e)
                 {
@@ -1715,39 +1691,49 @@ namespace MALClient.XShared.ViewModels.Details
 
             }
             if(_synonyms?.Any() ?? false)
-                Information.Add(new Tuple<string, string>("Alt. Titles", string.Join("\n", _synonyms)));
+                information.Add(new Tuple<string, string>("Alt. Titles", string.Join("\n", _synonyms)));
 
             foreach (var statistic in data.Statistics)
             {
                 try
                 {
+                    var scoredByMatch = Regex.Match(statistic, @"\(scored by\s+([^)]+)\)",
+                        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
                     var infoString = statistic;
                     var pos = infoString.IndexOf("1 indicates", StringComparison.Ordinal);
                     if (pos != -1)
                         continue;
                     pos = infoString.IndexOf("2 based", StringComparison.Ordinal);
                     if (pos != -1)
-                        infoString = infoString.Substring(0, pos - 2);
+                        infoString = infoString.Substring(0, pos).TrimEnd();
                     pos = infoString.IndexOf("(scored", StringComparison.Ordinal);
                     if (pos != -1)
-                        infoString = infoString.Substring(0, pos - 2);
+                        infoString = infoString.Substring(0, pos).TrimEnd();
 
-                    var parts = infoString.Split(':');
-                    if (parts.Length > 1)
-                    {
-                        var value = parts[1].Trim();
-                        if (string.IsNullOrEmpty(GeneralRank) && parts[0] == "Rank")
-                            GeneralRank = value.StartsWith("#") ? value : $"#{value}";
-                        if (string.IsNullOrEmpty(GeneralPopularity) && parts[0] == "Popularity")
-                            GeneralPopularity = value.StartsWith("#") ? value : $"#{value}";
-                        if (string.IsNullOrEmpty(GeneralMembers) && parts[0] == "Members")
-                            GeneralMembers = value;
-                        if (string.IsNullOrEmpty(GeneralFavorites) && parts[0] == "Favorites")
-                            GeneralFavorites = value;
-                    }
-                    if (parts[0] == "Rank" || parts[0] == "Popularity" || parts[0] == "Members" || parts[0] == "Favorites" || parts[0] == "Score")
+                    var parts = infoString.Split(':', 2);
+                    if (parts.Length <= 1)
                         continue;
-                    Stats.Add(new Tuple<string, string>(parts[0], parts[1]));
+
+                    var label = parts[0].Trim();
+                    var value = parts[1].Trim();
+                    if (label == "Rank" && string.IsNullOrEmpty(GeneralRank))
+                        rankBackfill = value.StartsWith("#") ? value : $"#{value}";
+                    if (label == "Popularity" && string.IsNullOrEmpty(GeneralPopularity))
+                        popularityBackfill = value.StartsWith("#") ? value : $"#{value}";
+                    if (label == "Members" && string.IsNullOrEmpty(GeneralMembers))
+                        membersBackfill = value;
+                    if (label == "Favorites" && string.IsNullOrEmpty(GeneralFavorites))
+                        favoritesBackfill = value;
+                    if (label == "Score")
+                    {
+                        if (scoredByMatch.Success && !string.IsNullOrWhiteSpace(scoredByMatch.Groups[1].Value))
+                            stats.Add(new Tuple<string, string>("Scored by", scoredByMatch.Groups[1].Value.Trim()));
+                        continue;
+                    }
+                    if (label == "Rank" || label == "Popularity" || label == "Members" || label == "Favorites")
+                        continue;
+                    if (!string.IsNullOrWhiteSpace(value))
+                        stats.Add(new Tuple<string, string>(label, value));
                 }
                 catch
                 {
@@ -1756,26 +1742,66 @@ namespace MALClient.XShared.ViewModels.Details
 
             }
 
+            openings.AddRange(data.Openings.Where(op => !string.IsNullOrWhiteSpace(op)));
+            endings.AddRange(data.Endings.Where(ed => !string.IsNullOrWhiteSpace(ed)));
 
-            try
+            if (hasBroadcast && _animeItemReference is AnimeItemViewModel vm)
             {
-                foreach (var op in data.Openings)
-                    OPs.Add(op);
-                foreach (var ed in data.Endings)
-                    EDs.Add(ed);
+                if (airingTime != null)
+                {
+                    if (!DataCache.TryRetrieveDataForId(Id, out _))
+                        DataCache.RegisterVolatileData(Id, new VolatileDataCache());
+                    DataCache.UpdateVolatileDataWithExactDate(Id, airingTime);
+                    vm.ParentAbstraction.ExactAiringTime = airingTime;
+                }
+                else
+                    DataCache.RegisterVolatileDataAiringTimeFetchFailure(Id);
             }
-            catch
-            {
 
-            }
+            LeftGenres.Clear();
+            foreach (var genre in leftGenres)
+                LeftGenres.Add(genre);
+            RightGenres.Clear();
+            foreach (var genre in rightGenres)
+                RightGenres.Add(genre);
+            Information.Clear();
+            foreach (var item in information)
+                Information.Add(item);
+            Stats.Clear();
+            foreach (var item in stats)
+                Stats.Add(item);
+            OPs.Clear();
+            foreach (var opening in openings)
+                OPs.Add(opening);
+            EDs.Clear();
+            foreach (var ending in endings)
+                EDs.Add(ending);
 
-
+            if (string.IsNullOrEmpty(GeneralStudios) && !string.IsNullOrEmpty(studiosBackfill))
+                GeneralStudios = studiosBackfill;
+            if (string.IsNullOrEmpty(GeneralSeason) && !string.IsNullOrEmpty(seasonBackfill))
+                GeneralSeason = seasonBackfill;
+            if (string.IsNullOrEmpty(GeneralRank) && !string.IsNullOrEmpty(rankBackfill))
+                GeneralRank = rankBackfill;
+            if (string.IsNullOrEmpty(GeneralPopularity) && !string.IsNullOrEmpty(popularityBackfill))
+                GeneralPopularity = popularityBackfill;
+            if (string.IsNullOrEmpty(GeneralMembers) && !string.IsNullOrEmpty(membersBackfill))
+                GeneralMembers = membersBackfill;
+            if (string.IsNullOrEmpty(GeneralFavorites) && !string.IsNullOrEmpty(favoritesBackfill))
+                GeneralFavorites = favoritesBackfill;
+            _loadedDetails = true;
+            DetailedDataVisibility = true;
+            DetailsAvailable = true;
+            RaisePropertyChanged(() => GeneralStudios);
+            RaisePropertyChanged(() => GeneralSeason);
+            RaisePropertyChanged(() => GeneralRank);
+            RaisePropertyChanged(() => GeneralPopularity);
+            RaisePropertyChanged(() => GeneralMembers);
+            RaisePropertyChanged(() => GeneralFavorites);
             RaisePropertyChanged(() => AnimeMode);
             OnDetailsLoaded?.Invoke();
 
-            // Pre-cache AnimeThemes only when this entry actually has OP/ED songs to
-            // play, avoiding a pointless background network search on every open.
-            if ((OPs.Count > 0 || EDs.Count > 0) && !string.IsNullOrEmpty(Title))
+            if ((openings.Count > 0 || endings.Count > 0) && !string.IsNullOrEmpty(Title))
             {
                 var atTitle = Title;
                 var atId = Id;
@@ -1786,6 +1812,7 @@ namespace MALClient.XShared.ViewModels.Details
                     await AnimeThemesHelper.SearchAsync(atTitle, english);
                 });
             }
+            return true;
         }
 
         public async Task LoadEpisodes(bool force = false)

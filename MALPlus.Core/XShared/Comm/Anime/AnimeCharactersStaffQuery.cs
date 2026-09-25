@@ -39,17 +39,17 @@ namespace MALClient.XShared.Comm.Anime
                 throw new InvalidOperationException("Umm you said it's going to be manga...");
             var output = force
                 ? new AnimeStaffData()
-                : await DataCache.RetrieveData<AnimeStaffData>($"staff_{_animeId}", "AnimeDetails", 7) ??
+                : await DataCache.RetrieveData<AnimeStaffData>($"staff_v2_{_animeId}", "AnimeDetails", 7) ??
                   new AnimeStaffData();
-            if ((output.AnimeCharacterPairs.Count > 0 || output.AnimeStaff.Count > 0) && !force) return output;
+            if (HasData(output) && !force) return output;
 
             try
             {
                 var structured = await GetCharStaffDataStructuredAsync();
-                if (structured != null && (structured.AnimeCharacterPairs.Count > 0 || structured.AnimeStaff.Count > 0))
+                if (HasData(structured))
                 {
                     DiagnosticsReporter.Info("Characters", $"structured API: {structured.AnimeCharacterPairs.Count} pairs, {structured.AnimeStaff.Count} staff for anime {_animeId}");
-                    DataCache.SaveData(structured, $"staff_{_animeId}", "AnimeDetails");
+                    await DataCache.SaveData(structured, $"staff_v2_{_animeId}", "AnimeDetails");
                     return structured;
                 }
                 DiagnosticsReporter.Warn("Characters", $"structured API returned empty for anime {_animeId}, falling back to HTML");
@@ -61,6 +61,8 @@ namespace MALClient.XShared.Comm.Anime
 
             var htmlResult = await GetCharStaffDataHtml(output);
             DiagnosticsReporter.Info("Characters", $"HTML scrape: {htmlResult.AnimeCharacterPairs.Count} pairs, {htmlResult.AnimeStaff.Count} staff for anime {_animeId}");
+            if (HasData(htmlResult))
+                await DataCache.SaveData(htmlResult, $"staff_v2_{_animeId}", "AnimeDetails");
             return htmlResult;
         }
 
@@ -69,6 +71,8 @@ namespace MALClient.XShared.Comm.Anime
             var output = new AnimeStaffData();
 
             var charsData = await TenraiClient.GetDataAsync($"anime/{_animeId}/characters");
+            if (charsData.ValueKind != JsonValueKind.Array)
+                return null;
             foreach (var entry in EnumerateArray(charsData))
             {
                 try
@@ -85,15 +89,11 @@ namespace MALClient.XShared.Comm.Anime
                     charObj.ShowId = _animeId.ToString();
                     charObj.Notes = BuildRoleNotes(GetString(entry, "role"), GetInt(entry, "favorites"));
 
-                    var va = FindJapaneseVoiceActor(entry);
-                    if (va.ValueKind == JsonValueKind.Object)
+                    var voiceActors = GetVoiceActors(entry);
+                    if (voiceActors.Count > 0)
                     {
-                        var vaImg = CleanImage(GetNestedString(va, "person", "images", "jpg", "image_url"));
-                        pair.AnimeStaffPerson.Id = GetNestedString(va, "person", "mal_id");
-                        pair.AnimeStaffPerson.Name = WebUtility.HtmlDecode(GetNestedString(va, "person", "name").Replace(",", ""));
-                        if (!string.IsNullOrEmpty(vaImg))
-                            pair.AnimeStaffPerson.ImgUrl = vaImg;
-                        pair.AnimeStaffPerson.Notes = GetString(va, "language");
+                        pair.AnimeStaffPerson = voiceActors[0];
+                        pair.VoiceActors.AddRange(voiceActors);
                     }
                     else
                     {
@@ -101,54 +101,43 @@ namespace MALClient.XShared.Comm.Anime
                         pair.AnimeStaffPerson.IsUnknown = true;
                     }
 
-                    if (output.AnimeCharacterPairs.Count >= 16)
-                        break;
-                    if (output.AnimeCharacterPairs.Count < 16)
-                        output.AnimeCharacterPairs.Add(pair);
+                    output.AnimeCharacterPairs.Add(pair);
                 }
                 catch (Exception)
                 {
-                    //
                 }
             }
 
-            try
+            var staffData = await TenraiClient.GetDataAsync($"anime/{_animeId}/staff");
+            if (staffData.ValueKind != JsonValueKind.Array)
+                return null;
+            foreach (var entry in EnumerateArray(staffData))
             {
-                var staffData = await TenraiClient.GetDataAsync($"anime/{_animeId}/staff");
-                foreach (var entry in EnumerateArray(staffData))
+                try
                 {
-                    try
-                    {
-                        var person = new AnimeStaffPerson();
-                        person.Id = GetNestedString(entry, "person", "mal_id");
-                        person.Name = WebUtility.HtmlDecode(GetNestedString(entry, "person", "name").Replace(",", ""));
+                    var person = new AnimeStaffPerson();
+                    person.Id = GetNestedString(entry, "person", "mal_id");
+                    person.Name = WebUtility.HtmlDecode(GetNestedString(entry, "person", "name").Replace(",", ""));
 
-                        var img = CleanImage(GetNestedString(entry, "person", "images", "jpg", "image_url"));
-                        if (!string.IsNullOrEmpty(img))
-                            person.ImgUrl = img;
+                    var img = CleanImage(GetNestedString(entry, "person", "images", "jpg", "image_url"));
+                    if (!string.IsNullOrEmpty(img))
+                        person.ImgUrl = img;
 
-                        var positions = new List<string>();
-                        if (entry.TryGetProperty("positions", out var posArr) && posArr.ValueKind == JsonValueKind.Array)
-                            foreach (var pos in posArr.EnumerateArray())
-                                positions.Add(pos.GetString() ?? "");
-                        person.Notes = string.Join(", ", positions);
+                    var positions = new List<string>();
+                    if (entry.TryGetProperty("positions", out var posArr) && posArr.ValueKind == JsonValueKind.Array)
+                        foreach (var pos in posArr.EnumerateArray())
+                            positions.Add(pos.GetString() ?? "");
+                    person.Notes = string.Join(", ", positions);
 
-                        if (!string.IsNullOrEmpty(person.Name))
-                            if (output.AnimeStaff.Count < 20)
+                    if (!string.IsNullOrEmpty(person.Name))
                         output.AnimeStaff.Add(person);
-                    }
-                    catch (Exception)
-                    {
-                        //
-                    }
+                }
+                catch (Exception)
+                {
                 }
             }
-            catch (Exception)
-            {
-                // staff endpoint optional
-            }
 
-            return output;
+            return HasData(output) ? output : null;
         }
 
         public async Task<AnimeStaffData> GetMangaCharStaffData(bool force = false)
@@ -158,14 +147,16 @@ namespace MALClient.XShared.Comm.Anime
 
             var cached = force
                 ? null
-                : await DataCache.RetrieveData<AnimeStaffData>($"staff_{_animeId}", "MangaDetails", 7);
-            if (cached != null && cached.AnimeCharacterPairs.Count > 0)
+                : await DataCache.RetrieveData<AnimeStaffData>($"staff_v2_{_animeId}", "MangaDetails", 7);
+            if (cached != null && (cached.AnimeCharacterPairs?.Count ?? 0) > 0)
                 return cached;
 
             var output = new AnimeStaffData();
             try
             {
                 var charsData = await TenraiClient.GetDataAsync($"manga/{_animeId}/characters");
+                if (charsData.ValueKind != JsonValueKind.Array)
+                    return output;
                 foreach (var entry in EnumerateArray(charsData))
                 {
                     try
@@ -184,7 +175,6 @@ namespace MALClient.XShared.Comm.Anime
                         pair.AnimeStaffPerson.Name = "Unknown";
                         pair.AnimeStaffPerson.IsUnknown = true;
 
-                        if (output.AnimeCharacterPairs.Count < 16)
                         output.AnimeCharacterPairs.Add(pair);
                     }
                     catch (Exception)
@@ -199,7 +189,7 @@ namespace MALClient.XShared.Comm.Anime
             }
 
             if (output.AnimeCharacterPairs.Count > 0)
-                DataCache.SaveData(output, $"staff_{_animeId}", "MangaDetails");
+                await DataCache.SaveData(output, $"staff_v2_{_animeId}", "MangaDetails");
             return output;
         }
 
@@ -211,21 +201,42 @@ namespace MALClient.XShared.Comm.Anime
             return notes;
         }
 
-        private static JsonElement FindJapaneseVoiceActor(JsonElement entry)
+        private static List<AnimeStaffPerson> GetVoiceActors(JsonElement entry)
         {
-            if (!entry.TryGetProperty("voice_actors", out var arr) || arr.ValueKind != JsonValueKind.Array)
-                return default;
+            var output = new List<AnimeStaffPerson>();
+            if (!entry.TryGetProperty("voice_actors", out var voices) || voices.ValueKind != JsonValueKind.Array)
+                return output;
 
-            JsonElement first = default;
-            foreach (var va in arr.EnumerateArray())
+            foreach (var voice in voices.EnumerateArray())
             {
-                if (first.ValueKind == JsonValueKind.Undefined)
-                    first = va.Clone();
-                var language = GetString(va, "language");
-                if (language == "Japanese")
-                    return va.Clone();
+                try
+                {
+                    var actor = new AnimeStaffPerson
+                    {
+                        Id = GetNestedString(voice, "person", "mal_id"),
+                        Name = WebUtility.HtmlDecode(GetNestedString(voice, "person", "name").Replace(",", "")),
+                        ImgUrl = CleanImage(GetNestedString(voice, "person", "images", "jpg", "image_url")),
+                        Notes = GetString(voice, "language")
+                    };
+                    if (!string.IsNullOrEmpty(actor.Name))
+                        output.Add(actor);
+                }
+                catch (Exception)
+                {
+                }
             }
-            return first;
+
+            return output
+                .Where(actor => string.Equals(actor.Notes, "Japanese", StringComparison.OrdinalIgnoreCase))
+                .Concat(output.Where(actor =>
+                    !string.Equals(actor.Notes, "Japanese", StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+        }
+
+        private static bool HasData(AnimeStaffData data)
+        {
+            return data != null &&
+                   ((data.AnimeCharacterPairs?.Count ?? 0) > 0 || (data.AnimeStaff?.Count ?? 0) > 0);
         }
 
         private static IEnumerable<JsonElement> EnumerateArray(JsonElement el)
@@ -269,6 +280,9 @@ namespace MALClient.XShared.Comm.Anime
 
         private async Task<AnimeStaffData> GetCharStaffDataHtml(AnimeStaffData output)
         {
+            output ??= new AnimeStaffData();
+            output.AnimeCharacterPairs ??= new List<AnimeCharacterStaffModel>();
+            output.AnimeStaff ??= new List<AnimeStaffPerson>();
             var raw = await GetRequestResponse();
             if (string.IsNullOrEmpty(raw))
                 return output;
@@ -307,7 +321,6 @@ namespace MALClient.XShared.Comm.Anime
                     }
 
                 }
-                int i = 0;
                 foreach (var table in charTables)
                 {
                     try
@@ -325,7 +338,7 @@ namespace MALClient.XShared.Comm.Anime
                         if (!img.Contains("questionmark"))
                         {
                             img = Regex.Replace(img,@"\/r\/\d+x\d+", "");
-                            current.AnimeCharacter.ImgUrl = img.Substring(0, img.IndexOf('?'));
+                            current.AnimeCharacter.ImgUrl = CleanImage(img);
                         }
 
                         current.AnimeCharacter.FromAnime = _animeMode;
@@ -350,7 +363,7 @@ namespace MALClient.XShared.Comm.Anime
                             if (!img.Contains("questionmark"))
                             {
                                 img = Regex.Replace(img, @"\/r\/\d+x\d+", "");
-                                current.AnimeStaffPerson.ImgUrl = img.Substring(0, img.IndexOf('?'));
+                                current.AnimeStaffPerson.ImgUrl = CleanImage(img);
                             }
                             current.AnimeStaffPerson.Name = WebUtility.HtmlDecode(imgs[1].Attributes["alt"].Value.Replace(",", ""));
 
@@ -367,11 +380,9 @@ namespace MALClient.XShared.Comm.Anime
                             current.AnimeStaffPerson.Name = "Unknown";
                             current.AnimeStaffPerson.IsUnknown = true;
                         }
-
-
+                        if (!current.AnimeStaffPerson.IsUnknown && !string.IsNullOrEmpty(current.AnimeStaffPerson.Name))
+                            current.VoiceActors.Add(current.AnimeStaffPerson);
                         output.AnimeCharacterPairs.Add(current);
-                        if (i++ > 30)
-                            break;
                     }
                     catch (Exception e)
                     {
@@ -379,7 +390,6 @@ namespace MALClient.XShared.Comm.Anime
                     }
 
                 }
-                i = 0;
                 foreach (var staffRow in staffTables)
                 {
                     try
@@ -392,7 +402,7 @@ namespace MALClient.XShared.Comm.Anime
                         if (!img.Contains("questionmark"))
                         {
                             img = Regex.Replace(img, @"\/r\/\d+x\d+", "");
-                            current.ImgUrl = img.Substring(0, img.IndexOf('?'));
+                            current.ImgUrl = CleanImage(img);
                         }
                         var link = info.Descendants("a").First();
                         current.Name = WebUtility.HtmlDecode(link.InnerText.Trim().Replace(",", ""));
@@ -403,8 +413,6 @@ namespace MALClient.XShared.Comm.Anime
                             continue;
 
                         output.AnimeStaff.Add(current);
-                        if (i++ > 30)
-                            break;
                     }
                     catch (Exception e)
                     {
@@ -416,9 +424,6 @@ namespace MALClient.XShared.Comm.Anime
             {
                 //mysteries of html
             }
-
-
-            DataCache.SaveData(output,$"staff_{_animeId}","AnimeDetails");
 
             return output;
         }

@@ -3,85 +3,112 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MALPlus.Controls.BottomNavBar"
              BackgroundColor="{StaticResource EmSheet}">
+    <ContentView.Resources>
+        <Style x:Key="BottomNavButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="BorderColor" Value="Transparent" />
+            <Setter Property="BorderWidth" Value="0" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinimumHeightRequest" Value="0" />
+            <Setter Property="MinimumWidthRequest" Value="0" />
+            <Setter Property="HeightRequest" Value="56" />
+            <Setter Property="HorizontalOptions" Value="Fill" />
+            <Setter Property="VerticalOptions" Value="Fill" />
+            <Style.Triggers>
+                <Trigger TargetType="Button" Property="IsPressed" Value="True">
+                    <Setter Property="BackgroundColor" Value="#260066FF" />
+                    <Setter Property="Scale" Value="0.97" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </ContentView.Resources>
     <Border Stroke="#14FFFFFF" StrokeThickness="1"
             StrokeShape="RoundRectangle 0" Padding="0,6,0,8">
         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="0">
-
-            <!-- Discover -->
-            <Grid Grid.Column="0">
-                <Button Clicked="OnDiscoverTapped"
-                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
-                        MinimumHeightRequest="0" MinimumWidthRequest="0"
-                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+            <Grid Grid.Column="0" ColumnDefinitions="*">
+                <Button x:Name="DiscoverButton" Clicked="OnDiscoverTapped"
+                        Style="{StaticResource BottomNavButtonStyle}"
+                        AutomationId="BottomNavDiscoverButton"
+                        SemanticProperties.Description="Discover"
+                        SemanticProperties.Hint="Navigate to the Discover section" />
                 <VerticalStackLayout InputTransparent="True" Spacing="2"
-                                     HorizontalOptions="Center" VerticalOptions="Center">
+                                     HorizontalOptions="Fill" VerticalOptions="Center">
                     <Image x:Name="DiscoverIcon" Source="discover_home.svg"
-                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                           WidthRequest="24" HeightRequest="24" Aspect="AspectFit"
+                           HorizontalOptions="Center" />
                     <Label x:Name="DiscoverLabel" Text="Discover" FontFamily="InterSemiBold" FontSize="10"
-                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Fill"
+                           LineBreakMode="NoWrap" MaxLines="1" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Grid>
 
-            <!-- Anime + dots -->
-            <Grid Grid.Column="1">
-                <Button Clicked="OnAnimeTapped"
-                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
-                        MinimumHeightRequest="0" MinimumWidthRequest="0"
-                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+            <Grid Grid.Column="1" ColumnDefinitions="*">
+                <Button x:Name="AnimeButton" Clicked="OnAnimeTapped"
+                        Style="{StaticResource BottomNavButtonStyle}"
+                        AutomationId="BottomNavAnimeButton"
+                        SemanticProperties.Description="Anime"
+                        SemanticProperties.Hint="Navigate to the Anime section" />
                 <VerticalStackLayout InputTransparent="True" Spacing="2"
-                                     HorizontalOptions="Center" VerticalOptions="Center">
+                                     HorizontalOptions="Fill" VerticalOptions="Center">
                     <Image x:Name="AnimeIcon" Source="anime_list.svg"
-                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                           WidthRequest="24" HeightRequest="24" Aspect="AspectFit"
+                           HorizontalOptions="Center" />
                     <Label x:Name="AnimeLabel" Text="Anime" FontFamily="InterSemiBold" FontSize="10"
-                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center"
-                           LineBreakMode="NoWrap" HorizontalTextAlignment="Center" />
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Fill"
+                           LineBreakMode="NoWrap" MaxLines="1" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
-                <Button Grid.Column="1" x:Name="AnimeDots" Text="⋮" Clicked="OnAnimeDotsClicked"
+                <Button x:Name="AnimeDots" Text="⋮" Clicked="OnAnimeDotsClicked"
+                        Style="{StaticResource BottomNavButtonStyle}"
                         FontFamily="InterBold" FontSize="20"
-                        BackgroundColor="Transparent" TextColor="#A0FFFFFF"
-                        BorderWidth="0" Padding="0"
-                        WidthRequest="24"
-                        VerticalOptions="Fill" HorizontalOptions="End" />
+                        TextColor="#A0FFFFFF" WidthRequest="24"
+                        HorizontalOptions="End" VerticalOptions="Fill"
+                        AutomationId="BottomNavAnimeDots"
+                        SemanticProperties.Description="Open Anime status menu"
+                        SemanticProperties.Hint="Choose an Anime list status" />
             </Grid>
 
-            <!-- Manga + dots -->
-            <Grid Grid.Column="2">
-                <Button Clicked="OnMangaTapped"
-                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
-                        MinimumHeightRequest="0" MinimumWidthRequest="0"
-                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+            <Grid Grid.Column="2" ColumnDefinitions="*">
+                <Button x:Name="MangaButton" Clicked="OnMangaTapped"
+                        Style="{StaticResource BottomNavButtonStyle}"
+                        AutomationId="BottomNavMangaButton"
+                        SemanticProperties.Description="Manga"
+                        SemanticProperties.Hint="Navigate to the Manga section" />
                 <VerticalStackLayout InputTransparent="True" Spacing="2"
-                                     HorizontalOptions="Center" VerticalOptions="Center">
+                                     HorizontalOptions="Fill" VerticalOptions="Center">
                     <Image x:Name="MangaIcon" Source="manga_books.svg"
-                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                           WidthRequest="24" HeightRequest="24" Aspect="AspectFit"
+                           HorizontalOptions="Center" />
                     <Label x:Name="MangaLabel" Text="Manga" FontFamily="InterSemiBold" FontSize="10"
-                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center"
-                           LineBreakMode="NoWrap" HorizontalTextAlignment="Center" />
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Fill"
+                           LineBreakMode="NoWrap" MaxLines="1" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
-                <Button Grid.Column="1" x:Name="MangaDots" Text="⋮" Clicked="OnMangaDotsClicked"
+                <Button x:Name="MangaDots" Text="⋮" Clicked="OnMangaDotsClicked"
+                        Style="{StaticResource BottomNavButtonStyle}"
                         FontFamily="InterBold" FontSize="20"
-                        BackgroundColor="Transparent" TextColor="#A0FFFFFF"
-                        BorderWidth="0" Padding="0"
-                        WidthRequest="24"
-                        VerticalOptions="Fill" HorizontalOptions="End" />
+                        TextColor="#A0FFFFFF" WidthRequest="24"
+                        HorizontalOptions="End" VerticalOptions="Fill"
+                        AutomationId="BottomNavMangaDots"
+                        SemanticProperties.Description="Open Manga status menu"
+                        SemanticProperties.Hint="Choose a Manga list status" />
             </Grid>
 
-            <!-- More -->
-            <Grid Grid.Column="3">
-                <Button Clicked="OnMoreTapped"
-                        BackgroundColor="Transparent" BorderWidth="0" Padding="0"
-                        MinimumHeightRequest="0" MinimumWidthRequest="0"
-                        HorizontalOptions="Fill" VerticalOptions="Fill" />
+            <Grid Grid.Column="3" ColumnDefinitions="*">
+                <Button x:Name="MoreButton" Clicked="OnMoreTapped"
+                        Style="{StaticResource BottomNavButtonStyle}"
+                        AutomationId="BottomNavMoreButton"
+                        SemanticProperties.Description="More"
+                        SemanticProperties.Hint="Navigate to the More section" />
                 <VerticalStackLayout InputTransparent="True" Spacing="2"
-                                     HorizontalOptions="Center" VerticalOptions="Center">
+                                     HorizontalOptions="Fill" VerticalOptions="Center">
                     <Image x:Name="MoreIcon" Source="more_dots.svg"
-                           WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" />
+                           WidthRequest="24" HeightRequest="24" Aspect="AspectFit"
+                           HorizontalOptions="Center" />
                     <Label x:Name="MoreLabel" Text="More" FontFamily="InterSemiBold" FontSize="10"
-                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center"
-                           LineBreakMode="NoWrap" HorizontalTextAlignment="Center" />
+                           TextColor="{StaticResource BrushText}" HorizontalOptions="Fill"
+                           LineBreakMode="NoWrap" MaxLines="1" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Grid>
-
         </Grid>
     </Border>
 </ContentView>
