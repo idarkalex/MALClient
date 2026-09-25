@@ -67,18 +67,20 @@ Get the latest signed APK from [Releases](https://github.com/idarkalex/MALClient
 * And much more!
 
 ### Compilation
-No local build required: the signed APK is built automatically by GitHub Actions
-(`.github/workflows/build-android.yml`) on every push to `main` and on pull requests,
-and every `v*` tag additionally publishes a GitHub Release with the APK attached.
+The Android app is a .NET 8 MAUI single project. The active solution is `MALPlus.sln`;
+the legacy Xamarin projects are not part of the build.
+Use the `MALPlus/MALPlus.csproj` project with the .NET MAUI Android workload, or let
+GitHub Actions build the signed APK on every push to `main` or `maui-migration`.
+Every `v*` tag additionally publishes a GitHub Release with the APK attached.
 Grab the latest build from [Releases](https://github.com/idarkalex/MALClient/releases).
 
 ### "Protocol"
 
 If you'd like for some reason to launch my app externally you can do so by using this protocol:
 ```
-malclient://<your everyday MAL link>
+malplus://<your everyday MAL link>
 ```
-List of all accepted urls can be found [here](MALClient.XShared/Utils/MalLinkParser.cs)
+List of all accepted urls can be found [here](MALPlus.Core/XShared/Utils/MalLinkParser.cs)
 
 ### Icon
 

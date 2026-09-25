@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [main, v2]
+    branches: [main, maui-migration]
     tags: ['v*']
     paths-ignore:
       - '**/*.md'
@@ -24,22 +24,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install MAUI Android workload
+        shell: pwsh
+        run: dotnet workload install maui-android
+
       - name: Cache NuGet packages
         id: cache-nuget
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}\packages
-          key: nuget-${{ hashFiles('**/packages.config') }}-v3
+           path: ${{ github.workspace }}\.nuget\packages
+           key: nuget-${{ hashFiles('**/*.csproj') }}-v4
 
       - name: Cache Android SDK platforms
         id: cache-sdk
         uses: actions/cache@v4
         with:
           path: |
-            C:\Program Files (x86)\Android\android-sdk\platforms\android-28
-            C:\Program Files (x86)\Android\android-sdk\platforms\android-31
-            C:\Program Files (x86)\Android\android-sdk\platforms\android-33
-            C:\Program Files (x86)\Android\android-sdk\build-tools\34.0.0
+             C:\Program Files (x86)\Android\android-sdk\platforms\android-34
+             C:\Program Files (x86)\Android\android-sdk\build-tools\34.0.0
           key: android-sdk-platforms-1
 
       - name: Setup JDK 17
@@ -48,29 +55,12 @@ jobs:
           distribution: microsoft
           java-version: 17
 
-      - name: Install Xamarin Android SDK (if missing)
-        shell: pwsh
-        run: |
-          $vswhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
-          $vsPath = & $vswhere -latest -products * -property installationPath
-          Write-Host "VS Path: $vsPath"
-          $xamarinTargets = "$vsPath\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets"
-          if (Test-Path $xamarinTargets) {
-            Write-Host "Xamarin already present, skipping install"
-          } else {
-            $installer = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
-            & $installer modify --installPath "$vsPath" --add Microsoft.VisualStudio.Workload.NetCrossPlat --add Component.Xamarin --quiet --norestart --wait
-            $exitCode = $LASTEXITCODE
-            Write-Host "Installer exit code: $exitCode"
-            if ($exitCode -ne 0) { throw "Installer failed with exit code $exitCode" }
-          }
-
       - name: Install Android SDK platforms (if missing)
         shell: pwsh
         run: |
           Write-Host "SDK cache hit: ${{ steps.cache-sdk.outputs.cache-hit }}"
           $sdk = "C:\Program Files (x86)\Android\android-sdk"
-          $required = @("platforms\android-28", "platforms\android-31", "platforms\android-33", "build-tools\34.0.0")
+           $required = @("platforms\android-34", "build-tools\34.0.0")
           $missing = $required | Where-Object { -not (Test-Path (Join-Path $sdk $_)) }
           if (-not $missing) {
             Write-Host "Android platforms already present, skipping install"
@@ -89,7 +79,7 @@ jobs:
             }
             Write-Host "Using sdkmanager: $($sdkmanager.FullName)"
             "y" | & $sdkmanager.FullName --licenses 2>&1 | Out-Null
-            & $sdkmanager.FullName --install "platforms;android-28" "platforms;android-31" "platforms;android-33" "build-tools;34.0.0" 2>&1 | Out-Null
+             & $sdkmanager.FullName --install "platforms;android-34" "build-tools;34.0.0" 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "sdkmanager install failed" }
             Write-Host "Installed platforms:"
             Get-ChildItem "$sdk\platforms" -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
@@ -98,14 +88,11 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
-
       - name: Restore NuGet packages
         shell: pwsh
         run: |
           Write-Host "NuGet cache hit: ${{ steps.cache-nuget.outputs.cache-hit }}"
-          nuget restore MALClient.sln
+          dotnet restore MALPlus.sln
 
       - name: Prepare keystore for in-build signing
         if: env.ANDROID_KEYSTORE_BASE64 != ''
@@ -135,10 +122,14 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           $buildArgs = @(
-            "MALClient.Android\MALClient.Android.csproj",
+            "MALPlus\MALPlus.csproj",
             "/t:SignAndroidPackage",
             "/p:Configuration=Release",
-            "/p:Platform=AnyCPU",
+            "/p:RuntimeIdentifier=android-arm64",
+            "/p:AndroidPackageFormats=apk",
+            "/p:AndroidSdkDirectory=C:\Program Files (x86)\Android\android-sdk",
+            "/p:JavaSdkDirectory=C:\Program Files (x86)\Android\openjdk\jdk-17.0.14",
+            "/p:EmbedAssembliesIntoApk=true",
             "/m",
             "/p:UseSharedCompilation=true"
           )
@@ -192,12 +183,12 @@ jobs:
         run: |
           $logFile = "$env:RUNNER_TEMP\msbuild.txt"
 
-          $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*-Signed.apk" } | Select-Object -First 1
+          $apk = Get-ChildItem -Path "MALPlus\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*-Signed.apk" } | Select-Object -First 1
           if (-not $apk) {
-            $apk = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1
+            $apk = Get-ChildItem -Path "MALPlus\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1
           }
           if (-not $apk) {
-            Write-Host "##[error]No APK in MALClient.Android\bin"
+            Write-Host "##[error]No APK in MALPlus\bin"
             if (Test-Path $logFile) {
               Get-Content $logFile -Tail 6 | ForEach-Object { Write-Host "##[error]LOG: $_" }
             }
@@ -208,15 +199,15 @@ jobs:
           if ($apk.FullName -ne $finalPath) {
             Copy-Item -Path $apk.FullName -Destination $finalPath -Force
           }
-          Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue |
+          Get-ChildItem -Path "MALPlus\bin" -Recurse -Filter "*.apk" -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -ne $finalPath } | Remove-Item -Force -ErrorAction SilentlyContinue
           Write-Host "Found APK: $($apk.FullName)"
           Write-Host "APK size (MB): $([math]::Round((Get-Item $finalPath).Length / 1MB, 2))"
           "apk_path=$finalPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-          $aab = Get-ChildItem -Path "MALClient.Android\bin" -Recurse -Filter "*.aab" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $aab = Get-ChildItem -Path "MALPlus\bin" -Recurse -Filter "*.aab" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $aab) {
-            Write-Host "##[warning]No AAB produced in MALClient.Android\bin"
+            Write-Host "##[warning]No AAB produced in MALPlus\bin"
           } else {
             Write-Host "Found AAB: $($aab.FullName)"
             "aab_path=$($aab.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
@@ -226,7 +217,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: MALClient-Android-Release
+          name: MALPlus-Android-Release
           path: ${{ steps.apk.outputs.apk_path }}
           if-no-files-found: error
 
@@ -234,7 +225,7 @@ jobs:
         if: success() && steps.apk.outputs.aab_path != ''
         uses: actions/upload-artifact@v4
         with:
-          name: MALClient-Android-aab
+          name: MALPlus-Android-aab
           path: ${{ steps.apk.outputs.aab_path }}
           if-no-files-found: error
 
@@ -252,22 +243,22 @@ jobs:
       - name: Verify versionName matches tag
         shell: bash
         run: |
-          versionName=$(grep -oP 'android:versionName="\K[^"]+' MALClient.Android/Properties/AndroidManifest.xml)
-          tag="${GITHUB_REF_NAME#v}"
-          echo "versionName=$versionName tag=$tag"
-          if [ -z "$versionName" ]; then
-            echo "::error::Could not read android:versionName from AndroidManifest.xml"
-            exit 1
-          fi
-          if [ "$versionName" != "$tag" ]; then
-            echo "::error::versionName ($versionName) does not match release tag ($tag). Bump the manifest (versionName + versionCode) and commit before tagging."
-            exit 1
-          fi
+           versionName=$(grep -oP '<ApplicationDisplayVersion>\K[^<]+' MALPlus/MALPlus.csproj)
+           tag="${GITHUB_REF_NAME#v}"
+           echo "versionName=$versionName tag=$tag"
+           if [ -z "$versionName" ]; then
+             echo "::error::Could not read ApplicationDisplayVersion from MALPlus/MALPlus.csproj"
+             exit 1
+           fi
+           if [ "$versionName" != "$tag" ]; then
+             echo "::error::versionName ($versionName) does not match release tag ($tag). Bump the project version and commit before tagging."
+             exit 1
+           fi
 
       - name: Download APK artifact
         uses: actions/download-artifact@v4
         with:
-          name: MALClient-Android-Release
+          name: MALPlus-Android-Release
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -218,8 +218,8 @@
                            TextColor="{StaticResource BrushText}" />
                     <Label Text="MALClient fork by idarkalex, ported to .NET MAUI"
                            FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
-                    <Label Text="Built on the v2 Xamarin.Android codebase"
-                           FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                     <Label Text="Built with .NET MAUI"
+                            FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>
