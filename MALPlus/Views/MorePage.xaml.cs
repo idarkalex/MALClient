@@ -1,7 +1,6 @@
 using MALClient.Models.Enums;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Comm.Profile;
-using Microsoft.Maui.Controls.Shapes;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -63,13 +62,9 @@ public partial class MorePage : ContentPage
                 ProfileUsername.Text = Credentials.UserName;
                 ProfileCompleted.IsVisible = false;
 
-                var cacheDuration = TimeSpan.FromMinutes(10);
-                ProfileImage.Source = new UriImageSource
-                {
-                    Uri = new Uri($"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.webp"),
-                    CachingEnabled = true,
-                    CacheValidity = cacheDuration
-                };
+                // The profile HTML is the only reliable source: an account with no
+                // picture has no <img> in user-image, and the CDN id URL 404s.
+                SetProfileImage(null);
 
                 // Load profile data from cache
                 try
@@ -77,7 +72,7 @@ public partial class MorePage : ContentPage
                     var data = await DataCache.RetrieveProfileData(Credentials.UserName);
                     if (data?.User?.ImgUrl != null)
                     {
-                        ProfileImage.Source = new UriImageSource { Uri = new Uri(data.User.ImgUrl), CachingEnabled = true };
+                        SetProfileImage(data.User.ImgUrl);
                         if (data.AnimeCompleted > 0 || data.MangaCompleted > 0)
                         {
                             ProfileCompleted.Text = $"{data.AnimeCompleted} Completed";
@@ -98,7 +93,7 @@ public partial class MorePage : ContentPage
             {
                 ProfileUsername.Text = "Log in";
                 ProfileCompleted.IsVisible = false;
-                ProfileImage.Source = null;
+                SetProfileImage(null);
             }
         }
         catch (Exception ex)
@@ -107,13 +102,39 @@ public partial class MorePage : ContentPage
         }
     }
 
+    private void SetProfileImage(string url)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+            ProfileImage.Source = new UriImageSource
+            {
+                Uri = new Uri(url),
+                CachingEnabled = true,
+                CacheValidity = TimeSpan.FromMinutes(10)
+            };
+            ProfileImage.IsVisible = true;
+            ProfileFallbackIcon.IsVisible = false;
+        }
+        else
+        {
+            ProfileImage.Source = null;
+            ProfileImage.IsVisible = false;
+            ProfileFallbackIcon.IsVisible = true;
+        }
+    }
+
     private async void RefreshProfileCacheInBackground()
     {
         try
         {
             var fresh = await new ProfileQuery(Credentials.UserName).GetProfileData(false);
-            if (fresh?.User?.ImgUrl != null)
-                ProfileImage.Source = new UriImageSource { Uri = new Uri(fresh.User.ImgUrl), CachingEnabled = true };
+            if (!string.IsNullOrEmpty(fresh?.User?.ImgUrl))
+                SetProfileImage(fresh.User.ImgUrl);
+            if (fresh != null && (fresh.AnimeCompleted > 0 || fresh.MangaCompleted > 0))
+            {
+                ProfileCompleted.Text = $"{fresh.AnimeCompleted} Completed";
+                ProfileCompleted.IsVisible = true;
+            }
         }
         catch (Exception) { }
     }
@@ -122,27 +143,27 @@ public partial class MorePage : ContentPage
 
     private void OnAnimeListTapped(object sender, TappedEventArgs e)
     {
-        TogglePanel(AnimeListPanel, AnimeListArrow, v => _animeListPanelExpanded = v, _animeListPanelExpanded);
+        TogglePanel(AnimeListPanel, AnimeListArrow, AnimeListDivider, v => _animeListPanelExpanded = v, _animeListPanelExpanded);
     }
 
     private void OnMangaListTapped(object sender, TappedEventArgs e)
     {
-        TogglePanel(MangaListPanel, MangaListArrow, v => _mangaListPanelExpanded = v, _mangaListPanelExpanded);
+        TogglePanel(MangaListPanel, MangaListArrow, MangaListDivider, v => _mangaListPanelExpanded = v, _mangaListPanelExpanded);
     }
 
     private void OnTopAnimeTapped(object sender, TappedEventArgs e)
     {
-        TogglePanel(TopAnimePanel, TopAnimeArrow, v => _topAnimePanelExpanded = v, _topAnimePanelExpanded);
+        TogglePanel(TopAnimePanel, TopAnimeArrow, TopAnimeDivider, v => _topAnimePanelExpanded = v, _topAnimePanelExpanded);
     }
 
     private void OnTopMangaTapped(object sender, TappedEventArgs e)
     {
-        TogglePanel(TopMangaPanel, TopMangaArrow, v => _topMangaPanelExpanded = v, _topMangaPanelExpanded);
+        TogglePanel(TopMangaPanel, TopMangaArrow, TopMangaDivider, v => _topMangaPanelExpanded = v, _topMangaPanelExpanded);
     }
 
     private void OnAdaptedTapped(object sender, TappedEventArgs e)
     {
-        TogglePanel(AdaptedPanel, AdaptedArrow, v => _adaptedPanelExpanded = v, _adaptedPanelExpanded);
+        TogglePanel(AdaptedPanel, AdaptedArrow, null, v => _adaptedPanelExpanded = v, _adaptedPanelExpanded);
     }
 
     private void OnSeasonalTapped(object sender, TappedEventArgs e)
@@ -178,6 +199,16 @@ public partial class MorePage : ContentPage
     private void OnForumsTapped(object sender, TappedEventArgs e)
     {
         NavigateTo(PageIndex.PageForumIndex, null);
+    }
+
+    private void OnWallpapersTapped(object sender, TappedEventArgs e)
+    {
+        NavigateTo(PageIndex.PageWallpapers, null);
+    }
+
+    private void OnClubsTapped(object sender, TappedEventArgs e)
+    {
+        NavigateTo(PageIndex.PageClubIndex, null);
     }
 
     private void OnMessagingTapped(object sender, TappedEventArgs e)
@@ -261,23 +292,35 @@ public partial class MorePage : ContentPage
 
     #region Panel Animation
 
-    private void TogglePanel(Grid panel, Label arrow, System.Action<bool> setExpanded, bool currentExpanded)
+    private void TogglePanel(Grid panel, Image arrow, BoxView divider, System.Action<bool> setExpanded, bool currentExpanded)
     {
         if (currentExpanded)
         {
-            AnimateCollapse(panel, arrow);
+            AnimateCollapse(panel, arrow, divider);
             setExpanded(false);
         }
         else
         {
-            AnimateExpand(panel, arrow);
+            AnimateExpand(panel, arrow, divider);
             setExpanded(true);
         }
     }
 
-    private void AnimateExpand(Grid panel, Label arrow)
+    private static void ApplyPanelState(Grid panel, Image arrow, BoxView divider, bool expanded)
+    {
+        panel.IsVisible = expanded;
+        panel.Opacity = expanded ? 1 : 0;
+        panel.TranslationY = 0;
+        arrow.Rotation = expanded ? 180 : 0;
+        if (divider != null)
+            divider.IsVisible = expanded;
+    }
+
+    private void AnimateExpand(Grid panel, Image arrow, BoxView divider)
     {
         panel.IsVisible = true;
+        if (divider != null)
+            divider.IsVisible = true;
         panel.Opacity = 0;
         panel.TranslationY = -20;
         
@@ -293,11 +336,16 @@ public partial class MorePage : ContentPage
         rotateAnim.Commit(arrow, "RotateExpand", 16, 180, Easing.CubicOut);
     }
 
-    private void AnimateCollapse(Grid panel, Label arrow)
+    private void AnimateCollapse(Grid panel, Image arrow, BoxView divider)
     {
         var animation = new Animation(
             d => panel.Opacity = d, 1, 0, Easing.CubicIn);
-        animation.Commit(panel, "Collapse", 16, 160, Easing.CubicIn, finished: (d, b) => panel.IsVisible = false);
+        animation.Commit(panel, "Collapse", 16, 160, Easing.CubicIn, finished: (d, b) =>
+        {
+            panel.IsVisible = false;
+            if (divider != null)
+                divider.IsVisible = false;
+        });
 
         var translateAnim = new Animation(
             d => panel.TranslationY = d, 0, -20, Easing.CubicIn);
@@ -313,9 +361,6 @@ public partial class MorePage : ContentPage
 
     private void PopulateStatusPanel(Grid panel, bool manga)
     {
-        panel.RowDefinitions.Clear();
-        panel.Children.Clear();
-
         var statusValues = new[] { AnimeStatus.Watching, AnimeStatus.Completed, AnimeStatus.OnHold, AnimeStatus.Dropped, AnimeStatus.PlanToWatch };
         var workMode = manga ? AnimeListWorkModes.Manga : AnimeListWorkModes.Anime;
         var items = new List<(string Label, Action OnClick)>
@@ -339,44 +384,28 @@ public partial class MorePage : ContentPage
         panel.RowDefinitions.Clear();
         panel.Children.Clear();
 
-        // Each item gets its own row; dividers occupy separate rows so they don't paint
-        // over the border of the next item.
+        // The panels are single-column grids; each item is a 44dp row with a
+        // divider underneath, indented like the reference layout.
         for (int i = 0; i < items.Count; i++)
         {
-            panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        }
-        for (int i = 0; i < items.Count - 1; i++)
-        {
-            panel.RowDefinitions.Add(new RowDefinition { Height = 1 });
-        }
-
-        for (int i = 0; i < items.Count; i++)
-        {
-            panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var item = items[i];
 
-            var row = new Border
+            var row = new Grid
             {
-                BackgroundColor = Colors.Transparent,
-                Stroke = (Color)Application.Current.Resources["EmBorder"],
-                StrokeThickness = 1,
-                StrokeShape = new RoundRectangle { CornerRadius = 8 },
-                Margin = new Thickness(16, 0, 16, 0),
-                Padding = new Thickness(16, 8)
+                HeightRequest = 44,
+                ColumnDefinitions = new ColumnDefinitionCollection
+                {
+                    new ColumnDefinition { Width = GridLength.Star }
+                }
             };
-
-            var rowGrid = new Grid { ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = GridLength.Star } } };
-            var txt = new Label
+            row.Add(new Label
             {
                 Text = item.Label,
                 FontFamily = "Inter",
-                FontSize = 14,
+                FontSize = 16,
                 TextColor = (Color)Application.Current.Resources["BrushText"],
-                VerticalOptions = LayoutOptions.Center,
-                Padding = new Thickness(16, 0, 0, 0)
-            };
-            rowGrid.Add(txt, 1, 0);
-            row.Content = rowGrid;
+                VerticalOptions = LayoutOptions.Center
+            }, 0, 0);
 
             var tapGesture = new TapGestureRecognizer();
             tapGesture.Tapped += (s, e) => item.OnClick();
@@ -386,13 +415,11 @@ public partial class MorePage : ContentPage
 
             if (i < items.Count - 1)
             {
-                var divider = new BoxView
+                panel.Add(new BoxView
                 {
                     HeightRequest = 1,
-                    Color = (Color)Application.Current.Resources["EmBorder"],
-                    Margin = new Thickness(16, 0, 16, 0)
-                };
-                panel.Add(divider, 0, i * 2 + 1);
+                    Color = Color.FromArgb("#1AFFFFFF")
+                }, 0, i * 2 + 1);
             }
         }
     }
@@ -422,39 +449,25 @@ public partial class MorePage : ContentPage
         try
         {
             var ui = MALClient.XShared.ViewModels.Main.FragmentUiState.More;
-            if (ui != null)
-            {
-                if (!_animeListPanelExpanded && ui.TryGetValue("AnimeList", out var a) && a is bool ab && ab)
-                {
-                    _animeListPanelExpanded = true;
-                    AnimeListPanel.IsVisible = true;
-                    AnimeListArrow.Rotation = 180;
-                }
-                if (!_mangaListPanelExpanded && ui.TryGetValue("MangaList", out var ml) && ml is bool mlb && mlb)
-                {
-                    _mangaListPanelExpanded = true;
-                    MangaListPanel.IsVisible = true;
-                    MangaListArrow.Rotation = 180;
-                }
-                if (!_topAnimePanelExpanded && ui.TryGetValue("TopAnime", out var ta) && ta is bool tab && tab)
-                {
-                    _topAnimePanelExpanded = true;
-                    TopAnimePanel.IsVisible = true;
-                    TopAnimeArrow.Rotation = 180;
-                }
-                if (!_topMangaPanelExpanded && ui.TryGetValue("TopManga", out var tm) && tm is bool tmb && tmb)
-                {
-                    _topMangaPanelExpanded = true;
-                    TopMangaPanel.IsVisible = true;
-                    TopMangaArrow.Rotation = 180;
-                }
-                if (!_adaptedPanelExpanded && ui.TryGetValue("Adapted", out var ad) && ad is bool adb && adb)
-                {
-                    _adaptedPanelExpanded = true;
-                    AdaptedPanel.IsVisible = true;
-                    AdaptedArrow.Rotation = 180;
-                }
-            }
+            if (ui == null)
+                return;
+
+            if (ui.TryGetValue("AnimeList", out var a) && a is bool ab && ab)
+                _animeListPanelExpanded = true;
+            if (ui.TryGetValue("MangaList", out var ml) && ml is bool mlb && mlb)
+                _mangaListPanelExpanded = true;
+            if (ui.TryGetValue("TopAnime", out var ta) && ta is bool tab && tab)
+                _topAnimePanelExpanded = true;
+            if (ui.TryGetValue("TopManga", out var tm) && tm is bool tmb && tmb)
+                _topMangaPanelExpanded = true;
+            if (ui.TryGetValue("Adapted", out var ad) && ad is bool adb && adb)
+                _adaptedPanelExpanded = true;
+
+            ApplyPanelState(AnimeListPanel, AnimeListArrow, AnimeListDivider, _animeListPanelExpanded);
+            ApplyPanelState(MangaListPanel, MangaListArrow, MangaListDivider, _mangaListPanelExpanded);
+            ApplyPanelState(TopAnimePanel, TopAnimeArrow, TopAnimeDivider, _topAnimePanelExpanded);
+            ApplyPanelState(TopMangaPanel, TopMangaArrow, TopMangaDivider, _topMangaPanelExpanded);
+            ApplyPanelState(AdaptedPanel, AdaptedArrow, null, _adaptedPanelExpanded);
         }
         catch { }
     }

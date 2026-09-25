@@ -22,8 +22,15 @@
                 <CollectionView ItemsSource="{Binding Topics}" SelectionMode="Single"
                                 SelectionChanged="OnTopicTapped">
                     <CollectionView.EmptyView>
-                        <Label Text="No topics" FontFamily="Inter" FontSize="13"
-                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                            <Label Text="Could not load this board" FontFamily="InterSemiBold" FontSize="14"
+                                   TextColor="{StaticResource EmAccent}" HorizontalOptions="Center" />
+                            <Label Text="MyAnimeList is not returning the topic list to the app right now."
+                                   FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF"
+                                   HorizontalOptions="Center" />
+                            <Label Text="Pull down to retry" FontFamily="Inter" FontSize="12"
+                                   TextColor="#80FFFFFF" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>

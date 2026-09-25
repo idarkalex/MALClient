@@ -379,9 +379,18 @@ namespace MALClient.XShared.Comm.Profile
                         {
 
                         }
-                        current.User.ImgUrl =
-                            doc.FirstOfDescendantsWithClass("div", "user-image mb8").Descendants("img").First()
-                                .Attributes["data-src"].Value;
+                        try
+                        {
+                            var avatar = doc.FirstOfDescendantsWithClass("div", "user-image mb8")
+                                .Descendants("img").FirstOrDefault();
+                            var avatarUrl = avatar?.Attributes["data-src"]?.Value
+                                             ?? avatar?.Attributes["src"]?.Value;
+                            if (!string.IsNullOrEmpty(avatarUrl))
+                                current.User.ImgUrl = avatarUrl;
+                        }
+                        catch (Exception)
+                        {
+                        }
 
                     }
                     catch (Exception)

@@ -1,4 +1,4 @@
-using MALClient.Models.Enums;
+﻿using MALClient.Models.Enums;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
@@ -15,7 +15,7 @@ public partial class ArticlesPage : ContentPage
 
     private MalArticlesViewModel Vm => (MalArticlesViewModel)BindingContext;
 
-    // EM theme CSS (Electric Midnight) — matches v2's "CssManager.GetArticleBody()".
+    // EM theme CSS (Electric Midnight) â€” matches v2's "CssManager.GetArticleBody()".
     private const string EmCss = @"
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
 background:#051522;color:#d4e4f7;line-height:1.6;padding:16px;margin:0;font-size:14px;}
@@ -39,6 +39,7 @@ pre,code{background:#0a1d2e;padding:6px 10px;border-radius:4px;font-size:12px;co
     {
         InitializeComponent();
         BindingContext = ViewModelLocator.MalArticles;
+        Vm.OpenWebView += OnOpenWebView;
     }
 
     protected override async void OnAppearing()
@@ -115,7 +116,6 @@ pre,code{background:#0a1d2e;padding:6px 10px;border-radius:4px;font-size:12px;co
             {
                 ((CollectionView)sender).SelectedItem = null;
                 Vm.LoadArticleCommand.Execute(item);
-                _ = LoadArticleHtmlAsync(item);
             }
         }
         catch (Exception ex)
@@ -124,43 +124,28 @@ pre,code{background:#0a1d2e;padding:6px 10px;border-radius:4px;font-size:12px;co
         }
     }
 
-    private async Task LoadArticleHtmlAsync(MalNewsUnitModel item)
+    private void OnOpenWebView(string html, MalNewsUnitModel model)
     {
         try
         {
-            // wait for PendingArticle to be set
-            for (int i = 0; i < 60; i++)
-            {
-                await Task.Delay(200);
-                if (Vm.PendingArticle != null && Vm.PendingArticle.Id == item.Id) break;
-            }
-            if (Vm.PendingArticle == null) return;
-
-            string? html = null;
-            try
-            {
-                html = await MALClient.XShared.Comm.Articles.AnnNewsQuery.GetAnnArticleHtml(
-                    Vm.PendingArticle.Url, Vm.PendingArticle.Id);
-            }
-            catch { }
-            if (string.IsNullOrEmpty(html)) return;
-
-            // MAL or ANN: base URL matters for relative images. For now default to myanimelist
-            // (both MAL and ANN content uses absolute URLs mostly).
-            var baseUrl = Vm.PendingArticle.Source == "ANN"
+            // Relative images need the right base URL: MAL content lives on
+            // myanimelist.net and ANN content on animenewsnetwork.com.
+            var baseUrl = model?.Source == "ANN"
                 ? "https://www.animenewsnetwork.com"
                 : "https://myanimelist.net";
 
             var wrapped = "<html><head><meta charset='utf-8'/>" +
                           "<meta name='viewport' content='width=device-width,initial-scale=1'/>" +
                           "<style>" + EmCss + "</style></head><body>" + html + "</body></html>";
-            ArticleWebView.Source = new HtmlWebViewSource { Html = wrapped, BaseUrl = baseUrl };
+            MainThread.BeginInvokeOnMainThread(() =>
+                ArticleWebView.Source = new HtmlWebViewSource { Html = wrapped, BaseUrl = baseUrl });
         }
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS article html load failed: " + ex.Message);
         }
     }
+
 
     private void OnBackToList(object sender, EventArgs e)
     {

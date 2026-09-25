@@ -9,6 +9,10 @@
             <Color x:Key="EmAccent">#0066FF</Color>
             <Color x:Key="EmBorder">#1E3A52</Color>
             <Color x:Key="BrushText">#FFFFFF</Color>
+            <Color x:Key="BrushTextSecondary">#99FFFFFF</Color>
+            <x:Double x:Key="EmTitleMd">18</x:Double>
+            <x:Double x:Key="EmBodyMd">16</x:Double>
+            <x:Double x:Key="EmLabelCaps">12</x:Double>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

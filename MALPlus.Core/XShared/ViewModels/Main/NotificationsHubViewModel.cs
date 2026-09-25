@@ -53,9 +53,12 @@ namespace MALClient.XShared.ViewModels.Main
                                                     {
                                                         Notifications.Remove(notification);
                                                         AllNotifications.Remove(notification);
-                                                        NotificationGroups.First(
-                                                                model => model.NotificationType == notification.Type)
-                                                            .NotificationsCount--;
+                                                        // NotificationGroups omits some types, so First()
+                                                        // threw for e.g. a Generic notification.
+                                                        var group = NotificationGroups.FirstOrDefault(
+                                                            model => model.NotificationType == notification.Type);
+                                                        if (group != null)
+                                                            group.NotificationsCount--;
                                                     }
                                                     else
                                                     {
@@ -214,7 +217,10 @@ namespace MALClient.XShared.ViewModels.Main
         private void UpdateNotificationSet()
         {
             if (CurrentNotificationType != MalNotificationsTypes.Generic)
-                Notifications = new ObservableCollection<MalNotification>(AllNotifications.Where(notification => notification.Type == CurrentNotificationType));
+                // MalNotificationsTypes is a [Flags] enum and the "Replies"/"Others"
+                // tabs pass a combined mask, so equality never matched and those tabs
+                // were permanently empty.
+                Notifications = new ObservableCollection<MalNotification>(AllNotifications.Where(notification => (notification.Type & CurrentNotificationType) != 0));
             else
                 Notifications = new ObservableCollection<MalNotification>(AllNotifications);
         }

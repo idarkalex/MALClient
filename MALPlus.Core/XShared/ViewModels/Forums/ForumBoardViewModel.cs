@@ -103,6 +103,18 @@ namespace MALClient.XShared.ViewModels.Forums
             }
         }
 
+        private bool _loadErrorVisibility;
+
+        public bool LoadErrorVisibility
+        {
+            get { return _loadErrorVisibility; }
+            set
+            {
+                _loadErrorVisibility = value;
+                RaisePropertyChanged(() => LoadErrorVisibility);
+            }
+        }
+
         private bool _newTopicButtonVisibility;
 
         public bool NewTopicButtonVisibility
@@ -395,10 +407,17 @@ namespace MALClient.XShared.ViewModels.Forums
                     CurrentPage = page;
                 }
                 EmptyNoticeVisibility = !Topics.Any();
+                // MAL serves its board markup empty to the .NET/Android client, so an
+                // empty result is far more likely a blocked load than a real empty
+                // board. Say so instead of claiming there are no topics.
+                LoadErrorVisibility = !Topics.Any();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //no shuch page
+                // This was an empty catch, so a scraper failure rendered as a plain
+                // "No topics" with no way to tell it apart from a genuinely empty board.
+                global::System.Diagnostics.Debug.WriteLine(
+                    $"MALPLUS forum board load FAILED: {PrevArgs?.WorkMode} {ex.GetType().Name} {ex.Message}");
             }
             _initizalizing = false;
             LoadingTopics = false;

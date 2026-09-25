@@ -212,6 +212,9 @@ namespace MALClient.XShared.ViewModels.Main
         {
             LoadingVisibility = true;
             ArticleIndexVisibility = false;
+            // The reader grid is bound to this. It was never assigned anywhere, so
+            // tapping an article could never open it.
+            PendingArticle = data;
             try
             {
                 ViewModelLocator.GeneralMain.CurrentStatus = data.Title;

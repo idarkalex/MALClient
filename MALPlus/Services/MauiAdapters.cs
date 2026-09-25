@@ -401,11 +401,15 @@ public class MauiDataCache : IDataCache
 
     public Task ClearApiRelatedCache()
     {
+        // These were no-ops, so the "Clear caches" button deleted nothing.
+        MALClient.XShared.Utils.DataCache.ClearApiRelatedCache();
+        MALClient.XShared.Utils.DataCache.ClearAnimeListData();
         return Task.CompletedTask;
     }
 
     public Task ClearAnimeListData()
     {
+        MALClient.XShared.Utils.DataCache.ClearAnimeListData();
         return Task.CompletedTask;
     }
 }

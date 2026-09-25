@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -117,100 +117,137 @@ namespace MALClient.XShared.Comm.Forums
 
 
             var output = new ForumBoardContent();
-            var raw = await GetRequestResponse();
+            var raw = await GetAnonymousRequestResponse(Request);
             if (string.IsNullOrEmpty(raw))
+            {
+                global::System.Diagnostics.Debug.WriteLine(
+                    $"MALPLUS forum board EMPTY: url={Request} board={_board} animeId={_animeId} club={_clubId} page={_page}");
                 return new ForumBoardContent();
+            }
             var doc = new HtmlDocument();
             doc.LoadHtml(raw);
 
+            var topicRows = doc.DocumentNode.Descendants("tr")
+                .Where(node => node.Attributes.Contains("data-topic-id"))
+                .ToList();
+            if (topicRows.Count == 0)
+            {
+                var topicContainer = doc.DocumentNode.Descendants("table")
+                    .FirstOrDefault(node => node.Attributes.Contains("id") &&
+                                             node.Attributes["id"].Value == "forumTopics");
+                if (topicContainer != null)
+                    topicRows = topicContainer.Descendants("tr").Skip(1).ToList();
+            }
+
+            global::System.Diagnostics.Debug.WriteLine(
+                $"MALPLUS forum: url={Request} len={raw.Length} tables={doc.DocumentNode.Descendants("table").Count()} rows={topicRows.Count} hasForumTopics={raw.Contains("forumTopics")}");
+
             try
             {
-                try
-                {
-                    output.Pages = lastPage ??
-                                   int.Parse(
-                                       doc.FirstOfDescendantsWithClass("span", "di-ib")
-                                           .Descendants("a")
-                                           .Last()
-                                           .Attributes["href"]
-                                           .Value.Split('=').Last())/50;
-                }
-                catch (Exception)
-                {
-                    output.Pages = 0;
-                }
+                output.Pages = lastPage ?? ReadPageCount(doc);
 
-
-                var topicContainer =
-                doc.DocumentNode.Descendants("table")
-                    .First(node => node.Attributes.Contains("id") && node.Attributes["id"].Value == "forumTopics");
-
-                foreach (var topicRow in topicContainer.Descendants("tr").Skip(1)) //skip forum table header
+                var failed = 0;
+                foreach (var topicRow in topicRows)
                 {
                     try
                     {
                         output.ForumTopicEntries.Add(ParseHtmlToTopic(topicRow));
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        //hatml
+                        // One malformed row used to vanish silently and, with every row
+                        // failing, the board rendered as "No topics" with no clue why.
+                        failed++;
+                        if (failed <= 2)
+                            global::System.Diagnostics.Debug.WriteLine(
+                                $"MALPLUS forum row parse failed: {ex.GetType().Name} {ex.Message}");
                     }
 
                 }
+                global::System.Diagnostics.Debug.WriteLine(
+                    $"MALPLUS forum parsed {output.ForumTopicEntries.Count}/{topicRows.Count} pages={output.Pages} (failed {failed})");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //
+                global::System.Diagnostics.Debug.WriteLine(
+                    $"MALPLUS forum parse failed: url={Request} {ex.GetType().Name} {ex.Message}");
             }
 
-            if (_clubId == null)
-            {
-                if (_animeId == 0)
+            if (output.ForumTopicEntries.Count == 0)
+                return output; // never cache an empty result
+
+            CacheOutput(output);
+            return output;
+        }
+
+        /// <summary>
+        ///     Reads the page count from the board pager. The pager is the row of
+        ///     "show=" links; the first span.di-ib in the document is the breadcrumb,
+        ///     which is why this used to always yield 0 pages.
+        /// </summary>
+        private static int ReadPageCount(HtmlDocument doc)
+        {
+            var shows = doc.DocumentNode.Descendants("a")
+                .Select(a => a.Attributes["href"]?.Value)
+                .Where(h => !string.IsNullOrEmpty(h) && h.Contains("show="))
+                .Select(h =>
                 {
-                    if (!_boardCache.ContainsKey(_board))
-                        _boardCache[_board] = new Dictionary<int, ForumBoardContent>();
-                    if (!_boardCache[_board].ContainsKey(_page))
-                        _boardCache[_board].Add(_page, output);
-                    else
-                        _boardCache[_board][_page] = output;
-                }
-                else
-                {
-                    if (!_animeBoardCache.ContainsKey(_animeId))
-                        _animeBoardCache[_animeId] = new Dictionary<int, ForumBoardContent>();
-                    if (!_animeBoardCache[_animeId].ContainsKey(_page))
-                        _animeBoardCache[_animeId].Add(_page, output);
-                    else
-                        _animeBoardCache[_animeId][_page] = output;
-                }
-            }
-            else
+                    var idx = h.IndexOf("show=", StringComparison.Ordinal);
+                    return int.TryParse(h.Substring(idx + 5).Split('&')[0], out var v) ? (int?)v : null;
+                })
+                .Where(v => v.HasValue)
+                .Select(v => v!.Value)
+                .ToList();
+            if (shows.Count == 0)
+                return 0;
+            var max = shows.Max();
+            return max / 50;
+        }
+
+        private void CacheOutput(ForumBoardContent output)
+        {
+            if (_clubId != null)
             {
                 if (!_clubBoardCache.ContainsKey(_clubId))
                     _clubBoardCache[_clubId] = new Dictionary<int, ForumBoardContent>();
-                if (!_clubBoardCache[_clubId].ContainsKey(_page))
-                    _clubBoardCache[_clubId].Add(_page, output);
-                else
-                    _clubBoardCache[_clubId][_page] = output;
+                _clubBoardCache[_clubId][_page] = output;
             }
-
-
-
-            return output;
+            else if (_animeId == 0)
+            {
+                if (!_boardCache.ContainsKey(_board))
+                    _boardCache[_board] = new Dictionary<int, ForumBoardContent>();
+                _boardCache[_board][_page] = output;
+            }
+            else
+            {
+                if (!_animeBoardCache.ContainsKey(_animeId))
+                    _animeBoardCache[_animeId] = new Dictionary<int, ForumBoardContent>();
+                _animeBoardCache[_animeId][_page] = output;
+            }
         }
 
         public static ForumTopicEntry ParseHtmlToTopic(HtmlNode topicRow,int tdOffset = 0)
         {
             var current = new ForumTopicEntry();
             var tds = topicRow.Descendants("td").ToList();
+            // Guard the shape instead of trusting it: a short row used to throw and
+            // take the whole board down to "No topics".
+            if (tds.Count < 4 + tdOffset)
+                throw new ArgumentOutOfRangeException(nameof(tds), $"row has {tds.Count} cells");
 
-            current.Type = tds[1].ChildNodes[0].InnerText;
+            current.Type = tds[1].ChildNodes.Count > 0 ? tds[1].ChildNodes[0].InnerText : string.Empty;
 
-            var titleLinks = tds[1].Descendants("a").ToList();
-            var titleLink = titleLinks[0].InnerText.Length == 0 || titleLinks[0].InnerText.Contains("»") ? titleLinks[1] : titleLinks[0];
+            var titleLinks = tds[1].Descendants("a")
+                .Where(a => !string.IsNullOrEmpty(a.InnerText))
+                .ToList();
+            if (titleLinks.Count == 0)
+                throw new InvalidOperationException("row has no title link");
+            var titleLink = titleLinks[0];
 
             current.Title = WebUtility.HtmlDecode(titleLink.InnerText);
-            var link = titleLink.Attributes["href"].Value;
+            var link = titleLink.Attributes["href"]?.Value;
+            if (string.IsNullOrEmpty(link))
+                throw new InvalidOperationException("title link has no href");
             if (link.Contains("&goto="))
             {
                 var pos = link.IndexOf("&goto=");
@@ -221,13 +258,17 @@ namespace MALClient.XShared.Comm.Forums
 
 
             var spans = tds[1].Descendants("span").Where(node => !string.IsNullOrEmpty(node.InnerText)).ToList();
-            current.Op = spans[0].InnerText;
-            current.Created = spans[1].InnerText;
+            current.Op = spans.Count > 0 ? spans[0].InnerText : string.Empty;
+            current.Created = spans.Count > 1 ? spans[1].InnerText : string.Empty;
 
-            current.Replies = tds[2+tdOffset].InnerText;
+            current.Replies = tds[2 + tdOffset].InnerText;
 
-            current.LastPoster = tds[3+tdOffset].Descendants("a").First().InnerText;
-            current.LastPostDate = tds[3+tdOffset].ChildNodes.Last().InnerText;
+            var lastCell = tds[3 + tdOffset];
+            var lastLinks = lastCell.Descendants("a").Where(a => !string.IsNullOrEmpty(a.InnerText)).ToList();
+            current.LastPoster = lastLinks.Count > 0 ? lastLinks[0].InnerText : string.Empty;
+            current.LastPostDate = lastCell.ChildNodes.Count > 0
+                ? lastCell.ChildNodes.Last().InnerText
+                : string.Empty;
 
             return current;
         }

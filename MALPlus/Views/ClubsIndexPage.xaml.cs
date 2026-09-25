@@ -6,15 +6,8 @@ namespace MALPlus.Views;
 
 public partial class ClubsIndexPage : ContentPage
 {
-    private int _clubsTabIndex;
     private bool _initialized;
     private ClubIndexViewModel Vm => (ClubIndexViewModel)BindingContext;
-
-    public int ClubsTabIndex
-    {
-        get => _clubsTabIndex;
-        set { _clubsTabIndex = value; OnPropertyChanged(); }
-    }
 
     public ClubsIndexPage()
     {
@@ -84,8 +77,7 @@ public partial class ClubsIndexPage : ContentPage
 
     private void OnTabClicked(int index)
     {
-        _clubsTabIndex = index;
-        OnPropertyChanged(nameof(ClubsTabIndex));
+        Vm.ClubsTabIndex = index;
         HighlightTab(index);
     }
 

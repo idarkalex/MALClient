@@ -278,7 +278,7 @@
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
                                         <Grid ColumnDefinitions="40,*" ColumnSpacing="10">
-                                            <Image Grid.Column="0" Source="{Binding ImageUrl, Converter={StaticResource ImageConverter}}"
+                                            <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
                                                    WidthRequest="36" HeightRequest="36" Aspect="AspectFill" />
                                             <Label Grid.Column="1" Text="{Binding Name}" FontFamily="InterBold" FontSize="13"
                                                    TextColor="{StaticResource BrushText}" VerticalOptions="Center"

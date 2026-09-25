@@ -27,8 +27,13 @@
                 <CollectionView ItemsSource="{Binding Wallpapers}" SelectionMode="Single"
                                 SelectionChanged="OnWallpaperTapped">
                     <CollectionView.EmptyView>
-                        <Label Text="No wallpapers" FontFamily="Inter" FontSize="13"
-                               TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="Couldn't load wallpapers" FontFamily="InterSemiBold" FontSize="15"
+                                   TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                            <Label Text="Wallpapers come from Reddit, which may be blocking this network. Pull down to retry."
+                                   FontFamily="Inter" FontSize="13" TextColor="#80FFFFFF"
+                                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
                     </CollectionView.EmptyView>
                     <CollectionView.ItemsLayout>
                         <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="8"

@@ -301,6 +301,11 @@ namespace MALClient.XShared.ViewModels.Main
                 foreach (var emptyPage in emptyPages)
                     CalendarData.Remove(emptyPage);
 
+                // The shared item template binds Items, which the summary subclass
+                // never filled, so the Summary tab always showed "No airing today".
+                if (CalendarData[7] is CalendarSummaryPivotPage summary)
+                    summary.Items = summary.Data.SelectMany(entry => entry.Item2).ToList();
+
                 DiagnosticsReporter.Info("Calendar",
                     $"calendar build: allAiring={Settings.CalendarShowAllAiring} providerOk={ResourceLocator.AiringInfoProvider.InitializationSuccess}");
 

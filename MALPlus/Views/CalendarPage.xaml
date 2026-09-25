@@ -88,8 +88,7 @@
                                                 <!-- Add/Export buttons -->
                                                 <VerticalStackLayout Grid.Column="2" Spacing="4" VerticalOptions="Center" Padding="0,0,4,0">
                                                     <Button Text="+"
-                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:CalendarPage}}, Path=BindingContext.AddToListCommand}"
-                                                            CommandParameter="{Binding .}"
+                                                            Command="{Binding AddAnimeCommand}"
                                                             FontFamily="InterBold" FontSize="16"
                                                             BackgroundColor="#0066FF" TextColor="White"
                                                             CornerRadius="6" WidthRequest="32" HeightRequest="32" Padding="0" />

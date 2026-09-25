@@ -57,6 +57,23 @@ namespace MALClient.XShared.ViewModels.Clubs
             }
         }
 
+        private int _clubsTabIndex;
+
+        /// <summary>
+        ///     Lives here, not on the page: the tab containers bind against the
+        ///     ViewModel, and a page-level property left every tab container visible
+        ///     at once, stacking their empty views on top of each other.
+        /// </summary>
+        public int ClubsTabIndex
+        {
+            get { return _clubsTabIndex; }
+            set
+            {
+                _clubsTabIndex = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public SmartObservableCollection<MalClubEntry> Clubs
         {
             get { return _clubs; }
