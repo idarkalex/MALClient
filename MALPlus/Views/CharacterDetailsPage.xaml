@@ -132,6 +132,9 @@
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid WidthRequest="100" RowDefinitions="140,Auto" RowSpacing="4">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnAnimeographyTapped" CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
                                         <Border Grid.Row="0" WidthRequest="100" HeightRequest="140"
                                                 StrokeShape="RoundRectangle 6"
                                                 Stroke="{StaticResource EmBorder}" StrokeThickness="1">
@@ -166,6 +169,9 @@
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid WidthRequest="100" RowDefinitions="140,Auto" RowSpacing="4">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnAnimeographyTapped" CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
                                         <Border Grid.Row="0" WidthRequest="100" HeightRequest="140"
                                                 StrokeShape="RoundRectangle 6"
                                                 Stroke="{StaticResource EmBorder}" StrokeThickness="1">

@@ -1,4 +1,7 @@
 using MALClient.Models.Enums;
+using MALClient.Models.Models.Anime;
+using MALClient.Models.Models.AnimeScrapped;
+using MALClient.Models.Interfaces;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.Utils;
 using MALClient.XShared.ViewModels;
@@ -19,6 +22,7 @@ public partial class AnimeDetailsPage : ContentPage
     private bool _charactersLoaded;
     private bool _recommendationsLoaded;
     private bool _relatedLoaded;
+    private readonly Dictionary<AnimeReviewData, bool> _expandedReviews = new();
 
     public string MalId { get; set; }
     public string AnimeTitle { get; set; }
@@ -39,7 +43,54 @@ public partial class AnimeDetailsPage : ContentPage
             vm.PropertyChanged -= OnVmPropertyChanged;
             vm.PropertyChanged += OnVmPropertyChanged;
         }
+#if ANDROID
+        VideoWebView.HandlerChanged += OnVideoWebViewHandlerChanged;
+#endif
     }
+
+#if ANDROID
+    private void OnVideoWebViewHandlerChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            var platformView = VideoWebView?.Handler?.PlatformView as global::Android.Views.View;
+            if (platformView == null)
+                return;
+            VideoWebViewHelper.ConfigurePlatformView(platformView);
+            VideoWebViewHelper.Resume(platformView);
+        }
+        catch { }
+    }
+
+    private void ResumeVideoWebView()
+    {
+        try
+        {
+            var platformView = VideoWebView?.Handler?.PlatformView as global::Android.Views.View;
+            if (platformView != null)
+                VideoWebViewHelper.Resume(platformView);
+        }
+        catch { }
+    }
+
+    private static void SetSystemBars(bool video)
+    {
+        try
+        {
+            var window = Platform.CurrentActivity?.Window;
+            if (window == null)
+                return;
+            window.SetStatusBarColor(video
+                ? global::Android.Graphics.Color.Black
+                : global::Android.Graphics.Color.ParseColor("#051522"));
+            window.SetNavigationBarColor(global::Android.Graphics.Color.Black);
+        }
+        catch { }
+    }
+#else
+    private void ResumeVideoWebView() { }
+    private static void SetSystemBars(bool video) { }
+#endif
 
     private async void OnShowMoreRequested()
     {
@@ -157,6 +208,9 @@ public partial class AnimeDetailsPage : ContentPage
                 vm.ShowMoreRequested -= OnShowMoreRequested;
                 vm.PropertyChanged -= OnVmPropertyChanged;
             }
+#if ANDROID
+            VideoWebView.HandlerChanged -= OnVideoWebViewHandlerChanged;
+#endif
         }
     protected override void OnBindingContextChanged()
     {
@@ -190,11 +244,13 @@ public partial class AnimeDetailsPage : ContentPage
             if (Vm.AnimeMode)
             {
                 CharactersList.ItemsSource = Vm.AnimeStaffData?.AnimeCharacterPairs;
+                MangaCharactersList.ItemsSource = null;
                 StaffList.ItemsSource = Vm.AnimeStaffData?.AnimeStaff;
             }
             else
             {
-                CharactersList.ItemsSource = Vm.MangaCharacterData;
+                CharactersList.ItemsSource = null;
+                MangaCharactersList.ItemsSource = Vm.MangaCharacterData;
                 StaffList.ItemsSource = null; // staff tab is hidden for manga anyway
             }
         }
@@ -210,6 +266,9 @@ public partial class AnimeDetailsPage : ContentPage
         {
             switch (tabIndex)
             {
+                case 1:
+                    await Vm.LoadDetails(false);
+                    break;
                 case 2: // Episodes
                     if (!_episodesLoaded)
                     {
@@ -251,6 +310,78 @@ public partial class AnimeDetailsPage : ContentPage
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine("MALPLUS LoadTabData failed: " + ex);
+        }
+    }
+
+    private async void OnEpisodeTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (e.Parameter is not AnimeEpisode episode || string.IsNullOrWhiteSpace(episode.ForumUrl))
+                return;
+            var match = System.Text.RegularExpressions.Regex.Match(
+                episode.ForumUrl,
+                @"(?:topicid|topic)=([0-9]+)",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (!match.Success)
+                return;
+            await Shell.Current.GoToAsync($"forumtopic?id={match.Groups[1].Value}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnEpisodeTapped failed: " + ex.GetType().Name);
+        }
+    }
+
+    private async void OnRecommendationTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (e.Parameter is not IDetailsPageArgs item || item.Id <= 0)
+                return;
+            var animeMode = item.Type != RelatedItemType.Manga;
+            var args = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, null, null)
+            {
+                AnimeMode = animeMode,
+                Source = PageIndex.PageAnimeDetails,
+                SourceTabIndex = Vm.DetailsPivotSelectedIndex
+            };
+            MauiDetailsNavigationHandoff.Set(args);
+            var title = Uri.EscapeDataString(item.Title ?? string.Empty);
+            var route = animeMode
+                ? $"animedetails?id={item.Id}&title={title}"
+                : $"animedetails?id={item.Id}&title={title}&manga=true";
+            await Shell.Current.GoToAsync(route);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnRecommendationTapped failed: " + ex.GetType().Name);
+        }
+    }
+
+    private void OnReviewMoreClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            if (sender is not Button button || button.CommandParameter is not AnimeReviewData review)
+                return;
+            var expanded = !_expandedReviews.TryGetValue(review, out var current) || !current;
+            _expandedReviews[review] = expanded;
+            if (button.Parent is Layout layout)
+            {
+                var label = layout.Children.OfType<Label>()
+                    .FirstOrDefault(item => item.AutomationId == "ReviewText");
+                if (label != null)
+                {
+                    label.MaxLines = expanded ? 1000 : 6;
+                    label.LineBreakMode = expanded ? LineBreakMode.WordWrap : LineBreakMode.TailTruncation;
+                }
+            }
+            button.Text = expanded ? "Show less" : "Show more";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnReviewMoreClicked failed: " + ex.GetType().Name);
         }
     }
 
@@ -362,13 +493,15 @@ public partial class AnimeDetailsPage : ContentPage
         try
         {
             if (VideoOverlay == null || VideoWebView == null) return;
-            VideoOverlay.IsVisible = true;
-            // Convert watch?v= / youtu.be / results?search_query= → /embed/
+            ResumeVideoWebView();
             var embed = BuildYouTubeEmbed(url);
-            var html = $"<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>" +
-                       $"<style>html,body{{margin:0;background:#000;height:100%}}iframe{{width:100%;height:100%;border:0}}</style>" +
-                       $"</head><body><iframe src=\"{embed}\" allowfullscreen></iframe></body></html>";
-            VideoWebView.Source = new HtmlWebViewSource { Html = html, BaseUrl = "https://www.youtube.com" };
+            VideoWebView.Source = new HtmlWebViewSource
+            {
+                Html = VideoWebViewHelper.BuildEmbedHtml(embed),
+                BaseUrl = "https://myanimelist.net"
+            };
+            VideoOverlay.IsVisible = true;
+            SetSystemBars(true);
         }
         catch (Exception ex)
         {
@@ -382,6 +515,7 @@ public partial class AnimeDetailsPage : ContentPage
         {
             if (VideoWebView != null) VideoWebView.Source = null;
             if (VideoOverlay != null) VideoOverlay.IsVisible = false;
+            SetSystemBars(false);
         }
         catch { }
     }
@@ -509,7 +643,12 @@ public partial class AnimeDetailsPage : ContentPage
                 case 3: ReviewsList.ScrollTo(0, animate: false); break;
                 case 4: RecsList.ScrollTo(0, animate: false); break;
                 case 5: RelatedList.ScrollTo(0, animate: false); break;
-                case 6: CharactersList.ScrollTo(0, animate: false); break;
+                case 6:
+                    if (Vm.AnimeMode)
+                        CharactersList.ScrollTo(0, animate: false);
+                    else
+                        MangaCharactersList.ScrollTo(0, animate: false);
+                    break;
                 case 7: StaffList.ScrollTo(0, animate: false); break;
             }
         }

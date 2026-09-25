@@ -1,7 +1,9 @@
 using MALClient.Models.Enums;
+using MALClient.Models.Models.Anime;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
 using MALClient.XShared.ViewModels.Details;
+using MALPlus.Services;
 
 namespace MALPlus.Views;
 
@@ -57,6 +59,30 @@ public partial class CharacterDetailsPage : ContentPage
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS OnVoiceActorTapped failed: " + ex.GetType().Name);
+        }
+    }
+
+    private async void OnAnimeographyTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (e.Parameter is not AnimeLightEntry entry || entry.Id <= 0)
+                return;
+            var args = new AnimeDetailsPageNavigationArgs(entry.Id, entry.Title, null, null, null)
+            {
+                AnimeMode = entry.IsAnime,
+                Source = PageIndex.PageCharacterDetails
+            };
+            MauiDetailsNavigationHandoff.Set(args);
+            var title = Uri.EscapeDataString(entry.Title ?? string.Empty);
+            var route = entry.IsAnime
+                ? $"animedetails?id={entry.Id}&title={title}"
+                : $"animedetails?id={entry.Id}&title={title}&manga=true";
+            await Shell.Current.GoToAsync(route);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnAnimeographyTapped failed: " + ex.GetType().Name);
         }
     }
 }

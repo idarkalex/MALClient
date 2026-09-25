@@ -79,6 +79,9 @@
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="8" Padding="0,4">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnVoiceRoleTapped" CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
                                         <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
                                                 StrokeShape="RoundRectangle 6"
                                                 Stroke="{StaticResource EmBorder}" StrokeThickness="1">
@@ -124,6 +127,9 @@
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid ColumnDefinitions="60,*" ColumnSpacing="8" Padding="0,4">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnStaffPositionTapped" CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
                                         <Border Grid.Column="0" WidthRequest="56" HeightRequest="80"
                                                 StrokeShape="RoundRectangle 6"
                                                 Stroke="{StaticResource EmBorder}" StrokeThickness="1">
