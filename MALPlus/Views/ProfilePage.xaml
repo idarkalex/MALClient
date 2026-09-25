@@ -75,6 +75,25 @@
                     </Grid>
                 </Border>
 
+                <!-- Friend request: the command existed but nothing in the UI invoked it -->
+                <Border BackgroundColor="{StaticResource EmSheet}"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12" Padding="16"
+                        IsVisible="{Binding CurrentData.CanAddFriend, Converter={StaticResource BoolVis}}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="Send a friend request" FontFamily="InterSemiBold" FontSize="14"
+                                   TextColor="{StaticResource BrushText}" />
+                            <Label Text="You can add comments once they accept." FontFamily="Inter" FontSize="11"
+                                   TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="Add friend" Clicked="OnAddFriendClicked"
+                                FontFamily="InterSemiBold" FontSize="13"
+                                BackgroundColor="#0066FF" TextColor="White"
+                                BorderWidth="0" CornerRadius="10" Padding="14,8" />
+                    </Grid>
+                </Border>
+
                 <!-- About Me -->
                 <Border BackgroundColor="{StaticResource EmSheet}"
                         Stroke="{StaticResource EmBorder}" StrokeThickness="1"

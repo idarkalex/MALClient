@@ -113,6 +113,23 @@ namespace MALClient.XShared.ViewModels.Main
             }
         }
 
+        private int _friendsTabIndex;
+
+        /// <summary>
+        ///     Lives here, not on the page: the friends/requests containers bind
+        ///     against the view model, so a page-level property left both visible
+        ///     at once and stacked their lists.
+        /// </summary>
+        public int FriendsTabIndex
+        {
+            get { return _friendsTabIndex; }
+            set
+            {
+                _friendsTabIndex = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool LoadingPending
         {
             get { return _loadingPending; }

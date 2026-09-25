@@ -26,6 +26,7 @@ namespace MALClient.Models.Models.MalSpecific
 
         public List<(string user, string role)> Officers { get; set; } = new List<(string user, string role)>();
         public List<MalUser> MembersPeek { get; set; } = new List<MalUser>();
+    public int MemberCount { get; set; }
         public List<MalClubComment> RecentComments { get; set; } = new List<MalClubComment>();
         public List<(string title,string id)> AnimeRelations { get; set; } = new List<(string title, string id)>();
         public List<(string title,string id)> MangaRelations { get; set; } = new List<(string title, string id)>();

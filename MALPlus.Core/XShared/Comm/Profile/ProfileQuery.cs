@@ -512,11 +512,25 @@ namespace MALClient.XShared.Comm.Profile
                         current.FavouritePeople.Select(i => i.Id).ToList());
                 }
 
+                // MAL dropped the "js-user-function" suffix from these anchors and
+                // appends tracking classes, so both the exact-class helper and the
+                // old full class list failed: CanAddFriend stayed false and the
+                // request could never be sent from the app.
                 current.IsFriend =
-                    doc.FirstOrDefaultOfDescendantsWithClass("a", "icon-user-function icon-remove js-user-function") != null;
+                    doc.DocumentNode.Descendants("a")
+                        .Any(a =>
+                        {
+                            var css = a.Attributes["class"]?.Value;
+                            return css != null && css.Contains("icon-user-function") && css.Contains("icon-remove");
+                        });
 
                 current.CanAddFriend =
-                    doc.FirstOrDefaultOfDescendantsWithClass("a", "icon-user-function icon-request js-user-function") != null;
+                    doc.DocumentNode.Descendants("a")
+                        .Any(a =>
+                        {
+                            var css = a.Attributes["class"]?.Value;
+                            return css != null && css.Contains("icon-user-function") && css.Contains("icon-request");
+                        });
 
                 if (!updateFavsOnly)
                     DataCache.SaveProfileData(_userName, current);

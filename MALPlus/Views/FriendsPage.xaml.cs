@@ -7,14 +7,7 @@ namespace MALPlus.Views;
 
 public partial class FriendsPage : ContentPage
 {
-    private int _tabIndex;
     private bool _initialized;
-
-    public int FriendsTabIndex
-    {
-        get => _tabIndex;
-        set { _tabIndex = value; OnPropertyChanged(); }
-    }
 
     private FriendsPageViewModel Vm => (FriendsPageViewModel)BindingContext;
 
@@ -48,7 +41,7 @@ public partial class FriendsPage : ContentPage
     {
         if (e.Parameter is string s && int.TryParse(s, out int idx))
         {
-            FriendsTabIndex = idx;
+            Vm.FriendsTabIndex = idx;
             // recolor the two tab labels manually
             FriendsTab.TextColor = idx == 0 ? Color.FromArgb("#FF6B00") : Colors.White;
             RequestsTab.TextColor = idx == 1 ? Color.FromArgb("#FF6B00") : Colors.White;

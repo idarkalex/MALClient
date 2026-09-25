@@ -219,7 +219,11 @@ namespace MALClient.XShared.ViewModels.Clubs
                 if (Clubs != null)
                     Clubs.Clear();
                 EmptyNoticeVisibility = false;
-                _lastQueryClubs = await MalClubQueries.GetClubs(QueryType, 0, SearchCategory, SearchQuery);
+                // Searching has to hit the public catalogue. With QueryType still
+                // set to My the request went to clubs.php?action=myclubs, which
+                // ignores the query, so every search came back empty.
+                _queryType = MalClubQueries.QueryType.All;
+                _lastQueryClubs = await MalClubQueries.GetClubs(MalClubQueries.QueryType.All, 0, SearchCategory, SearchQuery);
                 if (_lastQueryClubs != null)
                 {
                     Clubs = new SmartObservableCollection<MalClubEntry>(_lastQueryClubs);
@@ -344,7 +348,10 @@ namespace MALClient.XShared.ViewModels.Clubs
             }
         }));
 
-        private List<ClubActivityEntry> _clubActivity;
+        // Stable instance: returning a fresh list from the getter handed the
+        // CollectionView a different source on every read and its EmptyView never
+        // appeared.
+        private List<ClubActivityEntry> _clubActivity = new List<ClubActivityEntry>();
         public List<ClubActivityEntry> ClubActivity
         {
             get => _clubActivity ?? new List<ClubActivityEntry>();
@@ -358,9 +365,24 @@ namespace MALClient.XShared.ViewModels.Clubs
         public async void ReloadMyClubs()
         {
             Loading = true;
-            MyClubs = new ObservableCollection<MalClubEntry>(await MalClubQueries.GetClubs(MalClubQueries.QueryType.My, 0));
-            MyClubsEmptyNoticeVisibility = !MyClubs.Any();
-            Loading = false;
+            try
+            {
+                // GetClubs answers null when the request or the parse fails, and
+                // feeding that to the collection constructor threw: Loading stayed
+                // true forever and the whole page rendered empty.
+                var clubs = await MalClubQueries.GetClubs(MalClubQueries.QueryType.My, 0);
+                MyClubs = new ObservableCollection<MalClubEntry>(clubs ?? Enumerable.Empty<MalClubEntry>());
+                MyClubsEmptyNoticeVisibility = !MyClubs.Any();
+            }
+            catch (Exception)
+            {
+                MyClubs = new ObservableCollection<MalClubEntry>();
+                MyClubsEmptyNoticeVisibility = true;
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
     }
 }

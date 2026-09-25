@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
@@ -24,7 +24,7 @@
             </ScrollView>
 
             <!-- My Clubs tab -->
-            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading, FallbackValue=false}" Refreshing="OnRefreshMy"
+            <RefreshView Grid.Row="1" Refreshing="OnRefreshMy"
                          IsVisible="{Binding ClubsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=0}">
                 <CollectionView ItemsSource="{Binding MyClubs}" SelectionMode="Single"
                                 SelectionChanged="OnClubTapped"
@@ -63,12 +63,12 @@
                                TextColor="{StaticResource BrushText}"
                                PlaceholderColor="#80FFFFFF"
                                ReturnType="Search" Completed="OnSearchCompleted" />
-                        <Button Grid.Column="1" Text="🔍" Command="{Binding SearchCommand}"
+                        <Button Grid.Column="1" Text="ðŸ”" Command="{Binding SearchCommand}"
                                 FontFamily="InterBold" FontSize="16"
                                 BackgroundColor="#0066FF" TextColor="White"
                                 CornerRadius="8" WidthRequest="48" HeightRequest="48" Padding="0" />
                     </Grid>
-                    <RefreshView IsRefreshing="{Binding Loading, FallbackValue=false}" Refreshing="OnSearchRefresh">
+                    <RefreshView Grid.Row="1" Refreshing="OnSearchRefresh">
                         <CollectionView ItemsSource="{Binding Clubs}" SelectionMode="Single"
                                         SelectionChanged="OnClubTapped"
                                         RemainingItemsThreshold="3"
@@ -98,7 +98,7 @@
             </Grid>
 
             <!-- Activity tab (forum posts from joined clubs) -->
-            <RefreshView Grid.Row="1" IsRefreshing="{Binding Loading, FallbackValue=false}" Refreshing="OnActivityRefresh"
+            <RefreshView Grid.Row="1" Refreshing="OnActivityRefresh"
                          IsVisible="{Binding ClubsTabIndex, Converter={StaticResource IntEq}, ConverterParameter=2}">
                 <CollectionView ItemsSource="{Binding ClubActivity}" SelectionMode="Single"
                                 SelectionChanged="OnActivityTapped"

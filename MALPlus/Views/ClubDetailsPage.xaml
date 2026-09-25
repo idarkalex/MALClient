@@ -37,9 +37,27 @@
                         <Label Text="{Binding Details.Name}" FontFamily="InterBold" FontSize="18"
                                TextColor="{StaticResource BrushText}" MaxLines="3"
                                LineBreakMode="TailTruncation" />
-                        <Label Text="{Binding Details.MembersPeek.Count, StringFormat='{0} members'}"
+                        <Label Text="{Binding Details.MemberCount, StringFormat='{0} members'}"
                                FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
                     </VerticalStackLayout>
+                </Grid>
+
+                <!-- Join / Leave: the commands existed on the view model but nothing
+                     in the UI invoked them, so clubs could never be joined. -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <Button Grid.Column="0" Text="Join club" Command="{Binding JoinClubCommand}"
+                            IsVisible="{Binding Details.Joined, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                            FontFamily="InterSemiBold" FontSize="14"
+                            BackgroundColor="#0066FF" TextColor="White"
+                            BorderWidth="0" CornerRadius="10" HeightRequest="44" />
+                    <Button Grid.Column="0" Text="Leave club" Command="{Binding LeaveClubCommand}"
+                            IsVisible="{Binding Details.Joined, Converter={StaticResource BoolVis}}"
+                            FontFamily="InterSemiBold" FontSize="14"
+                            BackgroundColor="#141d2b" TextColor="#FF6B6B"
+                            BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="10" HeightRequest="44" />
+                    <Label Grid.Column="1" Text="Joined" VerticalOptions="Center"
+                           FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource EmAccent}"
+                           IsVisible="{Binding Details.Joined, Converter={StaticResource BoolVis}}" />
                 </Grid>
 
                 <Border BackgroundColor="{StaticResource EmSheet}"

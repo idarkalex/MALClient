@@ -51,10 +51,13 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Clubs
                 var client = await ResourceLocator.MalHttpContextProvider.GetHttpContextAsync();
 
 
+                // MAL's club search form is "cat=club&catid=..&q=.." now; the old
+                // "cn=..&action=find" pair is ignored server side and always
+                // answers "No clubs matched your search query".
                 var response =
                     await client.GetAsync(
                         type == QueryType.All
-                            ? $"https://myanimelist.net/clubs.php?catid={(int) category}{(string.IsNullOrEmpty(searchQuery) || searchQuery.Length < 2 ? "" :$"&cn={searchQuery}&action=find")}&p={page}"
+                            ? $"https://myanimelist.net/clubs.php?cat=club&catid={(int) category}&p={page}{(string.IsNullOrEmpty(searchQuery) || searchQuery.Length < 3 ? "" : $"&q={Uri.EscapeDataString(searchQuery)}")}"
                             : "https://myanimelist.net/clubs.php?action=myclubs");
 
                 if (!response.IsSuccessStatusCode)
@@ -173,9 +176,17 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Clubs
             {
                 var client = await ResourceLocator.MalHttpContextProvider.GetHttpContextAsync();
 
+                // The sidebar control is a plain link to clubs.php?action=join&id=X,
+                // which serves the confirmation form. Hitting it first primes the
+                // per-action csrf token.
+                await client.GetAsync($"https://myanimelist.net/clubs.php?action=join&id={id}");
+
+                // That form posts action_type=submitjoin back to the same URL. The
+                // old payload (submitjoin=Join Club) came back 200 and was silently
+                // ignored, so the club was never joined.
                 var data = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("submitjoin", "Join Club"),
+                    new KeyValuePair<string, string>("action_type", "submitjoin"),
                     new KeyValuePair<string, string>("csrf_token", client.Token),
                 };
 
@@ -271,9 +282,13 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Clubs
             {
                 var client = await ResourceLocator.MalHttpContextProvider.GetHttpContextAsync();
 
+                // Same shape as joining: the sidebar link opens a confirmation page
+                // that posts action_type back to the action URL.
+                await client.GetAsync($"https://myanimelist.net/clubs.php?action=leave&id={id}");
+
                 var data = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("submitleave", "Leave Club"),
+                    new KeyValuePair<string, string>("action_type", "submitleave"),
                     new KeyValuePair<string, string>("csrf_token", client.Token),
                 };
 

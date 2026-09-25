@@ -14,6 +14,18 @@ public partial class ProfilePage : ContentPage
 
     private ProfilePageViewModel Vm => (ProfilePageViewModel)BindingContext;
 
+    private void OnAddFriendClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            Vm.SendFriendRequestCommand?.Execute(null);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("MALPLUS add friend failed: " + ex.Message);
+        }
+    }
+
     public ProfilePage()
     {
         InitializeComponent();

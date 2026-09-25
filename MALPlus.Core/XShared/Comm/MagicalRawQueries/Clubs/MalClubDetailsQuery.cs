@@ -101,6 +101,11 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Clubs
                                     continue;
                                 innerTextTokens = WebUtility.HtmlDecode(rightDiv.InnerText.Trim()).Split(':');
                                 output.GeneralInfo.Add((innerTextTokens[0], innerTextTokens[1]));
+                                if (innerTextTokens[0].Trim() == "Members" &&
+                                    int.TryParse(innerTextTokens[1].Replace(",", "").Trim(), out var members))
+                                {
+                                    output.MemberCount = members;
+                                }
                                 break;
                             case 1:
                                 link = rightDiv.Descendants("a").First();

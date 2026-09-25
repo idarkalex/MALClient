@@ -18,6 +18,11 @@ public partial class ClubsIndexPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        // The page instance is reused, so a previous visit could leave the view
+        // model pointing at another tab and none of the containers visible.
+        Vm.ClubsTabIndex = 0;
+        if (TabStrip.Children.Count > 0)
+            HighlightTab(0);
         if (_initialized) return;
         _initialized = true;
         BuildTabs();
@@ -79,6 +84,10 @@ public partial class ClubsIndexPage : ContentPage
     {
         Vm.ClubsTabIndex = index;
         HighlightTab(index);
+        // The activity list was never requested on tab switch, so the tab stayed
+        // blank instead of loading the club posts.
+        if (index == 2)
+            Vm.LoadClubActivityCommand?.Execute(null);
     }
 
     private void OnRefreshMy(object sender, EventArgs e)
