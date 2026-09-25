@@ -38,16 +38,22 @@ public partial class HistoryPage : ContentPage
                 await Task.Delay(200);
                 if (!Vm.LoadingVisibility) break;
             }
-            // Flatten the dictionary into a list of (date, (item, entries)) pairs
+            // Flatten the dictionary into a list of (date, (item, entries)) pairs.
+            // TryRetrieveAuthenticatedAnimeItem returns null for ids that are not in
+            // the loaded library, and binding those produced blank cards.
             FlatHistory.Clear();
             if (Vm.History != null)
             {
                 foreach (var kv in Vm.History)
                     foreach (var tuple in kv.Value)
+                    {
+                        if (tuple?.Item1 == null)
+                            continue;
                         FlatHistory.Add(new KeyValuePair<string,
                             System.Tuple<AnimeItemViewModel,
                                          System.Collections.Generic.List<MalProfileHistoryEntry>>>(
                             kv.Key, tuple));
+                    }
             }
         }
         catch (Exception ex)

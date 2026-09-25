@@ -160,64 +160,89 @@ namespace MALClient.XShared.ViewModels.Main
             }
             LoadingVisibility = true;
             _loadingData = true;
-
-            switch (args.WorkMode)
+            try
             {
-                case ArticlePageWorkMode.Articles:
-                    ThumbnailWidth = ThumbnailHeight = 150;
-                    break;
-                case ArticlePageWorkMode.News:
-                    ThumbnailWidth = 100;
-                    ThumbnailHeight = 150;
-                    break;
-                case ArticlePageWorkMode.AnnNews:
-                    ThumbnailWidth = 100;
-                    ThumbnailHeight = 150;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (args.WorkMode)
+                {
+                    case ArticlePageWorkMode.Articles:
+                        ThumbnailWidth = ThumbnailHeight = 150;
+                        break;
+                    case ArticlePageWorkMode.News:
+                        ThumbnailWidth = 100;
+                        ThumbnailHeight = 150;
+                        break;
+                    case ArticlePageWorkMode.AnnNews:
+                        ThumbnailWidth = 100;
+                        ThumbnailHeight = 150;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                PrevWorkMode = args.WorkMode;
+
+                var data = new List<MalNewsUnitModel>();
+                Articles = new List<MalNewsUnitModel>();
+
+                await Task.Run(async () =>
+                {
+                    data = args.WorkMode == ArticlePageWorkMode.AnnNews
+                        ? await new Comm.Articles.AnnNewsQuery().GetAnnNewsIndex(force)
+                        : await new MalArticlesIndexQuery(args.WorkMode).GetArticlesIndex(force);
+                });
+                Articles = data;
+                global::System.Diagnostics.Debug.WriteLine(
+                    $"MALPLUS articles: mode={args.WorkMode} count={Articles?.Count ?? -1} force={force}");
             }
-            PrevWorkMode = args.WorkMode;
-
-            var data = new List<MalNewsUnitModel>();
-            Articles = new List<MalNewsUnitModel>();
-
-            await Task.Run(async () =>
+            catch (Exception ex)
             {
-                data = args.WorkMode == ArticlePageWorkMode.AnnNews
-                    ? await new Comm.Articles.AnnNewsQuery().GetAnnNewsIndex(force)
-                    : await new MalArticlesIndexQuery(args.WorkMode).GetArticlesIndex(force);
-            });
-            Articles = data;
-            _loadingData = false;
-            LoadingVisibility = false;
-
-
+                global::System.Diagnostics.Debug.WriteLine(
+                    $"MALPLUS articles FAILED: mode={args.WorkMode} {ex.GetType().Name} {ex.Message}");
+                Articles = new List<MalNewsUnitModel>();
+                // Let a later Init retry instead of short-circuiting on _loadingData.
+                PrevWorkMode = ArticlePageWorkMode.News;
+            }
+            finally
+            {
+                _loadingData = false;
+                LoadingVisibility = false;
+            }
         }
 
         private async void LoadArticle(MalNewsUnitModel data)
         {
             LoadingVisibility = true;
             ArticleIndexVisibility = false;
-            ViewModelLocator.GeneralMain.CurrentStatus = data.Title;
-            CurrentNews = Articles.IndexOf(data);
-            string html;
-            if (data.Source == "ANN")
-                html = await Comm.Articles.AnnNewsQuery.GetAnnArticleHtml(data.Url, data.Id);
-            else
-                html = await new MalArticleQuery(data.Url, data.Title, data.Type).GetArticleHtml();
-             if (string.IsNullOrEmpty(html))
+            try
+            {
+                ViewModelLocator.GeneralMain.CurrentStatus = data.Title;
+                CurrentNews = Articles.IndexOf(data);
+                string html;
+                if (data.Source == "ANN")
+                    html = await Comm.Articles.AnnNewsQuery.GetAnnArticleHtml(data.Url, data.Id);
+                else
+                    html = await new MalArticleQuery(data.Url, data.Title, data.Type).GetArticleHtml();
+                if (string.IsNullOrEmpty(html))
+                {
+                    ArticleIndexVisibility = true;
+                    ResourceLocator.MessageDialogProvider.ShowMessageDialog(
+                        "Could not load this article. Please try again later.", "Load error");
+                    return;
+                }
+                var themeColor = Settings.SelectedTheme == 1 ? "#d4e4f7" : "#051522";
+                var titleHtml = $"<h1 style=\"color:{themeColor};font-family:Inter,sans-serif;font-size:24px;font-weight:700;margin:16px 0 12px 0\">{System.Net.WebUtility.HtmlEncode(data.Title)}</h1>";
+                html = titleHtml + html;
+                OpenWebView?.Invoke(html, data);
+            }
+            catch (Exception)
+            {
+                // Bring the list back: without this the scrim stayed up and the
+                // article index was gone with no way out of the page.
+                ArticleIndexVisibility = true;
+            }
+            finally
             {
                 LoadingVisibility = false;
-                ArticleIndexVisibility = true;
-                ResourceLocator.MessageDialogProvider.ShowMessageDialog(
-                    "Could not load this article. Please try again later.", "Load error");
-                return;
             }
-            var themeColor = Settings.SelectedTheme == 1 ? "#d4e4f7" : "#051522";
-            var titleHtml = $"<h1 style=\"color:{themeColor};font-family:Inter,sans-serif;font-size:24px;font-weight:700;margin:16px 0 12px 0\">{System.Net.WebUtility.HtmlEncode(data.Title)}</h1>";
-            html = titleHtml + html;
-            OpenWebView?.Invoke(html, data);
         }
     }
 }

@@ -218,12 +218,12 @@ namespace MALClient.XShared.ViewModels.Forums
             LoadingSideContentVisibility = true;
             _loading = true;
             _loaded = true;
-            ForumIndexContent peekPosts = null;
-            await Task.Run(async () => peekPosts = await new ForumBoardIndexContentQuery().GetPeekPosts());
-            if (peekPosts == null)
-                return;
             try
             {
+                ForumIndexContent peekPosts = null;
+                await Task.Run(async () => peekPosts = await new ForumBoardIndexContentQuery().GetPeekPosts());
+                if (peekPosts == null)
+                    return;
                 for (int i = 0; i < 5; i++)
                 {
                     if (Boards[0].Items[i].Board == ForumBoards.Suggestions &&
@@ -242,11 +242,16 @@ namespace MALClient.XShared.ViewModels.Forums
             catch (Exception)
             {
                //they have changed thisd once already, once bitten twice shy
+                // Allow a retry instead of latching _loaded on a failed attempt.
+                _loaded = false;
             }
-
-            LoadingSideContentVisibility = false;
-            _loading = false;
-
+            finally
+            {
+                // A null peekPosts or a throw used to return with the scrim and
+                // the re-entrancy guard still set, stranding the page.
+                LoadingSideContentVisibility = false;
+                _loading = false;
+            }
         }
     }
 }

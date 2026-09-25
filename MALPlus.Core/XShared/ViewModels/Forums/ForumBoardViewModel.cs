@@ -282,8 +282,10 @@ namespace MALClient.XShared.ViewModels.Forums
 
             LoadPage(args.PageNumber,false,force);
 
-            switch (args.WorkMode)
+            try
             {
+                switch (args.WorkMode)
+                {
                 case ForumBoardPageWorkModes.Standard:
                         PageNavigationControlsVisibility = SearchButtonVisibility = true;
                         Title = args.TargetBoard.GetDescription();
@@ -325,15 +327,23 @@ namespace MALClient.XShared.ViewModels.Forums
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
-            }
+                }
 
-            if (args.WorkMode == ForumBoardPageWorkModes.Search || args.WorkMode == ForumBoardPageWorkModes.UserSearch ||
-                args.WorkMode == ForumBoardPageWorkModes.WatchedTopics || args.TargetBoard == ForumBoards.NewsDisc ||
-                args.TargetBoard == ForumBoards.AnimeSeriesDisc || args.TargetBoard == ForumBoards.MangaSeriesDisc ||
-                args.TargetBoard == ForumBoards.Updates || args.TargetBoard == ForumBoards.Guidelines)
-                NewTopicButtonVisibility = false;
-            else
-                NewTopicButtonVisibility = true;
+                if (args.WorkMode == ForumBoardPageWorkModes.Search || args.WorkMode == ForumBoardPageWorkModes.UserSearch ||
+                    args.WorkMode == ForumBoardPageWorkModes.WatchedTopics || args.TargetBoard == ForumBoards.NewsDisc ||
+                    args.TargetBoard == ForumBoards.AnimeSeriesDisc || args.TargetBoard == ForumBoards.MangaSeriesDisc ||
+                    args.TargetBoard == ForumBoards.Updates || args.TargetBoard == ForumBoards.Guidelines)
+                    NewTopicButtonVisibility = false;
+                else
+                    NewTopicButtonVisibility = true;
+            }
+            catch (Exception)
+            {
+                // The switch throws for an unknown work mode with _initizalizing
+                // already set, which made every later non-forced Init return early.
+                _initizalizing = false;
+                throw;
+            }
         }
 
         public async void LoadPage(int page, bool decrement = false,bool force = false)

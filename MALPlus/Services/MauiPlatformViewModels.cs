@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using MALClient.Models.Enums;
+using MALClient.Models.Models;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.Comm.Anime;
 using MALClient.XShared.Delegates;
@@ -174,6 +175,12 @@ public class MauiMainViewModel : MainViewModelBase
                         case MalMessageModel thread when !string.IsNullOrEmpty(thread.ThreadId ?? thread.Id):
                             query = $"?id={Uri.EscapeDataString(thread.ThreadId ?? thread.Id)}" +
                                     $"&subject={Uri.EscapeDataString(thread.Subject ?? "")}";
+                            break;
+                        case MalComment comment:
+                            // Profile comment: open the com-to-com thread, which the
+                            // page rebuilds from ?id + ?to + ?comments=1.
+                            query = $"?id={Uri.EscapeDataString(comment.ComToCom ?? string.Empty)}&subject=" +
+                                    $"&to={Uri.EscapeDataString(comment.User?.Name ?? string.Empty)}&comments=1";
                             break;
                         default:
                             query = $"?id=0&subject={Uri.EscapeDataString(mdn.NewMessageTarget ?? "")}" +

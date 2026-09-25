@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
@@ -37,21 +38,44 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 Loading = true;
                 ViewModelLocator.GeneralMain.LockCurrentStatus = true;
-                await ViewModelLocator.ProfilePage.LoadProfileData(new ProfilePageNavigationArgs{TargetUser = Credentials.UserName});
-                ViewModelLocator.GeneralMain.LockCurrentStatus = false;
+                try
+                {
+                    await ViewModelLocator.ProfilePage.LoadProfileData(new ProfilePageNavigationArgs{TargetUser = Credentials.UserName});
+                }
+                catch (Exception)
+                {
+                }
+                finally
+                {
+                    // LockCurrentStatus stayed true on failure, permanently freezing
+                    // the status bar text.
+                    ViewModelLocator.GeneralMain.LockCurrentStatus = false;
+                    Loading = false;
+                }
             }
             if(Feeds != null && !force)
                 return;
             Loading = true;
-            Feeds = new List<UserFeedEntryModel>();
-            var source =
-                ViewModelLocator.ProfilePage.MyFriends.Concat(ResourceLocator.HandyDataStorage.PinnedUsers.StoredItems)
-                    .Distinct(MalUser.NameComparer)
-                    .ToList();
-            Feeds =
-                (await new MalFriendsFeedsQuery(source).GetFeeds()).OrderByDescending(
+            try
+            {
+                Feeds = new List<UserFeedEntryModel>();
+                var source =
+                    (ViewModelLocator.ProfilePage.MyFriends ?? new List<MalUser>())
+                    .Concat(ResourceLocator.HandyDataStorage.PinnedUsers.StoredItems)
+                        .Distinct(MalUser.NameComparer)
+                        .ToList();
+                var feeds = await new MalFriendsFeedsQuery(source).GetFeeds();
+                Feeds = (feeds ?? new List<UserFeedEntryModel>()).OrderByDescending(
                     model => model.Date).ToList();
-            Loading = false;
+            }
+            catch (Exception)
+            {
+                Feeds = new List<UserFeedEntryModel>();
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
 
         public bool Loading

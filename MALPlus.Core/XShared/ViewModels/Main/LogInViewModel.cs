@@ -186,11 +186,21 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 //
             }
-            ViewModelLocator.GeneralMain.HideOffContentCommand.Execute(null);
-            await DataCache.ClearApiRelatedCache();
-            NavigateToStartPage();
-
-            Authenticating = false;
+            try
+            {
+                ViewModelLocator.GeneralMain.HideOffContentCommand.Execute(null);
+                await DataCache.ClearApiRelatedCache();
+                NavigateToStartPage();
+            }
+            catch (Exception)
+            {
+                // A throw in this tail left Authenticating true, which made the
+                // sign-in button permanently unresponsive.
+            }
+            finally
+            {
+                Authenticating = false;
+            }
         }
 
         public async void SignIn(string cookies, string apiCode)

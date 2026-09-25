@@ -56,6 +56,18 @@ namespace MALClient.XShared.ViewModels.Clubs
             }
         }
 
+        private bool _loadErrorVisibility;
+
+        public bool LoadErrorVisibility
+        {
+            get { return _loadErrorVisibility; }
+            set
+            {
+                _loadErrorVisibility = value;
+                RaisePropertyChanged();
+            }
+        }
+
 
         public string CommentInput
         {
@@ -188,51 +200,80 @@ namespace MALClient.XShared.ViewModels.Clubs
             LastArgs = args;
 
             Loading = true;
-            Details = await MalClubDetailsQuery.GetClubDetails(args.Id);
-            Loading = false;
-
+            try
+            {
+                Details = await MalClubDetailsQuery.GetClubDetails(args.Id);
+                if (Details == null)
+                    LoadErrorVisibility = true;
+            }
+            catch (Exception)
+            {
+                LoadErrorVisibility = true;
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
 
         public async void Reload()
         {
             Loading = true;
-            Details = await MalClubDetailsQuery.GetClubDetails(LastArgs.Id);
-            Loading = false;
+            try
+            {
+                Details = await MalClubDetailsQuery.GetClubDetails(LastArgs.Id);
+            }
+            catch (Exception)
+            {
+                LoadErrorVisibility = true;
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
 
 
         public ICommand PostCommentCommand => new RelayCommand(async () =>
         {
             LoadingComments = true;
-
-            if (await MalClubQueries.PostComment(Details.Id, CommentInput))
+            try
             {
-                ResourceLocator.TelemetryProvider.TelemetryTrackEvent(TelemetryTrackedEvents.CreatedClubComment);
-                Comments.Insert(0,new MalClubComment
+                if (await MalClubQueries.PostComment(Details.Id, CommentInput))
                 {
-                    Content = CommentInput,
-                    Date = "Just Now",
-                    User = new MalUser
+                    ResourceLocator.TelemetryProvider.TelemetryTrackEvent(TelemetryTrackedEvents.CreatedClubComment);
+                    Comments.Insert(0,new MalClubComment
                     {
-                        ImgUrl = $"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.jpg",
-                        Name = Credentials.UserName
-                    }
-                });
+                        Content = CommentInput,
+                        Date = "Just Now",
+                        User = new MalUser
+                        {
+                            ImgUrl = $"https://cdn.myanimelist.net/images/userimages/{Credentials.Id}.jpg",
+                            Name = Credentials.UserName
+                        }
+                    });
+                }
             }
-
-            LoadingComments = false;
+            finally
+            {
+                LoadingComments = false;
+            }
         });
 
         public ICommand DeleteCommentCommand => _deleteCommentCommand ?? (_deleteCommentCommand = new RelayCommand<MalClubComment>(async comment =>
         {
             LoadingComments = true;
-
-            if (await MalClubQueries.RemoveComment(Details.Id, comment.Id))
+            try
             {
-                Comments.Remove(comment);
+                if (await MalClubQueries.RemoveComment(Details.Id, comment.Id))
+                {
+                    Comments.Remove(comment);
+                }
             }
-
-            LoadingComments = false;
+            finally
+            {
+                LoadingComments = false;
+            }
         }));
 
         public ICommand ReloadCommentsCommand => new RelayCommand(async () =>
@@ -243,14 +284,18 @@ namespace MALClient.XShared.ViewModels.Clubs
         public async Task ReloadComments()
         {
             LoadingComments = true;
+            try
+            {
+                var details = await MalClubDetailsQuery.GetClubDetails(LastArgs.Id, true);
 
-            var details = await MalClubDetailsQuery.GetClubDetails(LastArgs.Id, true);
-
-            Details.RecentComments = details.RecentComments;
-            Comments = new ObservableCollection<MalClubComment>(Details.RecentComments);
-            Comments.CollectionChanged += CommentsOnCollectionChanged;
-
-            LoadingComments = false;
+                Details.RecentComments = details.RecentComments;
+                Comments = new ObservableCollection<MalClubComment>(Details.RecentComments);
+                Comments.CollectionChanged += CommentsOnCollectionChanged;
+            }
+            finally
+            {
+                LoadingComments = false;
+            }
         }
 
         public ICommand LoadMoreMembersCommand => new RelayCommand(async () =>
@@ -272,21 +317,25 @@ namespace MALClient.XShared.ViewModels.Clubs
         public ICommand LoadMoreCommentsCommand => new RelayCommand(async () =>
         {
             LoadingComments = true;
-
-            var comments = await MalClubDetailsQuery.GetClubComments(Details.Id, _currentCommentsPage++);
-            if (comments != null && comments.Any())
+            try
             {
-                foreach (var malClubComment in comments)
+                var comments = await MalClubDetailsQuery.GetClubComments(Details.Id, _currentCommentsPage++);
+                if (comments != null && comments.Any())
                 {
-                    Comments.Add(malClubComment);
+                    foreach (var malClubComment in comments)
+                    {
+                        Comments.Add(malClubComment);
+                    }
+                }
+                else
+                {
+                    MoreCommentsButtonVisibility = false;
                 }
             }
-            else
+            finally
             {
-                MoreCommentsButtonVisibility = false;
+                LoadingComments = false;
             }
-
-            LoadingComments = false;
         });
 
         public ICommand NavigateUserCommand => _navigateUserCommand ?? (_navigateUserCommand =
@@ -335,26 +384,49 @@ namespace MALClient.XShared.ViewModels.Clubs
         public ICommand LeaveClubCommand => new RelayCommand(async () =>
         {
             Loading = true;
-            await MalClubQueries.LeaveClub(Details.Id);
             try
             {
-                ViewModelLocator.ClubIndex.MyClubs.Remove(
-                    ViewModelLocator.ClubIndex.MyClubs.First(entry => entry.Id == Details.Id));
+                await MalClubQueries.LeaveClub(Details.Id);
+                try
+                {
+                    ViewModelLocator.ClubIndex.MyClubs.Remove(
+                        ViewModelLocator.ClubIndex.MyClubs.First(entry => entry.Id == Details.Id));
+                }
+                catch (Exception)
+                {
+                    //wutwut
+                }
+
+                Reload();
             }
             catch (Exception)
             {
-                //wutwut
+                // Reload was never reached, so Loading would have stayed on.
+                LoadErrorVisibility = true;
             }
-
-            Reload();
+            finally
+            {
+                Loading = false;
+            }
         });
 
         public ICommand JoinClubCommand => new RelayCommand(async () =>
         {
             Loading = true;
-            await MalClubQueries.JoinClub(Details.Id);
-            ViewModelLocator.ClubIndex.ReloadMyClubs();
-            Reload();
+            try
+            {
+                await MalClubQueries.JoinClub(Details.Id);
+                ViewModelLocator.ClubIndex.ReloadMyClubs();
+                Reload();
+            }
+            catch (Exception)
+            {
+                LoadErrorVisibility = true;
+            }
+            finally
+            {
+                Loading = false;
+            }
         });
 
     }

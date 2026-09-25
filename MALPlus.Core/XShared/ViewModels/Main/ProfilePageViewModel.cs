@@ -100,12 +100,20 @@ namespace MALClient.XShared.ViewModels.Main
                     _currUser = args.TargetUser ?? Credentials.UserName;
                 }
 
-                if (!CurrentData.Details?.Any() ?? true)
+                if (CurrentData == null)
                 {
                     ResourceLocator.MessageDialogProvider.ShowMessageDialog(
                         "Failed to load profile, user might not exist or his profile is private.",
                         "Error loading profile.");
+                    LoadErrorVisibility = true;
+                    return;
                 }
+                LoadErrorVisibility = false;
+
+                // The old check here was "Details is empty", which is true for plenty
+                // of real accounts, so it raised a bogus error dialog over profiles
+                // that loaded fine. An empty profile is not an error, and the page
+                // already has per-section empty notices.
 
                 FavAnime = new List<AnimeItemViewModel>();
                 FavManga = new List<AnimeItemViewModel>();
@@ -218,6 +226,15 @@ namespace MALClient.XShared.ViewModels.Main
                 //ResourceLocator.MessageDialogProvider.ShowMessageDialog(
                 //    "Hmm, you have encountered bug that'm hunting. I've just sent report to myself. If everything goes well it should be gone in next release :). Sorry for inconvenience!",
                 //    "Ooopsies!");
+            }
+            finally
+            {
+                // The catch above is silent, so without this the scrim stayed up and
+                // hid the whole page after any failure.
+                LoadingVisibility = false;
+                LoadingOhersLibrariesProgressVisiblity = false;
+                LoadingAboutMeVisibility = false;
+                AboutMeWebViewVisibility = false;
             }
 
             void CountTime(List<AnimeItemAbstraction> source)
@@ -448,12 +465,17 @@ namespace MALClient.XShared.ViewModels.Main
                     _refreshingComments = true;
                     await CurrentData.UpdateComments();
                     MalComments = new ObservableCollection<MalComment>(CurrentData.Comments);
-                    _refreshingComments = false;
-                    LoadingCommentsVisiblity = false;
                 }
                 catch (Exception e)
                 {
                     ResourceLocator.SnackbarProvider.ShowText("Failed to load comments.");
+                }
+                finally
+                {
+                    // Both stayed latched on failure, so the spinner never went away
+                    // and no further comment refresh could ever run.
+                    _refreshingComments = false;
+                    LoadingCommentsVisiblity = false;
                 }
 
             }));
@@ -521,6 +543,18 @@ namespace MALClient.XShared.ViewModels.Main
             {
                 _loadingVisibility = value;
                 RaisePropertyChanged(() => LoadingVisibility);
+            }
+        }
+
+        private bool _loadErrorVisibility;
+
+        public bool LoadErrorVisibility
+        {
+            get => _loadErrorVisibility;
+            set
+            {
+                _loadErrorVisibility = value;
+                RaisePropertyChanged(() => LoadErrorVisibility);
             }
         }
 

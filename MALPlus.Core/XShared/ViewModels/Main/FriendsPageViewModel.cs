@@ -43,13 +43,19 @@ namespace MALClient.XShared.ViewModels.Main
             {
 
                 Loading = true;
-                Friends = new ObservableCollection<MalFriend>();
+                try
+                {
+                    Friends = new ObservableCollection<MalFriend>();
 
-                var result = (await new FriendsQuery(args.TargetUser.Name).GetFriends()) ?? new List<MalFriend>();
-                _friendsCache[args.TargetUser.Name.ToLower()] = result;
+                    var result = (await new FriendsQuery(args.TargetUser.Name).GetFriends()) ?? new List<MalFriend>();
+                    _friendsCache[args.TargetUser.Name.ToLower()] = result;
 
-                Friends = new ObservableCollection<MalFriend>(result);
-                Loading = false;
+                    Friends = new ObservableCollection<MalFriend>(result);
+                }
+                finally
+                {
+                    Loading = false;
+                }
             }
 
             if (args.TargetUser.Name.Equals(Credentials.UserName, StringComparison.CurrentCultureIgnoreCase))
@@ -140,8 +146,18 @@ namespace MALClient.XShared.ViewModels.Main
         public ICommand RefreshPendingCommand => new RelayCommand(async () =>
         {
             LoadingPending = true;
-            Requests = new ObservableCollection<MalFriendRequest>(await MalFriendsQueries.GetFriendRequests());
-            LoadingPending = false;
+            try
+            {
+                Requests = new ObservableCollection<MalFriendRequest>(await MalFriendsQueries.GetFriendRequests());
+            }
+            catch (Exception)
+            {
+                Requests = new ObservableCollection<MalFriendRequest>();
+            }
+            finally
+            {
+                LoadingPending = false;
+            }
 
             RequestsEmptyNoticeVisibility = !Requests.Any();
         });
@@ -149,13 +165,23 @@ namespace MALClient.XShared.ViewModels.Main
         public ICommand RefreshFriendsCommand => new RelayCommand(async () =>
         {
             Loading = true;
-            Friends = new ObservableCollection<MalFriend>();
+            try
+            {
+                Friends = new ObservableCollection<MalFriend>();
 
-            var result = (await new FriendsQuery(_lastArgs.TargetUser.Name).GetFriends()) ?? new List<MalFriend>();
-            _friendsCache[_lastArgs.TargetUser.Name.ToLower()] = result;
+                var result = (await new FriendsQuery(_lastArgs.TargetUser.Name).GetFriends()) ?? new List<MalFriend>();
+                _friendsCache[_lastArgs.TargetUser.Name.ToLower()] = result;
 
-            Friends = new ObservableCollection<MalFriend>(result);
-            Loading = false;
+                Friends = new ObservableCollection<MalFriend>(result);
+            }
+            catch (Exception)
+            {
+                Friends = new ObservableCollection<MalFriend>();
+            }
+            finally
+            {
+                Loading = false;
+            }
 
             FriendsEmptyNoticeVisibility = !Friends.Any();
         });

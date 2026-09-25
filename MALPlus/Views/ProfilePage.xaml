@@ -21,8 +21,15 @@
             </VerticalStackLayout>
         </Grid>
 
-        <ScrollView IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-            <VerticalStackLayout Spacing="14" Padding="16,12,16,32">
+        <VerticalStackLayout IsVisible="{Binding LoadErrorVisibility}" ZIndex="98"
+                             HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+            <Label Text="Could not load this profile" FontFamily="InterSemiBold" FontSize="16"
+                   TextColor="{StaticResource EmAccent}" HorizontalOptions="Center" />
+            <Label Text="The user may not exist, or their profile is private." FontFamily="Inter"
+                   FontSize="12" TextColor="#B3FFFFFF" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <ScrollView IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">            <VerticalStackLayout Spacing="14" Padding="16,12,16,32">
 
                 <!-- Pull-to-refresh wrapper -->
                 <RefreshView IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing">

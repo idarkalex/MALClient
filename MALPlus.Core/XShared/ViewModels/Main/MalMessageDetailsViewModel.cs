@@ -93,55 +93,65 @@ namespace MALClient.XShared.ViewModels.Main
 
         public async void Init(MalMessageDetailsNavArgs args,bool force = false)
         {
-            if (args.WorkMode == MessageDetailsWorkMode.Message)
+            try
             {
-                var arg = args.Arg as MalMessageModel;
-                if (arg == null) //compose new
+                if (args.WorkMode == MessageDetailsWorkMode.Message)
                 {
-                    _newMessage = true;
-                    MessageSet.Clear();
-                    NewMessageFieldsVisibility = true;
-                    ViewModelLocator.GeneralMain.OffRefreshButtonVisibility = false;
-                    MessageTarget = args.NewMessageTarget;
-                    RaisePropertyChanged(() => MessageTarget);
-                    return;
-                }
-                NewMessageFieldsVisibility = false;
-                _newMessage = false;
+                    var arg = args.Arg as MalMessageModel;
+                    if (arg == null) //compose new
+                    {
+                        _newMessage = true;
+                        MessageSet.Clear();
+                        NewMessageFieldsVisibility = true;
+                        ViewModelLocator.GeneralMain.OffRefreshButtonVisibility = false;
+                        MessageTarget = args.NewMessageTarget;
+                        RaisePropertyChanged(() => MessageTarget);
+                        return;
+                    }
+                    NewMessageFieldsVisibility = false;
+                    _newMessage = false;
 
-                if (!force &&_prevMsg?.Id == arg.Id)
-                    return;
-                _prevMsg = arg;
-                MessageSet.Clear();
-                LoadingVisibility = true;
-                if (!force && arg.ThreadId != null && MessageThreads.ContainsKey(arg.ThreadId))
-                {
-                    MessageSet.AddRange(MessageThreads[arg.ThreadId]);
+                    if (!force &&_prevMsg?.Id == arg.Id)
+                        return;
+                    _prevMsg = arg;
+                    MessageSet.Clear();
+                    LoadingVisibility = true;
+                    if (!force && arg.ThreadId != null && MessageThreads.ContainsKey(arg.ThreadId))
+                    {
+                        MessageSet.AddRange(MessageThreads[arg.ThreadId]);
+                    }
+                    else
+                    {
+                        var msgs = await new MalMessageDetailsQuery().GetMessagesInThread(arg);
+                        msgs.Reverse();
+                        MessageSet.AddRange(msgs);
+                    }
+
                 }
                 else
                 {
-                    var msgs = await new MalMessageDetailsQuery().GetMessagesInThread(arg);
-                    msgs.Reverse();
-                    MessageSet.AddRange(msgs);
+                    NewMessageFieldsVisibility = false;
+                    var arg = args.Arg as MalComment;
+                    if (arg == null)
+                        return;
+                    if(!force && arg.ComToCom == (_prevArgs?.Arg as MalComment)?.ComToCom)
+                        return;
+                    _prevMsg = null;
+                    LoadingVisibility = true;
+                    MessageSet.Clear();
+                    MessageSet =
+                        new SmartObservableCollection<MalMessageModel>(
+                            (await ProfileCommentQueries.GetComToComMessages(arg.ComToCom)));
+                    RaisePropertyChanged(() => MessageSet);
                 }
-
+                _prevArgs = args;
             }
-            else
+            finally
             {
-                NewMessageFieldsVisibility = false;
-                var arg = args.Arg as MalComment;
-                if(!force && arg.ComToCom == (_prevArgs?.Arg as MalComment)?.ComToCom)
-                    return;
-                _prevMsg = null;
-                LoadingVisibility = true;
-                MessageSet.Clear();
-                MessageSet =
-                    new SmartObservableCollection<MalMessageModel>(
-                        (await ProfileCommentQueries.GetComToComMessages(arg.ComToCom)));
-                RaisePropertyChanged(() => MessageSet);
+                // LoadingVisibility was only cleared at the very end, so any throw
+                // left the scrim up with the thread contents hidden.
+                LoadingVisibility = false;
             }
-            _prevArgs = args;
-            LoadingVisibility = false;
         }
 
         public void RefreshData()

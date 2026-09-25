@@ -142,10 +142,19 @@ namespace MALClient.XShared.ViewModels.Clubs
                 if (_myClubs == null)
                 {
                     Loading = true;
-                    MyClubs = new ObservableCollection<MalClubEntry>(await MalClubQueries.GetClubs(QueryType, 0) ?? Enumerable.Empty<MalClubEntry>());
-                    MyClubsEmptyNoticeVisibility = !MyClubs.Any();
-                    Loading = false;
-
+                    try
+                    {
+                        MyClubs = new ObservableCollection<MalClubEntry>(await MalClubQueries.GetClubs(QueryType, 0) ?? Enumerable.Empty<MalClubEntry>());
+                        MyClubsEmptyNoticeVisibility = !MyClubs.Any();
+                    }
+                    catch (Exception)
+                    {
+                        EmptyNoticeVisibility = true;
+                    }
+                    finally
+                    {
+                        Loading = false;
+                    }
                 }
             }
         }
@@ -155,17 +164,28 @@ namespace MALClient.XShared.ViewModels.Clubs
             if (_allClubs == null)
             {
                 Loading = true;
-                _allClubs = await MalClubQueries.GetClubs(MalClubQueries.QueryType.All, 0);
-                Loading = false;
-                if (_allClubs != null && _allClubs.Any())
+                try
                 {
-                    Clubs = new SmartObservableCollection<MalClubEntry>(_allClubs);
-                    EmptyNoticeVisibility = false;
+                    _allClubs = await MalClubQueries.GetClubs(MalClubQueries.QueryType.All, 0);
+                    if (_allClubs != null && _allClubs.Any())
+                    {
+                        Clubs = new SmartObservableCollection<MalClubEntry>(_allClubs);
+                        EmptyNoticeVisibility = false;
+                    }
+                    else
+                    {
+                        Clubs = new SmartObservableCollection<MalClubEntry>();
+                        EmptyNoticeVisibility = true;
+                    }
                 }
-                else
+                catch (Exception)
                 {
                     Clubs = new SmartObservableCollection<MalClubEntry>();
                     EmptyNoticeVisibility = true;
+                }
+                finally
+                {
+                    Loading = false;
                 }
             }
         }
@@ -173,22 +193,37 @@ namespace MALClient.XShared.ViewModels.Clubs
         public ICommand SearchCommand => new RelayCommand( async () =>
         {
             _currentPage = 1;
-            Clubs.Clear();
-            EmptyNoticeVisibility = false;
             Loading = true;
-            _lastQueryClubs = await MalClubQueries.GetClubs(QueryType, 0, SearchCategory, SearchQuery);
-            Loading = false;
-            if (_lastQueryClubs != null)
+            try
             {
-                Clubs = new SmartObservableCollection<MalClubEntry>(_lastQueryClubs);
-                MoreButtonVisibility = true;
+                // Clubs is null until the first load completes, so this has to be
+                // inside the guard: an NRE here escaped the async lambda and took
+                // the whole process down.
+                if (Clubs != null)
+                    Clubs.Clear();
                 EmptyNoticeVisibility = false;
+                _lastQueryClubs = await MalClubQueries.GetClubs(QueryType, 0, SearchCategory, SearchQuery);
+                if (_lastQueryClubs != null)
+                {
+                    Clubs = new SmartObservableCollection<MalClubEntry>(_lastQueryClubs);
+                    MoreButtonVisibility = true;
+                    EmptyNoticeVisibility = false;
+                }
+                else
+                {
+                    Clubs = new SmartObservableCollection<MalClubEntry>();
+                    MoreButtonVisibility = false;
+                    EmptyNoticeVisibility = true;
+                }
             }
-            else
+            catch (Exception)
             {
                 Clubs = new SmartObservableCollection<MalClubEntry>();
-                MoreButtonVisibility = false;
                 EmptyNoticeVisibility = true;
+            }
+            finally
+            {
+                Loading = false;
             }
         });
 
@@ -196,22 +231,32 @@ namespace MALClient.XShared.ViewModels.Clubs
         {
             _currentPage++;
             Loading = true;
-            var clubs = await MalClubQueries.GetClubs(QueryType, _currentPage, SearchCategory, SearchQuery);
-            Loading = false;
-            if (clubs != null)
+            try
             {
-                if(_lastQueryClubs != null)
-                    _lastQueryClubs.AddRange(clubs);
-                else
-                    _lastQueryClubs = new List<MalClubEntry>(clubs);
+                var clubs = await MalClubQueries.GetClubs(QueryType, _currentPage, SearchCategory, SearchQuery);
+                if (clubs != null)
+                {
+                    if(_lastQueryClubs != null)
+                        _lastQueryClubs.AddRange(clubs);
+                    else
+                        _lastQueryClubs = new List<MalClubEntry>(clubs);
 
-                if(Clubs != null)
-                    Clubs.AddRange(clubs);
+                    if(Clubs != null)
+                        Clubs.AddRange(clubs);
+                    else
+                        Clubs = new SmartObservableCollection<MalClubEntry>(clubs);
+                }
                 else
-                    Clubs = new SmartObservableCollection<MalClubEntry>(clubs);
+                    MoreButtonVisibility = false;
             }
-            else
+            catch (Exception)
+            {
                 MoreButtonVisibility = false;
+            }
+            finally
+            {
+                Loading = false;
+            }
         });
 
         public ICommand NavigateDetailsCommand => new RelayCommand<MalClubEntry>(entry =>

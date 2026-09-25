@@ -91,7 +91,21 @@ public class BoolToVisibilityConverter : IValueConverter
                 // RelatedItemType.Anime=0 (default) → hidden; Manga/Unknown (nonzero) → visible
                 return System.Convert.ToInt32(en) != 0;
             }
-            return false;
+            if (value == null)
+            {
+                // A null object still has to honour "invert", otherwise both the
+                // visible and the inverted binding resolve to false and the page
+                // renders completely blank.
+                return parameter is string nullParam && nullParam == "invert";
+            }
+            if (parameter is string objParam)
+            {
+                if (objParam == "invert")
+                    return false;
+                if (objParam == "nonempty")
+                    return true;
+            }
+            return true;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

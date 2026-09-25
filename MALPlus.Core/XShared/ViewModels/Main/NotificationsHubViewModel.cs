@@ -33,9 +33,16 @@ namespace MALClient.XShared.ViewModels.Main
             if (AllNotifications == null || force)
             {
                 Loading = true;
-                AllNotifications = await MalNotificationsQuery.GetNotifications();
-                CurrentNotificationType = null;
-                Loading = false;
+                try
+                {
+                    AllNotifications = await MalNotificationsQuery.GetNotifications();
+                    CurrentNotificationType = null;
+                }
+                finally
+                {
+                    // Never cleared on failure, so the hub stayed behind its scrim.
+                    Loading = false;
+                }
             }
         }
 

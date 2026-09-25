@@ -105,9 +105,15 @@ namespace MALClient.XShared.ViewModels.Forums.Items
         public async Task StartEdit()
         {
             Loading = true;
-            BBcodeContent = await ForumTopicQueries.GetMessageBbcode(Data.Id);
-            EditMode = true;
-            Loading = false;
+            try
+            {
+                BBcodeContent = await ForumTopicQueries.GetMessageBbcode(Data.Id);
+                EditMode = true;
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
 
         public ICommand CancelEditCommand => new RelayCommand(() =>
@@ -125,19 +131,25 @@ namespace MALClient.XShared.ViewModels.Forums.Items
         public ICommand SubmitEditCommand => new RelayCommand(async () =>
         {
             Loading = true;
-            var resp = await ForumTopicQueries.EditMessage(Data.Id, BBcodeContent,Data.TopicId);
-            if (resp == null)
+            try
             {
-                ResourceLocator.MessageDialogProvider.ShowMessageDialog("Unable to edit this comment","Something went wrong");
+                var resp = await ForumTopicQueries.EditMessage(Data.Id, BBcodeContent,Data.TopicId);
+                if (resp == null)
+                {
+                    ResourceLocator.MessageDialogProvider.ShowMessageDialog("Unable to edit this comment","Something went wrong");
+                }
+                else
+                {
+                    Data.HtmlContent = resp;
+                    RaisePropertyChanged(() => Data);
+                    BBcodeContent = null;
+                    EditMode = false;
+                }
             }
-            else
+            finally
             {
-                Data.HtmlContent = resp;
-                RaisePropertyChanged(() => Data);
-                BBcodeContent = null;
-                EditMode = false;
+                Loading = false;
             }
-            Loading = false;
         });
 
         public ICommand DeleteCommand => new RelayCommand(() =>

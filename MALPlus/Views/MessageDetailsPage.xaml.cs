@@ -1,3 +1,4 @@
+using MALClient.Models.Models;
 using MALClient.Models.Models.MalSpecific;
 using MALClient.XShared.NavArgs;
 using MALClient.XShared.ViewModels;
@@ -8,12 +9,14 @@ namespace MALPlus.Views;
 [QueryProperty(nameof(ThreadId), "id")]
 [QueryProperty(nameof(Subject), "subject")]
 [QueryProperty(nameof(ToUser), "to")]
+[QueryProperty(nameof(Comments), "comments")]
 public partial class MessageDetailsPage : ContentPage
 {
     private bool _initialized;
     public string ThreadId { get; set; }
     public string Subject { get; set; }
     public string ToUser { get; set; }
+    public string Comments { get; set; }
 
     private MalMessageDetailsViewModel Vm => (MalMessageDetailsViewModel)BindingContext;
 
@@ -31,6 +34,21 @@ public partial class MessageDetailsPage : ContentPage
         try
         {
             var subject = Uri.UnescapeDataString(Subject ?? "");
+            if (Comments == "1")
+            {
+                // Profile comment thread: the route carries com-to-com id + user.
+                Vm.MessageSubject = subject;
+                Vm.Init(new MalMessageDetailsNavArgs
+                {
+                    WorkMode = MessageDetailsWorkMode.ProfileComments,
+                    Arg = new MalComment
+                    {
+                        ComToCom = ThreadId,
+                        User = new MalUser { Name = Uri.UnescapeDataString(ToUser ?? "") }
+                    }
+                });
+                return;
+            }
             if (string.IsNullOrEmpty(ThreadId) || ThreadId == "0")
             {
                 Vm.NewMessageFieldsVisibility = true;

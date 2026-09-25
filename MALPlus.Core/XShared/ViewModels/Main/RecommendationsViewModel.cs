@@ -175,80 +175,85 @@ namespace MALClient.XShared.ViewModels.Main
             }
 
             Loading = true;
-
-            if (CurrentWorkMode == RecommendationsPageWorkMode.Anime ||
-                CurrentWorkMode == RecommendationsPageWorkMode.Manga)
+            try
             {
-                List<RecommendationData> data = null;
-                await Task.Run(async () => data =
-                    await new AnimeRecomendationsQuery(CurrentWorkMode == RecommendationsPageWorkMode.Anime)
-                        .GetRecomendationsData());
-                if (data == null)
+                if (CurrentWorkMode == RecommendationsPageWorkMode.Anime ||
+                    CurrentWorkMode == RecommendationsPageWorkMode.Manga)
                 {
-                    Loading = false;
-                    return;
-                }
+                    List<RecommendationData> data = null;
+                    await Task.Run(async () => data =
+                        await new AnimeRecomendationsQuery(CurrentWorkMode == RecommendationsPageWorkMode.Anime)
+                            .GetRecomendationsData());
+                    if (data == null)
+                        return;
 
-                var items = new List<XPivotItem>();
-                var i = 0;
-                foreach (var item in data)
-                {
-                    var pivot = new XPivotItem
+                    var items = new List<XPivotItem>();
+                    var i = 0;
+                    foreach (var item in data)
                     {
-                        Header = item.DependentTitle + "\n" + item.RecommendationTitle,
-                        Content = new RecommendationItemViewModel(item, i++)
-                    };
-                    items.Add(pivot);
-                }
+                        var pivot = new XPivotItem
+                        {
+                            Header = item.DependentTitle + "\n" + item.RecommendationTitle,
+                            Content = new RecommendationItemViewModel(item, i++)
+                        };
+                        items.Add(pivot);
+                    }
 
-                if (CurrentWorkMode == RecommendationsPageWorkMode.Anime)
-                {
-                    RecommendationAnimeItems = items;
+                    if (CurrentWorkMode == RecommendationsPageWorkMode.Anime)
+                    {
+                        RecommendationAnimeItems = items;
+                    }
+                    else
+                    {
+                        RecommendationMangaItems = items;
+                    }
+
+                    RaisePropertyChanged(() => PivotItemIndex);
                 }
                 else
                 {
-                    RecommendationMangaItems = items;
+                    var data =
+                        await new AnimePersonalizedRecommendationsQuery(CurrentWorkMode ==
+                                                                        RecommendationsPageWorkMode.PersonalizedAnime)
+                            .GetPersonalizedRecommendations();
+                    if (data == null)
+                        return;
+                    if (CurrentWorkMode == RecommendationsPageWorkMode.PersonalizedAnime)
+                    {
+                        PersonalizedAnimeItems =
+                            data.Select(recommendationData => new AnimeItemAbstraction(false, new AnimeLibraryItemData
+                            {
+                                Title = recommendationData.Title,
+                                Id = recommendationData.Id,
+                                ImgUrl = recommendationData.ImgUrl
+                            }).ViewModel).ToList();
+                        PersonalizedAnimeItems.ForEach(model =>
+                        {
+                            model.UpdateButtonsVisibility = false;
+                        });
+                    }
+                    else
+                    {
+                        PersonalizedMangaItems =
+                            data.Select(recommendationData => new AnimeItemAbstraction(false, new MangaLibraryItemData
+                            {
+                                Title = recommendationData.Title,
+                                Id = recommendationData.Id,
+                                ImgUrl = recommendationData.ImgUrl
+                            }).ViewModel).ToList();
+                        PersonalizedMangaItems.ForEach(model =>
+                        {
+                            model.UpdateButtonsVisibility = false;
+                        });
+                    }
                 }
-
-                RaisePropertyChanged(() => PivotItemIndex);
             }
-            else
+            finally
             {
-                var data =
-                    await new AnimePersonalizedRecommendationsQuery(CurrentWorkMode ==
-                                                                    RecommendationsPageWorkMode.PersonalizedAnime)
-                        .GetPersonalizedRecommendations();
-                if (CurrentWorkMode == RecommendationsPageWorkMode.PersonalizedAnime)
-                {
-                    PersonalizedAnimeItems =
-                        data.Select(recommendationData => new AnimeItemAbstraction(false, new AnimeLibraryItemData
-                        {
-                            Title = recommendationData.Title,
-                            Id = recommendationData.Id,
-                            ImgUrl = recommendationData.ImgUrl
-                        }).ViewModel).ToList();
-                    PersonalizedAnimeItems.ForEach(model =>
-                    {
-                        model.UpdateButtonsVisibility = false;
-                    });
-                }
-                else
-                {
-                    PersonalizedMangaItems =
-                        data.Select(recommendationData => new AnimeItemAbstraction(false, new MangaLibraryItemData
-                        {
-                            Title = recommendationData.Title,
-                            Id = recommendationData.Id,
-                            ImgUrl = recommendationData.ImgUrl
-                        }).ViewModel).ToList();
-                    PersonalizedMangaItems.ForEach(model =>
-                    {
-                        model.UpdateButtonsVisibility = false;
-                    });
-                }
+                // Loading doubles as the re-entrancy guard above, so leaving it
+                // set would block every later attempt.
+                Loading = false;
             }
-
-            Loading = false;
 
         }
     }

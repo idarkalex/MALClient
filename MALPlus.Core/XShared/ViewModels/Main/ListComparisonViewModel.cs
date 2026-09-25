@@ -169,12 +169,12 @@ namespace MALClient.XShared.ViewModels.Main
 
             _navArgs = args;
             Loading = true;
-            MyData = await DataCache.RetrieveProfileData(Credentials.UserName);
-            OtherData = await DataCache.RetrieveProfileData(args.CompareWith.Name);
-            RaisePropertyChanged(() => MyData);
-            RaisePropertyChanged(() => OtherData);
             try
             {
+                MyData = await DataCache.RetrieveProfileData(Credentials.UserName);
+                OtherData = await DataCache.RetrieveProfileData(args.CompareWith.Name);
+                RaisePropertyChanged(() => MyData);
+                RaisePropertyChanged(() => OtherData);
                 await _animeLibraryDataStorage.EnsureOthersLibraryLoadedAsync(_navArgs.CompareWith.Name);
                 var otherItems = _animeLibraryDataStorage.OthersAbstractions[_navArgs.CompareWith.Name].Item1;
 
@@ -191,12 +191,17 @@ namespace MALClient.XShared.ViewModels.Main
                 _allOtherItems = otherItems.Where(other => !usedIds.Any(i => i == other.Id))
                     .Select(abstraction => new ComparisonItemViewModel(null, abstraction.ViewModel)).ToList();
 
-                Loading = false;
                 RefreshList();
             }
             catch (Exception)
             {
+                // Allow a retry: the args guard above would otherwise short-circuit.
+                _navArgs = null;
                 ResourceLocator.SnackbarProvider.ShowText("Error while retrieving aniem list.");
+            }
+            finally
+            {
+                Loading = false;
             }
         }
 

@@ -57,12 +57,16 @@ namespace MALClient.XShared.ViewModels.Main
                 return;
 
             Loading = true;
+            try
+            {
+                var videos = await new PopularVideosQuery().GetVideos();
 
-            var videos = await new PopularVideosQuery().GetVideos();
-
-            Videos = new ObservableCollection<AnimeVideoData>(videos);
-
-            Loading = false;
+                Videos = new ObservableCollection<AnimeVideoData>(videos ?? new List<AnimeVideoData>());
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
     }
 }
