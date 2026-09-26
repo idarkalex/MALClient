@@ -2,7 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+xmlns:vm="clr-namespace:MALClient.XShared.ViewModels.Main;assembly=MALPlus.Core"
+xmlns:mnotifications="clr-namespace:MALClient.Models.Models.Notifications;assembly=MALPlus.Core"
              x:Class="MALPlus.Views.NotificationsHubPage"
+             x:DataType="vm:NotificationsHubViewModel"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
@@ -40,7 +43,8 @@
                                TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate
+                        x:DataType="mnotifications:MalNotification">
                             <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="12">

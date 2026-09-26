@@ -29,6 +29,10 @@
       dotnet SDK used for local builds.
     -->
     <AndroidLinkMode Condition="'$(Configuration)' == 'Debug'">SdkOnly</AndroidLinkMode>
+    <!-- Microsoft.Maui.Controls.targets hardcodes ValidateOnly=true for Debug, so a
+         local Debug build validates XamlC but never emits the IL. Without this the
+         compiled-binding work is invisible until CI runs a Release build. -->
+    <_MauiForceXamlCForDebug>true</_MauiForceXamlCForDebug>
   </PropertyGroup>
 
   <ItemGroup>

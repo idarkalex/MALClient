@@ -71,8 +71,7 @@
                         <Label Grid.Column="0" Text="Start page" FontFamily="Inter" FontSize="14"
                                TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
                         <Picker Grid.Column="1" Title="Start page" WidthRequest="110"
-                                SelectedItem="{Binding StartPageOption}"
-                                TextColor="{StaticResource BrushText}" />
+                               TextColor="{StaticResource BrushText}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -127,9 +126,9 @@
                     <Grid ColumnDefinitions="*,Auto" Padding="0,4">
                         <Label Grid.Column="0" Text="Start page" FontFamily="Inter" FontSize="14"
                                TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
-                        <Picker Grid.Column="1" SelectedItem="{Binding DefaultMenuTabOption}"
-                                TitleColor="#A0FFFFFF" TextColor="{StaticResource BrushText}"
-                                WidthRequest="130">
+                        <Picker Grid.Column="1"
+                               TitleColor="#A0FFFFFF" TextColor="{StaticResource BrushText}"
+                               WidthRequest="130">
                             <Picker.ItemsSource>
                                 <x:Array Type="{x:Type x:String}">
                                     <x:String>anime</x:String>

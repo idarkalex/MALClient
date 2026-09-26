@@ -3,7 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
              xmlns:controls="clr-namespace:MALPlus.Controls"
+             xmlns:vm="clr-namespace:MALClient.XShared.ViewModels.Main;assembly=MALPlus.Core"
+             xmlns:itemvm="clr-namespace:MALClient.XShared.ViewModels;assembly=MALPlus.Core"
              x:Class="MALPlus.Views.AnimeListPage"
+             x:DataType="vm:AnimeListViewModel"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
@@ -24,7 +27,7 @@
                     <GridItemsLayout Orientation="Vertical" Span="3" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="itemvm:AnimeItemViewModel">
                         <controls:AnimePosterCard HeightRequest="195" Margin="2"
                                                   PosterUrl="{Binding ImgUrl}"
                                                   Title="{Binding Title}"

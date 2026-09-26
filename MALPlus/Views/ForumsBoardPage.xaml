@@ -2,7 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:mforumsitems="clr-namespace:MALClient.XShared.ViewModels.Forums.Items;assembly=MALPlus.Core"
+             xmlns:mforums="clr-namespace:MALClient.XShared.ViewModels.Forums;assembly=MALPlus.Core"
              x:Class="MALPlus.Views.ForumsBoardPage"
+             x:DataType="mforums:ForumBoardViewModel"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
@@ -33,7 +36,8 @@
                         </VerticalStackLayout>
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate
+                        x:DataType="mforumsitems:ForumTopicEntryViewModel">
                             <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="12">

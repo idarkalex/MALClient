@@ -295,9 +295,7 @@ public partial class BottomNavBar : ContentView
 
             _navigationInFlight = true;
             ownsNavigation = true;
-            Android.Util.Log.Info("MALPLUS", $"BottomNav GoToAsync '{route}' (allowCurrent={allowCurrent})");
             await shell.GoToAsync(route);
-            Android.Util.Log.Info("MALPLUS", $"BottomNav GoToAsync ok '{route}' -> {CurrentLocation()}");
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 try { SectionActivated?.Invoke(route); }

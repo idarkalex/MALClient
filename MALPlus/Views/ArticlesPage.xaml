@@ -2,7 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+xmlns:vm="clr-namespace:MALClient.XShared.ViewModels.Main;assembly=MALPlus.Core"
+xmlns:mmalspecific="clr-namespace:MALClient.Models.Models.MalSpecific;assembly=MALPlus.Core"
              x:Class="MALPlus.Views.ArticlesPage"
+             x:DataType="vm:MalArticlesViewModel"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
@@ -73,7 +76,8 @@
                                TextColor="#80FFFFFF" HorizontalOptions="Center" VerticalOptions="Center" />
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate
+                        x:DataType="mmalspecific:MalNewsUnitModel">
                             <Border Margin="16,6" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="0">
