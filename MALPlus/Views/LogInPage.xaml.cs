@@ -20,6 +20,9 @@ public partial class LogInPage : ContentPage
     {
         InitializeComponent();
         BindingContext = ViewModelLocator.LogIn;
+#if ANDROID
+        AuthWebView.HandlerChanged += OnAuthWebViewHandlerChanged;
+#endif
     }
 
     protected override void OnAppearing()
@@ -113,6 +116,34 @@ public partial class LogInPage : ContentPage
         }
     }
 
+    private const string DesktopUserAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
+    private void OnAuthWebViewHandlerChanged(object sender, EventArgs e)
+    {
+        try
+        {
+#if ANDROID
+            // MyAnimeList serves "Google reCAPTCHA is currently blocked" inside the
+            // default Android WebView, because the stock WebView user agent is what its
+            // bot detection keys on. Presenting a desktop Chrome is what unblocks it.
+            var platform = AuthWebView?.Handler?.PlatformView as global::Android.Webkit.WebView;
+            if (platform == null)
+                return;
+            var settings = platform.Settings;
+            if (settings != null && settings.UserAgentString != DesktopUserAgent)
+                settings.UserAgentString = DesktopUserAgent;
+            var cookies = global::Android.Webkit.CookieManager.Instance;
+            cookies.SetAcceptCookie(true);
+            cookies.SetAcceptThirdPartyCookies(platform, true);
+#endif
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS auth webview setup failed: " + ex.Message);
+        }
+    }
+
     /// <summary>
     /// MAL+ signs in with the username and password the user typed, so the MAL session in
     /// the WebView has to be gone first. With a live session, login.php redirects straight
@@ -162,6 +193,7 @@ public partial class LogInPage : ContentPage
         try
         {
             var url = e.Url ?? string.Empty;
+            Probe("NAVIGATED " + url);
             if (url.Contains("login.php"))
                 _loginPageReady = true;
             if (!_autoMode)
@@ -250,12 +282,9 @@ public partial class LogInPage : ContentPage
                 + "p.focus();p.value='" + JsEscape(_autoPass) + "';p.dispatchEvent(new Event('input',{bubbles:true}));"
                 + "var f=u.form||p.form;"
                 + "var b=document.querySelector('input[type=\"submit\"]')||document.querySelector('button[type=\"submit\"]')||document.querySelector('.btn-submit');"
+                + "window.__malplusP=!!(f&&b);"
                 + "if(b){b.click();}"
-                // A synthetic click is not trusted, and MyAnimeList's login form ignores
-                // those, so submitting the form itself is what actually navigates.
-                + "if(f){f.submit();return 'submitted';}"
-                + "if(b){return 'submitted';}"
-                + "return 'nosubmit';})();";
+                + "return 'filled';})();";
             var result = await MainThread.InvokeOnMainThreadAsync(() => AuthWebView.EvaluateJavaScriptAsync(js));
             Probe("autofill result=" + result);
             if (result != null && result.Contains("wall"))
@@ -271,24 +300,76 @@ public partial class LogInPage : ContentPage
                 }
                 FallbackToManual("Could not pass MyAnimeList's privacy notice.");
             }
-            else if (result != null && result.Contains("submitted"))
+            else if (result != null && result.Contains("filled"))
             {
+                // Submitting is the hard part. MyAnimeList's form needs its own submit
+                // handler to run: a synthetic click is untrusted and gets ignored, and a
+                // bare form.submit() skips the handler, so MAL answers the POST with a
+                // 400 that has nothing to do with the password. Try all three, checking
+                // after each whether the page actually moved on.
                 _autoSubmitted = true;
                 ShowBusy(true, "Verifying your credentials…");
                 _autoCts?.Cancel();
                 _autoCts = new CancellationTokenSource();
                 _ = AutoTimeoutAsync(_autoCts.Token);
+                // The token of the CTS we just cancelled is dead, so the submit loop has to
+                // use the new one; reusing the old one aborted the attempt instantly and
+                // reported "could not fill the login form" right after a successful submit.
+                if (await SubmitWithFallbacksAsync(_autoCts.Token))
+                    return;
+                FailAuto("Could not submit the login form. Try again.");
             }
             else
             {
-                FallbackToManual("Could not fill the login form. Continue here.");
+                FallbackToManual("Could not fill the login form.");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS autofill failed: " + ex.Message);
-            FallbackToManual("Could not fill the login form. Continue here.");
+            FallbackToManual("Could not fill the login form.");
         }
+    }
+
+    private async Task<bool> SubmitWithFallbacksAsync(CancellationToken token)
+    {
+        const string stillHere = "(function(){return document.querySelector('input[type=\"password\"]')?'here':'gone';})();";
+        var attempts = new (string Name, string Js)[]
+        {
+            ("submit-event",
+                "(function(){var f=document.querySelector('form');if(!f)return 'noform';"
+                + "return f.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))?'dispatched':'blocked';})();"),
+            ("prototype-submit",
+                "(function(){var f=document.querySelector('form');if(!f)return 'noform';"
+                + "HTMLFormElement.prototype.submit.call(f);return 'submitted';})();"),
+        };
+        foreach (var attempt in attempts)
+        {
+            try
+            {
+                var result = await MainThread.InvokeOnMainThreadAsync(() => AuthWebView.EvaluateJavaScriptAsync(attempt.Js));
+                Probe("submit " + attempt.Name + "=" + result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("MALPLUS submit " + attempt.Name + " failed: " + ex.Message);
+            }
+            for (var waited = 0; waited < 12; waited++)
+            {
+                try
+                {
+                    await Task.Delay(500, token);
+                }
+                catch (TaskCanceledException)
+                {
+                    return false;
+                }
+                var here = await MainThread.InvokeOnMainThreadAsync(() => AuthWebView.EvaluateJavaScriptAsync(stillHere));
+                if (here != null && here.Contains("gone"))
+                    return true;
+            }
+        }
+        return false;
     }
 
     private async Task DiagnoseReturnToLoginAsync()
@@ -304,13 +385,15 @@ public partial class LogInPage : ContentPage
                 + "var st=window.getComputedStyle(els[i]);"
                 + "if(r.width>40&&r.height>20&&st.display!=='none'&&st.visibility!=='hidden')return 'challenge';}"
                 + "var t=document.body?document.body.innerText:'';"
-                // A bare 400 is how MyAnimeList rejects the automated submit, i.e. bad
-                // credentials. Matching on body text alone used to misread it as a captcha
-                // challenge because the page footer carries the word "verification".
-                + "if(/400|bad request/i.test(t))return 'denied';"
-                + "if(/incorrect|invalid|wrong|failed|error/i.test(t))return 'denied';"
-                + "if(/not a robot|verification required/i.test(t))return 'challenge';"
-                + "return 'unknown';})();";
+                // Always report what the page actually says. Deciding from keywords alone
+                // is how a rejected password and a malformed automated submit got mixed up.
+                + "var e=document.querySelector('.error,.error-message,#error,.form-error,div[class*=\"error\"],div[class*=\"Error\"]');"
+                + "var msg=(e?((e.innerText||e.value||'')+''):'')||((t.match(/[^\\n]*(incorrect|invalid|wrong|password|error|denied|400)[^\\n]*/i)||[''])[0]);"
+                + "var head=(document.title||'')+' >> '+msg.trim().slice(0,160);"
+                + "if(/400|bad request/i.test(t))return 'denied|'+head;"
+                + "if(/incorrect|invalid|wrong|failed|error|denied/i.test(t))return 'denied|'+head;"
+                + "if(/not a robot|verification required/i.test(t))return 'challenge|'+head;"
+                + "return 'unknown|'+head;})();";
             var result = await MainThread.InvokeOnMainThreadAsync(() => AuthWebView.EvaluateJavaScriptAsync(js));
             Probe("diagnose result=" + result);
             if (result != null && result.Contains("challenge"))
@@ -408,6 +491,12 @@ public partial class LogInPage : ContentPage
         ResetToForm(message);
     }
 
+    /// <summary>
+    /// The automatic sign-in gave up. MyAnimeList's page is NOT shown: the app says what
+    /// happened on our own screen and only reveals the WebView if the user explicitly asks
+    /// for it. This used to flip the overlay on by itself, which is how MAL kept ending up
+    /// in the foreground.
+    /// </summary>
     private void FallbackToManual(string hint)
     {
         try
@@ -418,7 +507,22 @@ public partial class LogInPage : ContentPage
             _autoCts?.Cancel();
             ShowBusy(false, null);
             LoginForm.IsEnabled = true;
-            OverlayHint.Text = hint;
+            WebOverlay.IsVisible = false;
+            ManualLoginButton.IsVisible = true;
+            ShowStatus(string.IsNullOrEmpty(hint) ? "Sign-in needs one more step." : hint);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS fallback failed: " + ex.Message);
+        }
+    }
+
+    private void OnManualLoginClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            ManualLoginButton.IsVisible = false;
+            OverlayHint.Text = "Sign in with MyAnimeList, then tap Close";
             OverlayHint.IsVisible = true;
             if (AuthWebView.Source is not UrlWebViewSource { Url: string u }
                 || (!u.Contains("login.php") && !u.Contains("oauth2/authorize") && !u.Contains("dialog/")))
@@ -429,7 +533,7 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS fallback failed: " + ex.Message);
+            Console.WriteLine("MALPLUS manual login failed: " + ex.Message);
         }
     }
 
@@ -472,6 +576,18 @@ public partial class LogInPage : ContentPage
         catch
         {
         }
+#if ANDROID
+        try
+        {
+            // The probe file lives in the app's cache, which cannot be read without a
+            // debuggable build, and a failing sign-in is exactly when the navigation
+            // history matters. Logcat is readable from adb.
+            Android.Util.Log.Info("MALPlusAuth", text);
+        }
+        catch
+        {
+        }
+#endif
     }
 
     private string _cookies;
@@ -481,6 +597,7 @@ public partial class LogInPage : ContentPage
         try
         {
             var url = e.Url ?? string.Empty;
+            Probe("NAVIGATING " + url);
             if (url.Contains("maloauth?state=signin&error="))
             {
                 e.Cancel = true;

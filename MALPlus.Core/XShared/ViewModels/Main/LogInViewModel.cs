@@ -206,11 +206,23 @@ namespace MALClient.XShared.ViewModels.Main
         public async void SignIn(string cookies, string apiCode)
         {
             Authenticating = true;
-            if (cookies.Contains("is_logged_in=1"))
+            // Do not gate on the is_logged_in cookie. Reaching the OAuth callback at all
+            // means MyAnimeList accepted the credentials, and the token exchange below is
+            // the real proof: it fails loudly if the code is not usable. The cookie check
+            // used to be the only gate, and when the cookie was absent from the jar the
+            // whole sign-in was skipped with no error at all.
+            if (string.IsNullOrEmpty(apiCode))
+            {
+                Credentials.SetAuthStatus(false);
+                Credentials.Update(string.Empty, string.Empty, ApiType.Mal);
+                ResourceLocator.MessageDialogProvider.ShowMessageDialog("Unable to authorize with provided credentials. If problem persists please try to sign-in on website.", "Authorization failed.");
+                Authenticating = false;
+                return;
+            }
             {
                 Credentials.SetAuthStatus(true);
-                Credentials.Update("", cookies, ApiType.Mal);
-                _httpContextProvider.SetCookies(cookies);
+                Credentials.Update("", cookies ?? string.Empty, ApiType.Mal);
+                _httpContextProvider.SetCookies(cookies ?? string.Empty);
 
                 try
                 {
@@ -269,13 +281,6 @@ namespace MALClient.XShared.ViewModels.Main
                     Authenticating = false;
                     return;
                 }
-            }
-            else
-            {
-                Credentials.SetAuthStatus(false);
-                Credentials.Update(string.Empty, string.Empty, ApiType.Mal);
-                ResourceLocator.MessageDialogProvider.ShowMessageDialog("Unable to authorize with provided credentials. If problem persists please try to sign-in on website.", "Authorization failed.");
-                Authenticating = false;
             }
         }
 

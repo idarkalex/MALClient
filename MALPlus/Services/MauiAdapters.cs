@@ -527,15 +527,49 @@ public class MauiDataCache : IDataCache
 
     public Task ClearApiRelatedCache()
     {
-        // These were no-ops, so the "Clear caches" button deleted nothing.
-        MALClient.XShared.Utils.DataCache.ClearApiRelatedCache();
-        MALClient.XShared.Utils.DataCache.ClearAnimeListData();
+        // Do NOT call MALClient.XShared.Utils.DataCache.ClearApiRelatedCache() from here.
+        // That static method dispatches through the IoC, and IDataCache is registered as
+        // MauiDataCache, so it re-entered this method forever and killed the process with
+        // a StackOverflowException on hwuiTask1 right after a successful sign-in.
+        lock (EnsuredDirs)
+            EnsuredDirs.Clear();
+        foreach (var dir in SafeEnumerateDirectories())
+        {
+            var name = Path.GetFileName(dir);
+            // "roaming" is not API cache: it holds the seed import gate and the settings.
+            if (name.Equals("roaming", StringComparison.OrdinalIgnoreCase))
+                continue;
+            TryDeleteDirectory(dir);
+        }
         return Task.CompletedTask;
     }
 
     public Task ClearAnimeListData()
     {
-        MALClient.XShared.Utils.DataCache.ClearAnimeListData();
-        return Task.CompletedTask;
+        return ClearApiRelatedCache();
+    }
+
+    private static IEnumerable<string> SafeEnumerateDirectories()
+    {
+        try
+        {
+            return Directory.Exists(Root) ? Directory.EnumerateDirectories(Root).ToList() : new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
+    }
+
+    private static void TryDeleteDirectory(string dir)
+    {
+        try
+        {
+            Directory.Delete(dir, true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS cache delete failed for " + dir + ": " + ex.Message);
+        }
     }
 }

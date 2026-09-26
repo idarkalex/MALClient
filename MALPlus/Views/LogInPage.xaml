@@ -25,6 +25,10 @@
             <Button Text="Log out" Command="{Binding LogOutCommand}"
                     IsVisible="{Binding LogOutButtonVisibility}"
                     FontFamily="InterSemiBold" FontSize="14" />
+            <Button x:Name="ManualLoginButton" Text="Sign in on the MyAnimeList site"
+                    Clicked="OnManualLoginClicked" IsVisible="False"
+                    FontFamily="Inter" FontSize="12" BackgroundColor="Transparent"
+                    TextColor="{StaticResource EmAccent}" />
             <Button Text="Create account on myanimelist.net" Command="{Binding NavigateRegister}"
                     FontFamily="Inter" FontSize="12" BackgroundColor="Transparent"
                     TextColor="{StaticResource EmAccent}" />
