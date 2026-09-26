@@ -1417,14 +1417,9 @@ namespace MALClient.XShared.ViewModels.Details
             DetailImage = _imgUrl;
             LoadingGlobal = false;
 
-            if (Settings.DetailsAutoLoadDetails)
-                LoadDetails();
-            if (Settings.DetailsAutoLoadReviews)
-                LoadReviews();
-            if (Settings.DetailsAutoLoadRecomms)
-                LoadRecommendations();
-            if (Settings.DetailsAutoLoadRelated)
-                LoadRelatedAnime();
+            if (Settings.DetailsAutoLoadDetails || Settings.DetailsAutoLoadReviews ||
+                Settings.DetailsAutoLoadRecomms || Settings.DetailsAutoLoadRelated)
+                _ = PreloadTabsInOrderAsync();
 
             //Launch UI updates without triggering inner update logic -> nothng to update
             UpdateAnimeReferenceUiBindings(Id);
@@ -1570,26 +1565,110 @@ namespace MALClient.XShared.ViewModels.Details
                 RequestWebNavigation?.Invoke(url);
         }
 
-        public async Task LoadDetails(bool force = false)
+        public Task LoadDetails(bool force = false)
         {
-            if (LoadingDetails || (_loadedDetails && !force))
-                return;
-            LoadingDetails = true;
+            if (_loadedDetails && !force)
+                return Task.CompletedTask;
+            return RunTabLoadOnce(nameof(LoadDetails), async () =>
+            {
+                LoadingDetails = true;
+                try
+                {
+                    if (await LoadDetailsCoreAsync(force))
+                        ++PivotVersion;
+                }
+                finally
+                {
+                    LoadingDetails = false;
+                }
+            });
+        }
+
+        private readonly Dictionary<string, Task> _inFlightTabLoads = new Dictionary<string, Task>();
+
+        /// <summary>
+        ///     Runs a tab loader at most once at a time. The open-time preload and the
+        ///     fragment's TabSelected can ask for the same tab; the second caller has to
+        ///     AWAIT the running load, not return early, otherwise it reads
+        ///     <c>XxxLoaded == false</c> and never refreshes its bindings.
+        /// </summary>
+        private async Task RunTabLoadOnce(string key, Func<Task> body)
+        {
+            Task running;
+            lock (_inFlightTabLoads)
+            {
+                if (_inFlightTabLoads.TryGetValue(key, out var existing) && !existing.IsCompleted)
+                {
+                    running = existing;
+                }
+                else
+                {
+                    running = body();
+                    _inFlightTabLoads[key] = running;
+                }
+            }
+
             try
             {
-                if (await LoadDetailsCoreAsync(force))
-                    ++PivotVersion;
+                await running;
             }
             finally
             {
-                LoadingDetails = false;
+                lock (_inFlightTabLoads)
+                {
+                    if (_inFlightTabLoads.TryGetValue(key, out var current) && ReferenceEquals(current, running))
+                        _inFlightTabLoads.Remove(key);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Warms the network tabs in the order the user actually reaches them
+        ///     (Details -> Episodes -> Reviews -> Recommendations -> Related ->
+        ///     Characters/Staff) instead of firing them all at once. The first tab is
+        ///     the visible one, so it wins the connection instead of queueing behind
+        ///     four competing requests on a slow circuit.
+        /// </summary>
+        private async Task PreloadTabsInOrderAsync()
+        {
+            var entryId = Id;
+            var entryMalId = MalId;
+            var entryAnimeMode = AnimeMode;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            bool StillCurrent() => Id == entryId && MalId == entryMalId && AnimeMode == entryAnimeMode;
+
+            if (Settings.DetailsAutoLoadDetails)
+            {
+                try { await LoadDetails(); } catch { }
             }
 
-            // No open-time prefetch of the network tabs (Reviews/Recomms/Related/
-            // Characters/Staff): each tab self-loads on selection via TabSelected, and
-            // prefetching here made every open fire ~5 extra network/Tenrai calls,
-            // turning the whole app laggy on slow circuits. Pull-to-refresh
-            // (RefreshData) still reloads everything explicitly.
+            if (!StillCurrent()) return;
+
+            foreach (var step in new Func<Task>[]
+                         {
+                             async () => { if (Settings.DetailsAutoLoadReviews) await LoadReviews(); },
+                             async () => { if (Settings.DetailsAutoLoadRecomms) await LoadRecommendations(); },
+                             async () => { if (Settings.DetailsAutoLoadRelated) await LoadRelatedAnime(); }
+                         })
+            {
+                // hand the UI thread back between tabs so the entry stays interactive
+                await Task.Delay(1);
+                try
+                {
+                    await step();
+                }
+                catch (Exception e)
+                {
+                    DiagnosticsReporter.Error("Details", $"preload step failed for {entryMalId}: {e.GetType().Name}", e);
+                }
+
+                if (!StillCurrent())
+                    return;
+            }
+
+            DiagnosticsReporter.Info("Details",
+                $"tab preload done for {entryMalId} in {sw.ElapsedMilliseconds}ms (animeMode={entryAnimeMode})");
         }
 
         private async Task<bool> LoadDetailsCoreAsync(bool force)
@@ -1910,36 +1989,40 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        public async Task LoadReviews(bool force = false)
+        public Task LoadReviews(bool force = false)
         {
-            if (LoadingReviews == true || (_loadedReviews && !force && Reviews.Any()))
-                return;
-            LoadingReviews = true;
-            try
+            if (_loadedReviews && !force && Reviews.Any())
+                return Task.CompletedTask;
+            return RunTabLoadOnce(nameof(LoadReviews), async () =>
             {
-                Reviews.Clear();
-                var revs = new List<AnimeReviewData>();
-                await Task.Run(async () => revs = await new AnimeReviewsQuery(MalId, AnimeMode).GetAnimeReviews(force));
-                if (revs == null)
+                LoadingReviews = true;
+                try
                 {
-                    DiagnosticsReporter.Warn("Details", $"reviews: null result for anime {MalId}");
-                    NoReviewsDataNoticeVisibility = true;
-                    return;
+                    Reviews.Clear();
+                    var revs = new List<AnimeReviewData>();
+                    await Task.Run(async () => revs = await new AnimeReviewsQuery(MalId, AnimeMode).GetAnimeReviews(force));
+                    if (revs == null)
+                    {
+                        DiagnosticsReporter.Warn("Details", $"reviews: null result for anime {MalId}");
+                        NoReviewsDataNoticeVisibility = true;
+                        return;
+                    }
+
+                    _loadedReviews = true;
+                    foreach (var rev in revs)
+                        Reviews.Add(rev);
+                    DiagnosticsReporter.Info("Details", $"reviews: loaded {revs.Count} items for anime {MalId}");
+                    NoReviewsDataNoticeVisibility = Reviews.Count <= 0;
                 }
-                _loadedReviews = true;
-                foreach (var rev in revs)
-                    Reviews.Add(rev);
-                DiagnosticsReporter.Info("Details", $"reviews: loaded {revs.Count} items for anime {MalId}");
-                NoReviewsDataNoticeVisibility = Reviews.Count <= 0;
-            }
-            catch (Exception ex)
-            {
-                DiagnosticsReporter.Error("Details", $"LoadReviews failed for anime {MalId} (animeMode={AnimeMode})", ex);
-            }
-            finally
-            {
-                LoadingReviews = false;
-            }
+                catch (Exception ex)
+                {
+                    DiagnosticsReporter.Error("Details", $"LoadReviews failed for anime {MalId} (animeMode={AnimeMode})", ex);
+                }
+                finally
+                {
+                    LoadingReviews = false;
+                }
+            });
         }
 
         private string ComputeAirCountdown(int id)
@@ -1970,95 +2053,111 @@ namespace MALClient.XShared.ViewModels.Details
             return "";
         }
 
-        public async Task LoadRecommendations(bool force = false)
+        public Task LoadRecommendations(bool force = false)
         {
-            if (LoadingRecommendations || (_loadedRecomm && !force && Recommendations.Any()))
-                return;
-            LoadingRecommendations = true;
-            NoRecommDataNoticeVisibility = false;
-            try
+            if (_loadedRecomm && !force && Recommendations.Any())
+                return Task.CompletedTask;
+            return RunTabLoadOnce(nameof(LoadRecommendations), async () =>
             {
-                var hadData = Recommendations.Any();
-                var recomm = new List<DirectRecommendationData>();
-                var fetch = Task.Run(
-                    async () =>
-                        recomm =
-                            await new AnimeDirectRecommendationsQuery(MalId, AnimeMode).GetDirectRecommendations(force));
-                // Hard bound: never let a hanging MAL/Tenrai network call leave the spinner stuck forever.
-                var done = await Task.WhenAny(fetch, Task.Delay(TimeSpan.FromSeconds(15)));
-                if (done != fetch)
+                LoadingRecommendations = true;
+                NoRecommDataNoticeVisibility = false;
+                try
                 {
-                    DiagnosticsReporter.Warn("Details", $"recommendations: fetch timed out for anime {MalId}, serving previous data");
-                    NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
-                    return;
-                }
-                await fetch;
-                if (recomm == null)
-                {
-                    DiagnosticsReporter.Warn("Details", $"recommendations: null result for anime {MalId}, serving previous data");
-                    NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
-                    return;
-                }
-                if (recomm.Count == 0 && hadData && !force)
-                {
-                    DiagnosticsReporter.Info("Details", $"recommendations: empty refresh for anime {MalId}, keeping {Recommendations.Count} cached items");
+                    var hadData = Recommendations.Any();
+                    var recomm = new List<DirectRecommendationData>();
+                    var fetch = Task.Run(
+                        async () =>
+                            recomm =
+                                await new AnimeDirectRecommendationsQuery(MalId, AnimeMode)
+                                    .GetDirectRecommendations(force));
+                    // Hard bound: never let a hanging MAL/Tenrai network call leave the spinner stuck forever.
+                    var done = await Task.WhenAny(fetch, Task.Delay(TimeSpan.FromSeconds(15)));
+                    if (done != fetch)
+                    {
+                        DiagnosticsReporter.Warn("Details",
+                            $"recommendations: fetch timed out for anime {MalId}, serving previous data");
+                        NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
+                        return;
+                    }
+
+                    await fetch;
+                    if (recomm == null)
+                    {
+                        DiagnosticsReporter.Warn("Details",
+                            $"recommendations: null result for anime {MalId}, serving previous data");
+                        NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
+                        return;
+                    }
+
+                    if (recomm.Count == 0 && hadData && !force)
+                    {
+                        DiagnosticsReporter.Info("Details",
+                            $"recommendations: empty refresh for anime {MalId}, keeping {Recommendations.Count} cached items");
+                        _loadedRecomm = true;
+                        NoRecommDataNoticeVisibility = false;
+                        return;
+                    }
+
+                    foreach (var item in recomm)
+                    {
+                        item.AirDayTillBind = ComputeAirCountdown(item.Id);
+                    }
+
+                    Recommendations.ReplaceRange(recomm);
                     _loadedRecomm = true;
-                    NoRecommDataNoticeVisibility = false;
-                    return;
+                    DiagnosticsReporter.Info("Details", $"recommendations: loaded {recomm.Count} items for anime {MalId}");
+                    NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
                 }
-                foreach (var item in recomm)
+                catch (Exception ex)
                 {
-                    item.AirDayTillBind = ComputeAirCountdown(item.Id);
+                    NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
+                    DiagnosticsReporter.Error("Details", $"LoadRecommendations failed for anime {MalId} (animeMode={AnimeMode})", ex);
                 }
-                Recommendations.ReplaceRange(recomm);
-                _loadedRecomm = true;
-                DiagnosticsReporter.Info("Details", $"recommendations: loaded {recomm.Count} items for anime {MalId}");
-                NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
-            }
-            catch (Exception ex)
-            {
-                NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
-                DiagnosticsReporter.Error("Details", $"LoadRecommendations failed for anime {MalId} (animeMode={AnimeMode})", ex);
-            }
-            finally
-            {
-                LoadingRecommendations = false;
-            }
+                finally
+                {
+                    LoadingRecommendations = false;
+                }
+            });
         }
 
-        public async Task LoadRelatedAnime(bool force = false)
+        public Task LoadRelatedAnime(bool force = false)
         {
-            if (LoadingRelated || (_loadedRelated && !force && RelatedAnime.Any()))
-                return;
-            LoadingRelated = true;
-            try
+            if (_loadedRelated && !force && RelatedAnime.Any())
+                return Task.CompletedTask;
+            return RunTabLoadOnce(nameof(LoadRelatedAnime), async () =>
             {
-                RelatedAnime.Clear();
-                var related = new List<RelatedAnimeData>();
-                await Task.Run(async () => related = await new AnimeRelatedQuery(MalId, AnimeMode).GetRelatedAnime(force));
-                if (related == null)
+                LoadingRelated = true;
+                try
                 {
-                    DiagnosticsReporter.Warn("Details", $"related: null result for anime {MalId} (animeMode={AnimeMode})");
-                    NoRelatedDataNoticeVisibility = true;
-                    return;
+                    RelatedAnime.Clear();
+                    var related = new List<RelatedAnimeData>();
+                    await Task.Run(async () => related = await new AnimeRelatedQuery(MalId, AnimeMode).GetRelatedAnime(force));
+                    if (related == null)
+                    {
+                        DiagnosticsReporter.Warn("Details", $"related: null result for anime {MalId} (animeMode={AnimeMode})");
+                        NoRelatedDataNoticeVisibility = true;
+                        return;
+                    }
+
+                    _loadedRelated = true;
+                    foreach (var item in related)
+                    {
+                        item.AirDayTillBind = ComputeAirCountdown(item.Id);
+                        RelatedAnime.Add(item);
+                    }
+
+                    DiagnosticsReporter.Info("Details", $"related: loaded {related.Count} items for anime {MalId}");
+                    NoRelatedDataNoticeVisibility = RelatedAnime.Count <= 0;
                 }
-                _loadedRelated = true;
-                foreach (var item in related)
+                catch (Exception ex)
                 {
-                    item.AirDayTillBind = ComputeAirCountdown(item.Id);
-                    RelatedAnime.Add(item);
+                    DiagnosticsReporter.Error("Details", $"LoadRelatedAnime failed for anime {MalId} (animeMode={AnimeMode})", ex);
                 }
-                DiagnosticsReporter.Info("Details", $"related: loaded {related.Count} items for anime {MalId}");
-                NoRelatedDataNoticeVisibility = RelatedAnime.Count <= 0;
-            }
-            catch (Exception ex)
-            {
-                DiagnosticsReporter.Error("Details", $"LoadRelatedAnime failed for anime {MalId} (animeMode={AnimeMode})", ex);
-            }
-            finally
-            {
-                LoadingRelated = false;
-            }
+                finally
+                {
+                    LoadingRelated = false;
+                }
+            });
         }
 
 
