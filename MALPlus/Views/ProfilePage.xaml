@@ -2,7 +2,11 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:vm="clr-namespace:MALClient.XShared.ViewModels.Main;assembly=MALPlus.Core"
+             xmlns:tmodels="clr-namespace:MALClient.Models.Models;assembly=MALPlus.Core"
+             xmlns:tviewmodels="clr-namespace:MALClient.XShared.ViewModels;assembly=MALPlus.Core"
              x:Class="MALPlus.Views.ProfilePage"
+             x:DataType="vm:ProfilePageViewModel"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
@@ -118,7 +122,8 @@
                         <CollectionView x:Name="FavAnimeList" ItemsSource="{Binding FavAnime}" HeightRequest="200"
                                         SelectionMode="Single" SelectionChanged="OnFavAnimeTapped">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tviewmodels:AnimeItemViewModel">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
@@ -147,7 +152,8 @@
                         <CollectionView x:Name="FavMangaList" ItemsSource="{Binding FavManga}" HeightRequest="200"
                                         SelectionMode="Single" SelectionChanged="OnFavMangaTapped">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tviewmodels:AnimeItemViewModel">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
@@ -176,7 +182,8 @@
                         <CollectionView x:Name="FavCharactersList" ItemsSource="{Binding FavouriteCharacters}" HeightRequest="180"
                                         SelectionMode="Single" SelectionChanged="OnFavCharacterTapped">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tviewmodels:FavouriteViewModel">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
@@ -205,7 +212,8 @@
                         <CollectionView x:Name="FavStaffList" ItemsSource="{Binding FavouriteStaff}" HeightRequest="180"
                                         SelectionMode="Single" SelectionChanged="OnFavStaffTapped">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tviewmodels:FavouriteViewModel">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
@@ -234,7 +242,8 @@
                         <CollectionView x:Name="RecentAnimeList" ItemsSource="{Binding RecentAnime}" HeightRequest="160"
                                         SelectionMode="Single" SelectionChanged="OnRecentAnimeTapped">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tviewmodels:AnimeItemViewModel">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
@@ -263,7 +272,8 @@
                         <CollectionView x:Name="RecentMangaList" ItemsSource="{Binding RecentManga}" HeightRequest="160"
                                         SelectionMode="Single" SelectionChanged="OnRecentMangaTapped">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tviewmodels:AnimeItemViewModel">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
@@ -292,7 +302,8 @@
                         <CollectionView x:Name="FriendsList" ItemsSource="{Binding MyFriends}" HeightRequest="160"
                                         SelectionMode="Single" SelectionChanged="OnFriendTapped">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tmodels:MalUser">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10,6">
@@ -321,7 +332,8 @@
                         <CollectionView ItemsSource="{Binding MalComments}" HeightRequest="200"
                                         SelectionMode="None">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tmodels:MalComment">
                                     <Border BackgroundColor="{StaticResource EmBackground}"
                                             Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                             StrokeShape="RoundRectangle 8" Margin="0,0,0,6" Padding="10">

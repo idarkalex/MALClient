@@ -111,6 +111,7 @@ public partial class VideosPage : ContentPage
                 SetSystemBars(true);
                 VideoOverlayVisibility = true;
                 VideoOverlay.IsVisible = true;
+                VideoListRoot.IsVisible = false;
             }
         }
         catch (Exception ex)
@@ -126,6 +127,7 @@ public partial class VideosPage : ContentPage
             VideoWebView.Source = null;
             VideoOverlay.IsVisible = false;
             VideoOverlayVisibility = false;
+            VideoListRoot.IsVisible = true;
             SetSystemBars(false);
         }
         catch { }

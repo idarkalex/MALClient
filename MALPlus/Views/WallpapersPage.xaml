@@ -2,7 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:titems="clr-namespace:MALClient.XShared.ViewModels.Items;assembly=MALPlus.Core"
+             xmlns:vm="clr-namespace:MALClient.XShared.ViewModels.Main;assembly=MALPlus.Core"
              x:Class="MALPlus.Views.WallpapersPage"
+             x:DataType="vm:WallpapersViewModel"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
@@ -15,7 +18,7 @@
                                WidthRequest="36" HeightRequest="36" />
         </Grid>
 
-        <Grid IsVisible="{Binding WallpaperOverlayVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert, FallbackValue=true}">
+        <Grid x:Name="WallpaperListRoot">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -40,7 +43,8 @@
                                           VerticalItemSpacing="8" />
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate
+                        x:DataType="titems:WallpaperItemViewModel">
                             <Border BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="0">

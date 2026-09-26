@@ -70,6 +70,7 @@ public partial class WallpapersPage : ContentPage
                 FullImage.Source = new UriImageSource { Uri = new System.Uri(item.Data.FileUrl) };
                 WallpaperOverlayVisibility = true;
                 WallpaperOverlay.IsVisible = true;
+                WallpaperListRoot.IsVisible = false;
             }
         }
         catch (Exception ex)
@@ -85,6 +86,7 @@ public partial class WallpapersPage : ContentPage
             FullImage.Source = null;
             WallpaperOverlay.IsVisible = false;
             WallpaperOverlayVisibility = false;
+            WallpaperListRoot.IsVisible = true;
         }
         catch { }
     }

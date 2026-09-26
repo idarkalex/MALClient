@@ -2,7 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:vm="clr-namespace:MALClient.XShared.ViewModels.Forums;assembly=MALPlus.Core"
+             xmlns:tmodelsforums="clr-namespace:MALClient.Models.Models.Forums;assembly=MALPlus.Core"
              x:Class="MALPlus.Views.ForumNewTopicPage"
+             x:DataType="vm:ForumNewTopicViewModel"
              BackgroundColor="{StaticResource EmBackground}">
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
@@ -54,7 +57,8 @@
                         <CollectionView ItemsSource="{Binding Answers}" SelectionMode="None"
                                         HeightRequest="100">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                x:DataType="tmodelsforums:ForumTopicQestionModel">
                                     <Entry Text="{Binding Answer, Mode=TwoWay}" Placeholder="Answer..."
                                            FontFamily="Inter" FontSize="13"
                                            BackgroundColor="{StaticResource EmBackground}"
