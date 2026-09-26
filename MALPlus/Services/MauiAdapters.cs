@@ -18,41 +18,42 @@ public class MauiDispatcherAdapter : IDispatcherAdapter
 
 public class MauiApplicationDataService : IApplicationDataService
 {
+    // Settings.* is read from bound property getters (per cell, per bind), and every
+    // read used to cost two JNI SharedPreferences round trips plus a few TryParse.
+    // Cache the parsed values and drop the entry on write.
+    private static readonly Dictionary<string, object> Cache = new();
+    private static readonly Dictionary<string, bool> Missing = new();
+
     public object this[string key]
     {
         get
         {
-            if (!Preferences.ContainsKey(key))
+            if (Cache.TryGetValue(key, out var cached))
+                return cached;
+            if (Missing.ContainsKey(key))
                 return null;
+
+            if (!Preferences.ContainsKey(key))
+            {
+                Missing[key] = true;
+                return null;
+            }
+
             var raw = Preferences.Get(key, (string)null);
             if (raw == null)
-                return null;
-            var sep = raw.IndexOf(':');
-            if (sep > 0 && int.TryParse(raw.Substring(0, sep), out var typeCode))
             {
-                var payload = raw.Substring(sep + 1);
-                switch ((TypeCode)typeCode)
-                {
-                    case TypeCode.Boolean when bool.TryParse(payload, out var b):
-                        return b;
-                    case TypeCode.Int32 when int.TryParse(payload, out var i):
-                        return i;
-                    case TypeCode.Int64 when long.TryParse(payload, out var l):
-                        return l;
-                    case TypeCode.String:
-                        return payload;
-                }
+                Missing[key] = true;
+                return null;
             }
-            if (bool.TryParse(raw, out var legacyBool))
-                return legacyBool;
-            if (int.TryParse(raw, out var legacyInt))
-                return legacyInt;
-            if (long.TryParse(raw, out var legacyLong))
-                return legacyLong;
-            return raw;
+
+            var value = Parse(raw);
+            Cache[key] = value;
+            return value;
         }
         set
         {
+            Cache.Remove(key);
+            Missing.Remove(key);
             if (value == null)
             {
                 Preferences.Remove(key);
@@ -60,6 +61,33 @@ public class MauiApplicationDataService : IApplicationDataService
             }
             Preferences.Set(key, (int)Type.GetTypeCode(value.GetType()) + ":" + value);
         }
+    }
+
+    private static object Parse(string raw)
+    {
+        var sep = raw.IndexOf(':');
+        if (sep > 0 && int.TryParse(raw.Substring(0, sep), out var typeCode))
+        {
+            var payload = raw.Substring(sep + 1);
+            switch ((TypeCode)typeCode)
+            {
+                case TypeCode.Boolean when bool.TryParse(payload, out var b):
+                    return b;
+                case TypeCode.Int32 when int.TryParse(payload, out var i):
+                    return i;
+                case TypeCode.Int64 when long.TryParse(payload, out var l):
+                    return l;
+                case TypeCode.String:
+                    return payload;
+            }
+        }
+        if (bool.TryParse(raw, out var legacyBool))
+            return legacyBool;
+        if (int.TryParse(raw, out var legacyInt))
+            return legacyInt;
+        if (long.TryParse(raw, out var legacyLong))
+            return legacyLong;
+        return raw;
     }
 
     public object this[RoamingDataTypes key]
@@ -364,11 +392,18 @@ public class MauiDataCache : IDataCache
     private static readonly JsonSerializerOptions CacheSerializerOptions = new();
 
     private static string Root => FileSystem.AppDataDirectory;
+    private static readonly HashSet<string> EnsuredDirs = new();
 
     private static string Resolve(string filename, string folder)
     {
         var dir = string.IsNullOrEmpty(folder) ? Root : Path.Combine(Root, folder);
-        Directory.CreateDirectory(dir);
+        // CreateDirectory is a stat+mkdir syscall, and this ran on EVERY cache read and
+        // write. The folder set is tiny and fixed, so remember what we already made.
+        lock (EnsuredDirs)
+        {
+            if (EnsuredDirs.Add(dir))
+                Directory.CreateDirectory(dir);
+        }
         return Path.Combine(dir, filename);
     }
 

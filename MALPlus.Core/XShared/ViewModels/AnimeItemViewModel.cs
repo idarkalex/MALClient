@@ -318,14 +318,11 @@ namespace MALClient.XShared.ViewModels
                 (nextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(nextAirUtc.Value, now)))
             {
                 DataCache.UpdateVolatileDataWithNextAir(malId, nextAirUtc.Value);
-                var fmt = AirTimeUtils.FormatAirCountdown(nextAirUtc.Value, now);
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malId} ApplyNextAir persisted nextAirUtc={nextAirUtc:O} fmt={fmt} inWindow={AirTimeUtils.IsInAiringWindow(nextAirUtc.Value, now)}");
-                TimeTillNextAirCache = fmt;
+                TimeTillNextAirCache = AirTimeUtils.FormatAirCountdown(nextAirUtc.Value, now);
             }
             else
             {
                 DataCache.RegisterVolatileDataAiringTimeFetchFailure(malId);
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malId} ApplyNextAir cleared (nextAirUtc={(nextAirUtc.HasValue ? nextAirUtc.Value.ToString("O") : "null")})");
                 TimeTillNextAirCache = "";
             }
         }

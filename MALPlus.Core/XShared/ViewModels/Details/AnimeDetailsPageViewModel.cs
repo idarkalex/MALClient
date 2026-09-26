@@ -161,7 +161,6 @@ namespace MALClient.XShared.ViewModels.Details
                         _timeTillNextAirCache = "";
                         RaisePropertyChanged(() => TimeTillNextAir);
                     }
-                    DiagnosticsReporter.Info("Details", $"hero malId={heroMalIdPeek} hit=finishedStatus status='{heroVdPeek.LastKnownStatus}' -> empty");
                     return "";
                 }
                 if (!string.IsNullOrEmpty(_timeTillNextAirCache))
@@ -172,12 +171,10 @@ namespace MALClient.XShared.ViewModels.Details
                         if (_timeTillNextAirCache != expectedHero)
                         {
                             _timeTillNextAirCache = expectedHero;
-                            DiagnosticsReporter.Info("Details", $"hero malId={heroMalIdPeek} hit=field-stale corrected to '{expectedHero}'");
                             RaisePropertyChanged(() => TimeTillNextAir);
                             return _timeTillNextAirCache;
                         }
                     }
-                    DiagnosticsReporter.Info("Details", $"hero malId={Id} hit=field result='{_timeTillNextAirCache}'");
                     return _timeTillNextAirCache;
                 }
 
@@ -204,41 +201,21 @@ namespace MALClient.XShared.ViewModels.Details
                     result = FormatAirCountdown(airDate, now);
                 }
 
-                                string hit = "";
                 if (string.IsNullOrEmpty(result) && AirTimeUtils.IsCurrentlyAiringStatus(Status))
                 {
                     var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
                     if (nextFromEpisodes.HasValue)
-                    {
                         result = FormatAirCountdown(nextFromEpisodes.Value, now);
-                        hit = $"episodes nextAirUtc={nextFromEpisodes:O}";
-                    }
 
                     if (string.IsNullOrEmpty(result))
                     {
                         var nextAirFromBroadcast = ComputeNextAirDate(_broadcast, now);
                         if (nextAirFromBroadcast.HasValue)
-                        {
                             result = FormatAirCountdown(nextAirFromBroadcast.Value, now);
-                            hit = $"broadcast nextAirUtc={nextAirFromBroadcast:O} broadcast='{_broadcast}'";
-                        }
                     }
                 }
 
-                if (string.IsNullOrEmpty(result))
-                    hit = "miss";
-                else if (string.IsNullOrEmpty(hit))
-                {
-                    if (!string.IsNullOrEmpty(_timeTillNextAirCache))
-                        hit = "field";
-                    else if (DataCache.TryRetrieveDataForId(malId, out var vd2) && vd2.NextAirUtc.HasValue)
-                        hit = $"volatile nextAirUtc={vd2.NextAirUtc:O}";
-                    else
-                        hit = "provider";
-                }
-
                 _timeTillNextAirCache = result;
-                DiagnosticsReporter.Info("Details", $"hero malId={malId} hit={hit} status='{Status}' result='{result}' eps={Episodes?.Count ?? 0}");
 
                 if (_animeItemReference is AnimeItemViewModel itemVm)
                     itemVm.RefreshTimeTillNextAirInBackground();

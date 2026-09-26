@@ -54,6 +54,7 @@ public partial class AnimeDetailsPage : ContentPage
 #if ANDROID
     private bool _videoHandlerSubscribed;
 #endif
+    private WebView _videoWebView;
 
     public string MalId { get; set; }
     public string AnimeTitle { get; set; }
@@ -142,9 +143,7 @@ public partial class AnimeDetailsPage : ContentPage
 #if ANDROID
         if (!_videoHandlerSubscribed)
         {
-            VideoWebView.HandlerChanged += OnVideoWebViewHandlerChanged;
             _videoHandlerSubscribed = true;
-            OnVideoWebViewHandlerChanged(VideoWebView, EventArgs.Empty);
         }
 #endif
     }
@@ -155,7 +154,8 @@ public partial class AnimeDetailsPage : ContentPage
 #if ANDROID
         if (_videoHandlerSubscribed)
         {
-            VideoWebView.HandlerChanged -= OnVideoWebViewHandlerChanged;
+            if (VideoWebView != null)
+                VideoWebView.HandlerChanged -= OnVideoWebViewHandlerChanged;
             _videoHandlerSubscribed = false;
         }
 #endif
@@ -793,20 +793,37 @@ public partial class AnimeDetailsPage : ContentPage
         return int.TryParse(value as string, out id) && id > 0;
     }
 
+    private WebView VideoWebView => _videoWebView ??= EnsureVideoWebView();
+
+    private WebView EnsureVideoWebView()
+    {
+        if (_videoWebView != null)
+            return _videoWebView;
+
+        _videoWebView = new WebView();
+        Grid.SetRow(_videoWebView, 1);
+        VideoOverlay.Add(_videoWebView);
+#if ANDROID
+        _videoWebView.HandlerChanged += OnVideoWebViewHandlerChanged;
+#endif
+        return _videoWebView;
+    }
+
     private void ShowVideoOverlay(string url)
     {
         try
         {
-            if (VideoOverlay == null || VideoWebView == null)
+            if (VideoOverlay == null)
                 return;
-            ResumeVideoWebView();
+            var webView = EnsureVideoWebView();
+            VideoOverlay.IsVisible = true;
+            VideoWebViewHelper.Resume(webView.Handler?.PlatformView as global::Android.Views.View);
             var embed = BuildYouTubeEmbed(url);
-            VideoWebView.Source = new HtmlWebViewSource
+            webView.Source = new HtmlWebViewSource
             {
                 Html = VideoWebViewHelper.BuildEmbedHtml(embed),
                 BaseUrl = "https://myanimelist.net"
             };
-            VideoOverlay.IsVisible = true;
             SetSystemBars(true);
         }
         catch (Exception ex)
@@ -819,8 +836,8 @@ public partial class AnimeDetailsPage : ContentPage
     {
         try
         {
-            if (VideoWebView != null)
-                VideoWebView.Source = null;
+            if (_videoWebView != null)
+                _videoWebView.Source = null;
             if (VideoOverlay != null)
                 VideoOverlay.IsVisible = false;
             SetSystemBars(false);

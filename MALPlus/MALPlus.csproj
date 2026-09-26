@@ -21,6 +21,14 @@
     <AndroidIncludeDebugSymbols>false</AndroidIncludeDebugSymbols>
     <!-- Debug builds must embed assemblies: fast-deploy APKs crash at startup with native SIGABRT (same lesson as v2). -->
     <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">true</EmbedAssembliesIntoApk>
+    <!--
+      Debug MAUI defaults to no linker, so every page/control is built by the
+      interpreter at runtime. Scrolling an already-built list then looks fine while every
+      navigation and tap pays full JIT cost, which is what made the whole app feel sluggish.
+      AOT is left to Release: the MonoAOTCompiler SDK is not present in the standalone
+      dotnet SDK used for local builds.
+    -->
+    <AndroidLinkMode Condition="'$(Configuration)' == 'Debug'">SdkOnly</AndroidLinkMode>
   </PropertyGroup>
 
   <ItemGroup>

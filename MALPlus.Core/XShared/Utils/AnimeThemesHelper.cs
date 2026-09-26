@@ -131,6 +131,11 @@ namespace MALClient.XShared.Utils
 
         private static void AppendThemeDebug(string line)
         {
+            // The per-line File.AppendAllText used to ship enabled: 40-80 serialized
+            // open/write/close syscalls under a process-wide lock on EVERY details open,
+            // all for a file nobody reads. Keep it behind an explicit opt-in.
+            if (!ThemeDebugEnabled || line == null)
+                return;
             try
             {
                 lock (DebugFileLock)
@@ -150,6 +155,8 @@ namespace MALClient.XShared.Utils
             {
             }
         }
+
+        public static bool ThemeDebugEnabled { get; set; }
 
         public static async Task<List<ThemeVideo>> SearchAsync(string animeTitle, string englishTitle = null)
         {

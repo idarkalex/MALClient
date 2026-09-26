@@ -14,7 +14,7 @@
         <Image Source="{Binding PosterUrl, Source={x:Reference PosterCard}, Converter={StaticResource ImageConverter}}"
                Aspect="AspectFill" />
 
-        <VerticalStackLayout Spacing="4" Margin="6,6,6,0"
+        <VerticalStackLayout Spacing="4" Margin="6,6,0,0"
                              HorizontalOptions="Start" VerticalOptions="Start">
             <Border Padding="6,2" StrokeShape="RoundRectangle 6"
                     BackgroundColor="#0066FF" Stroke="Transparent"
@@ -25,14 +25,17 @@
             </Border>
 
             <VerticalStackLayout Spacing="0"
+                                 HorizontalOptions="Start"
                                  BindableLayout.ItemsSource="{Binding ChipSource, Source={x:Reference PosterCard}}"
                                  BindableLayout.ItemTemplate="{Binding ChipTemplate, Source={x:Reference PosterCard}}"
                                  IsVisible="{Binding ChipSource, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" />
+        </VerticalStackLayout>
 
+        <VerticalStackLayout Spacing="3" Margin="0,6,6,0"
+                             HorizontalOptions="End" VerticalOptions="Start">
             <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
                     StrokeShape="RoundRectangle 12" Padding="6,3"
-                    HorizontalOptions="Start"
-                    IsVisible="{Binding BadgeVisible, Source={x:Reference PosterCard}}">
+                    HorizontalOptions="End">
                 <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                     <Label Text="{Binding BadgeAccent, Source={x:Reference PosterCard}}"
                            FontFamily="InterBold" FontSize="9"
@@ -41,10 +44,16 @@
                     <Label Text="{Binding BadgeMain, Source={x:Reference PosterCard}}"
                            FontFamily="InterBold" FontSize="9" TextColor="White" VerticalOptions="Center"
                            IsVisible="{Binding BadgeMain, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
-                    <Label Text="{Binding BadgeExtra, Source={x:Reference PosterCard}}"
-                           FontFamily="InterBold" FontSize="9" TextColor="White" VerticalOptions="Center"
-                           IsVisible="{Binding BadgeExtra, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
                 </HorizontalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12" Padding="6,2"
+                    HorizontalOptions="End"
+                    IsVisible="{Binding BadgeExtra, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
+                <Label Text="{Binding BadgeExtra, Source={x:Reference PosterCard}}"
+                       FontFamily="InterBold" FontSize="9" TextColor="White"
+                       MaxLines="1" LineBreakMode="TailTruncation" />
             </Border>
         </VerticalStackLayout>
 
