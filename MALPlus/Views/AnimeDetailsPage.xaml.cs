@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using MALClient.Models.Enums;
@@ -25,6 +25,13 @@ public partial class AnimeDetailsPage : ContentPage
     private const double HeroCollapsedHeight = 210;
     private const double HeroCollapseRange = HeroExpandedHeight - HeroCollapsedHeight;
     private const uint TabTransitionLength = 160;
+
+    /// <summary>
+    /// Height of one character/staff row: PanelStyle padding 10 top and bottom, the 88px
+    /// image, and the 4px margin above and below the 100px row. Every row is built to this
+    /// height so the virtualised lists get an exact HeightRequest instead of a guess.
+    /// </summary>
+    private const double CharacterRowHeight = 108;
 
     private bool _initialized;
     private int _initializedId;
@@ -64,8 +71,8 @@ public partial class AnimeDetailsPage : ContentPage
     public ObservableCollection<AnimeEpisode> DisplayedEpisodes { get; } = new();
     public ObservableCollection<AnimeReviewData> DisplayedReviews { get; } = new();
     public ObservableCollection<AnimeCharacterCard> DisplayedCharacters { get; } = new();
-    public ObservableCollection<FavouriteViewModel> DisplayedMangaCharacters { get; } = new();
-    public ObservableCollection<FavouriteViewModel> DisplayedStaff { get; } = new();
+    public ObservableCollection<MangaCharacterCard> DisplayedMangaCharacters { get; } = new();
+    public ObservableCollection<StaffCard> DisplayedStaff { get; } = new();
 
     public string GeneralErrorText => EmptyStateText(_generalError, "Unable to load general details.");
     public bool GeneralErrorVisible => !string.IsNullOrWhiteSpace(_generalError);
@@ -109,6 +116,16 @@ public partial class AnimeDetailsPage : ContentPage
     public bool StaffErrorVisible => !string.IsNullOrWhiteSpace(_staffError);
     public bool StaffEmptyVisible => Vm != null && !Vm.LoadingCharactersVisibility && !StaffErrorVisible && (Vm.AnimeStaffData?.AnimeStaff?.Count ?? 0) == 0;
     public bool StaffContentVisible => Vm != null && !Vm.LoadingCharactersVisibility && !StaffErrorVisible && (Vm.AnimeStaffData?.AnimeStaff?.Count ?? 0) > 0;
+
+    /// <summary>
+    /// A CollectionView living inside the page's own ScrollView has to be told how tall it
+    /// is or it collapses. The rows are a fixed height by design, so the total is exact.
+    /// </summary>
+    public double CharactersListHeight => CharacterRowHeight * DisplayedCharacters.Count;
+
+    public double MangaCharactersListHeight => CharacterRowHeight * DisplayedMangaCharacters.Count;
+
+    public double StaffListHeight => CharacterRowHeight * DisplayedStaff.Count;
 
     private AnimeDetailsPageViewModel Vm => BindingContext as AnimeDetailsPageViewModel;
 
@@ -433,13 +450,21 @@ public partial class AnimeDetailsPage : ContentPage
             DisplayedCharacters.Clear();
             DisplayedMangaCharacters.Clear();
             DisplayedStaff.Clear();
-            foreach (var pair in pairs?.Take(ProgressiveChunkSize) ?? Enumerable.Empty<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>())
+            // The query already trims both to MaxCharacterPairs/MaxStaff, and the three
+            // lists are virtualised now, so there is nothing left to page in: fill them
+            // once. ProgressiveChunkSize applies to Episodes and Reviews, whose sources
+            // really do run into the thousands.
+            var cap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxCharacterPairs;
+            foreach (var pair in pairs?.Take(cap) ?? Enumerable.Empty<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>())
                 DisplayedCharacters.Add(new AnimeCharacterCard(pair));
-            foreach (var character in mangaCharacters?.Take(ProgressiveChunkSize) ?? Enumerable.Empty<FavouriteViewModel>())
-                DisplayedMangaCharacters.Add(character);
-            foreach (var person in staff?.Take(ProgressiveChunkSize) ?? Enumerable.Empty<FavouriteViewModel>())
-                DisplayedStaff.Add(person);
+            foreach (var character in mangaCharacters?.Take(cap) ?? Enumerable.Empty<FavouriteViewModel>())
+                DisplayedMangaCharacters.Add(new MangaCharacterCard(character));
+            foreach (var person in staff?.Take(cap) ?? Enumerable.Empty<FavouriteViewModel>())
+                DisplayedStaff.Add(new StaffCard(person));
             NotifyStateProperties();
+            OnPropertyChanged(nameof(CharactersListHeight));
+            OnPropertyChanged(nameof(MangaCharactersListHeight));
+            OnPropertyChanged(nameof(StaffListHeight));
         }
         catch (Exception ex)
         {
@@ -1077,6 +1102,11 @@ public partial class AnimeDetailsPage : ContentPage
     private void AppendNextProgressiveChunk()
     {
         var tab = Vm?.DetailsPivotSelectedIndex ?? -1;
+        // Only the tabs whose list IS the page content can be measured by the page scroll.
+        // Characters (6) and Staff (7) render into their own virtualised lists, so "page
+        // near its bottom" said nothing about them: every scroll frame past the threshold
+        // appended another 40 rows, which is what made the tab unusable. They are bounded
+        // by the query instead (MaxCharacterPairs / MaxStaff).
         switch (tab)
         {
             case 2:
@@ -1095,46 +1125,7 @@ public partial class AnimeDetailsPage : ContentPage
                         DisplayedReviews.Add(Vm.Reviews[index]);
                 }
                 break;
-            case 6:
-                if (Vm.AnimeMode)
-                    AppendCharacters();
-                else
-                    AppendMangaCharacters();
-                break;
-            case 7:
-                AppendStaff();
-                break;
         }
-    }
-
-    private void AppendCharacters()
-    {
-        var source = Vm?.AnimeStaffData?.AnimeCharacterPairs;
-        if (source == null || source.Count <= DisplayedCharacters.Count)
-            return;
-        var target = Math.Min(source.Count, DisplayedCharacters.Count + ProgressiveChunkSize);
-        for (var index = DisplayedCharacters.Count; index < target; index++)
-            DisplayedCharacters.Add(new AnimeCharacterCard(source[index]));
-    }
-
-    private void AppendMangaCharacters()
-    {
-        var source = Vm?.MangaCharacterData;
-        if (source == null || source.Count <= DisplayedMangaCharacters.Count)
-            return;
-        var target = Math.Min(source.Count, DisplayedMangaCharacters.Count + ProgressiveChunkSize);
-        for (var index = DisplayedMangaCharacters.Count; index < target; index++)
-            DisplayedMangaCharacters.Add(source[index]);
-    }
-
-    private void AppendStaff()
-    {
-        var source = Vm?.AnimeStaffData?.AnimeStaff;
-        if (source == null || source.Count <= DisplayedStaff.Count)
-            return;
-        var target = Math.Min(source.Count, DisplayedStaff.Count + ProgressiveChunkSize);
-        for (var index = DisplayedStaff.Count; index < target; index++)
-            DisplayedStaff.Add(source[index]);
     }
 
     private void SetTabError(int tabIndex, Exception exception)
@@ -1207,17 +1198,90 @@ public partial class AnimeDetailsPage : ContentPage
         {
             AnimeCharacter = pair?.AnimeCharacter;
             AnimeStaffPerson = pair?.AnimeStaffPerson;
-            VoiceActors = (pair?.VoiceActors ?? new List<FavouriteViewModel>())
-                .Where(actor => actor?.Data != null)
-                .OrderBy(actor => string.Equals(actor.Data.Notes, "Japanese", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
-                .ThenBy(actor => actor.Data.Name, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            var character = AnimeCharacter?.Data as MALClient.Models.Models.Favourites.AnimeCharacter;
+            Role = character?.Role ?? string.Empty;
+            Favorites = character?.Favorites ?? 0;
+            // Only the Japanese seiyuu. Tenrai hands over up to 32 voice actors per character
+            // across ten languages, and the card has room for exactly one row.
+            JapaneseVoice =
+                (pair?.VoiceActors ?? new List<FavouriteViewModel>())
+                .FirstOrDefault(actor => actor?.Data is MALClient.Models.Models.Favourites.AnimeStaffPerson va &&
+                                        string.Equals(va.Language, "Japanese", StringComparison.OrdinalIgnoreCase))
+                ?? (pair?.VoiceActors ?? new List<FavouriteViewModel>()).FirstOrDefault(actor => actor?.Data != null);
+            VoiceFavorites = (JapaneseVoice?.Data as MALClient.Models.Models.Favourites.AnimeStaffPerson)?.Favorites ?? 0;
         }
 
         public FavouriteViewModel AnimeCharacter { get; }
         public FavouriteViewModel AnimeStaffPerson { get; }
-        public List<FavouriteViewModel> VoiceActors { get; }
-        public bool HasVoiceActors => VoiceActors.Count > 0;
-        public bool UseLegacyStaffBinding => VoiceActors.Count == 0 && AnimeStaffPerson?.Data != null;
+
+        /// <summary>The Japanese voice actor, or null when the character has none.</summary>
+        public FavouriteViewModel JapaneseVoice { get; }
+
+        public bool HasJapaneseVoice => JapaneseVoice?.Data != null && !string.IsNullOrEmpty(JapaneseVoice.Data.Name);
+
+        public string Role { get; }
+
+        public bool HasRole => !string.IsNullOrEmpty(Role);
+
+        public int Favorites { get; }
+
+        public string FavoritesText => Favorites > 0 ? ShortNumber(Favorites) : string.Empty;
+
+        public bool HasFavorites => Favorites > 0;
+
+        public int VoiceFavorites { get; }
+
+        public string VoiceFavoritesText => VoiceFavorites > 0 ? ShortNumber(VoiceFavorites) : string.Empty;
+
+        public bool HasVoiceFavorites => VoiceFavorites > 0;
+
+        internal static string ShortNumber(int value) =>
+            value >= 1000 ? (value / 1000d).ToString("0.#") + "K" : value.ToString();
+    }
+
+    /// <summary>
+    /// Staff and manga rows bind straight to FavouriteViewModel.Data, which is typed as the
+    /// FavouriteBase and therefore has no Role/Favorites/PrimaryPosition. These wrappers
+    /// unwrap the concrete type so the templates can bind real fields.
+    /// </summary>
+    public sealed class StaffCard
+    {
+        public StaffCard(FavouriteViewModel person)
+        {
+            Person = person;
+            var staff = person?.Data as MALClient.Models.Models.Favourites.AnimeStaffPerson;
+            PrimaryPosition = staff?.PrimaryPosition ?? string.Empty;
+            ExtraPositions = staff?.ExtraPositions ?? 0;
+        }
+
+        public FavouriteViewModel Person { get; }
+        public string Name => Person?.Data?.Name ?? string.Empty;
+        public string ImgUrl => Person?.Data?.ImgUrl ?? string.Empty;
+        public string Id => Person?.Data?.Id ?? string.Empty;
+        public string PrimaryPosition { get; }
+        public bool HasPrimaryPosition => !string.IsNullOrEmpty(PrimaryPosition);
+        public int ExtraPositions { get; }
+        public bool HasExtraPositions => ExtraPositions > 0;
+    }
+
+    public sealed class MangaCharacterCard
+    {
+        public MangaCharacterCard(FavouriteViewModel character)
+        {
+            Character = character;
+            var data = character?.Data as MALClient.Models.Models.Favourites.AnimeCharacter;
+            Role = data?.Role ?? string.Empty;
+            Favorites = data?.Favorites ?? 0;
+        }
+
+        public FavouriteViewModel Character { get; }
+        public string Name => Character?.Data?.Name ?? string.Empty;
+        public string ImgUrl => Character?.Data?.ImgUrl ?? string.Empty;
+        public string Id => Character?.Data?.Id ?? string.Empty;
+        public string Role { get; }
+        public bool HasRole => !string.IsNullOrEmpty(Role);
+        public int Favorites { get; }
+        public string FavoritesText => Favorites > 0 ? AnimeCharacterCard.ShortNumber(Favorites) : string.Empty;
+        public bool HasFavorites => Favorites > 0;
     }
 }

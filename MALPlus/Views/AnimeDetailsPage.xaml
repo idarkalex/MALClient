@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
@@ -139,118 +139,120 @@
             </Border>
         </DataTemplate>
 
-        <DataTemplate x:Key="VoiceActorTemplate">
-            <Border Margin="0,4,0,0" Padding="8" StrokeShape="RoundRectangle 8"
-                    BackgroundColor="#0F1A29" Stroke="#29FFFFFF" StrokeThickness="1">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnStaffTapped" CommandParameter="{Binding Data.Id}" />
-                </Border.GestureRecognizers>
-                <Grid ColumnDefinitions="48,*" ColumnSpacing="10">
-                    <Border WidthRequest="48" HeightRequest="64" StrokeShape="RoundRectangle 6"
-                            Stroke="#29FFFFFF" StrokeThickness="1">
-                        <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+        <DataTemplate x:Key="AnimeCharacterTemplate">
+            <Border HeightRequest="100" Margin="12,4" Style="{StaticResource PanelStyle}" Padding="10">
+                <Grid ColumnDefinitions="64,*" ColumnSpacing="10">
+                    <Border WidthRequest="64" HeightRequest="88" StrokeShape="RoundRectangle 6"
+                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCharacterTapped"
+                                                  CommandParameter="{Binding AnimeCharacter.Data.Id}" />
+                        </Border.GestureRecognizers>
+                        <Image Source="{Binding AnimeCharacter.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
                                Aspect="AspectFill" />
                     </Border>
-                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="12"
-                               TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
-                        <Label Text="{Binding Data.Notes}" FontFamily="Inter" FontSize="10"
-                               TextColor="#7AB4FF" MaxLines="1" LineBreakMode="TailTruncation" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                        <Label Text="{Binding AnimeCharacter.Data.Name}" FontFamily="InterBold" FontSize="15"
+                               TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation" />
+                        <HorizontalStackLayout Spacing="8">
+                            <Border Padding="7,2" StrokeShape="RoundRectangle 6" BackgroundColor="#0066FF"
+                                    Stroke="Transparent" IsVisible="{Binding HasRole}">
+                                <Label Text="{Binding Role}" FontFamily="InterBold" FontSize="9" TextColor="White"
+                                       MaxLines="1" />
+                            </Border>
+                            <HorizontalStackLayout Spacing="3" IsVisible="{Binding HasFavorites}"
+                                                   VerticalOptions="Center">
+                                <Label Text="★" FontFamily="Inter" FontSize="9" TextColor="#FFD700"
+                                       VerticalOptions="Center" />
+                                <Label Text="{Binding FavoritesText}" FontFamily="Inter" FontSize="11"
+                                       TextColor="#8FA8C0" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="8" IsVisible="{Binding HasJapaneseVoice}">
+                            <Border WidthRequest="26" HeightRequest="26" StrokeShape="RoundRectangle 13"
+                                    Stroke="#29FFFFFF" StrokeThickness="1" VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnStaffTapped"
+                                                          CommandParameter="{Binding JapaneseVoice.Data.Id}" />
+                                </Border.GestureRecognizers>
+                                <Image Source="{Binding JapaneseVoice.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                       Aspect="AspectFill" />
+                            </Border>
+                            <Label Text="{Binding JapaneseVoice.Data.Name}" FontFamily="InterSemiBold" FontSize="12"
+                                   TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center" WidthRequest="96" />
+                            <Label Text="Japanese" FontFamily="Inter" FontSize="10" TextColor="#7AB4FF"
+                                   MaxLines="1" VerticalOptions="Center" />
+                            <HorizontalStackLayout Spacing="3" IsVisible="{Binding HasVoiceFavorites}"
+                                                   VerticalOptions="Center">
+                                <Label Text="★" FontFamily="Inter" FontSize="9" TextColor="#FFD700"
+                                       VerticalOptions="Center" />
+                                <Label Text="{Binding VoiceFavoritesText}" FontFamily="Inter" FontSize="10"
+                                       TextColor="#6E8AA6" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Grid>
             </Border>
         </DataTemplate>
 
-        <DataTemplate x:Key="AnimeCharacterTemplate">
-            <Border Margin="12,5" Style="{StaticResource PanelStyle}" Padding="10">
-                <VerticalStackLayout Spacing="8">
-                    <Border Padding="8" StrokeShape="RoundRectangle 8" BackgroundColor="#0F1A29"
-                            Stroke="#29FFFFFF" StrokeThickness="1">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnCharacterTapped"
-                                                  CommandParameter="{Binding AnimeCharacter.Data.Id}" />
-                        </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="64,*" ColumnSpacing="10">
-                            <Border WidthRequest="64" HeightRequest="88" StrokeShape="RoundRectangle 6"
-                                    Stroke="#29FFFFFF" StrokeThickness="1">
-                                <Image Source="{Binding AnimeCharacter.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
-                                       Aspect="AspectFill" />
-                            </Border>
-                            <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
-                                <Label Text="{Binding AnimeCharacter.Data.Name}" FontFamily="InterBold" FontSize="14"
-                                       TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
-                                <Label Text="{Binding AnimeCharacter.Data.Notes}" FontFamily="Inter" FontSize="11"
-                                       TextColor="#8FA8C0" MaxLines="2" LineBreakMode="TailTruncation" />
-                            </VerticalStackLayout>
-                        </Grid>
-                    </Border>
-                    <Border IsVisible="{Binding UseLegacyStaffBinding}" Padding="8"
-                            StrokeShape="RoundRectangle 8" BackgroundColor="#0F1A29"
-                            Stroke="#29FFFFFF" StrokeThickness="1">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnStaffTapped"
-                                                  CommandParameter="{Binding AnimeStaffPerson.Data.Id}" />
-                        </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="48,*" ColumnSpacing="10">
-                            <Border WidthRequest="48" HeightRequest="64" StrokeShape="RoundRectangle 6"
-                                    Stroke="#29FFFFFF" StrokeThickness="1">
-                                <Image Source="{Binding AnimeStaffPerson.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
-                                       Aspect="AspectFill" />
-                            </Border>
-                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                <Label Text="{Binding AnimeStaffPerson.Data.Name}" FontFamily="InterBold" FontSize="12"
-                                       TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
-                                <Label Text="Voice" FontFamily="Inter" FontSize="10" TextColor="#7AB4FF" MaxLines="1" />
-                            </VerticalStackLayout>
-                        </Grid>
-                    </Border>
-                    <VerticalStackLayout IsVisible="{Binding HasVoiceActors}" Spacing="2">
-                        <Label Text="VOICE ACTORS" FontFamily="InterBold" FontSize="9" TextColor="#8FA8C0"
-                               MaxLines="1" />
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding VoiceActors}"
-                                             BindableLayout.ItemTemplate="{StaticResource VoiceActorTemplate}" />
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
-            </Border>
-        </DataTemplate>
-
         <DataTemplate x:Key="MangaCharacterTemplate">
-            <Border Margin="12,5" Style="{StaticResource PanelStyle}" Padding="10">
+            <Border HeightRequest="100" Margin="12,4" Style="{StaticResource PanelStyle}" Padding="10">
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnCharacterTapped" CommandParameter="{Binding Data.Id}" />
+                    <TapGestureRecognizer Tapped="OnCharacterTapped" CommandParameter="{Binding Id}" />
                 </Border.GestureRecognizers>
                 <Grid ColumnDefinitions="64,*" ColumnSpacing="10">
                     <Border WidthRequest="64" HeightRequest="88" StrokeShape="RoundRectangle 6"
                             Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                        <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
                                Aspect="AspectFill" />
                     </Border>
-                    <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
-                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="14"
-                               TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
-                        <Label Text="{Binding Data.Notes}" FontFamily="Inter" FontSize="11" TextColor="#8FA8C0"
-                               MaxLines="2" LineBreakMode="TailTruncation" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                        <Label Text="{Binding Name}" FontFamily="InterBold" FontSize="15"
+                               TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation" />
+                        <HorizontalStackLayout Spacing="8">
+                            <Border Padding="7,2" StrokeShape="RoundRectangle 6" BackgroundColor="#0066FF"
+                                    Stroke="Transparent" IsVisible="{Binding HasRole}">
+                                <Label Text="{Binding Role}" FontFamily="InterBold" FontSize="9"
+                                       TextColor="White" MaxLines="1" />
+                            </Border>
+                            <HorizontalStackLayout Spacing="3" IsVisible="{Binding HasFavorites}"
+                                                   VerticalOptions="Center">
+                                <Label Text="★" FontFamily="Inter" FontSize="9" TextColor="#FFD700"
+                                       VerticalOptions="Center" />
+                                <Label Text="{Binding FavoritesText}" FontFamily="Inter" FontSize="11"
+                                       TextColor="#8FA8C0" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Grid>
             </Border>
         </DataTemplate>
 
         <DataTemplate x:Key="StaffTemplate">
-            <Border Margin="12,5" Style="{StaticResource PanelStyle}" Padding="10">
+            <Border HeightRequest="100" Margin="12,4" Style="{StaticResource PanelStyle}" Padding="10">
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnStaffTapped" CommandParameter="{Binding Data.Id}" />
+                    <TapGestureRecognizer Tapped="OnStaffTapped" CommandParameter="{Binding Id}" />
                 </Border.GestureRecognizers>
                 <Grid ColumnDefinitions="64,*" ColumnSpacing="10">
                     <Border WidthRequest="64" HeightRequest="88" StrokeShape="RoundRectangle 6"
                             Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                        <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
                                Aspect="AspectFill" />
                     </Border>
-                    <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
-                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="14"
-                               TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
-                        <Label Text="{Binding Data.Notes}" FontFamily="Inter" FontSize="11" TextColor="#8FA8C0"
-                               MaxLines="2" LineBreakMode="TailTruncation" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                        <Label Text="{Binding Name}" FontFamily="InterBold" FontSize="15"
+                               TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation" />
+                        <HorizontalStackLayout Spacing="8">
+                            <Border Padding="7,2" StrokeShape="RoundRectangle 6" BackgroundColor="#0066FF"
+                                    Stroke="Transparent" IsVisible="{Binding HasPrimaryPosition}">
+                                <Label Text="{Binding PrimaryPosition}" FontFamily="InterBold" FontSize="9"
+                                       TextColor="White" MaxLines="1" LineBreakMode="TailTruncation" />
+                            </Border>
+                            <Label Text="{Binding ExtraPositions, StringFormat='+{0}'}"
+                                   FontFamily="InterBold" FontSize="9" TextColor="#8FA8C0" MaxLines="1"
+                                   VerticalOptions="Center" IsVisible="{Binding HasExtraPositions}" />
+                        </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Grid>
             </Border>
@@ -566,12 +568,16 @@
                                 Margin="12,8" Style="{StaticResource PanelStyle}" Padding="18">
                             <Label Text="No characters available." Style="{StaticResource StateTextStyle}" />
                         </Border>
-                        <VerticalStackLayout IsVisible="{Binding AnimeMode}"
-                                             BindableLayout.ItemsSource="{Binding Source={x:Reference DetailsPage}, Path=DisplayedCharacters}"
-                                             BindableLayout.ItemTemplate="{StaticResource AnimeCharacterTemplate}" />
-                        <VerticalStackLayout IsVisible="{Binding AnimeMode, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
-                                             BindableLayout.ItemsSource="{Binding Source={x:Reference DetailsPage}, Path=DisplayedMangaCharacters}"
-                                             BindableLayout.ItemTemplate="{StaticResource MangaCharacterTemplate}" />
+                        <CollectionView IsVisible="{Binding AnimeMode}"
+                                        ItemsSource="{Binding Source={x:Reference DetailsPage}, Path=DisplayedCharacters}"
+                                        ItemTemplate="{StaticResource AnimeCharacterTemplate}"
+                                        HeightRequest="{Binding Source={x:Reference DetailsPage}, Path=CharactersListHeight}"
+                                        SelectionMode="None" />
+                        <CollectionView IsVisible="{Binding AnimeMode, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                                        ItemsSource="{Binding Source={x:Reference DetailsPage}, Path=DisplayedMangaCharacters}"
+                                        ItemTemplate="{StaticResource MangaCharacterTemplate}"
+                                        HeightRequest="{Binding Source={x:Reference DetailsPage}, Path=MangaCharactersListHeight}"
+                                        SelectionMode="None" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=7}"
@@ -592,9 +598,11 @@
                                 Margin="12,8" Style="{StaticResource PanelStyle}" Padding="18">
                             <Label Text="No staff available." Style="{StaticResource StateTextStyle}" />
                         </Border>
-                        <VerticalStackLayout IsVisible="{Binding Source={x:Reference DetailsPage}, Path=StaffContentVisible}"
-                                             BindableLayout.ItemsSource="{Binding Source={x:Reference DetailsPage}, Path=DisplayedStaff}"
-                                             BindableLayout.ItemTemplate="{StaticResource StaffTemplate}" />
+                        <CollectionView IsVisible="{Binding Source={x:Reference DetailsPage}, Path=StaffContentVisible}"
+                                        ItemsSource="{Binding Source={x:Reference DetailsPage}, Path=DisplayedStaff}"
+                                        ItemTemplate="{StaticResource StaffTemplate}"
+                                        HeightRequest="{Binding Source={x:Reference DetailsPage}, Path=StaffListHeight}"
+                                        SelectionMode="None" />
                     </VerticalStackLayout>
                 </Grid>
             </VerticalStackLayout>
@@ -735,7 +743,7 @@
                             </MultiBinding>
                         </Button.IsVisible>
                     </Button>
-                    <Button Grid.Column="0" Text="{Binding MyScoreBind, StringFormat='★ {0}'}" Clicked="OnScoreClicked" FontFamily="InterSemiBold" FontSize="12"
+                    <Button Grid.Column="0" Text="★ {0}" Clicked="OnScoreClicked" FontFamily="InterSemiBold" FontSize="12"
                             BackgroundColor="#141d2b" TextColor="White" BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="12" HeightRequest="40" Padding="10,0">
                         <Button.IsVisible>
                             <MultiBinding Converter="{StaticResource MultiAnd}">
@@ -744,7 +752,7 @@
                             </MultiBinding>
                         </Button.IsVisible>
                     </Button>
-                    <Button Grid.Column="1" x:Name="FavouriteButton" Text="♡ Favorite" Command="{Binding ToggleFavouriteCommand}"
+                    <Button Grid.Column="1" x:Name="FavouriteButton" Text="♥ Favorite" Command="{Binding ToggleFavouriteCommand}"
                             IsEnabled="{Binding IsFavouriteButtonEnabled}" FontFamily="InterSemiBold" FontSize="12" BackgroundColor="#141d2b"
                             TextColor="White" BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="12" HeightRequest="40" Padding="10,0">
                         <Button.Triggers>
@@ -759,7 +767,7 @@
                             BackgroundColor="#141d2b" TextColor="#FF6B00" BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="12" HeightRequest="40" WidthRequest="40" Padding="0" />
                     <Button Grid.Column="3" Text="↻" Command="{Binding RefreshCommand}" FontFamily="InterBold" FontSize="14" BackgroundColor="#141d2b"
                             TextColor="White" BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="12" HeightRequest="40" WidthRequest="40" Padding="0" />
-                    <Button Grid.Column="4" Text="⋮" Command="{Binding ShowMoreCommand}" FontFamily="InterBold" FontSize="18" BackgroundColor="#141d2b"
+                    <Button Grid.Column="4" Text="⋯" Command="{Binding ShowMoreCommand}" FontFamily="InterBold" FontSize="18" BackgroundColor="#141d2b"
                             TextColor="White" BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="12" HeightRequest="40" WidthRequest="40" Padding="0" />
                 </Grid>
             </Border>
