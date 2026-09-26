@@ -782,29 +782,81 @@ public partial class AnimeDetailsPage : ContentPage
         }
     }
 
-    private async void OnCharacterTapped(object sender, TappedEventArgs e)
+    private void OnCharacterItemSelected(object sender, SelectionChangedEventArgs e)
     {
-        try
-        {
-            if (TryGetNavigationId(e.Parameter, out var id))
-                await Shell.Current.GoToAsync($"character?id={id}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("MALPLUS OnCharacterTapped failed: " + ex.GetType().Name);
-        }
+        if (e.CurrentSelection.Count == 0)
+            return;
+        var id = ResolveCharacterId(e.CurrentSelection[0]);
+        ClearSenderSelection(sender);
+        if (id > 0)
+            NavigateToCharacter(id);
     }
 
-    private async void OnStaffTapped(object sender, TappedEventArgs e)
+    private void OnStaffItemSelected(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.Count == 0)
+            return;
+        var id = ResolveStaffId(e.CurrentSelection[0]);
+        ClearSenderSelection(sender);
+        if (id > 0)
+            NavigateToStaff(id);
+    }
+
+    private async void OnJapaneseVoiceClicked(object sender, EventArgs e)
     {
         try
         {
-            if (TryGetNavigationId(e.Parameter, out var id))
+            if (TryGetNavigationId((sender as ImageButton)?.CommandParameter, out var id))
                 await Shell.Current.GoToAsync($"staff?id={id}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS OnStaffTapped failed: " + ex.GetType().Name);
+            Console.WriteLine("MALPlus OnJapaneseVoiceClicked failed: " + ex.Message);
+        }
+    }
+
+    private static int ResolveCharacterId(object item) => item switch
+    {
+        AnimeCharacterCard card => ResolveStringId(card.AnimeCharacter?.Data?.Id),
+        MangaCharacterCard mangaCard => ResolveStringId(mangaCard.Id),
+        _ => 0
+    };
+
+    private static int ResolveStaffId(object item) => item switch
+    {
+        StaffCard card => ResolveStringId(card.Id),
+        _ => 0
+    };
+
+    private static int ResolveStringId(string value) => int.TryParse(value, out var id) ? id : 0;
+
+    private static void ClearSenderSelection(object sender)
+    {
+        if (sender is CollectionView collectionView)
+            collectionView.SelectedItem = null;
+    }
+
+    private static async Task NavigateToCharacter(int id)
+    {
+        try
+        {
+            await Shell.Current.GoToAsync($"character?id={id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPlus character nav failed: " + ex.Message);
+        }
+    }
+
+    private static async Task NavigateToStaff(int id)
+    {
+        try
+        {
+            await Shell.Current.GoToAsync($"staff?id={id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPlus staff nav failed: " + ex.Message);
         }
     }
 

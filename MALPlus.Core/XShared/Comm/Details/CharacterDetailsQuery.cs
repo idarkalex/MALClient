@@ -29,7 +29,7 @@ namespace MALClient.XShared.Comm.Details
         {
             var possibleData = force
                 ? null
-                : await DataCache.RetrieveData<CharacterDetailsData>($"character_details_v2_{_id}.json",
+                : await DataCache.RetrieveData<CharacterDetailsData>($"character_details_v4_{_id}.json",
                     "character_details", 30);
             if (possibleData != null && possibleData.Id == _id && !string.IsNullOrWhiteSpace(possibleData.Name))
                 return possibleData;
@@ -37,14 +37,48 @@ namespace MALClient.XShared.Comm.Details
             var output = await FetchFromTenraiAsync();
             if (!string.IsNullOrWhiteSpace(output?.Name))
             {
-                await DataCache.SaveData(output, $"character_details_v2_{_id}.json", "character_details");
+                if (IsCreditDataEmpty(output))
+                {
+                    var html = await FetchFromHtmlAsync();
+                    MergeMissingCredits(output, html);
+                }
+
+                await DataCache.SaveData(output, $"character_details_v4_{_id}.json", "character_details");
                 return output;
             }
 
             output = await FetchFromHtmlAsync();
             if (!string.IsNullOrWhiteSpace(output?.Name))
-                await DataCache.SaveData(output, $"character_details_v2_{_id}.json", "character_details");
+                await DataCache.SaveData(output, $"character_details_v4_{_id}.json", "character_details");
             return output ?? new CharacterDetailsData();
+        }
+
+        private static bool IsCreditDataEmpty(CharacterDetailsData data)
+        {
+            return (data.Animeography?.Count ?? 0) == 0 && (data.Mangaography?.Count ?? 0) == 0 &&
+                   (data.VoiceActors?.Count ?? 0) == 0;
+        }
+
+        private static void MergeMissingCredits(CharacterDetailsData target, CharacterDetailsData fallback)
+        {
+            if (target == null || fallback == null || ReferenceEquals(target, fallback))
+                return;
+
+            if (string.IsNullOrWhiteSpace(target.ImgUrl))
+                target.ImgUrl = fallback.ImgUrl;
+            if (string.IsNullOrWhiteSpace(target.Content))
+                target.Content = fallback.Content;
+            if (string.IsNullOrWhiteSpace(target.SpoilerContent))
+                target.SpoilerContent = fallback.SpoilerContent;
+            if (string.IsNullOrWhiteSpace(target.TotalFavs))
+                target.TotalFavs = fallback.TotalFavs;
+
+            if (target.Animeography.Count == 0 && fallback.Animeography.Count > 0)
+                target.Animeography.AddRange(fallback.Animeography);
+            if (target.Mangaography.Count == 0 && fallback.Mangaography.Count > 0)
+                target.Mangaography.AddRange(fallback.Mangaography);
+            if (target.VoiceActors.Count == 0 && fallback.VoiceActors.Count > 0)
+                target.VoiceActors.AddRange(fallback.VoiceActors);
         }
 
         private async Task<CharacterDetailsData> FetchFromTenraiAsync()
@@ -256,14 +290,22 @@ namespace MALClient.XShared.Comm.Details
 
         private static string GetNestedImageUrl(JsonElement entry)
         {
-            if (!entry.TryGetProperty("images", out var images) || images.ValueKind != JsonValueKind.Object)
-                return null;
-            if (!images.TryGetProperty("jpg", out var jpg) || jpg.ValueKind != JsonValueKind.Object)
-                return null;
-            if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
-                return large.GetString();
-            if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
-                return img.GetString();
+            if (entry.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object)
+            {
+                if (images.TryGetProperty("webp", out var webp) && webp.ValueKind == JsonValueKind.Object &&
+                    webp.TryGetProperty("image_url", out var webpFull) && webpFull.ValueKind == JsonValueKind.String)
+                    return webpFull.GetString();
+                if (images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object)
+                {
+                    if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
+                        return large.GetString();
+                    if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
+                        return img.GetString();
+                }
+            }
+
+            if (entry.TryGetProperty("image", out var direct) && direct.ValueKind == JsonValueKind.String)
+                return direct.GetString();
             return null;
         }
 

@@ -131,13 +131,18 @@ namespace MALClient.XShared.Comm.Anime
             try
             {
                 var data = await TenraiClient.GetDataAsync($"{( _anime ? "anime" : "manga")}/{_id}");
-                if (data.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object &&
-                    images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object)
+                if (data.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object)
                 {
-                    if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
-                        return large.GetString();
-                    if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
-                        return img.GetString();
+                    if (images.TryGetProperty("webp", out var webp) && webp.ValueKind == JsonValueKind.Object &&
+                        webp.TryGetProperty("image_url", out var webpFull) && webpFull.ValueKind == JsonValueKind.String)
+                        return webpFull.GetString();
+                    if (images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object)
+                    {
+                        if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
+                            return large.GetString();
+                        if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
+                            return img.GetString();
+                    }
                 }
             }
             catch (Exception)

@@ -152,14 +152,22 @@ namespace MALClient.XShared.Comm.Search
 
         private static string GetNestedImageUrl(JsonElement entry)
         {
-            if (!entry.TryGetProperty("images", out var images) || images.ValueKind != JsonValueKind.Object)
-                return null;
-            if (!images.TryGetProperty("jpg", out var jpg) || jpg.ValueKind != JsonValueKind.Object)
-                return null;
-            if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
-                return large.GetString();
-            if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
-                return img.GetString();
+            if (entry.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object)
+            {
+                if (images.TryGetProperty("webp", out var webp) && webp.ValueKind == JsonValueKind.Object &&
+                    webp.TryGetProperty("image_url", out var webpFull) && webpFull.ValueKind == JsonValueKind.String)
+                    return webpFull.GetString();
+                if (images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object)
+                {
+                    if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
+                        return large.GetString();
+                    if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
+                        return img.GetString();
+                }
+            }
+
+            if (entry.TryGetProperty("image", out var direct) && direct.ValueKind == JsonValueKind.String)
+                return direct.GetString();
             return null;
         }
     }

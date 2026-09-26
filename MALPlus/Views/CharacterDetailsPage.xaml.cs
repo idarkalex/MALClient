@@ -169,7 +169,6 @@ public partial class CharacterDetailsPage : ContentPage
 
     private void OnContentScrolled(object sender, ScrolledEventArgs e)
     {
-        CompactHeaderHost.TranslationY = System.Math.Max(FullHero.Height - e.ScrollY, 0);
         if (ContentScroll.Height <= 0 || e.ScrollY < _lastProgressiveScrollY + ContentScroll.Height * 0.72)
             return;
         _lastProgressiveScrollY = e.ScrollY;
@@ -232,22 +231,22 @@ public partial class CharacterDetailsPage : ContentPage
         await ResetTabTranslationAsync();
     }
 
-    private async void OnOverviewTabClicked(object sender, EventArgs e)
+    private async void OnOverviewTabTapped(object sender, TappedEventArgs e)
     {
         await SelectTabAsync(0, true);
     }
 
-    private async void OnVoiceActorsTabClicked(object sender, EventArgs e)
+    private async void OnVoiceActorsTabTapped(object sender, TappedEventArgs e)
     {
         await SelectTabAsync(1, true);
     }
 
-    private async void OnAnimeographyTabClicked(object sender, EventArgs e)
+    private async void OnAnimeographyTabTapped(object sender, TappedEventArgs e)
     {
         await SelectTabAsync(2, true);
     }
 
-    private async void OnMangaographyTabClicked(object sender, EventArgs e)
+    private async void OnMangaographyTabTapped(object sender, TappedEventArgs e)
     {
         await SelectTabAsync(3, true);
     }
@@ -293,18 +292,12 @@ public partial class CharacterDetailsPage : ContentPage
 
     private void UpdateTabVisuals()
     {
-        Button[] buttons =
+        var labels = new[] { OverviewTabLabel, VoiceActorsTabLabel, AnimeographyTabLabel, MangaographyTabLabel };
+        for (var i = 0; i < labels.Length; i++)
         {
-            OverviewTabButton,
-            VoiceActorsTabButton,
-            AnimeographyTabButton,
-            MangaographyTabButton
-        };
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            bool selected = i == _selectedTab;
-            buttons[i].TextColor = selected ? Color.FromArgb("#FF6B00") : Colors.White;
-            buttons[i].BackgroundColor = selected ? Color.FromArgb("#1AFFFFFF") : Colors.Transparent;
+            if (labels[i] == null)
+                continue;
+            labels[i].TextColor = i == _selectedTab ? Color.FromArgb("#0066FF") : Color.FromArgb("#B3FFFFFF");
         }
     }
 

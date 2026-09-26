@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
@@ -8,6 +8,17 @@
     <ContentPage.Resources>
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+
+        <Style x:Key="CharTabLabelStyle" TargetType="Label">
+            <Setter Property="FontFamily" Value="InterSemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="TextColor" Value="#B3FFFFFF" />
+            <Setter Property="MaxLines" Value="1" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="Padding" Value="0,7" />
+        </Style>
 
         <DataTemplate x:Key="CharacterVoiceActorTemplate">
             <Border Margin="0,0,0,8" Padding="10" BackgroundColor="#0AFFFFFF"
@@ -49,14 +60,14 @@
                                TextColor="{StaticResource BrushText}" MaxLines="3"
                                LineBreakMode="TailTruncation" />
                         <HorizontalStackLayout Spacing="6">
-                            <Border Padding="7,3" BackgroundColor="#1A0066FF" StrokeShape="RoundRectangle 6">
-                                <Label Text="ANIME" FontFamily="InterSemiBold" FontSize="9" TextColor="#80B4FF"
-                                       IsVisible="{Binding IsAnime}" />
-                            </Border>
-                            <Border Padding="7,3" BackgroundColor="#1AFF6B00" StrokeShape="RoundRectangle 6">
-                                <Label Text="MANGA" FontFamily="InterSemiBold" FontSize="9" TextColor="#FFFFA45C"
-                                       IsVisible="{Binding IsAnime, Converter={StaticResource BoolVis}, ConverterParameter=invert}" />
-                            </Border>
+                                <Border Padding="7,3" BackgroundColor="#1A0066FF" StrokeShape="RoundRectangle 6"
+                                        IsVisible="{Binding IsAnime}">
+                                    <Label Text="ANIME" FontFamily="InterSemiBold" FontSize="9" TextColor="#80B4FF" />
+                                </Border>
+                                <Border Padding="7,3" BackgroundColor="#1AFF6B00" StrokeShape="RoundRectangle 6"
+                                        IsVisible="{Binding IsAnime, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                                    <Label Text="MANGA" FontFamily="InterSemiBold" FontSize="9" TextColor="#FFFFA45C" />
+                                </Border>
                         </HorizontalStackLayout>
                         <Label Text="MEDIA / ROLE" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF" />
                         <Label Text="{Binding Notes}" FontFamily="Inter" FontSize="12"
@@ -108,7 +119,33 @@
                     </VerticalStackLayout>
                 </Grid>
 
-                <BoxView x:Name="HeroSpacer" HeightRequest="116" Color="{StaticResource EmBackground}" />
+                <BoxView x:Name="HeroSpacer" HeightRequest="8" Color="{StaticResource EmBackground}" />
+
+                <ScrollView HorizontalOptions="Fill" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                            Padding="14,0,14,0" BackgroundColor="{StaticResource EmBackground}">
+                    <HorizontalStackLayout Spacing="20">
+                        <Label x:Name="OverviewTabLabel" Text="Overview" Style="{StaticResource CharTabLabelStyle}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnOverviewTabTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label x:Name="VoiceActorsTabLabel" Text="Voice Actors" Style="{StaticResource CharTabLabelStyle}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnVoiceActorsTabTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label x:Name="AnimeographyTabLabel" Text="Animeography" Style="{StaticResource CharTabLabelStyle}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnAnimeographyTabTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label x:Name="MangaographyTabLabel" Text="Mangaography" Style="{StaticResource CharTabLabelStyle}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnMangaographyTabTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+                </ScrollView>
 
                 <Grid x:Name="TabContentHost">
                     <Grid.GestureRecognizers>
@@ -248,46 +285,5 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <Border x:Name="CompactHeaderHost" HeightRequest="116" TranslationY="300" ZIndex="20"
-                BackgroundColor="{StaticResource EmBackground}" StrokeThickness="0"
-                IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-            <Grid RowDefinitions="66,50">
-                <Grid ColumnDefinitions="48,*,Auto" Padding="12,5,12,3" ColumnSpacing="10">
-                    <Border WidthRequest="48" HeightRequest="58" StrokeShape="RoundRectangle 6"
-                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                        <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
-                               Aspect="AspectFill" />
-                    </Border>
-                    <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
-                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="15"
-                               TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation" />
-                        <HorizontalStackLayout Spacing="6">
-                            <Border Padding="7,3" BackgroundColor="#1A0066FF" StrokeShape="RoundRectangle 6">
-                                <Label Text="CHARACTER" FontFamily="InterSemiBold" FontSize="9" TextColor="#80B4FF" />
-                            </Border>
-                            <Border Padding="7,3" BackgroundColor="#1AFFD700" StrokeShape="RoundRectangle 6">
-                                <Label Text="{Binding VoiceActors.Count, StringFormat='VOICE CAST {0}'}"
-                                       FontFamily="InterSemiBold" FontSize="9" TextColor="#FFFFD965" />
-                            </Border>
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-                </Grid>
-
-                <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Padding="8,0" ColumnSpacing="3">
-                    <Button x:Name="OverviewTabButton" Grid.Column="0" Text="Overview" Clicked="OnOverviewTabClicked"
-                            FontFamily="InterSemiBold" FontSize="10" TextColor="White" BackgroundColor="Transparent"
-                            Padding="2" CornerRadius="7" />
-                    <Button x:Name="VoiceActorsTabButton" Grid.Column="1" Text="Voice Actors" Clicked="OnVoiceActorsTabClicked"
-                            FontFamily="InterSemiBold" FontSize="10" TextColor="White" BackgroundColor="Transparent"
-                            Padding="2" CornerRadius="7" />
-                    <Button x:Name="AnimeographyTabButton" Grid.Column="2" Text="Animeography" Clicked="OnAnimeographyTabClicked"
-                            FontFamily="InterSemiBold" FontSize="10" TextColor="White" BackgroundColor="Transparent"
-                            Padding="2" CornerRadius="7" />
-                    <Button x:Name="MangaographyTabButton" Grid.Column="3" Text="Mangaography" Clicked="OnMangaographyTabClicked"
-                            FontFamily="InterSemiBold" FontSize="10" TextColor="White" BackgroundColor="Transparent"
-                            Padding="2" CornerRadius="7" />
-                </Grid>
-            </Grid>
-        </Border>
     </Grid>
 </ContentPage>

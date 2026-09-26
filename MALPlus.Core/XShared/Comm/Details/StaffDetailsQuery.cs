@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -30,7 +31,7 @@ namespace MALClient.XShared.Comm.Details
         {
             var possibleData = force
                 ? null
-                : await DataCache.RetrieveData<StaffDetailsData>($"staff_details_v2_{_id}.json",
+                : await DataCache.RetrieveData<StaffDetailsData>($"staff_details_v5_{_id}.json",
                     "staff_details", 30);
             if (IsStructuredDataValid(possibleData))
                 return possibleData;
@@ -38,7 +39,7 @@ namespace MALClient.XShared.Comm.Details
             var output = await FetchFromTenraiAsync();
             if (IsStructuredDataValid(output))
             {
-                await DataCache.SaveData(output, $"staff_details_v2_{_id}.json", "staff_details");
+                await DataCache.SaveData(output, $"staff_details_v5_{_id}.json", "staff_details");
                 return output;
             }
 
@@ -84,9 +85,9 @@ namespace MALClient.XShared.Comm.Details
                 if (alternateNames.Count > 0)
                     output.Details.Add("Alternate names: " + string.Join(", ", alternateNames));
 
-                var birthday = GetString(data, "birthday");
-                if (!string.IsNullOrWhiteSpace(birthday))
-                    output.Details.Add("Birthday: " + birthday);
+            var birthday = GetString(data, "birthday");
+            if (!string.IsNullOrWhiteSpace(birthday))
+                output.Details.Add("Birthday: " + NormalizeDetailDate(birthday));
                 if (data.TryGetProperty("birthdays", out var birthdays) && birthdays.ValueKind == JsonValueKind.Array)
                 {
                     foreach (var birthdayEntry in birthdays.EnumerateArray())
@@ -94,6 +95,7 @@ namespace MALClient.XShared.Comm.Details
                         try
                         {
                             var value = GetString(birthdayEntry, "birthday");
+                            value = NormalizeDetailDate(value);
                             if (string.IsNullOrWhiteSpace(value) ||
                                 output.Details.Any(detail => detail.EndsWith(": " + value,
                                     StringComparison.OrdinalIgnoreCase)))
@@ -136,6 +138,17 @@ namespace MALClient.XShared.Comm.Details
             return data != null && data.Id == _id && !string.IsNullOrWhiteSpace(data.Name) &&
                    ((data.Details?.Count ?? 0) > 0 || (data.ShowCharacterPairs?.Count ?? 0) > 0 ||
                     (data.StaffPositions?.Count ?? 0) > 0);
+        }
+
+        private static string NormalizeDetailDate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return value;
+            var trimmed = value.Trim();
+            if (DateTimeOffset.TryParse(trimmed, CultureInfo.InvariantCulture, DateTimeStyles.None,
+                    out var parsed))
+                return parsed.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture);
+            return trimmed;
         }
 
         private static void ParseVoiceRoles(JsonElement data, StaffDetailsData output)
@@ -308,14 +321,22 @@ namespace MALClient.XShared.Comm.Details
 
         private static string GetNestedImageUrl(JsonElement entry)
         {
-            if (!entry.TryGetProperty("images", out var images) || images.ValueKind != JsonValueKind.Object)
-                return null;
-            if (!images.TryGetProperty("jpg", out var jpg) || jpg.ValueKind != JsonValueKind.Object)
-                return null;
-            if (jpg.TryGetProperty("large_image_url", out var large) && large.ValueKind == JsonValueKind.String)
-                return large.GetString();
-            if (jpg.TryGetProperty("image_url", out var img) && img.ValueKind == JsonValueKind.String)
-                return img.GetString();
+            if (entry.TryGetProperty("images", out var images) && images.ValueKind == JsonValueKind.Object)
+            {
+                if (images.TryGetProperty("webp", out var webp) && webp.ValueKind == JsonValueKind.Object &&
+                    webp.TryGetProperty("image_url", out var webpFull) && webpFull.ValueKind == JsonValueKind.String)
+                    return webpFull.GetString();
+                if (images.TryGetProperty("jpg", out var jpg) && jpg.ValueKind == JsonValueKind.Object)
+                {
+                    if (jpg.TryGetProperty("image_url", out var full) && full.ValueKind == JsonValueKind.String)
+                        return full.GetString();
+                    if (jpg.TryGetProperty("small_image_url", out var small) && small.ValueKind == JsonValueKind.String)
+                        return small.GetString();
+                }
+            }
+
+            if (entry.TryGetProperty("image", out var direct) && direct.ValueKind == JsonValueKind.String)
+                return direct.GetString();
             return null;
         }
 

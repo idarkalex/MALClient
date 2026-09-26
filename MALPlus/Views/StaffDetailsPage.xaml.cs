@@ -166,7 +166,6 @@ public partial class StaffDetailsPage : ContentPage
 
     private void OnContentScrolled(object sender, ScrolledEventArgs e)
     {
-        CompactHeaderHost.TranslationY = System.Math.Max(FullHero.Height - e.ScrollY, 0);
         if (ContentScroll.Height <= 0 || e.ScrollY < _lastProgressiveScrollY + ContentScroll.Height * 0.72)
             return;
         _lastProgressiveScrollY = e.ScrollY;
@@ -229,17 +228,17 @@ public partial class StaffDetailsPage : ContentPage
         await ResetTabTranslationAsync();
     }
 
-    private async void OnInfoTabClicked(object sender, EventArgs e)
+    private async void OnInfoTabTapped(object sender, TappedEventArgs e)
     {
         await SelectTabAsync(0, true);
     }
 
-    private async void OnVoiceRolesTabClicked(object sender, EventArgs e)
+    private async void OnVoiceRolesTabTapped(object sender, TappedEventArgs e)
     {
         await SelectTabAsync(1, true);
     }
 
-    private async void OnProductionRolesTabClicked(object sender, EventArgs e)
+    private async void OnProductionRolesTabTapped(object sender, TappedEventArgs e)
     {
         await SelectTabAsync(2, true);
     }
@@ -284,17 +283,12 @@ public partial class StaffDetailsPage : ContentPage
 
     private void UpdateTabVisuals()
     {
-        Button[] buttons =
+        var labels = new[] { InfoTabLabel, VoiceRolesTabLabel, ProductionRolesTabLabel };
+        for (var i = 0; i < labels.Length; i++)
         {
-            InfoTabButton,
-            VoiceRolesTabButton,
-            ProductionRolesTabButton
-        };
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            bool selected = i == _selectedTab;
-            buttons[i].TextColor = selected ? Color.FromArgb("#FF6B00") : Colors.White;
-            buttons[i].BackgroundColor = selected ? Color.FromArgb("#1AFFFFFF") : Colors.Transparent;
+            if (labels[i] == null)
+                continue;
+            labels[i].TextColor = i == _selectedTab ? Color.FromArgb("#0066FF") : Color.FromArgb("#B3FFFFFF");
         }
     }
 

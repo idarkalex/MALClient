@@ -9,6 +9,17 @@
         <converters:StringToImageSourceConverter x:Key="ImageConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolVis" />
 
+        <Style x:Key="StaffTabLabelStyle" TargetType="Label">
+            <Setter Property="FontFamily" Value="InterSemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="TextColor" Value="#B3FFFFFF" />
+            <Setter Property="MaxLines" Value="1" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="Padding" Value="0,7" />
+        </Style>
+
         <DataTemplate x:Key="StaffInfoRowTemplate">
             <Border Margin="0,0,0,7" Padding="11,9" BackgroundColor="#0AFFFFFF" StrokeShape="RoundRectangle 6">
                 <Label Text="{Binding .}" FontFamily="Inter" FontSize="13"
@@ -77,13 +88,13 @@
                         <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="14"
                                TextColor="{StaticResource BrushText}" MaxLines="3" LineBreakMode="TailTruncation" />
                         <HorizontalStackLayout Spacing="6">
-                            <Border Padding="7,3" BackgroundColor="#1A0066FF" StrokeShape="RoundRectangle 6">
-                                <Label Text="ANIME" FontFamily="InterSemiBold" FontSize="9" TextColor="#80B4FF"
-                                       IsVisible="{Binding IsAnime}" />
+                            <Border Padding="7,3" BackgroundColor="#1A0066FF" StrokeShape="RoundRectangle 6"
+                                    IsVisible="{Binding IsAnime}">
+                                <Label Text="ANIME" FontFamily="InterSemiBold" FontSize="9" TextColor="#80B4FF" />
                             </Border>
-                            <Border Padding="7,3" BackgroundColor="#1AFF6B00" StrokeShape="RoundRectangle 6">
-                                <Label Text="MANGA" FontFamily="InterSemiBold" FontSize="9" TextColor="#FFFFA45C"
-                                       IsVisible="{Binding IsAnime, Converter={StaticResource BoolVis}, ConverterParameter=invert}" />
+                            <Border Padding="7,3" BackgroundColor="#1AFF6B00" StrokeShape="RoundRectangle 6"
+                                    IsVisible="{Binding IsAnime, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                                <Label Text="MANGA" FontFamily="InterSemiBold" FontSize="9" TextColor="#FFFFA45C" />
                             </Border>
                         </HorizontalStackLayout>
                         <Label Text="ROLE / MEDIA TYPE" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF" />
@@ -135,7 +146,28 @@
                     </VerticalStackLayout>
                 </Grid>
 
-                <BoxView x:Name="HeroSpacer" HeightRequest="116" Color="{StaticResource EmBackground}" />
+                <BoxView x:Name="HeroSpacer" HeightRequest="8" Color="{StaticResource EmBackground}" />
+
+                <ScrollView HorizontalOptions="Fill" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                            Padding="14,0,14,0" BackgroundColor="{StaticResource EmBackground}">
+                    <HorizontalStackLayout Spacing="20">
+                        <Label x:Name="InfoTabLabel" Text="Info" Style="{StaticResource StaffTabLabelStyle}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnInfoTabTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label x:Name="VoiceRolesTabLabel" Text="Voice Acting Roles" Style="{StaticResource StaffTabLabelStyle}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnVoiceRolesTabTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label x:Name="ProductionRolesTabLabel" Text="Production Roles" Style="{StaticResource StaffTabLabelStyle}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnProductionRolesTabTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+                </ScrollView>
 
                 <Grid x:Name="TabContentHost">
                     <Grid.GestureRecognizers>
@@ -218,43 +250,5 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <Border x:Name="CompactHeaderHost" HeightRequest="116" TranslationY="300" ZIndex="20"
-                BackgroundColor="{StaticResource EmBackground}" StrokeThickness="0"
-                IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-            <Grid RowDefinitions="66,50">
-                <Grid ColumnDefinitions="48,*,Auto" Padding="12,5,12,3" ColumnSpacing="10">
-                    <Border WidthRequest="48" HeightRequest="58" StrokeShape="RoundRectangle 6"
-                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                        <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
-                               Aspect="AspectFill" />
-                    </Border>
-                    <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
-                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="15"
-                               TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation" />
-                        <HorizontalStackLayout Spacing="6">
-                            <Border Padding="7,3" BackgroundColor="#1A0066FF" StrokeShape="RoundRectangle 6">
-                                <Label Text="STAFF" FontFamily="InterSemiBold" FontSize="9" TextColor="#80B4FF" />
-                            </Border>
-                            <Border Padding="7,3" BackgroundColor="#1AFFD700" StrokeShape="RoundRectangle 6">
-                                <Label Text="{Binding Data.Details.Count, StringFormat='{0} details'}"
-                                       FontFamily="InterSemiBold" FontSize="9" TextColor="#FFFFD965" />
-                            </Border>
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-                </Grid>
-
-                <Grid Grid.Row="1" ColumnDefinitions="*,*,*" Padding="8,0" ColumnSpacing="3">
-                    <Button x:Name="InfoTabButton" Grid.Column="0" Text="Info" Clicked="OnInfoTabClicked"
-                            FontFamily="InterSemiBold" FontSize="10" TextColor="White" BackgroundColor="Transparent"
-                            Padding="2" CornerRadius="7" />
-                    <Button x:Name="VoiceRolesTabButton" Grid.Column="1" Text="Voice Acting Roles" Clicked="OnVoiceRolesTabClicked"
-                            FontFamily="InterSemiBold" FontSize="10" TextColor="White" BackgroundColor="Transparent"
-                            Padding="2" CornerRadius="7" />
-                    <Button x:Name="ProductionRolesTabButton" Grid.Column="2" Text="Production Roles" Clicked="OnProductionRolesTabClicked"
-                            FontFamily="InterSemiBold" FontSize="10" TextColor="White" BackgroundColor="Transparent"
-                            Padding="2" CornerRadius="7" />
-                </Grid>
-            </Grid>
-        </Border>
     </Grid>
 </ContentPage>
