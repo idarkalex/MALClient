@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -220,7 +221,12 @@ namespace MALClient.XShared.Utils
 
         #region VolatileData
 
-        private static readonly Dictionary<int, VolatileDataCache> _volatileDataCache = new Dictionary<int, VolatileDataCache>();
+        // This was a plain Dictionary while the airing-countdown fan-out wrote to it
+        // from background threads and bound getters read it from the UI thread on every
+        // traversal. Concurrent read+write on a Dictionary can corrupt its buckets and
+        // spin, which is what the ~1s UI-thread stalls with no matching app work were.
+        private static readonly ConcurrentDictionary<int, VolatileDataCache> _volatileDataCache =
+            new ConcurrentDictionary<int, VolatileDataCache>();
 
         private static async void LoadVolatileData()
         {
@@ -241,7 +247,9 @@ namespace MALClient.XShared.Utils
         {
             try
             {
-                await DataCacheService.SaveData(_volatileDataCache, "volatile_data.json", "");
+                await DataCacheService.SaveData(
+                    _volatileDataCache.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+                    "volatile_data.json", "");
             }
             catch (Exception)
             {

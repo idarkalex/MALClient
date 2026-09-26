@@ -177,8 +177,6 @@ namespace MALClient.XShared.ViewModels.Main
         {
             try
             {
-
-
                 await InitializationRoutines.AwaitableCompletion
                     .Task; //wait for all necessary modelus to complete loading
                 //base

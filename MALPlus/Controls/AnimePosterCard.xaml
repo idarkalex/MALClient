@@ -57,12 +57,27 @@
             </Border>
         </VerticalStackLayout>
 
-        <controls:OutlinedLabel Text="{Binding Title, Source={x:Reference PosterCard}}"
-                               FontFamily="Inter" FontSize="11"
-                               TextColor="White" OutlineColor="Black" OutlineWidth="2.5"
-                               MaxLines="2" HeightRequest="32"
-                               VerticalOptions="End" Margin="4,0,4,4"
-                               InputTransparent="True"
-                               IsVisible="{Binding TitleOverlay, Source={x:Reference PosterCard}}" />
+        <!-- Bottom scrim: this is what makes the title readable now that it is a plain
+             Label. The outline used to come from an OutlinedLabel, i.e. an
+             SKCanvasView, which on Android is a TextureView: the grid kept ~30 of
+             them alive and each cell bind created and measured one. -->
+        <Border IsVisible="{Binding TitleOverlay, Source={x:Reference PosterCard}}"
+                StrokeThickness="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#00000000" Offset="0.45" />
+                    <GradientStop Color="#B3000000" Offset="0.75" />
+                    <GradientStop Color="#E6000000" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <Label Text="{Binding Title, Source={x:Reference PosterCard}}"
+               FontFamily="Inter" FontSize="11"
+               TextColor="White"
+               MaxLines="2" LineBreakMode="TailTruncation"
+               HeightRequest="32" VerticalOptions="End"
+               Margin="6,0,6,4" InputTransparent="True"
+               IsVisible="{Binding TitleOverlay, Source={x:Reference PosterCard}}" />
     </Grid>
 </ContentView>

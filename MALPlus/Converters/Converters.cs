@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using MALClient.Models.Enums;
 using MALClient.XShared.Utils;
@@ -6,11 +7,23 @@ namespace MALPlus.Converters;
 
 public class StringToImageSourceConverter : IValueConverter
 {
+    // Every poster, avatar and thumbnail in the app goes through here, and a binding
+    // is re-evaluated on every traversal and every cell recycle. Returning a NEW
+    // UriImageSource each time made the image loader treat every re-evaluation as a
+    // new source, so the same handful of posters were re-decoded over and over during
+    // a single navigation. One shared instance per URL removes that entirely.
+    private static readonly ConcurrentDictionary<string, UriImageSource> Sources = new(StringComparer.Ordinal);
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is string url && !string.IsNullOrWhiteSpace(url))
-            return new UriImageSource { Uri = new Uri(url), CachingEnabled = true, CacheValidity = TimeSpan.FromDays(30) };
-        return null;
+        if (value is not string url || string.IsNullOrWhiteSpace(url))
+            return null;
+        return Sources.GetOrAdd(url, static key => new UriImageSource
+        {
+            Uri = new Uri(key),
+            CachingEnabled = true,
+            CacheValidity = TimeSpan.FromDays(30)
+        });
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

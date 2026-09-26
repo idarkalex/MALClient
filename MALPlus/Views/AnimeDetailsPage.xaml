@@ -131,10 +131,10 @@
                                                TypeTag="{Binding MediaType}"
                                                ChipSource="{Binding Relations}"
                                                ChipTemplate="{StaticResource RelationChipTemplate}" />
-                    <controls:OutlinedLabel Grid.Row="1" Text="{Binding Title}" FontFamily="Inter" FontSize="10"
-                                           TextColor="White" OutlineColor="Black" OutlineWidth="2.5"
-                                           MaxLines="2" HeightRequest="36" InputTransparent="True"
-                                           VerticalOptions="Center" Margin="4,0,4,3" />
+                    <Label Grid.Row="1" Text="{Binding Title}" FontFamily="Inter" FontSize="10"
+                           TextColor="#D9D9D9" MaxLines="2" LineBreakMode="TailTruncation"
+                           HeightRequest="36" InputTransparent="True"
+                           VerticalOptions="Center" Margin="6,0,6,3" />
                 </Grid>
             </Border>
         </DataTemplate>
