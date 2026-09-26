@@ -52,6 +52,28 @@ namespace MALClient.XShared.ViewModels
 
         public string WatchedEps => $"{(AnimeMode ? "Episodes" : "Chapters")}: {(AllEpisodes == 0 ? "?" : AllEpisodes.ToString())}";
         public string MyEpisodesBindShort => $"{MyEpisodes}/{(AllEpisodes == 0 ? "?" : AllEpisodes.ToString())}";
+
+        /// <summary>
+        ///     Short format label for the blue poster badge. <see cref="Type" /> is the display
+        ///     string MAL returns ("Light Novel", "One-shot"), so it goes through the same
+        ///     parser the library uses rather than being trusted verbatim.
+        /// </summary>
+        public string TypeTag
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Type))
+                    return "";
+                var parsed = AnimeMode
+                    ? (int) MalTypeParser.ParseAnimeType(Type)
+                    : (int) MalTypeParser.ParseMangaType(Type);
+                return parsed == 0 ? "" : Type;
+            }
+        }
+
+        public string CardBadgeAccent => IsAuth ? MyStatusBindShort : "Score";
+        public string CardBadgeMain => IsAuth ? MyEpisodesBindShort : GlobalScoreBind;
+
         public ICommand NavigateDetailsCommand => new RelayCommand(NavigateDetails);
 
         public AnimeSearchItemViewModel(AnimeGeneralDetailsData data, AnimeListViewModel animeListViewModel,

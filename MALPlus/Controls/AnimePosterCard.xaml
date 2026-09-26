@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
+             x:Class="MALPlus.Controls.AnimePosterCard"
+             x:Name="PosterCard">
+    <ContentView.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+    </ContentView.Resources>
+
+    <Grid BackgroundColor="#0D0D0D">
+        <Image Source="{Binding PosterUrl, Source={x:Reference PosterCard}, Converter={StaticResource ImageConverter}}"
+               Aspect="AspectFill" />
+
+        <VerticalStackLayout Spacing="4" Margin="6,6,6,0"
+                             HorizontalOptions="Start" VerticalOptions="Start">
+            <Border Padding="6,2" StrokeShape="RoundRectangle 6"
+                    BackgroundColor="#0066FF" Stroke="Transparent"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding TypeTag, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
+                <Label Text="{Binding TypeTag, Source={x:Reference PosterCard}}"
+                       FontFamily="InterBold" FontSize="9" TextColor="White" MaxLines="1" />
+            </Border>
+
+            <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12" Padding="6,3"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding BadgeVisible, Source={x:Reference PosterCard}}">
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <Label Text="{Binding BadgeAccent, Source={x:Reference PosterCard}}"
+                           FontFamily="InterBold" FontSize="9"
+                           TextColor="{StaticResource EmAccent}" VerticalOptions="Center"
+                           IsVisible="{Binding BadgeAccent, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                    <Label Text="{Binding BadgeMain, Source={x:Reference PosterCard}}"
+                           FontFamily="InterBold" FontSize="9" TextColor="White" VerticalOptions="Center"
+                           IsVisible="{Binding BadgeMain, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                    <Label Text="{Binding BadgeExtra, Source={x:Reference PosterCard}}"
+                           FontFamily="InterBold" FontSize="9" TextColor="White" VerticalOptions="Center"
+                           IsVisible="{Binding BadgeExtra, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Margin="5" Spacing="0" VerticalOptions="End"
+                             BindableLayout.ItemsSource="{Binding ChipSource, Source={x:Reference PosterCard}}"
+                             BindableLayout.ItemTemplate="{Binding ChipTemplate, Source={x:Reference PosterCard}}"
+                             IsVisible="{Binding ChipSource, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" />
+
+        <controls:OutlinedLabel Text="{Binding Title, Source={x:Reference PosterCard}}"
+                               FontFamily="Inter" FontSize="11"
+                               TextColor="White" OutlineColor="Black" OutlineWidth="2.5"
+                               MaxLines="2" HeightRequest="32"
+                               VerticalOptions="End" Margin="4,0,4,4"
+                               InputTransparent="True"
+                               IsVisible="{Binding TitleOverlay, Source={x:Reference PosterCard}}" />
+    </Grid>
+</ContentView>

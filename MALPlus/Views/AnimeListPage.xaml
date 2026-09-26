@@ -25,47 +25,15 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid HeightRequest="195" Padding="2">
-                            <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                   Aspect="AspectFill" />
-
-                            <VerticalStackLayout Spacing="4" Margin="6,6,6,0"
-                                                 HorizontalOptions="End" VerticalOptions="Start">
-                                <Frame Padding="6,2" CornerRadius="6" HasShadow="False"
-                                       BackgroundColor="#0066FF" BorderColor="Transparent"
-                                       HorizontalOptions="Start"
-                                       IsVisible="{Binding TypeTag, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
-                                    <Label Text="{Binding TypeTag}" FontFamily="InterBold" FontSize="9"
-                                           TextColor="White" MaxLines="1" />
-                                </Frame>
-
-                                <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 12" Padding="6,3"
-                                        HorizontalOptions="Start">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Label Text="{Binding MyStatusBindShort}"
-                                               FontFamily="InterBold" FontSize="9"
-                                               TextColor="{StaticResource EmAccent}"
-                                               VerticalOptions="Center" />
-                                        <Label Text="{Binding MyEpisodesBindShort}"
-                                               FontFamily="InterBold" FontSize="9"
-                                               TextColor="#FFFFFF"
-                                               VerticalOptions="Center" />
-                                        <Label Text="{Binding AirDayTillBind}"
-                                               FontFamily="InterBold" FontSize="9"
-                                               TextColor="#FFFFFF"
-                                               VerticalOptions="Center"
-                                               IsVisible="{Binding AirDayTillBind, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
-                                    </HorizontalStackLayout>
-                                </Border>
-                            </VerticalStackLayout>
-
-                            <controls:OutlinedLabel Text="{Binding Title}" FontFamily="Inter" FontSize="11"
-                                                   TextColor="White" OutlineColor="Black" OutlineWidth="2.5"
-                                                   MaxLines="2" HeightRequest="32"
-                                                   VerticalOptions="End" Margin="4,0,4,4"
-                                                   InputTransparent="True" />
-                        </Grid>
+                        <controls:AnimePosterCard HeightRequest="195" Margin="2"
+                                                  PosterUrl="{Binding ImgUrl}"
+                                                  Title="{Binding Title}"
+                                                  TitleOverlay="True"
+                                                  TypeTag="{Binding TypeTag}"
+                                                  BadgeVisible="True"
+                                                  BadgeAccent="{Binding MyStatusBindShort}"
+                                                  BadgeMain="{Binding MyEpisodesBindShort}"
+                                                  BadgeExtra="{Binding AirDayTillBind}" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

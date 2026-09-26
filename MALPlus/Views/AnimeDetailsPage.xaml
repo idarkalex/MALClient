@@ -86,31 +86,27 @@
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnRecommendationTapped" CommandParameter="{Binding .}" />
                 </Border.GestureRecognizers>
-                <Grid ColumnDefinitions="130,*" ColumnSpacing="14">
-                    <Grid Grid.Column="0" WidthRequest="130" HeightRequest="195" BackgroundColor="#0D0D0D">
-                        <Image Source="{Binding ImageUrl, Converter={StaticResource ImageConverter}}"
-                               Aspect="AspectFill" />
-                        <Border Margin="6" Padding="7,3" StrokeShape="RoundRectangle 6"
-                                BackgroundColor="#0066FF" Stroke="Transparent"
-                                HorizontalOptions="Start" VerticalOptions="Start"
-                                IsVisible="{Binding MediaType, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
-                            <Label Text="{Binding MediaType}" FontFamily="InterBold" FontSize="9"
-                                   TextColor="White" MaxLines="1" />
-                        </Border>
+                <Grid RowSpacing="10" RowDefinitions="Auto,Auto">
+                    <Grid Grid.Row="0" ColumnDefinitions="130,*" ColumnSpacing="14">
+                        <controls:AnimePosterCard Grid.Column="0" WidthRequest="130" HeightRequest="195"
+                                                   PosterUrl="{Binding ImageUrl}"
+                                                   TitleOverlay="False"
+                                                   TypeTag="{Binding MediaType}" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="7" VerticalOptions="Start">
+                            <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="16"
+                                   TextColor="{StaticResource BrushText}" MaxLines="3" LineBreakMode="TailTruncation" />
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="{Binding Type}" FontFamily="InterSemiBold" FontSize="11"
+                                       TextColor="#7AB4FF" MaxLines="1" />
+                                <Label Text="{Binding AirDayTillBind}" FontFamily="InterSemiBold" FontSize="11"
+                                       TextColor="White" MaxLines="1"
+                                       IsVisible="{Binding AirDayTillBind, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
                     </Grid>
-                    <VerticalStackLayout Grid.Column="1" Spacing="7" VerticalOptions="Start">
-                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="16"
-                               TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
-                        <HorizontalStackLayout Spacing="8">
-                            <Label Text="{Binding Type}" FontFamily="InterSemiBold" FontSize="11"
-                                   TextColor="#7AB4FF" MaxLines="1" />
-                            <Label Text="{Binding AirDayTillBind}" FontFamily="InterSemiBold" FontSize="11"
-                                   TextColor="White" MaxLines="1"
-                                   IsVisible="{Binding AirDayTillBind, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding Description}" FontFamily="Inter" FontSize="13"
-                               TextColor="#B8C7D8" LineHeight="1.35" />
-                    </VerticalStackLayout>
+                    <Label Grid.Row="1" Text="{Binding Description}" FontFamily="Inter" FontSize="13"
+                           TextColor="#B8C7D8" LineHeight="1.35"
+                           IsVisible="{Binding Description, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -129,20 +125,12 @@
                     <TapGestureRecognizer Tapped="OnRecommendationTapped" CommandParameter="{Binding .}" />
                 </Border.GestureRecognizers>
                 <Grid RowDefinitions="195,36">
-                    <Grid Grid.Row="0" BackgroundColor="#0D0D0D">
-                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                               Aspect="AspectFill" />
-                        <Border Margin="5" Padding="6,2" StrokeShape="RoundRectangle 5"
-                                BackgroundColor="#0066FF" Stroke="Transparent"
-                                HorizontalOptions="Start" VerticalOptions="Start"
-                                IsVisible="{Binding MediaType, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
-                            <Label Text="{Binding MediaType}" FontFamily="InterBold" FontSize="8"
-                                   TextColor="White" MaxLines="1" />
-                        </Border>
-                        <VerticalStackLayout Margin="5" Spacing="0" VerticalOptions="End"
-                                             BindableLayout.ItemsSource="{Binding Relations}"
-                                             BindableLayout.ItemTemplate="{StaticResource RelationChipTemplate}" />
-                    </Grid>
+                    <controls:AnimePosterCard Grid.Row="0"
+                                               PosterUrl="{Binding ImgUrl}"
+                                               TitleOverlay="False"
+                                               TypeTag="{Binding MediaType}"
+                                               ChipSource="{Binding Relations}"
+                                               ChipTemplate="{StaticResource RelationChipTemplate}" />
                     <controls:OutlinedLabel Grid.Row="1" Text="{Binding Title}" FontFamily="Inter" FontSize="10"
                                            TextColor="White" OutlineColor="Black" OutlineWidth="2.5"
                                            MaxLines="2" HeightRequest="36" InputTransparent="True"
