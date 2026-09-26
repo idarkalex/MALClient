@@ -60,9 +60,7 @@ namespace MALClient.XShared.Comm.MagicalRawQueries.Messages
 
                 return output;
             }
-            catch (Exception)
-            {
-                ResourceLocator.MalHttpContextProvider.ErrorMessage("Messages");
+            catch (Exception)            {                        ResourceLocator.MalHttpContextProvider.ErrorMessage("Messages");
             }
             return new List<MalMessageModel>();
         }
