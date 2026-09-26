@@ -1527,8 +1527,11 @@ namespace MALClient.XShared.ViewModels.Main
                 return; // manga or anime is loaded top manga can proceed loading something else
 
             AppBtnGoBackToMyListVisibility = Credentials.Authenticated && !string.Equals(ListSource, Credentials.UserName, StringComparison.CurrentCultureIgnoreCase) ? true : false;
-            //load tags
-            ViewModelLocator.GeneralMain.SearchHints = _animeLibraryDataStorage.AllLoadedAuthAnimeItems.Concat(_animeLibraryDataStorage.AllLoadedAuthMangaItems).SelectMany(abs => abs.Tags).Distinct().ToList();
+            // The old "load tags" line here rebuilt a search-suggestion list from every
+            // entry in the library (Tags splits Notes on every access, so a 1500-entry
+            // library meant 1500 list allocations + 1500 string splits) on the main
+            // thread, on every fetch. Its destination, MainViewModelBase.SearchHints,
+            // is a plain property that nothing in the MAUI app binds to.
             RefreshList();
             LoadError = null;
             LoadErrorVisibility = false;

@@ -13,7 +13,6 @@ public partial class BottomNavBar : ContentView
     private static readonly Color UnselectedColor = Color.FromArgb("#A0FFFFFF");
     private static readonly Color SelectedButtonColor = Color.FromArgb("#1F0066FF");
     private static readonly Color TransparentButtonColor = Color.FromArgb("#00000000");
-    private static readonly TimeSpan NavigationDebounce = TimeSpan.FromMilliseconds(250);
     private static readonly string[] Sections = { "discover", "anime", "manga", "more" };
     private Shell _subscribedShell;
     private bool _navigationInFlight;
@@ -22,7 +21,6 @@ public partial class BottomNavBar : ContentView
     private bool _pendingAllowsCurrent;
     private long _requestVersion;
     private long _navigationVersion;
-    private DateTime _lastNavigationAt = DateTime.MinValue;
 
     public BottomNavBar()
     {
@@ -87,11 +85,20 @@ public partial class BottomNavBar : ContentView
         MainThread.BeginInvokeOnMainThread(RefreshSelection);
     }
 
+    private string _appliedSection;
+
     public void RefreshSelection()
     {
         try
         {
-            SetSelectedSection(CurrentSection());
+            var section = CurrentSection();
+            // Shell.Navigated fires on every navigation anywhere, and there are 4
+            // BottomNavBar instances alive (one per root page). Re-writing the 20
+            // bindable properties each time dirtied 4 buttons for no visual change.
+            if (string.Equals(section, _appliedSection, StringComparison.Ordinal))
+                return;
+            _appliedSection = section;
+            SetSelectedSection(section);
         }
         catch { }
     }
@@ -143,7 +150,6 @@ public partial class BottomNavBar : ContentView
         }
         catch { }
     }
-
     public Rect GetDotsBounds(bool manga)
     {
         try
@@ -266,14 +272,6 @@ public partial class BottomNavBar : ContentView
             if (requestId != _requestVersion || navigationVersion != _navigationVersion)
                 return;
 
-            var delay = GetNavigationDelay();
-            if (delay > TimeSpan.Zero)
-            {
-                await Task.Delay(delay);
-                if (requestId != _requestVersion || navigationVersion != _navigationVersion)
-                    return;
-            }
-
             if (_navigationInFlight)
             {
                 _pendingRoute = route;
@@ -296,7 +294,6 @@ public partial class BottomNavBar : ContentView
                 return;
 
             _navigationInFlight = true;
-            _lastNavigationAt = DateTime.UtcNow;
             ownsNavigation = true;
             Android.Util.Log.Info("MALPLUS", $"BottomNav GoToAsync '{route}' (allowCurrent={allowCurrent})");
             await shell.GoToAsync(route);
@@ -319,17 +316,6 @@ public partial class BottomNavBar : ContentView
                 MainThread.BeginInvokeOnMainThread(CompleteNavigation);
             }
         }
-    }
-
-    private TimeSpan GetNavigationDelay()
-    {
-        if (_lastNavigationAt == DateTime.MinValue)
-            return TimeSpan.Zero;
-
-        var elapsed = DateTime.UtcNow - _lastNavigationAt;
-        if (elapsed < TimeSpan.Zero || elapsed >= NavigationDebounce)
-            return TimeSpan.Zero;
-        return NavigationDebounce - elapsed;
     }
 
     private void CompleteNavigation()

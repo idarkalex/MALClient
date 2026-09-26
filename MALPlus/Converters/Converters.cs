@@ -19,19 +19,6 @@ public class StringToImageSourceConverter : IValueConverter
     }
 }
 
-public class ScoreVisibleConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        return value is float f && f > 0;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
-}
-
 public class TabColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -114,42 +101,12 @@ public class BoolToVisibilityConverter : IValueConverter
         }
     }
 
-public class IntToVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        var v = value is int i ? i : 0;
-        if (parameter is string p && p == "zero") return v <= 0;
-        return v > 0;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
-}
-
 public class IntEqualityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is int current && parameter is string param && int.TryParse(param, out int target))
             return current == target;
-        return false;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
-}
-
-public class AirCountdownVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is bool isAnime && parameter is string p && p == "airing")
-            return isAnime;
         return false;
     }
 
@@ -250,19 +207,6 @@ public class RelationTypeToBadgeConverter : IValueConverter
             };
         }
         return "";
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
-}
-
-public class RelationBadgeColorConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        return "#0066FF";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
