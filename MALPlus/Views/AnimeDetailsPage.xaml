@@ -112,9 +112,9 @@
         </DataTemplate>
 
         <DataTemplate x:Key="RelationChipTemplate">
-            <Border Margin="0,2,3,0" Padding="6,2" StrokeShape="RoundRectangle 6"
-                    BackgroundColor="#CC0066FF" Stroke="#660066FF" StrokeThickness="1">
-                <Label Text="{Binding .}" FontFamily="InterSemiBold" FontSize="8" TextColor="White" MaxLines="1" />
+            <Border Margin="0" Padding="6,2" StrokeShape="RoundRectangle 6"
+                    BackgroundColor="#0066FF" Stroke="Transparent">
+                <Label Text="{Binding .}" FontFamily="InterBold" FontSize="9" TextColor="White" MaxLines="1" />
             </Border>
         </DataTemplate>
 

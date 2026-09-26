@@ -24,6 +24,11 @@
                        FontFamily="InterBold" FontSize="9" TextColor="White" MaxLines="1" />
             </Border>
 
+            <VerticalStackLayout Spacing="3" Margin="5,5,5,0"
+                                 BindableLayout.ItemsSource="{Binding ChipSource, Source={x:Reference PosterCard}}"
+                                 BindableLayout.ItemTemplate="{Binding ChipTemplate, Source={x:Reference PosterCard}}"
+                                 IsVisible="{Binding ChipSource, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" />
+
             <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
                     StrokeShape="RoundRectangle 12" Padding="6,3"
                     HorizontalOptions="Start"
@@ -42,11 +47,6 @@
                 </HorizontalStackLayout>
             </Border>
         </VerticalStackLayout>
-
-        <VerticalStackLayout Margin="5" Spacing="0" VerticalOptions="End"
-                             BindableLayout.ItemsSource="{Binding ChipSource, Source={x:Reference PosterCard}}"
-                             BindableLayout.ItemTemplate="{Binding ChipTemplate, Source={x:Reference PosterCard}}"
-                             IsVisible="{Binding ChipSource, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" />
 
         <controls:OutlinedLabel Text="{Binding Title, Source={x:Reference PosterCard}}"
                                FontFamily="Inter" FontSize="11"
