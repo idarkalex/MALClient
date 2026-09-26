@@ -32,23 +32,27 @@
                                 Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                 StrokeShape="RoundRectangle 8" Padding="10">
                             <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
-                                <Image Grid.Column="0" Source="{Binding Item2.Item1.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                <Image Grid.Column="0" Source="{Binding Value.Item1.ImgUrl, Converter={StaticResource ImageConverter}}"
                                        WidthRequest="36" HeightRequest="50" Aspect="AspectFill" />
                                 <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                    <Label Text="{Binding Item2.Item1.Title}" FontFamily="InterBold" FontSize="13"
+                                    <Label Text="{Binding Value.Item1.Title}" FontFamily="InterBold" FontSize="13"
                                            TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
                                     <Label FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF">
                                         <Label.Text>
                                             <MultiBinding StringFormat="{}{0} {1}">
-                                                <Binding Path="Item2.Item2[0].ShowUnit" />
-                                                <Binding Path="Item2.Item2[0].WatchedEpisode" />
+                                                <Binding Path="Value.Item2[0].ShowUnit" />
+                                                <Binding Path="Value.Item2[0].WatchedEpisode" />
                                             </MultiBinding>
                                         </Label.Text>
                                     </Label>
                                 </VerticalStackLayout>
-                                <Label Grid.Column="2" Text="{Binding Item2.Item2[0].Date}"
-                                       FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF"
-                                       VerticalOptions="Center" />
+                                <VerticalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding Key}" FontFamily="InterSemiBold" FontSize="11"
+                                           TextColor="{StaticResource EmAccent}" HorizontalOptions="End" />
+                                    <Label Text="{Binding Value.Item2[0].Date}"
+                                           FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF"
+                                           HorizontalOptions="End" />
+                                </VerticalStackLayout>
                             </Grid>
                         </Border>
                     </DataTemplate>

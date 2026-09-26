@@ -49,10 +49,16 @@ public partial class HistoryPage : ContentPage
                     {
                         if (tuple?.Item1 == null)
                             continue;
+                        // MAL groups the days as "Two Weeks Ago (11)"; the count
+                        // only made the label wrap onto a second line.
+                        var day = kv.Key;
+                        var countIdx = day.IndexOf(" (", StringComparison.Ordinal);
+                        if (countIdx > 0)
+                            day = day.Substring(0, countIdx);
                         FlatHistory.Add(new KeyValuePair<string,
                             System.Tuple<AnimeItemViewModel,
                                          System.Collections.Generic.List<MalProfileHistoryEntry>>>(
-                            kv.Key, tuple));
+                            day, tuple));
                     }
             }
         }
