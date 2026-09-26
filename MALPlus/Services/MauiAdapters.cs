@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MALClient.Adapters;
@@ -235,27 +236,117 @@ public class MauiImageDownloaderService : IImageDownloaderService
 
 public class MauiPasswordVault : IPasswordVault
 {
+    private const int ReadTimeoutMs = 1500;
+    private static readonly object Sync = new();
+    private static readonly Dictionary<string, VaultCredential> Cache = new();
+    private static bool _primed;
+
     public void Add(VaultCredential credential)
     {
-        Task.Run(async () =>
+        if (credential == null)
+            return;
+        try
         {
-            await SecureStorage.Default.SetAsync(credential.Domain + "_user", credential.UserName ?? string.Empty);
-            await SecureStorage.Default.SetAsync(credential.Domain + "_pass", credential.Password ?? string.Empty);
-        }).Wait();
+            Task.Run(async () =>
+            {
+                await SecureStorage.Default.SetAsync(credential.Domain + "_user", credential.UserName ?? string.Empty);
+                await SecureStorage.Default.SetAsync(credential.Domain + "_pass", credential.Password ?? string.Empty);
+            }).Wait(ReadTimeoutMs);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS vault write failed: " + ex.GetType().Name);
+        }
+        lock (Sync)
+            Cache[credential.Domain] = credential;
     }
 
     public VaultCredential Get(string domain)
     {
-        var user = Task.Run(() => SecureStorage.Default.GetAsync(domain + "_user")).Result;
-        var pass = Task.Run(() => SecureStorage.Default.GetAsync(domain + "_pass")).Result;
-        if (user == null || pass == null)
+        lock (Sync)
+        {
+            if (Cache.TryGetValue(domain, out var cached))
+                return cached;
+        }
+
+        var credential = TryReadSecureStorage(domain);
+        if (credential == null)
             throw new Exception("Credential not found.");
-        return new VaultCredential(domain, user, pass);
+        lock (Sync)
+            Cache[domain] = credential;
+        return credential;
+    }
+
+    /// <summary>
+    /// SecureStorage is EncryptedSharedPreferences + Tink + AndroidKeyStore. Two ways it
+    /// takes the whole app down, both seen on device after a reinstall:
+    /// (1) the keystore entry is gone, so decrypt throws AEADBadTagException, and because
+    ///     this runs under a WebView navigation callback the exception is unhandled and
+    ///     kills the process;
+    /// (2) the old code did Task.Run(...).Result, so the UI thread waited on a task that
+    ///     needs the very looper it was blocking. That is the ANR: main thread parked,
+    ///     zero CPU, "Waited 5000ms for MotionEvent".
+    /// So: never block longer than ReadTimeoutMs, cache every read, and treat a broken
+    /// keystore as "no credential" instead of a crash.
+    /// </summary>
+    private static VaultCredential TryReadSecureStorage(string domain)
+    {
+        if (!_primed)
+        {
+            _primed = true;
+            Task.Run(() => TryReadSecureStorage("MALPlus"));
+        }
+        try
+        {
+            var read = Task.Run(() =>
+            {
+                var user = SecureStorage.Default.GetAsync(domain + "_user").GetAwaiter().GetResult();
+                var pass = SecureStorage.Default.GetAsync(domain + "_pass").GetAwaiter().GetResult();
+                return new VaultCredential(domain, user, pass);
+            });
+            if (!read.Wait(ReadTimeoutMs))
+            {
+                Console.WriteLine("MALPLUS vault read timed out for " + domain);
+                return null;
+            }
+            var result = read.Result;
+            return string.IsNullOrEmpty(result?.UserName) ? null : result;
+        }
+        catch (Exception ex)
+        {
+            // Most likely AEADBadTagException/KeyStoreException after a reinstall: the
+            // stored ciphertext can never be decrypted again. Drop it so the next login
+            // starts from a clean store instead of failing forever.
+            Console.WriteLine("MALPLUS vault read failed for " + domain + ": " + ex.GetType().Name);
+            TryResetBrokenStore();
+            return null;
+        }
+    }
+
+    private static void TryResetBrokenStore()
+    {
+        try
+        {
+            Task.Run(() => SecureStorage.Default.RemoveAll()).Wait(ReadTimeoutMs);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS vault reset failed: " + ex.GetType().Name);
+        }
     }
 
     public void Reset()
     {
-        SecureStorage.Default.RemoveAll();
+        lock (Sync)
+            Cache.Clear();
+        try
+        {
+            Task.Run(() => SecureStorage.Default.RemoveAll()).Wait(ReadTimeoutMs);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS vault reset failed: " + ex.GetType().Name);
+        }
     }
 }
 

@@ -20,6 +20,17 @@ namespace MALClient.XShared.Comm.Anime
 
     public class AnimeCharactersStaffQuery : Query
     {
+        /// <summary>
+        /// The characters/staff tab used to pull the entire cast and render it through a
+        /// BindableLayout, which is not virtualised: every row and every nested voice actor
+        /// row became a real view in one layout pass. On a long series that was hundreds of
+        /// views and the tab ANRed the app. The page only ever shows a screenful at a time,
+        /// so the source is trimmed to what is browsable and the page virtualises the rest.
+        /// </summary>
+        public const int MaxCharacterPairs = 60;
+        public const int MaxStaff = 60;
+        public const int MaxVoiceActorsPerCharacter = 3;
+
         private readonly int _animeId;
         private readonly bool _animeMode;
 
@@ -33,38 +44,38 @@ namespace MALClient.XShared.Comm.Anime
             _animeMode = anime;
         }
 
-        public async Task<AnimeStaffData> GetCharStaffData(bool force = false)
-        {
-            if (!_animeMode)
-                throw new InvalidOperationException("Umm you said it's going to be manga...");
-            var output = force
-                ? new AnimeStaffData()
-                : await DataCache.RetrieveData<AnimeStaffData>($"staff_v2_{_animeId}", "AnimeDetails", 7) ??
+    public async Task<AnimeStaffData> GetCharStaffData(bool force = false)
+    {
+        if (!_animeMode)
+            throw new InvalidOperationException("Umm you said it's going to be manga...");
+        var output = force
+            ? new AnimeStaffData()
+            : await DataCache.RetrieveData<AnimeStaffData>($"staff_v3_{_animeId}", "AnimeDetails", 7) ??
                   new AnimeStaffData();
-            if (HasData(output) && !force) return output;
+        if (HasData(output) && !force) return output;
 
-            try
+        try
+        {
+            var structured = await GetCharStaffDataStructuredAsync();
+            if (HasData(structured))
             {
-                var structured = await GetCharStaffDataStructuredAsync();
-                if (HasData(structured))
-                {
-                    DiagnosticsReporter.Info("Characters", $"structured API: {structured.AnimeCharacterPairs.Count} pairs, {structured.AnimeStaff.Count} staff for anime {_animeId}");
-                    await DataCache.SaveData(structured, $"staff_v2_{_animeId}", "AnimeDetails");
-                    return structured;
-                }
-                DiagnosticsReporter.Warn("Characters", $"structured API returned empty for anime {_animeId}, falling back to HTML");
+                DiagnosticsReporter.Info("Characters", $"structured API: {structured.AnimeCharacterPairs.Count} pairs, {structured.AnimeStaff.Count} staff for anime {_animeId}");
+                await DataCache.SaveData(structured, $"staff_v3_{_animeId}", "AnimeDetails");
+                return structured;
             }
-            catch (Exception ex)
-            {
-                DiagnosticsReporter.Info("Characters", $"structured API failed for anime {_animeId}, falling back to HTML: {ex.Message}");
-            }
-
-            var htmlResult = await GetCharStaffDataHtml(output);
-            DiagnosticsReporter.Info("Characters", $"HTML scrape: {htmlResult.AnimeCharacterPairs.Count} pairs, {htmlResult.AnimeStaff.Count} staff for anime {_animeId}");
-            if (HasData(htmlResult))
-                await DataCache.SaveData(htmlResult, $"staff_v2_{_animeId}", "AnimeDetails");
-            return htmlResult;
+            DiagnosticsReporter.Warn("Characters", $"structured API returned empty for anime {_animeId}, falling back to HTML");
         }
+        catch (Exception ex)
+        {
+            DiagnosticsReporter.Info("Characters", $"structured API failed for anime {_animeId}, falling back to HTML: {ex.Message}");
+        }
+
+        var htmlResult = await GetCharStaffDataHtml(output);
+        DiagnosticsReporter.Info("Characters", $"HTML scrape: {htmlResult.AnimeCharacterPairs.Count} pairs, {htmlResult.AnimeStaff.Count} staff for anime {_animeId}");
+        if (HasData(htmlResult))
+            await DataCache.SaveData(htmlResult, $"staff_v3_{_animeId}", "AnimeDetails");
+        return htmlResult;
+    }
 
         private async Task<AnimeStaffData> GetCharStaffDataStructuredAsync()
         {
@@ -106,6 +117,9 @@ namespace MALClient.XShared.Comm.Anime
                 catch (Exception)
                 {
                 }
+
+                if (output.AnimeCharacterPairs.Count >= MaxCharacterPairs)
+                    break;
             }
 
             var staffData = await TenraiClient.GetDataAsync($"anime/{_animeId}/staff");
@@ -135,6 +149,9 @@ namespace MALClient.XShared.Comm.Anime
                 catch (Exception)
                 {
                 }
+
+                if (output.AnimeStaff.Count >= MaxStaff)
+                    break;
             }
 
             return HasData(output) ? output : null;
@@ -230,6 +247,7 @@ namespace MALClient.XShared.Comm.Anime
                 .Where(actor => string.Equals(actor.Notes, "Japanese", StringComparison.OrdinalIgnoreCase))
                 .Concat(output.Where(actor =>
                     !string.Equals(actor.Notes, "Japanese", StringComparison.OrdinalIgnoreCase)))
+                .Take(MaxVoiceActorsPerCharacter)
                 .ToList();
         }
 
@@ -287,6 +305,15 @@ namespace MALClient.XShared.Comm.Anime
             if (string.IsNullOrEmpty(raw))
                 return output;
 
+            // HtmlAgilityPack plus the Descendants() walks below are pure CPU and they used
+            // to run on the UI thread, because the await resumed on the main sync context.
+            // On the long series pages that was several seconds of frozen main thread.
+            await Task.Run(() => ParseCharStaffHtml(raw, output, _animeId, _animeMode));
+            return output;
+        }
+
+        private static void ParseCharStaffHtml(string raw, AnimeStaffData output, int animeId, bool animeMode)
+        {
             var doc = new HtmlDocument();
             doc.LoadHtml(raw);
 
@@ -341,8 +368,8 @@ namespace MALClient.XShared.Comm.Anime
                             current.AnimeCharacter.ImgUrl = CleanImage(img);
                         }
 
-                        current.AnimeCharacter.FromAnime = _animeMode;
-                        current.AnimeCharacter.ShowId = _animeId.ToString();
+                        current.AnimeCharacter.FromAnime = animeMode;
+                        current.AnimeCharacter.ShowId = animeId.ToString();
                         current.AnimeCharacter.Name =
                             WebUtility.HtmlDecode(imgs[0].Attributes["alt"].Value.Replace(",", ""));
 
@@ -383,6 +410,8 @@ namespace MALClient.XShared.Comm.Anime
                         if (!current.AnimeStaffPerson.IsUnknown && !string.IsNullOrEmpty(current.AnimeStaffPerson.Name))
                             current.VoiceActors.Add(current.AnimeStaffPerson);
                         output.AnimeCharacterPairs.Add(current);
+                        if (output.AnimeCharacterPairs.Count >= MaxCharacterPairs)
+                            break;
                     }
                     catch (Exception e)
                     {
@@ -413,6 +442,8 @@ namespace MALClient.XShared.Comm.Anime
                             continue;
 
                         output.AnimeStaff.Add(current);
+                        if (output.AnimeStaff.Count >= MaxStaff)
+                            break;
                     }
                     catch (Exception e)
                     {
@@ -424,8 +455,6 @@ namespace MALClient.XShared.Comm.Anime
             {
                 //mysteries of html
             }
-
-            return output;
         }
 
     }
