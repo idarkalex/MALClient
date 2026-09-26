@@ -6,10 +6,8 @@
     <Grid>
     <ScrollView x:Name="LoginForm">
         <VerticalStackLayout Padding="24" Spacing="14" VerticalOptions="Center">
-            <HorizontalStackLayout HorizontalOptions="Center" Spacing="0">
-                <Label Text="MAL" FontFamily="InterBold" FontSize="52" TextColor="White" />
-                <Label Text="+" FontFamily="InterBold" FontSize="52" TextColor="#FF6B00" />
-            </HorizontalStackLayout>
+            <Image Source="splash_darkmode.png" WidthRequest="240" HeightRequest="120"
+                   Aspect="AspectFit" HorizontalOptions="Center" />
             <Label Text="Your anime and manga list, with you"
                    FontFamily="Inter" FontSize="14"
                    TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
