@@ -77,9 +77,10 @@
                             <Border Margin="16,6" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="0">
-                                <Grid ColumnDefinitions="100,*" ColumnSpacing="0">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="0">
                                     <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                           Aspect="AspectFill" HeightRequest="80" WidthRequest="100" />
+                                           Aspect="AspectFill" HeightRequest="80" WidthRequest="100"
+                                           IsVisible="{Binding ImgUrl, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
                                     <VerticalStackLayout Grid.Column="1" Padding="10,8" Spacing="4">
                                         <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="13"
                                                TextColor="{StaticResource BrushText}" MaxLines="3"

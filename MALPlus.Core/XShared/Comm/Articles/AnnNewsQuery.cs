@@ -32,7 +32,7 @@ namespace MALClient.XShared.Comm.Articles
         {
             var cached = force
                 ? null
-                : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index_v6.json", "Articles", 1);
+                : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index_v7.json", "Articles", 1);
             if (cached != null && cached.Count > 0)
             {
                 DiagnosticsReporter.Info("ANN", $"cache hit: {cached.Count} articles");
@@ -74,7 +74,7 @@ namespace MALClient.XShared.Comm.Articles
                     }
                 }
                 DiagnosticsReporter.Info("ANN", $"thumb map filled {filled}/{output.Count - output.Count(o => !string.IsNullOrEmpty(o.ImgUrl))} entries from listing scrape");
-                DataCache.SaveData(output, "ann_news_index_v6.json", "Articles");
+                DataCache.SaveData(output, "ann_news_index_v7.json", "Articles");
             }
             return output;
         }
@@ -237,7 +237,15 @@ namespace MALClient.XShared.Comm.Articles
                 raw = raw.Substring(lastGt + 1);
             var match = Regex.Match(raw, @"https?://[^\s<>""']+", RegexOptions.IgnoreCase);
             if (!match.Success)
+            {
+                // The listing serves relative sources ("/thumbnails/..."): without
+                // resolving them against ANN every entry was dropped and the list
+                // rendered without images.
+                var relative = raw.Trim();
+                if (relative.StartsWith("/"))
+                    return "https://www.animenewsnetwork.com" + relative;
                 return "";
+            }
             var url = match.Value;
             if (url.StartsWith("//"))
                 url = "https:" + url;
@@ -275,13 +283,22 @@ public static async Task<Dictionary<string, string>> FetchThumbMap()
                             var thumbUrl = SanitizeUrl(dataSrc);
                             if (string.IsNullOrEmpty(thumbUrl) || !thumbUrl.Contains("/thumbnails/"))
                                 continue;
-                            // Find the nearest parent <a> with href containing article ID
-                            var parentLink = node.Ancestors("a").FirstOrDefault(a => a.Attributes["href"] != null);
-                            if (parentLink == null) continue;
-                            var href = parentLink.Attributes["href"].Value;
-                            var idMatch = Regex.Match(href, @"(\d+)(?=/|$|\.html|\?)");
-                            if (!idMatch.Success) continue;
-                            var id = idMatch.Groups[1].Value;
+                            // The article id sits in the image path itself
+                            // ("/thumbnails/crop900x350gY9/cms/news.9/242181/x.jpg"),
+                            // which is far more reliable than walking up to the
+                            // surrounding link: most thumbnails are not inside one.
+                            var id = Regex.Match(thumbUrl, @"/news\.\d+/(\d+)/").Groups[1].Value;
+                            if (string.IsNullOrEmpty(id))
+                            {
+                                var parentLink = node.Ancestors("a").FirstOrDefault(a => a.Attributes["href"] != null);
+                                if (parentLink == null) continue;
+                                var href = parentLink.Attributes["href"].Value;
+                                var idMatch = Regex.Match(href, @"\.(\d+)(?:$|[?#])");
+                                if (!idMatch.Success)
+                                    idMatch = Regex.Match(href, @"(\d+)(?:$|\.html|\?)");
+                                if (!idMatch.Success) continue;
+                                id = idMatch.Groups[1].Value;
+                            }
                             if (!map.ContainsKey(id))
                                 map[id] = thumbUrl;
                         }

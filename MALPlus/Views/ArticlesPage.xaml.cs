@@ -28,11 +28,17 @@ blockquote{border-left:3px solid #0066FF;margin:12px 0;padding:8px 14px;color:#a
 cite{font-style:italic;color:#a8c5e0;}
 ul,ol{margin:0 0 12px 22px;padding:0;}
 li{margin:4px 0;}
-table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px;}
-td,th{border:1px solid #1E3A52;padding:6px 10px;text-align:left;}
+table{border-collapse:collapse;width:100%;max-width:100%;table-layout:auto;margin:12px 0;font-size:13px;}
+td,th{border:1px solid #1E3A52;padding:6px 10px;text-align:left;overflow-wrap:break-word;vertical-align:top;}
+th{background:#0d1d2c;color:#FFFFFF;}
+/* Nothing may push the page sideways: wide media and long code lines have to
+   fit the screen instead of forcing a horizontal scroll through the article.
+   Words are only broken when a single one cannot fit, never mid-word. */
+img,video,iframe,embed,object{max-width:100%!important;height:auto;}
+html,body{max-width:100%;overflow-x:hidden;}
 .intro,.meat{color:#d4e4f7;}
 hr{border:none;border-top:1px solid #1E3A52;margin:18px 0;}
-pre,code{background:#0a1d2e;padding:6px 10px;border-radius:4px;font-size:12px;color:#a8c5e0;overflow-x:auto;}
+pre,code{background:#0a1d2e;padding:6px 10px;border-radius:4px;font-size:12px;color:#a8c5e0;white-space:pre-wrap;overflow-wrap:anywhere;}
 ";
 
     public ArticlesPage()
@@ -138,7 +144,10 @@ pre,code{background:#0a1d2e;padding:6px 10px;border-radius:4px;font-size:12px;co
                           "<meta name='viewport' content='width=device-width,initial-scale=1'/>" +
                           "<style>" + EmCss + "</style></head><body>" + html + "</body></html>";
             MainThread.BeginInvokeOnMainThread(() =>
-                ArticleWebView.Source = new HtmlWebViewSource { Html = wrapped, BaseUrl = baseUrl });
+            {
+                ArticleWebView.IsVisible = true;
+                ArticleWebView.Source = new HtmlWebViewSource { Html = wrapped, BaseUrl = baseUrl };
+            });
         }
         catch (Exception ex)
         {
@@ -149,11 +158,39 @@ pre,code{background:#0a1d2e;padding:6px 10px;border-radius:4px;font-size:12px;co
 
     private void OnBackToList(object sender, EventArgs e)
     {
+        ReturnToList();
+    }
+
+    /// <summary>
+    ///     Back from an open article has to go back to the list, not pop the page
+    ///     and leave the web view half torn down (that left the app stuck). The
+    ///     system back button is intercepted for the same reason.
+    /// </summary>
+    protected override bool OnBackButtonPressed()
+    {
+        if (Vm != null && Vm.PendingArticle != null)
+        {
+            ReturnToList();
+            return true;
+        }
+        return base.OnBackButtonPressed();
+    }
+
+    private void ReturnToList()
+    {
         try
         {
             Vm.PendingArticle = null;
             Vm.CurrentNews = -1;
-            ArticleWebView.Source = null;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                try
+                {
+                    ArticleWebView.IsVisible = false;
+                    ArticleWebView.Source = new HtmlWebViewSource { Html = "<html><body></body></html>" };
+                }
+                catch { }
+            });
         }
         catch { }
     }
