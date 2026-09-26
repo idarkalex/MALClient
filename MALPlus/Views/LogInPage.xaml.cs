@@ -164,12 +164,20 @@ public partial class LogInPage : ContentPage
             var url = e.Url ?? string.Empty;
             if (url.Contains("login.php"))
                 _loginPageReady = true;
-            if (!_autoMode || WebOverlay.IsVisible)
+            if (!_autoMode)
                 return;
+            // Hard guarantee: while we drive the sign-in ourselves, MyAnimeList's pages are
+            // never on screen. Whatever it renders - the privacy wall, the consent screen,
+            // a 400 - stays behind our own form.
+            WebOverlay.IsVisible = false;
             if (!url.Contains("login.php"))
             {
                 if (_autoSubmitted && url.Contains("login"))
+                {
                     FailAuto("Wrong username or password.");
+                    return;
+                }
+                _ = InspectAndFailIfErrorAsync();
                 return;
             }
             if (_autoSubmitted)
@@ -182,6 +190,36 @@ public partial class LogInPage : ContentPage
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS auth navigated failed: " + ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// MyAnimeList answers a rejected sign-in with its own error page ("400 Bad Request -
+    /// please return to the previous screen"). Rendering it and then bouncing back to
+    /// login.php is what made the user stare at MAL's site, so the page is inspected while
+    /// it is still hidden and reported through our own message instead.
+    /// </summary>
+    private async Task InspectAndFailIfErrorAsync()
+    {
+        try
+        {
+            var js = "(function(){"
+                + "var t=(document.title||'')+' '+(document.body?document.body.innerText:'');"
+                + "if(/400\\s*bad request|bad request|403|forbidden|too many requests|access denied|error occurred/i.test(t))return 'error';"
+                + "if(/we value your privacy/i.test(t))return 'wall';"
+                + "return 'ok';})();";
+            var result = await MainThread.InvokeOnMainThreadAsync(() => AuthWebView.EvaluateJavaScriptAsync(js));
+            Probe("page check=" + result);
+            if (result == null || !result.Contains("error"))
+                return;
+            if (!_autoMode)
+                return;
+            WebOverlay.IsVisible = false;
+            FailAuto("Wrong username or password.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS page check failed: " + ex.Message);
         }
     }
 
