@@ -13,6 +13,18 @@ public partial class App : Application
         MainPage = new AppShell();
     }
 
+    private static string TryPeekVaultUser()
+    {
+        try
+        {
+            return Credentials.PasswordVault.Get("MALPlus")?.UserName;
+        }
+        catch (Exception ex)
+        {
+            return "err:" + ex.GetType().Name;
+        }
+    }
+
     protected override void OnStart()
     {
         base.OnStart();
@@ -36,6 +48,12 @@ public partial class App : Application
             }
             try
             {
+                Console.WriteLine("MALPLUS boot state: auth=" + Credentials.Authenticated +
+                                  " user='" + (Credentials.UserName ?? "<null>") + "'" +
+                                  " id=" + Credentials.Id +
+                                  " token=" + !string.IsNullOrEmpty(Settings.ApiToken) +
+                                  " refresh=" + !string.IsNullOrEmpty(Settings.RefreshToken) +
+                                  " vaultUser=" + (TryPeekVaultUser() ?? "<none>"));
                 if (!Credentials.Authenticated || string.IsNullOrWhiteSpace(Credentials.UserName))
                 {
                     await MainThread.InvokeOnMainThreadAsync(() =>

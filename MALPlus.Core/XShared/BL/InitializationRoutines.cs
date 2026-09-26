@@ -26,6 +26,9 @@ namespace MALClient.XShared.BL
         {
             ResourceLocator.ConnectionInfoProvider.Init();
             Credentials.Init();
+            // A dropped vault write must not cost the user their session: the refresh token
+            // is enough to rebuild it.
+            await Credentials.TryRestoreSessionAsync();
             _ = FavouritesManager.LoadDataAsync();
             await AnimeImageQuery.Init();
             ViewModelLocator.ForumsMain.LoadPinnedTopics();

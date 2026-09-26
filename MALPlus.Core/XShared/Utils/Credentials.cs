@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using MALClient.Adapters;
 using MALClient.Adapters.Credentials;
@@ -23,7 +24,26 @@ namespace MALClient.XShared.Utils
 
             HummingbirdToken = (string)(ApplicationDataService["HummingbirdToken"] ?? "");
             Id = (int)(ApplicationDataService["UserId"] ?? 0);
-            Authenticated = bool.Parse(ApplicationDataService["Auth"] as string ?? "False");
+            // This used to be bool.Parse(ApplicationDataService["Auth"] as string ?? "False"),
+            // but the data service hands back a parsed bool, so "as string" was always null
+            // and the app came up unauthenticated on every cold start no matter what the
+            // token store held.
+            Authenticated = ReadBool(ApplicationDataService["Auth"]);
+        }
+
+        private static bool ReadBool(object raw)
+        {
+            switch (raw)
+            {
+                case null:
+                    return false;
+                case bool value:
+                    return value;
+                case string text:
+                    return bool.TryParse(text, out var parsed) && parsed;
+                default:
+                    return false;
+            }
         }
 
         public static string HummingbirdToken { get; private set; }
@@ -128,6 +148,46 @@ namespace MALClient.XShared.Utils
             {
                 Authenticated = false;
             }
+        }
+
+        /// <summary>
+        /// The vault is the nice path, but it is not the only one: a refresh token survives
+        /// in the preferences even when the vault write was dropped or the keystore entry
+        /// went away. Rehydrate the session from it so a cold start does not dump the user
+        /// back on the login form every single time.
+        /// </summary>
+        public static async Task<bool> TryRestoreSessionAsync()
+        {
+            if (Authenticated && !string.IsNullOrWhiteSpace(UserName))
+                return true;
+            if (string.IsNullOrWhiteSpace(Settings.RefreshToken) || string.IsNullOrWhiteSpace(Settings.ApiToken))
+                return false;
+            try
+            {
+                // Refreshing also proves the token is still good.
+                var client = await ResourceLocator.MalHttpContextProvider.GetApiHttpContextAsync();
+                if (client == null)
+                    return false;
+                var profile = await client.GetStringAsync("https://api.myanimelist.net/v2/users/@me");
+                var data = Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(profile);
+                if (data == null)
+                    return false;
+                UserName = (string)data["name"];
+                var id = (int?)data["id"] ?? 0;
+                if (!string.IsNullOrWhiteSpace(UserName) && id > 0)
+                {
+                    SetId(id);
+                    Settings.SelectedApiType = ApiType.Mal;
+                    SetAuthStatus(true);
+                    ViewModelLocator.AnimeList.ListSource = UserName;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("MALPLUS session restore failed: " + ex.GetType().Name + " " + ex.Message);
+            }
+            return false;
         }
 
         private static async void FillInMissingIdData()

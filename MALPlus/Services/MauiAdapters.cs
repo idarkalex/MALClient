@@ -236,7 +236,8 @@ public class MauiImageDownloaderService : IImageDownloaderService
 
 public class MauiPasswordVault : IPasswordVault
 {
-    private const int ReadTimeoutMs = 1500;
+    private const int ReadTimeoutMs = 4000;
+
     private static readonly object Sync = new();
     private static readonly Dictionary<string, VaultCredential> Cache = new();
     private static bool _primed;
@@ -245,20 +246,29 @@ public class MauiPasswordVault : IPasswordVault
     {
         if (credential == null)
             return;
-        try
-        {
-            Task.Run(async () =>
-            {
-                await SecureStorage.Default.SetAsync(credential.Domain + "_user", credential.UserName ?? string.Empty);
-                await SecureStorage.Default.SetAsync(credential.Domain + "_pass", credential.Password ?? string.Empty);
-            }).Wait(ReadTimeoutMs);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("MALPLUS vault write failed: " + ex.GetType().Name);
-        }
         lock (Sync)
             Cache[credential.Domain] = credential;
+        // Deliberately not awaited with a short cap. The first SecureStorage write has to
+        // create the Tink keyset in the AndroidKeyStore, which on this device takes well
+        // over a second and a half, and abandoning it here is exactly why the app came back
+        // logged out on the next cold start even though the tokens were on disk.
+        _ = Task.Run(async () =>
+        {
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                try
+                {
+                    await SecureStorage.Default.SetAsync(credential.Domain + "_user", credential.UserName ?? string.Empty);
+                    await SecureStorage.Default.SetAsync(credential.Domain + "_pass", credential.Password ?? string.Empty);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("MALPLUS vault write attempt " + attempt + " failed: " + ex.GetType().Name);
+                    await Task.Delay(400);
+                }
+            }
+        });
     }
 
     public VaultCredential Get(string domain)
@@ -339,14 +349,22 @@ public class MauiPasswordVault : IPasswordVault
     {
         lock (Sync)
             Cache.Clear();
-        try
+        _ = Task.Run(async () =>
         {
-            Task.Run(() => SecureStorage.Default.RemoveAll()).Wait(ReadTimeoutMs);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("MALPLUS vault reset failed: " + ex.GetType().Name);
-        }
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                try
+                {
+                    SecureStorage.Default.RemoveAll();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("MALPLUS vault reset attempt " + attempt + " failed: " + ex.GetType().Name);
+                    await Task.Delay(400);
+                }
+            }
+        });
     }
 }
 
