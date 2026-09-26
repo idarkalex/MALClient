@@ -297,6 +297,11 @@ namespace MALClient.XShared.Comm.Anime
                         if (item.TryGetProperty("episodes", out var epsProp) && epsProp.ValueKind == JsonValueKind.Number)
                             current.Episodes = epsProp.GetInt32().ToString();
 
+                        if (item.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String)
+                            current.Type = _isManga
+                                ? (int) MalTypeParser.ParseMangaType(typeProp.GetString())
+                                : (int) MalTypeParser.ParseAnimeType(typeProp.GetString());
+
                         current.Index = ++topIndex;
                         output.Add(current);
                     }

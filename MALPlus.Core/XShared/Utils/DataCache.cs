@@ -191,7 +191,7 @@ namespace MALClient.XShared.Utils
                 {
                     await
                         DataCacheService.SaveData(data,
-                            $"seasonal_data{tag}.json", "");
+                            $"seasonal_data{tag}_v2.json", "");
                 });
             }
             catch (Exception)
@@ -207,7 +207,7 @@ namespace MALClient.XShared.Utils
                 return
                     await
                         DataCacheService.RetrieveData<List<SeasonalAnimeData>>(
-                            $"seasonal_data{tag}.json", "", 7);
+                            $"seasonal_data{tag}_v2.json", "", 7);
             }
             catch (Exception)
             {
@@ -683,7 +683,7 @@ namespace MALClient.XShared.Utils
             {
                 await Task.Run(async () =>
                 {
-                    await DataCacheService.SaveData(data, $"top_{type}_data.json", "");
+                    await DataCacheService.SaveData(data, $"top_{type}_data_v2.json", "");
                 });
             }
             catch (Exception)
@@ -696,7 +696,7 @@ namespace MALClient.XShared.Utils
         {
             try
             {
-                return await DataCacheService.RetrieveData<List<TopAnimeData>>($"top_{type}_data.json", "", 14);
+                return await DataCacheService.RetrieveData<List<TopAnimeData>>($"top_{type}_data_v2.json", "", 14);
             }
             catch (Exception)
             {
@@ -711,7 +711,7 @@ namespace MALClient.XShared.Utils
             {
                 await Task.Run(async () =>
                 {
-                    await DataCacheService.SaveData(data, $"topmanga_{type}_data_v2.json", "");
+                    await DataCacheService.SaveData(data, $"topmanga_{type}_data_v3.json", "");
                 });
             }
             catch (Exception)
@@ -724,7 +724,7 @@ namespace MALClient.XShared.Utils
         {
             try
             {
-                return await DataCacheService.RetrieveData<List<TopAnimeData>>($"topmanga_{type}_data_v2.json", "", 14);
+                return await DataCacheService.RetrieveData<List<TopAnimeData>>($"topmanga_{type}_data_v3.json", "", 14);
             }
             catch (Exception)
             {

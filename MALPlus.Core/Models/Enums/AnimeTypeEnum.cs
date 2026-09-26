@@ -19,6 +19,12 @@ namespace MALClient.Models.Enums
         Manhwa = 5,
         OneShot = 3,
         Manhua = 6,
-        Doujinshi = 4
+        Doujinshi = 4,
+
+        /// <summary>
+        ///     MAL reports light novels separately ("light_novel"); folding them
+        ///     into Novel hid the format everywhere it is shown.
+        /// </summary>
+        LightNovel = 7
     }
 }

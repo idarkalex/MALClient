@@ -426,6 +426,46 @@ namespace MALClient.XShared.ViewModels
                     ? ((AnimeType) ParentAbstraction.Type).ToString()
                     : ((MangaType) ParentAbstraction.Type).ToString();
 
+        /// <summary>
+        ///     Short format label for the blue badge on posters (grid, search,
+        ///     recommendations, related). Unlike <see cref="Type" /> it carries no
+        ///     season or episode count, and the enum names are spelled the way MAL
+        ///     writes them.
+        /// </summary>
+        public string TypeTag
+        {
+            get
+            {
+                if (ParentAbstraction.Type == 0)
+                    return "";
+                if (ParentAbstraction.RepresentsAnime)
+                {
+                    return (AnimeType) ParentAbstraction.Type switch
+                    {
+                        AnimeType.TV => "TV",
+                        AnimeType.OVA => "OVA",
+                        AnimeType.Movie => "Movie",
+                        AnimeType.Special => "Special",
+                        AnimeType.ONA => "ONA",
+                        AnimeType.Music => "Music",
+                        _ => ""
+                    };
+                }
+
+                return (MangaType) ParentAbstraction.Type switch
+                {
+                    MangaType.Manga => "Manga",
+                    MangaType.Novel => "Novel",
+                    MangaType.LightNovel => "Light Novel",
+                    MangaType.OneShot => "One-Shot",
+                    MangaType.Manhwa => "Manhwa",
+                    MangaType.Manhua => "Manhua",
+                    MangaType.Doujinshi => "Doujin",
+                    _ => ""
+                };
+            }
+        }
+
 
         public string MyStatusBind => Utils.Utilities.StatusToString((int)MyStatus, !ParentAbstraction.RepresentsAnime,ParentAbstraction.IsRewatching);
         public string MyStatusBindShort => Utils.Utilities.StatusToShortString((int)MyStatus, !ParentAbstraction.RepresentsAnime,ParentAbstraction.IsRewatching);

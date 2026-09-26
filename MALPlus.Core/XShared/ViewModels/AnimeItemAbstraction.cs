@@ -125,7 +125,7 @@ namespace MALClient.XShared.ViewModels
         }
 
         public int AllVolumes => (EntryData as MangaLibraryItemData)?.AllVolumes ?? 0;
-        public int Type => EntryData?.Type ?? 0;
+        public int Type => EntryData?.Type ?? _seasonalData?.Type ?? 0;
 
         public string Notes
         {

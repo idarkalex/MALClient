@@ -512,8 +512,10 @@ namespace MALClient.XShared.ViewModels.Main
                     if (query == "manga")
                         type = (int)MangaType.Manga;
                     else if (query == "novel")
-                        type = (int)MangaType.Novel;
-                    items = items.Where(item => item.Type == type);
+                        items = items.Where(item =>
+                            item.Type == (int)MangaType.Novel || item.Type == (int)MangaType.LightNovel);
+                    if (query != "novel")
+                        items = items.Where(item => item.Type == type);
                     alreadyFiltered = true;
                 }
                 else if (Regex.IsMatch(query,@"^ep>\d+$"))
@@ -1094,7 +1096,8 @@ namespace MALClient.XShared.ViewModels.Main
                             Episodes = gItem.AllEpisodes.ToString(),
                             Score = gItem.GlobalScore,
                             Genres = gItem.Genres,
-                            Index = gIndex++
+                            Index = gIndex++,
+                            Type = (int) MalTypeParser.ParseAnimeType(gItem.Type)
                         });
                     break;
                 default:

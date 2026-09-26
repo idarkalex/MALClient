@@ -117,9 +117,19 @@ namespace MALClient.XShared.Comm.Anime
                         node.Attributes.Contains("class") && node.Attributes["class"].Value.Contains("scormem-item score"));
                     if (scoreNode != null)
                     {
-                        var scoreText = scoreNode.InnerText.Replace("\u2605", "").Trim();
+                        var scoreText = scoreNode.InnerText.Replace("★", "").Trim();
                         float.TryParse(scoreText, NumberStyles.Float, CultureInfo.InvariantCulture, out var score);
                         current.Score = score;
+                    }
+
+                    //<span class="item">Manga, 2001</span> - first token is the format
+                    var typeNode = item.Descendants("span").FirstOrDefault(node =>
+                        node.Attributes.Contains("class") && node.Attributes["class"].Value.Split(' ').Contains("item"));
+                    if (typeNode != null)
+                    {
+                        var format = typeNode.InnerText.Split(',')[0].Trim();
+                        if (!string.IsNullOrEmpty(format))
+                            current.Type = (int) MalTypeParser.ParseMangaType(format);
                     }
 
                     current.Index = ++index;

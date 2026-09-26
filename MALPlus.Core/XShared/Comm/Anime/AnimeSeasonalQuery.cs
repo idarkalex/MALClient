@@ -77,6 +77,7 @@ namespace MALClient.XShared.Comm.Anime
                                 Index = result.Count + 1,
                                 AirDay = airDay,
                                 AirStartDate = airStartDate,
+                                Type = (int) MalTypeParser.ParseAnimeType(GetString(entry, "type")),
                             });
                         }
 
@@ -217,6 +218,7 @@ namespace MALClient.XShared.Comm.Anime
                 Index = index,
                 AirDay = airDay,
                 AirStartDate = airStartDate,
+                Type = (int) MalTypeParser.ParseAnimeType(GetString(entry, "media_type")),
             };
         }
 

@@ -33,8 +33,9 @@ namespace MALClient.XShared.Utils
                 case "manga":
                     return MangaType.Manga;
                 case "novel":
-                case "lightnovel":
                     return MangaType.Novel;
+                case "lightnovel":
+                    return MangaType.LightNovel;
                 case "oneshot":
                     return MangaType.OneShot;
                 case "doujinshi":

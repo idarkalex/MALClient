@@ -242,23 +242,7 @@ namespace MALClient.XShared.Comm
 
                                                 MangaType GetMangaMediaType()
                                                 {
-                                                    switch (item.media_type)
-                                                    {
-                                                        case "novel":
-                                                            return MangaType.Novel;
-                                                        case "manga":
-                                                            return MangaType.Manga;
-                                                        case "doujinshi":
-                                                            return MangaType.Doujinshi;
-                                                        case "oneshot":
-                                                            return MangaType.OneShot;
-                                                        case "manhwa":
-                                                            return MangaType.Manhwa;
-                                                        case "manhua":
-                                                            return MangaType.Manhua;
-                                                        default:
-                                                            return MangaType.Manga;
-                                                    }
+                                                    return MalTypeParser.ParseMangaType(item.media_type);
                                                 }
                                             }
 
@@ -406,23 +390,7 @@ namespace MALClient.XShared.Comm
 
                                         AnimeType GetMediaType()
                                         {
-                                            switch (item.anime_media_type_string)
-                                            {
-                                                case "TV":
-                                                    return AnimeType.TV;
-                                                case "Movie":
-                                                    return AnimeType.Movie;
-                                                case "Speical":
-                                                    return AnimeType.Special;
-                                                case "OVA":
-                                                    return AnimeType.OVA;
-                                                case "ONA":
-                                                    return AnimeType.ONA;
-                                                case "Music":
-                                                    return AnimeType.Music;
-                                            }
-
-                                            return AnimeType.TV;
+                                            return MalTypeParser.ParseAnimeType(item.anime_media_type_string);
                                         }
                                     }
 
@@ -532,23 +500,7 @@ namespace MALClient.XShared.Comm
 
                                         MangaType GetMangaMediaType()
                                         {
-                                            switch (item.manga_media_type_string)
-                                            {
-                                                case "Novel":
-                                                    return MangaType.Novel;
-                                                case "Manga":
-                                                    return MangaType.Manga;
-                                                case "Doujinshi":
-                                                    return MangaType.Doujinshi;
-                                                case "OneShot":
-                                                    return MangaType.OneShot;
-                                                case "Manhwa":
-                                                    return MangaType.Manhwa;
-                                                case "Manhua":
-                                                    return MangaType.Manhua;
-                                                default:
-                                                    return MangaType.Manga;
-                                            }
+                                            return MalTypeParser.ParseMangaType(item.manga_media_type_string);
                                         }
                                     }
 
