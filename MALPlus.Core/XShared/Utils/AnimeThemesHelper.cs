@@ -562,13 +562,13 @@ namespace MALClient.XShared.Utils
             {
                 const string url =
                     "https://api.animethemes.moe/animetheme?sort=random&page[size]=1" +
-                    "&include=anime,animethemeentries.videos";
+                    "&include=anime,animethemeentries.videos,song";
                 var json = await GetStringWithBackoffAsync(url);
                 if (string.IsNullOrEmpty(json))
                     return null;
 
                 var root = JsonConvert.DeserializeObject<RandomThemeResponse>(json);
-                var theme = root?.data?.FirstOrDefault();
+                var theme = root?.animethemes?.FirstOrDefault();
                 if (theme == null)
                     return null;
 
@@ -596,7 +596,8 @@ namespace MALClient.XShared.Utils
 
         private class RandomThemeResponse
         {
-            [JsonProperty("data")] public List<InlineTheme> data { get; set; }
+            // The animetheme index returns its collection under "animethemes", NOT "data".
+            [JsonProperty("animethemes")] public List<InlineTheme> animethemes { get; set; }
         }
 
         public static int ParseSequence(string opEdText)

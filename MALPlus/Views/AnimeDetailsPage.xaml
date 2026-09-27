@@ -93,19 +93,24 @@
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnRecommendationTapped" CommandParameter="{Binding .}" />
                 </Border.GestureRecognizers>
-                <Grid ColumnDefinitions="130,*" ColumnSpacing="14">
-                    <controls:AnimePosterCard Grid.Column="0" WidthRequest="130" HeightRequest="195"
+                <Grid ColumnDefinitions="130,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                    <controls:AnimePosterCard Grid.Row="0" Grid.RowSpan="3" Grid.Column="0"
+                                               WidthRequest="130" HeightRequest="195"
+                                               VerticalOptions="Start"
                                                PosterUrl="{Binding ImageUrl}"
                                                TitleOverlay="False"
                                                TypeTag="{Binding MediaType}"
                                                BadgeExtra="{Binding AirDayTillBind}" />
-                    <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Start">
-                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="16"
-                               TextColor="{StaticResource BrushText}" MaxLines="3" LineBreakMode="TailTruncation" />
-                        <Label Text="{Binding Description}" FontFamily="Inter" FontSize="13"
-                               TextColor="#B8C7D8" LineHeight="1.35" MaxLines="12" LineBreakMode="TailTruncation"
-                               IsVisible="{Binding Description, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
-                    </VerticalStackLayout>
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Title}" FontFamily="InterBold" FontSize="16"
+                           TextColor="{StaticResource BrushText}" MaxLines="3" LineBreakMode="TailTruncation"
+                           SizeChanged="OnRecommendationTitleSized" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding DescriptionTop}" FontFamily="Inter" FontSize="13"
+                           TextColor="#B8C7D8" LineHeight="1.35" MaxLines="9" LineBreakMode="TailTruncation"
+                           IsVisible="{Binding HasDescriptionTop}" />
+                    <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding DescriptionBottom}"
+                           FontFamily="Inter" FontSize="13"
+                           TextColor="#B8C7D8" LineHeight="1.35" MaxLines="6" LineBreakMode="TailTruncation"
+                           IsVisible="{Binding HasDescriptionBottom}" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -511,14 +516,13 @@
                         <CollectionView IsVisible="{Binding Source={x:Reference DetailsPage}, Path=RelatedContentVisible}"
                                         ItemsSource="{Binding RelatedAnime}"
                                         SelectionMode="None"
-                                        HeightRequest="{Binding Source={x:Reference DetailsPage}, Path=RelatedGridHeight}"
-                                        Margin="8,0">
+                                        HeightRequest="{Binding Source={x:Reference DetailsPage}, Path=RelatedGridHeight}">
                             <CollectionView.ItemsLayout>
                                 <GridItemsLayout Orientation="Vertical" Span="3" />
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:Key="RelatedItemTemplate">
-                                    <controls:AnimePosterCard Margin="4" HeightRequest="195"
+                                    <controls:AnimePosterCard Margin="2" HeightRequest="195"
                                                                PosterUrl="{Binding ImgUrl}"
                                                                Title="{Binding Title}"
                                                                TitleOverlay="True"

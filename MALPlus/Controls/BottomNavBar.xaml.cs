@@ -128,24 +128,25 @@ public partial class BottomNavBar : ContentView
 
     private void SetSelectedSection(string section)
     {
-        SetSelected(DiscoverButton, DiscoverIcon, DiscoverLabel,
+        SetSelected(DiscoverButton, DiscoverIcon, DiscoverLabel, "discover_home",
             string.Equals(section, "discover", StringComparison.OrdinalIgnoreCase));
-        SetSelected(AnimeButton, AnimeIcon, AnimeLabel,
+        SetSelected(AnimeButton, AnimeIcon, AnimeLabel, "anime_list",
             string.Equals(section, "anime", StringComparison.OrdinalIgnoreCase));
-        SetSelected(MangaButton, MangaIcon, MangaLabel,
+        SetSelected(MangaButton, MangaIcon, MangaLabel, "manga_books",
             string.Equals(section, "manga", StringComparison.OrdinalIgnoreCase));
-        SetSelected(MoreButton, MoreIcon, MoreLabel,
+        SetSelected(MoreButton, MoreIcon, MoreLabel, "more_dots",
             string.Equals(section, "more", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static void SetSelected(Button button, Image icon, Label label, bool selected)
+    private static void SetSelected(Button button, Image icon, Label label, string iconName, bool selected)
     {
         try
         {
             button.BackgroundColor = selected ? SelectedButtonColor : TransparentButtonColor;
-            button.BorderColor = selected ? SelectedColor : TransparentButtonColor;
-            button.BorderWidth = selected ? 1 : 0;
             label.TextColor = selected ? SelectedColor : UnselectedColor;
+            // Image has no tint in MAUI 7, so the selected tab swaps to an accent-coloured
+            // copy of the same glyph instead of being marked with an outline.
+            icon.Source = ImageSource.FromFile(selected ? $"{iconName}_accent" : iconName);
             icon.Opacity = selected ? 1.0 : 0.55;
         }
         catch { }

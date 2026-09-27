@@ -64,7 +64,7 @@ namespace MALClient.XShared.ViewModels.Details
             =>
                 MyScore == 0
                     ? "Unranked"
-                    : $"{MyScore.ToString(Settings.SelectedApiType == ApiType.Mal ? "N0" : "N1")}/{(Settings.SelectedApiType == ApiType.Mal ? "10" : "5")}";
+                    : $"{MyScore.ToString(Settings.SelectedApiType == ApiType.Mal ? "N0" : "N1", System.Globalization.CultureInfo.InvariantCulture)}/{(Settings.SelectedApiType == ApiType.Mal ? "10" : "5")}";
 
         public bool IsMyScoreSet => MyScore != 0;
 
@@ -188,7 +188,8 @@ namespace MALClient.XShared.ViewModels.Details
             }
         }
 
-        public string GlobalScoreBind => GlobalScore == 0 ? "—" : GlobalScore.ToString("N2");
+        public string GlobalScoreBind
+            => GlobalScore == 0 ? "—" : GlobalScore.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
 
         private bool _loadingGlobal;
 

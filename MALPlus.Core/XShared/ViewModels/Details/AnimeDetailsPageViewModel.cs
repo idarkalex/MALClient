@@ -1379,7 +1379,7 @@ namespace MALClient.XShared.ViewModels.Details
                     item.AllEpisodesFocused == 0 ? "?" : item.AllEpisodesFocused.ToString()));
             }
 
-            LeftDetailsRow.Add(new Tuple<string, string>("Score", GlobalScore == 0 ? "N/A" : GlobalScore.ToString("N2")));
+            LeftDetailsRow.Add(new Tuple<string, string>("Score", GlobalScore == 0 ? "N/A" : GlobalScore.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)));
             LeftDetailsRow.Add(new Tuple<string, string>("Start",
                 StartDate == AnimeItemViewModel.InvalidStartEndDate || string.IsNullOrEmpty(StartDate)
                     ? "?"
@@ -1448,10 +1448,10 @@ namespace MALClient.XShared.ViewModels.Details
             EndDate = data.EndDate;
             GlobalScore = data.GlobalScore;
             GeneralRank = data.Rank > 0 ? $"#{data.Rank:N0}" : "";
-            GeneralPopularity = data.Popularity > 0 ? $"#{data.Popularity:N0}" : "";
+            GeneralPopularity = data.Popularity > 0 ? $"#{data.Popularity.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)}" : "";
             GeneralStudios = data.Studios != null && data.Studios.Any() ? string.Join(", ", data.Studios) : "";
-            GeneralFavorites = data.FavoritesCount > 0 ? data.FavoritesCount.ToString("N0") : "";
-            GeneralMembers = data.MembersCount > 0 ? data.MembersCount.ToString("N0") : "";
+            GeneralFavorites = data.FavoritesCount > 0 ? data.FavoritesCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) : "";
+            GeneralMembers = data.MembersCount > 0 ? data.MembersCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) : "";
             GeneralSeason = string.IsNullOrWhiteSpace(data.Season) ? "" : data.Season;
             TrailerUrl = data.TrailerUrl;
             _imgUrl = NormalizeImageUrl((_animeItemReference as AnimeItemViewModel)?.ImgUrl ?? data.ImgUrl);

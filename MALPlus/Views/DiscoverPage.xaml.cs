@@ -223,7 +223,7 @@ public partial class DiscoverPage : ContentPage
         var score = await DisplayActionSheet(title, "Cancel", null,
             formatLabels.Concat(new[]
             {
-                "Min score: " + (filter.MinScore <= 0 ? "any" : filter.MinScore.ToString("0.0")),
+                "Min score: " + (filter.MinScore <= 0 ? "any" : filter.MinScore.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)),
                 "Years: " + YearLabel(filter),
                 "Genres: " + (filter.GenreIds.Count == 0 ? "any" : filter.GenreIds.Count + "chosen"),
                 "Reset"

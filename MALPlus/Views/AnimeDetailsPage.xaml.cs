@@ -108,9 +108,9 @@ public partial class AnimeDetailsPage : ContentPage
     public bool RelatedContentVisible => Vm != null && !Vm.LoadingRelated && !RelatedErrorVisible && Vm.RelatedAnime.Count > 0;
 
     /// <summary>
-    /// The related grid lives inside the page ScrollView, so it cannot take its height from
-    /// a scroller: it has to be told exactly how tall it is. Three cards per row, 195 tall,
-    /// with the 4dp card margin the template sets.
+    ///     The related grid lives inside the page ScrollView, so it cannot take its height from
+    ///     a scroller: it has to be told exactly how tall it is. Three cards per row, 195 tall,
+    ///     with the 2dp card margin the template sets (same grid metrics as the anime list).
     /// </summary>
     public double RelatedGridHeight
     {
@@ -119,7 +119,7 @@ public partial class AnimeDetailsPage : ContentPage
             var count = Vm?.RelatedAnime?.Count ?? 0;
             if (count == 0) return 0;
             var rows = (int)Math.Ceiling(count / 3d);
-            return rows * 203d;
+            return rows * 199d;
         }
     }
 
@@ -700,6 +700,67 @@ public partial class AnimeDetailsPage : ContentPage
         {
             Console.WriteLine("MALPLUS OnEpisodeTapped failed: " + ex.GetType().Name);
         }
+    }
+
+    /// <summary>
+    ///     Splits the recommendation blurb so it really wraps around the poster: the first slice sits
+    ///     beside the artwork, whatever is left flows underneath it at full card width. The only honest
+    ///     budget comes from the measured title height, so this runs on SizeChanged and memoizes its
+    ///     inputs on the item.
+    /// </summary>
+    private void OnRecommendationTitleSized(object sender, EventArgs e)
+    {
+        if (sender is not Label title || title.BindingContext is not DirectRecommendationData item)
+            return;
+
+        var width = title.Width;
+        var titleHeight = title.Height;
+        if (width <= 1 || titleHeight <= 0)
+            return;
+
+        var unchanged = Math.Abs(item.SplitWidth - width) < 1 &&
+                        Math.Abs(item.SplitTitleHeight - titleHeight) < 1 &&
+                        string.Equals(item.DescriptionSplitSource, item.Description, StringComparison.Ordinal);
+        if (unchanged)
+            return;
+
+        item.SplitWidth = width;
+        item.SplitTitleHeight = titleHeight;
+
+        var full = item.Description;
+        if (string.IsNullOrWhiteSpace(full))
+        {
+            item.SetDescriptionSplit(null, null);
+            return;
+        }
+
+        const double lineHeight = 13 * 1.35;
+        const double rowSpacing = 8;
+        const double charWidth = 6.6;
+        const double posterHeight = 195;
+
+        var available = Math.Max(0, posterHeight - titleHeight - rowSpacing);
+        var lines = (int)Math.Floor(available / lineHeight);
+        // Keep one line of slack: measured line height drifts from the nominal 13 * 1.35 and an
+        // over-eager budget is what makes the blurb run over the artwork.
+        var budget = (int)Math.Floor(width / charWidth) * Math.Max(0, lines - 1);
+        if (budget <= 8)
+        {
+            // Nothing fits beside the poster, so the blurb flows underneath it at full width.
+            item.SetDescriptionSplit(null, full);
+            return;
+        }
+
+        if (full.Length <= budget)
+        {
+            item.SetDescriptionSplit(full, null);
+            return;
+        }
+
+        var cut = full.LastIndexOf(' ', Math.Min(full.Length, budget), Math.Min(full.Length, budget));
+        if (cut <= 0)
+            cut = Math.Min(full.Length, budget);
+        item.SetDescriptionSplit(full.Substring(0, cut).TrimEnd(), full.Substring(cut).TrimStart());
     }
 
     private async void OnRecommendationTapped(object sender, TappedEventArgs e)
