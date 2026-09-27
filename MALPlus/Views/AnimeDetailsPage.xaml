@@ -522,7 +522,6 @@
                                      with the blue relation chips (Adaptation, Prequel, ...). -->
                                 <DataTemplate>
                                     <controls:AnimePosterCard
-                                        Margin="{Binding Source={x:Reference RelatedGrid}, Path=CellMargin}"
                                         HeightRequest="{Binding Source={x:Reference RelatedGrid}, Path=CellHeight}"
                                         PosterUrl="{Binding ImgUrl}"
                                         Title="{Binding Title}"

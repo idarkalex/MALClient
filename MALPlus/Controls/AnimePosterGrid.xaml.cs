@@ -206,7 +206,13 @@ public partial class AnimePosterGrid : ContentView
         var span = EffectiveSpan(available);
         if (!_spanApplied || (ItemsView.ItemsLayout is GridItemsLayout grid && grid.Span != span))
         {
-            ItemsView.ItemsLayout = new GridItemsLayout(span, ItemsLayoutOrientation.Vertical);
+            // The gutter lives in the layout, not in a card margin: a margin insets the artwork on
+            // all four sides and shows up as a dark frame around every poster.
+            ItemsView.ItemsLayout = new GridItemsLayout(span, ItemsLayoutOrientation.Vertical)
+            {
+                HorizontalItemSpacing = Spacing,
+                VerticalItemSpacing = Spacing
+            };
             _spanApplied = true;
         }
 
@@ -214,8 +220,7 @@ public partial class AnimePosterGrid : ContentView
         if (slot <= 0)
             return;
 
-        CellMargin = new Thickness(Spacing / 2d);
-        CellWidth = slot - Spacing;
+        CellMargin = new Thickness(0);
         CellHeight = DefaultCellHeight;
         RowHeight = CellHeight + Spacing;
 

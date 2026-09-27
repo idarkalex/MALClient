@@ -8,9 +8,11 @@
         <ResourceDictionary>
             <!-- THE canonical poster cell. Height and margin come from the control, never from the
                  page, so no page can drift out of sync with the rest of the app. -->
+            <!-- No margin here on purpose: a card margin insets the artwork on all four sides and
+                 reads as a dark frame around every poster. The gutter comes from the grid's own
+                 item spacing instead, so the artwork is flush with its cell. -->
             <DataTemplate x:Key="DefaultCellTemplate">
                 <controls:AnimePosterCard
-                    Margin="{Binding Source={x:Reference Root}, Path=CellMargin}"
                     HeightRequest="{Binding Source={x:Reference Root}, Path=CellHeight}"
                     PosterUrl="{Binding ImgUrl}"
                     Title="{Binding Title}"
