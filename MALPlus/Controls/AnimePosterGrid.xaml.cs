@@ -21,8 +21,11 @@ public partial class AnimePosterGrid : ContentView
     /// <summary>Poster aspect (width / height). MAL covers are 2:3.</summary>
     public const double PosterAspect = 2d / 3d;
 
-    /// <summary>The single spacing value used by every poster grid in the app.</summary>
-    public const double DefaultSpacing = 4d;
+    /// <summary>
+    ///     The single spacing value used by every poster grid in the app. Zero: posters sit edge to
+    ///     edge with no gutter and no frame, which is the look that was signed off.
+    /// </summary>
+    public const double DefaultSpacing = 0d;
 
     /// <summary>Cards per row. The app is designed around three.</summary>
     public const int DefaultSpan = 3;
