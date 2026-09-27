@@ -46,7 +46,8 @@ namespace MALClient.XShared.ViewModels
         public AnimeStatus MyStatus { get; set; }
 
         public string MyStatusBindShort => Utils.Utilities.StatusToShortString((int)MyStatus,!_isAnime, IsRewatching);
-        public string GlobalScoreBind => GlobalScore == 0 ? "N/A" : GlobalScore.ToString("N2");
+        public string GlobalScoreBind
+        => GlobalScore == 0 ? "N/A" : GlobalScore.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
         public string Synopsis { get; set; }
         public string ImgUrl { get; set; }
 

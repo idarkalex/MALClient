@@ -45,10 +45,15 @@ public partial class SearchPage : ContentPage
     public System.Collections.IEnumerable CharacterResults => CharVm.FoundCharacters;
 
     public SearchPage()
-    {
-        InitializeComponent();
-        BindingContext = ViewModelLocator.SearchPage;
-    }
+        {
+            InitializeComponent();
+            BindingContext = ViewModelLocator.SearchPage;
+            // Infinite scroll is list-level, so it lives on the grid's inner collection.
+            ResultsGrid.Inner.SelectionMode = SelectionMode.Single;
+            ResultsGrid.Inner.SelectionChanged += OnResultSelected;
+            ResultsGrid.Inner.RemainingItemsThreshold = 4;
+            ResultsGrid.Inner.RemainingItemsThresholdReachedCommand = MainVm?.LoadMoreCatalogueCommand;
+        }
 
     protected override async void OnAppearing()
     {
@@ -134,39 +139,51 @@ public partial class SearchPage : ContentPage
             inputManager.HideSoftInputFromWindow(token, global::Android.Views.InputMethods.HideSoftInputFlags.None);
     }
 
+    private async void OnResultTapped(object sender, TappedEventArgs e)
+    {
+        if (e.Parameter is not AnimeSearchItemViewModel item)
+            return;
+        await NavigateToResultAsync(item);
+    }
+
     private async void OnResultSelected(object sender, SelectionChangedEventArgs e)
     {
         try
         {
             if (e.CurrentSelection.FirstOrDefault() is AnimeSearchItemViewModel item)
             {
-                ((CollectionView)sender).SelectedItem = null;
-                SearchEntry.Unfocus();
-                HideKeyboard();
-                var titleQs = Uri.EscapeDataString(item.Title ?? string.Empty);
-                var manga = !item.AnimeMode;
-                var handoffArgs = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, item,
-                    new SearchPageNavigationArgs
-                    {
-                        Query = MainVm.PrevQuery,
-                        Anime = item.AnimeMode,
-                        DisplayMode = MainVm.PrevArgs?.DisplayMode ?? SearchPageDisplayModes.Main
-                    })
-                {
-                    Source = item.AnimeMode ? PageIndex.PageSearch : PageIndex.PageMangaSearch,
-                    AnimeMode = item.AnimeMode
-                };
-                MauiDetailsNavigationHandoff.Set(handoffArgs);
-                var route = manga
-                    ? $"animedetails?id={item.Id}&title={titleQs}&manga=true"
-                    : $"animedetails?id={item.Id}&title={titleQs}";
-                await Shell.Current.GoToAsync(route);
+                ResultsGrid.Inner.SelectedItem = null;
+                await NavigateToResultAsync(item);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS SearchPage result nav failed: " + ex.Message);
         }
+    }
+
+    private async Task NavigateToResultAsync(AnimeSearchItemViewModel item)
+    {
+        SearchEntry.Unfocus();
+        HideKeyboard();
+        var titleQs = Uri.EscapeDataString(item.Title ?? string.Empty);
+        var manga = !item.AnimeMode;
+        var handoffArgs = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, item,
+            new SearchPageNavigationArgs
+            {
+                Query = MainVm.PrevQuery,
+                Anime = item.AnimeMode,
+                DisplayMode = MainVm.PrevArgs?.DisplayMode ?? SearchPageDisplayModes.Main
+            })
+        {
+            Source = item.AnimeMode ? PageIndex.PageSearch : PageIndex.PageMangaSearch,
+            AnimeMode = item.AnimeMode
+        };
+        MauiDetailsNavigationHandoff.Set(handoffArgs);
+        var route = manga
+            ? $"animedetails?id={item.Id}&title={titleQs}&manga=true"
+            : $"animedetails?id={item.Id}&title={titleQs}";
+        await Shell.Current.GoToAsync(route);
     }
 
     private async void OnGenreStudioSelected(object sender, SelectionChangedEventArgs e)

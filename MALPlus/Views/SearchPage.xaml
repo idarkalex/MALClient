@@ -168,34 +168,41 @@
                                    IsVisible="{Binding IsLoadingMoreCatalogue}" />
                         </Grid>
 
-                        <CollectionView Grid.Row="1" ItemsSource="{Binding CurrentSearchItems}"
-                                        SelectionMode="Single" SelectionChanged="OnResultSelected"
-                                        RemainingItemsThreshold="4" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCatalogueCommand}">
-                            <CollectionView.EmptyView>
-                                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12"
-                                                     IsVisible="{Binding EmptyNoticeVisibility}">
-                                    <Label Text="No results found" FontFamily="InterBold" FontSize="16"
-                                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
-                                    <Label Text="Try a different search term" FontFamily="Inter" FontSize="13"
-                                           TextColor="#80FFFFFF" HorizontalOptions="Center" />
-                                </VerticalStackLayout>
-                            </CollectionView.EmptyView>
-                            <CollectionView.ItemsLayout>
-                                <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="8" VerticalItemSpacing="8" />
-                            </CollectionView.ItemsLayout>
-                            <CollectionView.ItemTemplate>
+                        <controls:AnimePosterGrid x:Name="ResultsGrid"
+                                            Grid.Row="1"
+                                            ItemsSource="{Binding CurrentSearchItems}">
+                            <controls:AnimePosterGrid.CellTemplate>
+                                <!-- Same component and same metrics as the anime grid; the search
+                                     results only differ in which values the card shows. -->
                                 <DataTemplate>
-                                    <controls:AnimePosterCard HeightRequest="195"
-                                                              PosterUrl="{Binding ImgUrl}"
-                                                              Title="{Binding Title}"
-                                                              TitleOverlay="True"
-                                                              TypeTag="{Binding TypeTag}"
-                                                              BadgeVisible="True"
-                                                              BadgeAccent="{Binding CardBadgeAccent}"
-                                                              BadgeMain="{Binding CardBadgeMain}" />
+                                    <controls:AnimePosterCard
+                                        HeightRequest="{Binding Source={x:Reference ResultsGrid}, Path=CellHeight}"
+                                        PosterUrl="{Binding ImgUrl}"
+                                        Title="{Binding Title}"
+                                        TitleOverlay="True"
+                                        TypeTag="{Binding TypeTag}"
+                                        BadgeVisible="True"
+                                        BadgeAccent="{Binding CardBadgeAccent}"
+                                        BadgeMain="{Binding CardBadgeMain}">
+                                        <controls:AnimePosterCard.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnResultTapped"
+                                                                  CommandParameter="{Binding .}" />
+                                        </controls:AnimePosterCard.GestureRecognizers>
+                                    </controls:AnimePosterCard>
                                 </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                            </controls:AnimePosterGrid.CellTemplate>
+                        </controls:AnimePosterGrid>
+
+                        <!-- Empty state: the component has no CollectionView.EmptyView, so it is an
+                             overlay here instead. -->
+                        <VerticalStackLayout Grid.Row="1" Spacing="12"
+                                             VerticalOptions="Center" HorizontalOptions="Center"
+                                             IsVisible="{Binding EmptyNoticeVisibility}">
+                            <Label Text="No results found" FontFamily="InterBold" FontSize="16"
+                                   TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
+                            <Label Text="Try a different search term" FontFamily="Inter" FontSize="13"
+                                   TextColor="#80FFFFFF" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
                     </Grid>
 
                     <VerticalStackLayout Grid.Row="1" Spacing="16" Padding="16"
