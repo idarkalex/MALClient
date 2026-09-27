@@ -107,22 +107,6 @@ public partial class AnimeDetailsPage : ContentPage
     public bool RelatedEmptyVisible => Vm != null && !Vm.LoadingRelated && !RelatedErrorVisible && Vm.RelatedAnime.Count == 0;
     public bool RelatedContentVisible => Vm != null && !Vm.LoadingRelated && !RelatedErrorVisible && Vm.RelatedAnime.Count > 0;
 
-    /// <summary>
-    ///     The related grid lives inside the page ScrollView, so it cannot take its height from
-    ///     a scroller: it has to be told exactly how tall it is. Three cards per row, 195 tall,
-    ///     with the 2dp card margin the template sets (same grid metrics as the anime list).
-    /// </summary>
-    public double RelatedGridHeight
-    {
-        get
-        {
-            var count = Vm?.RelatedAnime?.Count ?? 0;
-            if (count == 0) return 0;
-            var rows = (int)Math.Ceiling(count / 3d);
-            return rows * 199d;
-        }
-    }
-
     public string CharactersErrorText => EmptyStateText(_charactersError, "Unable to load characters.");
     public bool CharactersErrorVisible => !string.IsNullOrWhiteSpace(_charactersError);
     public bool CharactersEmptyVisible => Vm != null && !Vm.LoadingCharactersVisibility && !CharactersErrorVisible &&
@@ -1443,7 +1427,6 @@ public partial class AnimeDetailsPage : ContentPage
         OnPropertyChanged(nameof(RelatedErrorVisible));
         OnPropertyChanged(nameof(RelatedEmptyVisible));
         OnPropertyChanged(nameof(RelatedContentVisible));
-        OnPropertyChanged(nameof(RelatedGridHeight));
         OnPropertyChanged(nameof(CharactersErrorText));
         OnPropertyChanged(nameof(CharactersErrorVisible));
         OnPropertyChanged(nameof(CharactersEmptyVisible));

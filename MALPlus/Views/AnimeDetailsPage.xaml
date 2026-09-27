@@ -513,30 +513,32 @@
                                 Margin="4,8" Style="{StaticResource PanelStyle}" Padding="18">
                             <Label Text="No related titles available." Style="{StaticResource StateTextStyle}" />
                         </Border>
-                        <CollectionView IsVisible="{Binding Source={x:Reference DetailsPage}, Path=RelatedContentVisible}"
-                                        ItemsSource="{Binding RelatedAnime}"
-                                        SelectionMode="None"
-                                        HeightRequest="{Binding Source={x:Reference DetailsPage}, Path=RelatedGridHeight}">
-                            <CollectionView.ItemsLayout>
-                                <GridItemsLayout Orientation="Vertical" Span="3" />
-                            </CollectionView.ItemsLayout>
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate x:Key="RelatedItemTemplate">
-                                    <controls:AnimePosterCard Margin="2" HeightRequest="195"
-                                                               PosterUrl="{Binding ImgUrl}"
-                                                               Title="{Binding Title}"
-                                                               TitleOverlay="True"
-                                                               TypeTag="{Binding MediaType}"
-                                                               BadgeExtra="{Binding AirDayTillBind}"
-                                                               ChipSource="{Binding Relations}"
-                                                               ChipTemplate="{StaticResource RelationChipTemplate}">
+                        <controls:AnimePosterGrid x:Name="RelatedGrid"
+                            IsVisible="{Binding Source={x:Reference DetailsPage}, Path=RelatedContentVisible}"
+                            ItemsSource="{Binding RelatedAnime}"
+                            FixedHeight="True">
+                            <controls:AnimePosterGrid.CellTemplate>
+                                <!-- Same component as the anime grid; only the cell content differs,
+                                     with the blue relation chips (Adaptation, Prequel, ...). -->
+                                <DataTemplate>
+                                    <controls:AnimePosterCard
+                                        Margin="{Binding Source={x:Reference RelatedGrid}, Path=CellMargin}"
+                                        HeightRequest="{Binding Source={x:Reference RelatedGrid}, Path=CellHeight}"
+                                        PosterUrl="{Binding ImgUrl}"
+                                        Title="{Binding Title}"
+                                        TitleOverlay="True"
+                                        TypeTag="{Binding MediaType}"
+                                        BadgeExtra="{Binding AirDayTillBind}"
+                                        ChipSource="{Binding Relations}"
+                                        ChipTemplate="{StaticResource RelationChipTemplate}">
                                         <controls:AnimePosterCard.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnRecommendationTapped" CommandParameter="{Binding .}" />
+                                            <TapGestureRecognizer Tapped="OnRecommendationTapped"
+                                                                  CommandParameter="{Binding .}" />
                                         </controls:AnimePosterCard.GestureRecognizers>
                                     </controls:AnimePosterCard>
                                 </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                            </controls:AnimePosterGrid.CellTemplate>
+                        </controls:AnimePosterGrid>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=6}"

@@ -42,12 +42,28 @@ public partial class AnimePosterCard : ContentView
         private set => SetValue(HasBadgeProperty, value);
     }
 
+    /// <summary>
+    ///     True when the countdown is worth a separator inside the single merged counter pill.
+    /// </summary>
+    public static readonly BindableProperty HasBadgeExtraProperty =
+        BindableProperty.Create(nameof(HasBadgeExtra), typeof(bool), typeof(AnimePosterCard), false);
+
+    public bool HasBadgeExtra
+    {
+        get => (bool)GetValue(HasBadgeExtraProperty);
+        private set => SetValue(HasBadgeExtraProperty, value);
+    }
+
     private static void OnBadgeChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var card = (AnimePosterCard)bindable;
         card.HasBadge = !string.IsNullOrWhiteSpace(card.BadgeAccent)
                         || !string.IsNullOrWhiteSpace(card.BadgeMain)
                         || !string.IsNullOrWhiteSpace(card.BadgeExtra);
+        // The dot only earns its place when there is something on both sides of it.
+        card.HasBadgeExtra = !string.IsNullOrWhiteSpace(card.BadgeExtra)
+                             && (!string.IsNullOrWhiteSpace(card.BadgeAccent)
+                                 || !string.IsNullOrWhiteSpace(card.BadgeMain));
     }
 
     public static readonly BindableProperty TitleOverlayProperty =

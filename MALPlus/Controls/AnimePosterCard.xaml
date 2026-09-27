@@ -31,32 +31,33 @@
                                  IsVisible="{Binding ChipSource, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=hasitems}" />
         </VerticalStackLayout>
 
-        <VerticalStackLayout Spacing="3" Margin="0,6,6,0"
-                             HorizontalOptions="End" VerticalOptions="Start">
-            <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
-                    StrokeShape="RoundRectangle 12" Padding="6,3"
-                    HorizontalOptions="End"
-                    IsVisible="{Binding HasBadge, Source={x:Reference PosterCard}}">
-                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                    <Label Text="{Binding BadgeAccent, Source={x:Reference PosterCard}}"
-                           FontFamily="InterBold" FontSize="9"
-                           TextColor="{StaticResource EmAccent}" VerticalOptions="Center"
-                           IsVisible="{Binding BadgeAccent, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
-                    <Label Text="{Binding BadgeMain, Source={x:Reference PosterCard}}"
-                           FontFamily="InterBold" FontSize="9" TextColor="White" VerticalOptions="Center"
-                           IsVisible="{Binding BadgeMain, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
-                </HorizontalStackLayout>
-            </Border>
-
-            <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
-                    StrokeShape="RoundRectangle 12" Padding="6,2"
-                    HorizontalOptions="End"
-                    IsVisible="{Binding BadgeExtra, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
+        <!-- One pill for the whole counter: status, episodes watched and the time left to the next
+             episode. These used to be two stacked pills, which read as two separate controls and
+             doubled the badge block on every card. -->
+        <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
+                StrokeShape="RoundRectangle 12" Padding="6,3"
+                HorizontalOptions="End" VerticalOptions="Start"
+                Margin="0,6,6,0"
+                IsVisible="{Binding HasBadge, Source={x:Reference PosterCard}}">
+            <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                <Label Text="{Binding BadgeAccent, Source={x:Reference PosterCard}}"
+                       FontFamily="InterBold" FontSize="9"
+                       TextColor="{StaticResource EmAccent}" VerticalOptions="Center"
+                       IsVisible="{Binding BadgeAccent, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                <Label Text="{Binding BadgeMain, Source={x:Reference PosterCard}}"
+                       FontFamily="InterBold" FontSize="9" TextColor="White" VerticalOptions="Center"
+                       IsVisible="{Binding BadgeMain, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                <!-- Thin divider, not a glyph: a middle dot read as debris floating between the
+                     two values. -->
+                <BoxView WidthRequest="1" HeightRequest="10" Color="#59FFFFFF"
+                         VerticalOptions="Center"
+                         IsVisible="{Binding HasBadgeExtra, Source={x:Reference PosterCard}}" />
                 <Label Text="{Binding BadgeExtra, Source={x:Reference PosterCard}}"
                        FontFamily="InterBold" FontSize="9" TextColor="White"
-                       MaxLines="1" LineBreakMode="TailTruncation" />
-            </Border>
-        </VerticalStackLayout>
+                       VerticalOptions="Center" MaxLines="1" LineBreakMode="TailTruncation"
+                       IsVisible="{Binding BadgeExtra, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+            </HorizontalStackLayout>
+        </Border>
 
         <!-- Bottom scrim: this is what makes the title readable now that it is a plain
              Label. The outline used to come from an OutlinedLabel, i.e. an
@@ -73,11 +74,15 @@
             </Border.Background>
         </Border>
 
+        <!-- The label box is two lines tall so long titles have room, which used to leave a one
+             line hole under a short title. Anchoring the text to the bottom keeps every card's
+             title sitting on the same baseline. -->
         <Label Text="{Binding Title, Source={x:Reference PosterCard}}"
                FontFamily="Inter" FontSize="11"
                TextColor="White"
                MaxLines="2" LineBreakMode="TailTruncation"
                HeightRequest="32" VerticalOptions="End"
+               VerticalTextAlignment="End"
                Margin="6,0,6,4" InputTransparent="True"
                IsVisible="{Binding TitleOverlay, Source={x:Reference PosterCard}}" />
     </Grid>

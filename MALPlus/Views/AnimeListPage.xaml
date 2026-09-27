@@ -16,30 +16,9 @@
 
     <Grid RowDefinitions="*,Auto">
         <RefreshView x:Name="ListRefresh" Grid.Row="0" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
-            <CollectionView x:Name="AnimeGrid"
-                            ItemsSource="{Binding AnimeItems}"
-                            SelectionMode="Single"
-                             SelectionChanged="OnSelectionChanged"
-                             RemainingItemsThreshold="4"
-                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
-
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical" Span="3" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="itemvm:AnimeItemViewModel">
-                        <controls:AnimePosterCard HeightRequest="195" Margin="2"
-                                                  PosterUrl="{Binding ImgUrl}"
-                                                  Title="{Binding Title}"
-                                                  TitleOverlay="True"
-                                                  TypeTag="{Binding TypeTag}"
-                                                  BadgeVisible="True"
-                                                  BadgeAccent="{Binding MyStatusBindShort}"
-                                                  BadgeMain="{Binding MyEpisodesBindShort}"
-                                                  BadgeExtra="{Binding AirDayTillBind}" />
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <!-- One component for every poster grid in the app: the list, Related, Search and
+                 Discover all get their span, cell size and spacing from AnimePosterGrid. -->
+            <controls:AnimePosterGrid x:Name="AnimeGrid" ItemsSource="{Binding AnimeItems}" />
         </RefreshView>
 
         <Label Text="{Binding EmptyNoticeContent}" IsVisible="{Binding EmptyNoticeVisibility}"

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
+             x:Class="MALPlus.Controls.AnimePosterGrid"
+             x:Name="Root">
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <!-- THE canonical poster cell. Height and margin come from the control, never from the
+                 page, so no page can drift out of sync with the rest of the app. -->
+            <DataTemplate x:Key="DefaultCellTemplate">
+                <controls:AnimePosterCard
+                    Margin="{Binding Source={x:Reference Root}, Path=CellMargin}"
+                    HeightRequest="{Binding Source={x:Reference Root}, Path=CellHeight}"
+                    PosterUrl="{Binding ImgUrl}"
+                    Title="{Binding Title}"
+                    TitleOverlay="True"
+                    TypeTag="{Binding TypeTag}"
+                    BadgeVisible="True"
+                    BadgeAccent="{Binding MyStatusBindShort}"
+                    BadgeMain="{Binding MyEpisodesBindShort}"
+                    BadgeExtra="{Binding AirDayTillBind}">
+                    <controls:AnimePosterCard.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCellTapped" />
+                    </controls:AnimePosterCard.GestureRecognizers>
+                </controls:AnimePosterCard>
+            </DataTemplate>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <CollectionView x:Name="ItemsView" SelectionMode="None" />
+</ContentView>

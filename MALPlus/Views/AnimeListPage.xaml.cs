@@ -70,8 +70,9 @@ public partial class AnimeListPage : ContentPage
         // MAUI's CollectionView virtualizes rendering, so we load the ENTIRE user list
         // into AnimeItems (negative dimensions => GetGridItemsToLoad returns int.MaxValue).
         // Otherwise UpdatePageSetup only ever exposes ~27 items and never drains the rest.
-        Vm.DimensionsProvider = new MauiDimensionsProvider();
-    }
+            Vm.DimensionsProvider = new MauiDimensionsProvider();
+            WireInfiniteScroll();
+        }
 
     protected override void OnAppearing()
     {
@@ -360,33 +361,66 @@ public partial class AnimeListPage : ContentPage
 
     private bool _navigatingToDetails;
 
+    /// <summary>
+    ///     Infinite scroll is a list-level feature, so it is wired on the grid's inner collection
+    ///     instead of being re-declared as XAML on every poster grid in the app.
+    /// </summary>
+    private void WireInfiniteScroll()
+    {
+        var inner = AnimeGrid.Inner;
+        inner.SelectionMode = SelectionMode.Single;
+        inner.SelectionChanged += OnSelectionChanged;
+        inner.RemainingItemsThreshold = 4;
+        inner.RemainingItemsThresholdReachedCommand = Vm?.LoadMoreCommand;
+        AnimeGrid.ItemTapped += OnGridItemTapped;
+    }
+
+    private async void OnGridItemTapped(object sender, object item)
+    {
+        if (item is AnimeItemViewModel viewModel)
+            await NavigateToDetailsAsync(viewModel);
+    }
+
     private async void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         try
         {
             if (e.CurrentSelection.FirstOrDefault() is AnimeItemViewModel item)
             {
-                if (_navigatingToDetails) return;
-                _navigatingToDetails = true;
-                AnimeGrid.SelectedItem = null;
-                var wm = (AnimeListWorkModes)_lastMode;
-                var manga = wm == AnimeListWorkModes.Manga || wm == AnimeListWorkModes.TopManga || wm == AnimeListWorkModes.MangaAdapted;
-                var titleQs = Uri.EscapeDataString(item.Title ?? string.Empty);
-                var source = wm == AnimeListWorkModes.Manga
-                    ? PageIndex.PageMangaList
-                    : PageIndex.PageAnimeList;
-                var detailsArgs = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, item,
-                    BuildArgs(_lastMode, _lastStatus))
-                {
-                    Source = source,
-                    AnimeMode = !manga
-                };
-                MauiDetailsNavigationHandoff.Set(detailsArgs);
-                var route = manga
-                    ? $"animedetails?id={item.Id}&title={titleQs}&manga=true"
-                    : $"animedetails?id={item.Id}&title={titleQs}";
-                await Shell.Current.GoToAsync(route);
+                AnimeGrid.Inner.SelectedItem = null;
+                await NavigateToDetailsAsync(item);
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS selection nav failed: " + ex.Message);
+        }
+    }
+
+    private async Task NavigateToDetailsAsync(AnimeItemViewModel item)
+    {
+        if (_navigatingToDetails)
+            return;
+        _navigatingToDetails = true;
+        try
+        {
+            var wm = (AnimeListWorkModes)_lastMode;
+            var manga = wm == AnimeListWorkModes.Manga || wm == AnimeListWorkModes.TopManga || wm == AnimeListWorkModes.MangaAdapted;
+            var titleQs = Uri.EscapeDataString(item.Title ?? string.Empty);
+            var source = wm == AnimeListWorkModes.Manga
+                ? PageIndex.PageMangaList
+                : PageIndex.PageAnimeList;
+            var detailsArgs = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, item,
+                BuildArgs(_lastMode, _lastStatus))
+            {
+                Source = source,
+                AnimeMode = !manga
+            };
+            MauiDetailsNavigationHandoff.Set(detailsArgs);
+            var route = manga
+                ? $"animedetails?id={item.Id}&title={titleQs}&manga=true"
+                : $"animedetails?id={item.Id}&title={titleQs}";
+            await Shell.Current.GoToAsync(route);
         }
         catch (Exception ex)
         {

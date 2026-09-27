@@ -11,7 +11,7 @@
         <converters:IntEqualityConverter x:Key="IntEq" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
         <!-- Tab Strip -->
         <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
                     Padding="16,8" Margin="0,8,0,4">
@@ -20,8 +20,20 @@
             </HorizontalStackLayout>
         </ScrollView>
 
+        <!-- Source filter: everything airing vs only what is on my list -->
+        <HorizontalStackLayout Grid.Row="1" Spacing="8" Padding="16,0,16,4">
+            <Border x:Name="GlobalFilterButton" Padding="14,6" StrokeShape="RoundRectangle 8">
+                <Label x:Name="GlobalFilterLabel" Text="All airing" FontFamily="InterSemiBold"
+                       FontSize="12" />
+            </Border>
+            <Border x:Name="MyListFilterButton" Padding="14,6" StrokeShape="RoundRectangle 8">
+                <Label x:Name="MyListFilterLabel" Text="My list" FontFamily="InterSemiBold"
+                       FontSize="12" />
+            </Border>
+        </HorizontalStackLayout>
+
         <!-- Loading overlay -->
-        <Grid Grid.Row="1" Grid.RowSpan="2" IsVisible="{Binding CalendarBuildingVisibility}"
+        <Grid Grid.Row="2" Grid.RowSpan="2" IsVisible="{Binding CalendarBuildingVisibility}"
               BackgroundColor="#80000000" VerticalOptions="Fill" HorizontalOptions="Fill">
             <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
                 <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
@@ -32,7 +44,7 @@
         </Grid>
 
         <!-- Calendar Content (pivot) -->
-        <Grid Grid.Row="2" IsVisible="{Binding CalendarVisibility}">
+        <Grid Grid.Row="3" IsVisible="{Binding CalendarVisibility}">
             <CarouselView x:Name="CalendarCarousel"
                           ItemsSource="{Binding CalendarData}"
                           Position="{Binding CalendarPivotIndex, Mode=TwoWay}"
