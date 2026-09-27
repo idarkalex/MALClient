@@ -180,10 +180,12 @@ namespace MALClient.XShared.ViewModels.Details
 
                 var now = DateTime.UtcNow;
                 string result = "";
+                string source = "none";
                 var malId = (_animeItemReference as AnimeItemViewModel)?.ParentAbstraction?.MalId ?? Id;
                 if (_animeItemReference is AnimeItemViewModel syncVm && !string.IsNullOrEmpty(syncVm.TimeTillNextAirCache))
                 {
                     result = syncVm.TimeTillNextAirCache;
+                    source = "itemVm-cache";
                 }
                 else if (string.IsNullOrEmpty(result) &&
                     DataCache.TryRetrieveDataForId(malId, out var volatileData) &&
@@ -191,6 +193,7 @@ namespace MALClient.XShared.ViewModels.Details
                     (volatileData.NextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, now)))
                 {
                     result = FormatAirCountdown(volatileData.NextAirUtc.Value, now);
+                    source = "volatile-cache";
                 }
 
                 if (string.IsNullOrEmpty(result) &&
@@ -199,23 +202,36 @@ namespace MALClient.XShared.ViewModels.Details
                     (airDate > now || AirTimeUtils.IsInAiringWindow(airDate, now)))
                 {
                     result = FormatAirCountdown(airDate, now);
+                    source = "schedules";
                 }
 
                 if (string.IsNullOrEmpty(result) && AirTimeUtils.IsCurrentlyAiringStatus(Status))
                 {
                     var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
                     if (nextFromEpisodes.HasValue)
+                    {
                         result = FormatAirCountdown(nextFromEpisodes.Value, now);
+                        source = "episodes";
+                    }
 
                     if (string.IsNullOrEmpty(result))
                     {
                         var nextAirFromBroadcast = ComputeNextAirDate(_broadcast, now);
                         if (nextAirFromBroadcast.HasValue)
+                        {
                             result = FormatAirCountdown(nextAirFromBroadcast.Value, now);
+                            source = "broadcast-slot";
+                        }
                     }
                 }
 
                 _timeTillNextAirCache = result;
+
+                // The countdown is a computed value, so log which of the five sources produced it:
+                // only schedules and episodes carry a real air time, the broadcast slot is a weekly
+                // guess. Needed whenever a user doubts the pill in the hero.
+                DiagnosticsReporter.Info("Countdown",
+                    $"hero countdown malId={malId} status='{Status}' source={source} value='{result}'");
 
                 if (_animeItemReference is AnimeItemViewModel itemVm)
                     itemVm.RefreshTimeTillNextAirInBackground();
@@ -436,6 +452,7 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 _allEpisodes = value;
                 RaisePropertyChanged(() => AllEpisodes);
+                RaisePropertyChanged(() => AllEpisodesBind);
                 RaisePropertyChanged(() => MyEpisodesBind);
             }
         }

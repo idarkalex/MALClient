@@ -134,6 +134,7 @@ public partial class AnimeDetailsPage : ContentPage
         InitializeComponent();
         BindingContext = ViewModelLocator.AnimeDetails;
         ApplyTabActiveState();
+        UpdateHeroMetaLayout();
     }
 
     private void AttachSubscriptions()
@@ -403,6 +404,13 @@ public partial class AnimeDetailsPage : ContentPage
 
     private void OnVmPropertyChanged(object sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(AnimeDetailsPageViewModel.LastAired) ||
+            e.PropertyName == nameof(AnimeDetailsPageViewModel.Status) ||
+            e.PropertyName == nameof(AnimeDetailsPageViewModel.GlobalScoreBind) ||
+            e.PropertyName == nameof(AnimeDetailsPageViewModel.MyStatusBind))
+        {
+            UpdateHeroMetaLayout();
+        }
         if (e.PropertyName == nameof(AnimeDetailsPageViewModel.DetailsPivotSelectedIndex))
         {
             ApplyTabActiveState();
@@ -753,6 +761,43 @@ public partial class AnimeDetailsPage : ContentPage
         }
     }
 
+    /// <summary>
+    /// The old client let you type the watched count straight into the flyout; the model still
+    /// carries WatchedEpsInput and ChangeWatchedEps for it, only the input surface was missing.
+    /// </summary>
+    private async void OnEpisodesCounterTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            var vm = Vm;
+            if (vm == null)
+                return;
+
+            int.TryParse(vm.MyEpisodesBind?.Split('/')[0], out var current);
+            int.TryParse(vm.MyEpisodesBind?.Split('/').LastOrDefault(), out var max);
+
+            var prompt = new NumberPromptPopup
+            {
+                PromptTitle = vm.AnimeMode ? "Episodes watched" : "Chapters read",
+                InitialValue = current.ToString(),
+                Hint = max > 0 ? $"Max {max}" : string.Empty
+            };
+
+            await Navigation.PushModalAsync(prompt, animated: true);
+            var entered = await prompt.WaitForResultAsync();
+
+            if (entered is int value)
+            {
+                vm.WatchedEpsInput = value.ToString();
+                vm.ChangeWatchedCommand.Execute(null);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPlus OnEpisodesCounterTapped failed: " + ex.GetType().Name);
+        }
+    }
+
     private void OnTrailerClicked(object sender, EventArgs e)
     {
         try
@@ -1012,6 +1057,39 @@ public partial class AnimeDetailsPage : ContentPage
         var labels = new[] { TabGeneral, TabDetails, TabEpisodes, TabReviews, TabRecs, TabRelated, TabCharacters, TabStaff };
         for (var index = 0; index < labels.Length; index++)
             labels[index].TextColor = index == selected ? Color.FromArgb("#0066FF") : Color.FromArgb("#B3FFFFFF");
+    }
+
+    /// <summary>
+    /// LAST AIRED only exists while something is actually airing, so the row can end up with a
+    /// single field. The fields are packed to the left with a fixed gap so SCORE and STATUS stay
+    /// together, and when only one is left it is stretched so the row keeps its shape.
+    /// </summary>
+    private void UpdateHeroMetaLayout()
+    {
+        if (HeroMetaLayout == null || ScoreMetaGroup == null || StatusMetaGroup == null ||
+            LastAiredMetaGroup == null)
+            return;
+
+        var vm = Vm;
+        bool showLastAired = vm != null && AirTimeUtils.IsCurrentlyAiringStatus(vm.Status) &&
+                             !string.IsNullOrWhiteSpace(vm.LastAired);
+        LastAiredMetaGroup.IsVisible = showLastAired;
+
+        var groups = new[] {ScoreMetaGroup, StatusMetaGroup, LastAiredMetaGroup};
+        int visible = 0;
+        View sole = null;
+        foreach (var group in groups)
+        {
+            if (!group.IsVisible)
+                continue;
+            visible++;
+            sole = group;
+        }
+
+        foreach (var group in groups)
+            group.HorizontalOptions = visible == 1 && ReferenceEquals(group, sole)
+                ? LayoutOptions.Fill
+                : LayoutOptions.Start;
     }
 
     private void OnPageViewportSizeChanged(object sender, EventArgs e)

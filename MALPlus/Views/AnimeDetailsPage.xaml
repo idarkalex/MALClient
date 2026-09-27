@@ -664,41 +664,53 @@
                             <Label Text="•" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" VerticalOptions="Center" Margin="6,0" />
                             <Label Text="{Binding StartYear}" FontFamily="Inter" FontSize="12" TextColor="#CCFFFFFF" VerticalOptions="Center" />
                             <Label Text="•" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" VerticalOptions="Center" Margin="6,0" />
-                            <Label Text="{Binding AllEpisodes, StringFormat='{0} Episodes'}" IsVisible="{Binding AnimeMode}"
+                            <Label Text="{Binding AllEpisodesBind, StringFormat='{0} Episodes'}" IsVisible="{Binding AnimeMode}"
                                    FontFamily="Inter" FontSize="12" TextColor="#CCFFFFFF" VerticalOptions="Center" />
-                            <Label Text="{Binding AllEpisodes, StringFormat='{0} Chapters'}"
+                            <Label Text="{Binding AllEpisodesBind, StringFormat='{0} Chapters'}"
                                    IsVisible="{Binding AnimeMode, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
                                    FontFamily="Inter" FontSize="12" TextColor="#CCFFFFFF" VerticalOptions="Center" />
                         </HorizontalStackLayout>
-                        <Grid Grid.Row="2" ColumnDefinitions="*,*,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" VerticalOptions="Center">
-                            <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="3" VerticalOptions="Center">
-                                <Label Text="★" FontFamily="InterBold" FontSize="9" TextColor="#FFD700" VerticalOptions="Center" />
-                                <Label Text="SCORE" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF" VerticalOptions="Center" />
-                            </HorizontalStackLayout>
-                            <Label Grid.Row="0" Grid.Column="1" Text="STATUS" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF" VerticalOptions="Center" />
-                            <Label Grid.Row="0" Grid.Column="2" Text="LAST AIRED" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF" VerticalOptions="Center">
-                                <Label.IsVisible>
-                                    <MultiBinding Converter="{StaticResource MultiAnd}">
-                                        <Binding Path="Status" Converter="{StaticResource AiringStatus}" />
-                                        <Binding Path="LastAired" Converter="{StaticResource BoolVis}" ConverterParameter="nonempty" />
-                                    </MultiBinding>
-                                </Label.IsVisible>
-                            </Label>
-                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding GlobalScoreBind}" FontFamily="InterBold" FontSize="14" TextColor="White" VerticalOptions="Center" />
-                            <Button Grid.Row="1" Grid.Column="1" Text="{Binding MyStatusBind}" Clicked="OnStatusClicked"
-                                    IsEnabled="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
-                                    FontFamily="InterBold" FontSize="14" BackgroundColor="Transparent" TextColor="White"
-                                    BorderWidth="0" Padding="0" HeightRequest="24" HorizontalOptions="Start" />
-                            <Label Grid.Row="1" Grid.Column="2" Text="{Binding LastAired}" FontFamily="InterBold" FontSize="14" TextColor="White"
-                                   VerticalOptions="Center" MaxLines="1" LineBreakMode="TailTruncation">
-                                <Label.IsVisible>
-                                    <MultiBinding Converter="{StaticResource MultiAnd}">
-                                        <Binding Path="Status" Converter="{StaticResource AiringStatus}" />
-                                        <Binding Path="LastAired" Converter="{StaticResource BoolVis}" ConverterParameter="nonempty" />
-                                    </MultiBinding>
-                                </Label.IsVisible>
-                            </Label>
-                            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" StrokeShape="RoundRectangle 14"
+                        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                            <FlexLayout x:Name="HeroMetaLayout" Grid.Column="0" Direction="Row"
+                                        JustifyContent="Start" AlignItems="Center">
+                                <VerticalStackLayout x:Name="ScoreMetaGroup" Spacing="2" Margin="0,0,22,0">
+                                    <HorizontalStackLayout Spacing="3">
+                                        <Label Text="★" FontFamily="InterBold" FontSize="9" TextColor="#FFD700" />
+                                        <Label Text="SCORE" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF" />
+                                    </HorizontalStackLayout>
+                                    <Label Text="{Binding GlobalScoreBind}" FontFamily="InterBold" FontSize="14" TextColor="White" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout x:Name="StatusMetaGroup" Spacing="2" Margin="0,0,22,0">
+                                    <Label Text="STATUS" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF" />
+                                    <Button Text="{Binding MyStatusBind}" Clicked="OnStatusClicked"
+                                            IsEnabled="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}"
+                                            FontFamily="InterBold" FontSize="14" BackgroundColor="Transparent" TextColor="White"
+                                            BorderWidth="0" Padding="0" HeightRequest="20" HorizontalOptions="Start" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout x:Name="LastAiredMetaGroup" Spacing="2">
+                                    <Label Text="LAST AIRED" FontFamily="InterBold" FontSize="9" TextColor="#80FFFFFF">
+                                        <Label.IsVisible>
+                                            <MultiBinding Converter="{StaticResource MultiAnd}">
+                                                <Binding Path="Status" Converter="{StaticResource AiringStatus}" />
+                                                <Binding Path="LastAired" Converter="{StaticResource BoolVis}" ConverterParameter="nonempty" />
+                                            </MultiBinding>
+                                        </Label.IsVisible>
+                                    </Label>
+                                    <Label Text="{Binding LastAired}" FontFamily="InterBold" FontSize="14" TextColor="White"
+                                           MaxLines="1" LineBreakMode="TailTruncation">
+                                        <Label.IsVisible>
+                                            <MultiBinding Converter="{StaticResource MultiAnd}">
+                                                <Binding Path="Status" Converter="{StaticResource AiringStatus}" />
+                                                <Binding Path="LastAired" Converter="{StaticResource BoolVis}" ConverterParameter="nonempty" />
+                                            </MultiBinding>
+                                        </Label.IsVisible>
+                                    </Label>
+                                </VerticalStackLayout>
+                            </FlexLayout>
+
+                            <Border Grid.Column="1" StrokeShape="RoundRectangle 14"
                                     BackgroundColor="#1A000000" Stroke="#29FFFFFF" StrokeThickness="1"
                                     Padding="0" VerticalOptions="Center" HeightRequest="32"
                                     IsVisible="{Binding AddAnimeVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
@@ -707,7 +719,11 @@
                                             BackgroundColor="Transparent" TextColor="#80FFFFFF" BorderWidth="0" CornerRadius="0"
                                             WidthRequest="32" HeightRequest="32" Padding="0" />
                                     <Label Grid.Column="1" Text="{Binding MyEpisodesBind}" FontFamily="InterBold" FontSize="13"
-                                           TextColor="White" VerticalOptions="Center" HorizontalOptions="Center" VerticalTextAlignment="Center" Padding="6,0" />
+                                           TextColor="White" VerticalOptions="Center" HorizontalOptions="Center" VerticalTextAlignment="Center" Padding="6,0">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEpisodesCounterTapped" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
                                     <Button Grid.Column="2" Command="{Binding IncrementEpsCommand}" FontFamily="InterBold" FontSize="16" Text="+"
                                             BackgroundColor="#0066FF" TextColor="White" BorderWidth="0" CornerRadius="0"
                                             WidthRequest="32" HeightRequest="32" Padding="0" />

@@ -49,6 +49,7 @@ namespace MALClient.XShared.ViewModels.Main
 
         private AnimeListDisplayModes? _manuallySelectedViewMode;
         private string _prevListSource;
+        private int _prevStatus = -1;
 
         private string _prevQuery = "";
         private AnimeStatus _prevAnimeStatus;
@@ -1321,10 +1322,17 @@ namespace MALClient.XShared.ViewModels.Main
         /// </param>
         /// <returns></returns>
         private bool _fetching;
+
         public async Task FetchData(bool force = false, AnimeListWorkModes? modeOverride = null)
         {
-            if(_fetching)
+            if (_fetching)
+            {
+                // A fetch is already running. This call is not going to produce anything, so it must
+                // not leave the caller with a spinner nobody will lower.
+                if (modeOverride == null)
+                    Loading = false;
                 return;
+            }
             _fetching = true;
             try
             {
@@ -1338,9 +1346,8 @@ namespace MALClient.XShared.ViewModels.Main
             }
             finally
             {
-                // Without this the re-entrancy guard stays latched and the
-                // loading indicator stays on forever after any failure.
                 _fetching = false;
+                // Without this the loading indicator stays on forever after any failure.
                 if (AnimeItems == null || AnimeItems.Count == 0)
                     Loading = false;
             }
@@ -1353,15 +1360,21 @@ namespace MALClient.XShared.ViewModels.Main
             DiagnosticsReporter.Info("AnimeList", $"fetch: source={ListSource} mode={requestedMode} force={force} auth={Credentials.Authenticated}");
             global::System.Diagnostics.Debug.WriteLine($"MALPLUS fetch: source={ListSource} mode={requestedMode} force={force} auth={Credentials.Authenticated}");
 
-            if (!force && _prevListSource == ListSource && _prevWorkMode == requestedMode)
+            // The status filter is part of the request, not just the source: ListSource only holds
+            // the user name, so without it here every status change looked like the request that
+            // was already loaded and returned early with the spinner left on.
+            var sameRequest = !force && _prevListSource == ListSource && _prevWorkMode == requestedMode &&
+                              _prevStatus == (int)GetDesiredStatus();
+            if (sameRequest)
             {
-                if (_prevWorkMode != modeOverride)
-                    RefreshList();
+                // Nothing to fetch, so nothing will lower the spinner the caller already raised.
+                Loading = false;
                 return;
             }
             if (WorkMode == requestedMode)
                 _prevWorkMode = WorkMode;
             _prevListSource = ListSource;
+            _prevStatus = (int)GetDesiredStatus();
 
             LoadError = null;
             LoadErrorVisibility = false;

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MALPlus.Views.NumberPromptPopup"
+             x:Name="PromptRoot"
+             BackgroundColor="#CC000510"
+             NavigationPage.HasNavigationBar="False">
+    <Grid Padding="24">
+        <Border Padding="20" BackgroundColor="{StaticResource EmSheet}"
+                Stroke="{StaticResource EmBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 16"
+                VerticalOptions="Center" HorizontalOptions="Fill">
+            <VerticalStackLayout Spacing="14">
+                <Label Text="{Binding Title, Source={x:Reference PromptRoot}}"
+                       FontFamily="InterBold" FontSize="17" TextColor="{StaticResource BrushText}" />
+
+                <Border Padding="12,8" BackgroundColor="#0AFFFFFF" StrokeShape="RoundRectangle 10"
+                        Stroke="{StaticResource EmBorder}" StrokeThickness="1">
+                    <Entry x:Name="ValueEntry"
+                           Keyboard="Numeric"
+                           TextColor="{StaticResource BrushText}"
+                           PlaceholderColor="#80FFFFFF"
+                           FontFamily="InterBold" FontSize="20"
+                           MaxLength="6" />
+                </Border>
+
+                <Label x:Name="HintLabel"
+                       FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+
+                <Label x:Name="ErrorLabel"
+                       FontFamily="Inter" FontSize="12" TextColor="#FF8A3D"
+                       IsVisible="False" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button Grid.Column="0" Text="Cancel" Clicked="OnCancelClicked"
+                            FontFamily="InterSemiBold" FontSize="13" TextColor="White"
+                            BackgroundColor="#141d2b" BorderColor="#29FFFFFF" BorderWidth="1"
+                            CornerRadius="10" HeightRequest="42" />
+                    <Button Grid.Column="1" Text="Save" Clicked="OnConfirmClicked"
+                            FontFamily="InterSemiBold" FontSize="13" TextColor="White"
+                            BackgroundColor="#0066FF" BorderWidth="0"
+                            CornerRadius="10" HeightRequest="42" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

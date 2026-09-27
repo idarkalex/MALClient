@@ -24,7 +24,16 @@ namespace MALClient.XShared.ViewModels.Details
     {
         #region Properties
 
-        public string MyEpisodesBind => $"{MyEpisodes}/{(AllEpisodes == 0 ? "?" : AllEpisodes.ToString())}";
+        public string MyEpisodesBind => $"{MyEpisodes}/{AllEpisodesBind}";
+
+        /// <summary>
+        /// Total of episodes or chapters, or "?" when MAL does not track one. AllEpisodes already
+        /// carries the official num_episodes/num_chapters (see ExtractData), and long running shows
+        /// like One Piece simply have none there, so guessing is not an option: the episode list
+        /// stores MAL database ids rather than episode numbers, and the schedule feed carries no
+        /// episode list at all for them.
+        /// </summary>
+        public string AllEpisodesBind => AllEpisodes > 0 ? AllEpisodes.ToString() : "?";
 
         public int MyEpisodes
         {
