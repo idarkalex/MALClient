@@ -102,12 +102,7 @@ public partial class VideosPage : ContentPage
             {
                 ((CollectionView)sender).SelectedItem = null;
                 ResumeVideoWebView();
-                var embed = MALPlus.Services.VideoWebViewHelper.ToEmbedUrl(video.YtLink, autoplay: true);
-                VideoWebView.Source = new HtmlWebViewSource
-                {
-                    Html = MALPlus.Services.VideoWebViewHelper.BuildEmbedHtml(embed),
-                    BaseUrl = "https://myanimelist.net"
-                };
+                VideoWebView.Source = MALPlus.Services.VideoWebViewHelper.BuildSource(video.YtLink);
                 SetSystemBars(true);
                 VideoOverlayVisibility = true;
                 VideoOverlay.IsVisible = true;

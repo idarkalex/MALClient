@@ -46,12 +46,19 @@
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnEpisodeTapped" CommandParameter="{Binding .}" />
                 </Border.GestureRecognizers>
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
                     <Label Text="{Binding EpisodeId, StringFormat='Ep {0}'}"
                            FontFamily="InterBold" FontSize="14" TextColor="#0066FF"
                            VerticalOptions="Center" MinimumWidthRequest="52" MaxLines="1" />
                     <Label Grid.Column="1" Text="{Binding Title}" FontFamily="Inter" FontSize="14"
-                           TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
+                           TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation"
+                           VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="est." FontFamily="InterSemiBold" FontSize="10" TextColor="#7AB4FF"
+                           MaxLines="1" VerticalOptions="Center" IsVisible="{Binding IsEstimated}" />
+                    <Label Grid.Column="3" Text="✓" FontFamily="InterBold" FontSize="13" TextColor="#2E9E5B"
+                           MaxLines="1" VerticalOptions="Center" IsVisible="{Binding IsWatched}" />
+                    <Label Grid.Column="4" Text="{Binding AiredLabel}" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF"
+                           MaxLines="1" VerticalOptions="Center" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -86,27 +93,19 @@
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnRecommendationTapped" CommandParameter="{Binding .}" />
                 </Border.GestureRecognizers>
-                <Grid RowSpacing="10" RowDefinitions="Auto,Auto">
-                    <Grid Grid.Row="0" ColumnDefinitions="130,*" ColumnSpacing="14">
-                        <controls:AnimePosterCard Grid.Column="0" WidthRequest="130" HeightRequest="195"
-                                                   PosterUrl="{Binding ImageUrl}"
-                                                   TitleOverlay="False"
-                                                   TypeTag="{Binding MediaType}" />
-                        <VerticalStackLayout Grid.Column="1" Spacing="7" VerticalOptions="Start">
-                            <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="16"
-                                   TextColor="{StaticResource BrushText}" MaxLines="3" LineBreakMode="TailTruncation" />
-                            <HorizontalStackLayout Spacing="8">
-                                <Label Text="{Binding Type}" FontFamily="InterSemiBold" FontSize="11"
-                                       TextColor="#7AB4FF" MaxLines="1" />
-                                <Label Text="{Binding AirDayTillBind}" FontFamily="InterSemiBold" FontSize="11"
-                                       TextColor="White" MaxLines="1"
-                                       IsVisible="{Binding AirDayTillBind, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
-                            </HorizontalStackLayout>
-                        </VerticalStackLayout>
-                    </Grid>
-                    <Label Grid.Row="1" Text="{Binding Description}" FontFamily="Inter" FontSize="13"
-                           TextColor="#B8C7D8" LineHeight="1.35"
-                           IsVisible="{Binding Description, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                <Grid ColumnDefinitions="130,*" ColumnSpacing="14">
+                    <controls:AnimePosterCard Grid.Column="0" WidthRequest="130" HeightRequest="195"
+                                               PosterUrl="{Binding ImageUrl}"
+                                               TitleOverlay="False"
+                                               TypeTag="{Binding MediaType}"
+                                               BadgeExtra="{Binding AirDayTillBind}" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Start">
+                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="16"
+                               TextColor="{StaticResource BrushText}" MaxLines="3" LineBreakMode="TailTruncation" />
+                        <Label Text="{Binding Description}" FontFamily="Inter" FontSize="13"
+                               TextColor="#B8C7D8" LineHeight="1.35" MaxLines="12" LineBreakMode="TailTruncation"
+                               IsVisible="{Binding Description, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}" />
+                    </VerticalStackLayout>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -115,27 +114,6 @@
             <Border Margin="0" Padding="6,2" StrokeShape="RoundRectangle 6"
                     BackgroundColor="#0066FF" Stroke="Transparent">
                 <Label Text="{Binding .}" FontFamily="InterBold" FontSize="9" TextColor="White" MaxLines="1" />
-            </Border>
-        </DataTemplate>
-
-        <DataTemplate x:Key="RelatedTemplate">
-            <Border WidthRequest="130" HeightRequest="231" StrokeShape="RoundRectangle 8"
-                    BackgroundColor="{StaticResource EmSheet}" Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnRecommendationTapped" CommandParameter="{Binding .}" />
-                </Border.GestureRecognizers>
-                <Grid RowDefinitions="195,36">
-                    <controls:AnimePosterCard Grid.Row="0"
-                                               PosterUrl="{Binding ImgUrl}"
-                                               TitleOverlay="False"
-                                               TypeTag="{Binding MediaType}"
-                                               ChipSource="{Binding Relations}"
-                                               ChipTemplate="{StaticResource RelationChipTemplate}" />
-                    <Label Grid.Row="1" Text="{Binding Title}" FontFamily="Inter" FontSize="10"
-                           TextColor="#D9D9D9" MaxLines="2" LineBreakMode="TailTruncation"
-                           HeightRequest="36" InputTransparent="True"
-                           VerticalOptions="Center" Margin="6,0,6,3" />
-                </Grid>
             </Border>
         </DataTemplate>
 
@@ -508,7 +486,7 @@
                             <Label Text="No recommendations available." Style="{StaticResource StateTextStyle}" />
                         </Border>
                         <VerticalStackLayout IsVisible="{Binding Source={x:Reference DetailsPage}, Path=RecommendationsContentVisible}"
-                                             BindableLayout.ItemsSource="{Binding Recommendations}"
+                                             BindableLayout.ItemsSource="{Binding Source={x:Reference DetailsPage}, Path=DisplayedRecommendations}"
                                              BindableLayout.ItemTemplate="{StaticResource RecommendationTemplate}" />
                     </VerticalStackLayout>
 
@@ -530,10 +508,31 @@
                                 Margin="4,8" Style="{StaticResource PanelStyle}" Padding="18">
                             <Label Text="No related titles available." Style="{StaticResource StateTextStyle}" />
                         </Border>
-                        <FlexLayout IsVisible="{Binding Source={x:Reference DetailsPage}, Path=RelatedContentVisible}"
-                                    Wrap="Wrap" AlignItems="Start" JustifyContent="Start"
-                                    BindableLayout.ItemsSource="{Binding RelatedAnime}"
-                                    BindableLayout.ItemTemplate="{StaticResource RelatedTemplate}" />
+                        <CollectionView IsVisible="{Binding Source={x:Reference DetailsPage}, Path=RelatedContentVisible}"
+                                        ItemsSource="{Binding RelatedAnime}"
+                                        SelectionMode="None"
+                                        HeightRequest="{Binding Source={x:Reference DetailsPage}, Path=RelatedGridHeight}"
+                                        Margin="8,0">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="3" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:Key="RelatedItemTemplate">
+                                    <controls:AnimePosterCard Margin="4" HeightRequest="195"
+                                                               PosterUrl="{Binding ImgUrl}"
+                                                               Title="{Binding Title}"
+                                                               TitleOverlay="True"
+                                                               TypeTag="{Binding MediaType}"
+                                                               BadgeExtra="{Binding AirDayTillBind}"
+                                                               ChipSource="{Binding Relations}"
+                                                               ChipTemplate="{StaticResource RelationChipTemplate}">
+                                        <controls:AnimePosterCard.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnRecommendationTapped" CommandParameter="{Binding .}" />
+                                        </controls:AnimePosterCard.GestureRecognizers>
+                                    </controls:AnimePosterCard>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout IsVisible="{Binding DetailsPivotSelectedIndex, Converter={StaticResource IntEq}, ConverterParameter=6}"

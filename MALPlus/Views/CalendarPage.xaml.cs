@@ -3,9 +3,25 @@ using MALClient.XShared.ViewModels.Main;
 
 namespace MALPlus.Views;
 
+[QueryProperty(nameof(InitialMode), "mode")]
 public partial class CalendarPage : ContentPage
 {
     private bool _initialized;
+    private string _initialMode;
+
+    /// <summary>"mine" or "global", set by the two Discover calendar tiles.</summary>
+    public string InitialMode
+    {
+        get => _initialMode;
+        set
+        {
+            _initialMode = value;
+            if (string.Equals(value, "mine", StringComparison.OrdinalIgnoreCase))
+                SelectMyListTab();
+            else if (string.Equals(value, "global", StringComparison.OrdinalIgnoreCase))
+                SelectGlobalTab();
+        }
+    }
 
     private CalendarPageViewModel Vm => (CalendarPageViewModel)BindingContext;
 
@@ -88,6 +104,23 @@ public partial class CalendarPage : ContentPage
                 TabStrip.Children.Add(border);
             }
         });
+    }
+
+    private void SelectMyListTab() => SelectCalendarPageByHeader("my list");
+    private void SelectGlobalTab() => SelectCalendarPageByHeader("airing now");
+
+    private void SelectCalendarPageByHeader(string headerFragment)
+    {
+        if (Vm?.CalendarData == null)
+            return;
+        for (var i = 0; i < Vm.CalendarData.Count; i++)
+        {
+            var header = Vm.CalendarData[i].Header ?? "";
+            if (header.IndexOf(headerFragment, StringComparison.CurrentCultureIgnoreCase) < 0)
+                continue;
+            Vm.CalendarPivotIndex = i;
+            return;
+        }
     }
 
     private async void OnItemTapped(object sender, SelectionChangedEventArgs e)

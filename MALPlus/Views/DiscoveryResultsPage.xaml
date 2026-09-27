@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:MALPlus.Converters"
+             x:Class="MALPlus.Views.DiscoveryResultsPage"
+             BackgroundColor="{StaticResource EmBackground}">
+
+    <ContentPage.Resources>
+        <converters:StringToImageSourceConverter x:Key="ImgConv" />
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{StaticResource EmSheet}" />
+            <Setter Property="Stroke" Value="{StaticResource EmBorder}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid RowDefinitions="Auto,*,Auto">
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="16,18,16,8" ColumnSpacing="12">
+                <Label x:Name="HeadingLabel" Grid.Column="0" FontFamily="InterBold" FontSize="20"
+                       TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation"
+                       VerticalOptions="Center" />
+                <Button Grid.Column="1" Text="✕" Clicked="OnClose" BackgroundColor="Transparent"
+                        BorderWidth="0" TextColor="{StaticResource BrushText}" FontSize="18"
+                        WidthRequest="40" HeightRequest="40" Padding="0" />
+            </Grid>
+
+            <CollectionView x:Name="ResultsList" Grid.Row="1" Margin="12,0"
+                            SelectionMode="Single" SelectionChanged="OnItemSelected">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="6,4" Style="{StaticResource PanelStyle}" Padding="10">
+                            <Grid ColumnDefinitions="64,*" ColumnSpacing="12">
+                                <Border Grid.Column="0" WidthRequest="64" HeightRequest="64"
+                                        StrokeShape="RoundRectangle 8" IsVisible="True">
+                                    <Image Aspect="AspectFill"
+                                           Source="{Binding ImgUrl, Converter={StaticResource ImgConv}}" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                    <Label Text="{Binding Title}" FontFamily="InterSemiBold" FontSize="15"
+                                           TextColor="{StaticResource BrushText}" MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding Subtitle}" FontFamily="Inter" FontSize="12"
+                                           TextColor="#A0FFFFFF" MaxLines="1" LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <ActivityIndicator x:Name="Busy" Grid.Row="1" IsRunning="False" Color="#0066FF"
+                               VerticalOptions="Center" HorizontalOptions="Center" />
+
+            <Label x:Name="EmptyLabel" Grid.Row="1" Text="Nothing found." IsVisible="False"
+                   FontFamily="Inter" FontSize="13" TextColor="#80FFFFFF"
+                   VerticalOptions="Center" HorizontalOptions="Center" />
+        </Grid>
+
+        <Grid x:Name="VideoOverlay" IsVisible="False" BackgroundColor="#000000" ZIndex="110">
+            <Grid RowDefinitions="Auto,*">
+                <Button Grid.Row="0" Text="✕" Clicked="OnCloseVideo" HorizontalOptions="End"
+                        Margin="12" BackgroundColor="Transparent" BorderWidth="0"
+                        TextColor="White" FontSize="18" WidthRequest="40" HeightRequest="40" Padding="0" />
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -257,13 +257,9 @@ namespace MALClient.XShared.Comm.Anime
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Info("Related", $"parse failed for anime {_animeId}: {ex.Message}");
             }
 
             output = Deduplicate(output);
-            if (output.Count == 0)
-                DiagnosticsReporter.Warn("Related", $"no related entries found for anime {_animeId}");
-
             return output;
         }
 

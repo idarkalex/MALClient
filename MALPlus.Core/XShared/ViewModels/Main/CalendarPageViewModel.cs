@@ -174,18 +174,14 @@ namespace MALClient.XShared.ViewModels.Main
 
             try
             {
-                DiagnosticsReporter.Info("Calendar", "calendar init: awaiting provider init");
                 await ResourceLocator.AiringInfoProvider.Init(false);
                 List<AnimeItemAbstraction> abstractions;
-                DiagnosticsReporter.Info("Calendar",
-                    $"calendar init: providerReady={ResourceLocator.AiringInfoProvider.InitializationSuccess} allAiring={Settings.CalendarShowAllAiring} force={force} initialized={_initialized}");
                 if (Settings.CalendarShowAllAiring)
                 {
                     var buildTask = BuildAllAiringAbstractionsAsync();
                     var completed = await Task.WhenAny(buildTask, Task.Delay(25000));
                     if (completed != buildTask)
                     {
-                        DiagnosticsReporter.Error("Calendar", "airing build: TIMEOUT 25s - proceeding with fallback", null);
                         abstractions = new List<AnimeItemAbstraction>();
                     }
                     else
@@ -197,7 +193,6 @@ namespace MALClient.XShared.ViewModels.Main
                     var completed = await Task.WhenAny(buildTask, Task.Delay(25000));
                     if (completed != buildTask)
                     {
-                        DiagnosticsReporter.Error("Calendar", "my list build: TIMEOUT 25s - proceeding with provider entries", null);
                         abstractions = await Task.Run(() => ProviderMyListAbstractions());
                     }
                     else
@@ -257,7 +252,6 @@ namespace MALClient.XShared.ViewModels.Main
                     });
                 }
 
-                DiagnosticsReporter.Info("Calendar", $"calendar init: items assigned={CalendarData.Sum(p => p.Items.Count)}");
 
                 if (Settings.CalendarSwitchMonSun)
                 {
@@ -306,21 +300,17 @@ namespace MALClient.XShared.ViewModels.Main
                 if (CalendarData[7] is CalendarSummaryPivotPage summary)
                     summary.Items = summary.Data.SelectMany(entry => entry.Item2).ToList();
 
-                DiagnosticsReporter.Info("Calendar",
-                    $"calendar build: allAiring={Settings.CalendarShowAllAiring} providerOk={ResourceLocator.AiringInfoProvider.InitializationSuccess}");
 
                 RaisePropertyChanged(() => CalendarData);
                 await GoToDesiredTab();
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("Calendar", "Calendar Init failed", ex);
             }
             finally
             {
                 CalendarBuildingVisibility = false;
                 CalendarVisibility = true;
-                DiagnosticsReporter.Info("Calendar", "calendar init: overlay cleared");
             }
         }
 
@@ -420,7 +410,6 @@ namespace MALClient.XShared.ViewModels.Main
                 }
                 catch (Exception e)
                 {
-                    DiagnosticsReporter.Error("Calendar", "airing ids enumeration failed", e);
                     ids = new List<int>();
                 }
 
@@ -447,7 +436,6 @@ namespace MALClient.XShared.ViewModels.Main
                         // skip failed entry
                     }
                 }
-                DiagnosticsReporter.Info("Calendar", $"airing build: ids={ids.Count} items={result.Count}");
                 return result;
             });
         }

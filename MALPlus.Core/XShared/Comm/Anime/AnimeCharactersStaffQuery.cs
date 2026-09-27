@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -58,19 +58,15 @@ namespace MALClient.XShared.Comm.Anime
             var structured = await GetCharStaffDataStructuredAsync();
             if (HasData(structured))
             {
-                DiagnosticsReporter.Info("Characters", $"structured API: {structured.AnimeCharacterPairs.Count} pairs, {structured.AnimeStaff.Count} staff for anime {_animeId}");
                 await DataCache.SaveData(structured, $"staff_v5_{_animeId}", "AnimeDetails");
                 return structured;
             }
-            DiagnosticsReporter.Warn("Characters", $"structured API returned empty for anime {_animeId}, falling back to HTML");
         }
         catch (Exception ex)
         {
-            DiagnosticsReporter.Info("Characters", $"structured API failed for anime {_animeId}, falling back to HTML: {ex.Message}");
         }
 
         var htmlResult = await GetCharStaffDataHtml(output);
-        DiagnosticsReporter.Info("Characters", $"HTML scrape: {htmlResult.AnimeCharacterPairs.Count} pairs, {htmlResult.AnimeStaff.Count} staff for anime {_animeId}");
         if (HasData(htmlResult))
             await DataCache.SaveData(htmlResult, $"staff_v5_{_animeId}", "AnimeDetails");
         return htmlResult;
@@ -80,7 +76,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             var output = new AnimeStaffData();
 
-            var charsData = await TenraiClient.GetDataAsync($"anime/{_animeId}/characters");
+            var charsData = await TenraiClient.GetDataArrayAsync($"anime/{_animeId}/characters");
             if (charsData.ValueKind != JsonValueKind.Array)
                 return null;
             foreach (var entry in EnumerateArray(charsData))
@@ -128,7 +124,7 @@ namespace MALClient.XShared.Comm.Anime
                     break;
             }
 
-            var staffData = await TenraiClient.GetDataAsync($"anime/{_animeId}/staff");
+            var staffData = await TenraiClient.GetDataArrayAsync($"anime/{_animeId}/staff");
             if (staffData.ValueKind != JsonValueKind.Array)
                 return null;
             foreach (var entry in EnumerateArray(staffData))
@@ -186,7 +182,7 @@ namespace MALClient.XShared.Comm.Anime
             var output = new AnimeStaffData();
             try
             {
-                var charsData = await TenraiClient.GetDataAsync($"manga/{_animeId}/characters");
+                var charsData = await TenraiClient.GetDataArrayAsync($"manga/{_animeId}/characters");
                 if (charsData.ValueKind != JsonValueKind.Array)
                     return output;
                 foreach (var entry in EnumerateArray(charsData))

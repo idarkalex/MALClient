@@ -19,6 +19,15 @@ namespace MALClient.XShared.Comm.Anime
         private static readonly TimeSpan EnrichmentTimeout = TimeSpan.FromSeconds(8);
         private static readonly TimeSpan MediaTypeRequestTimeout = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan DescriptionRequestTimeout = TimeSpan.FromSeconds(4);
+
+        /// <summary>
+        /// Every item past the first <see cref="MediaTypeEnrichmentBudget"/> needs its own
+        /// Tenrai round trip (the MAL scraper never fills MediaType), and TenraiClient
+        /// serialises globally at 500ms per request, so enriching all of them blew the
+        /// 8s budget and blanked the tab. The card renders fine without the format tag.
+        /// </summary>
+        private const int MaxReturnedItems = 30;
+        private const int MediaTypeEnrichmentBudget = 12;
         private readonly int _animeId;
         private readonly bool _animeMode;
 
@@ -39,20 +48,9 @@ namespace MALClient.XShared.Comm.Anime
                   new List<DirectRecommendationData>();
             if (output.Count != 0) return output;
 
-            output = await FetchFromTenraiAsync();
-            if (output != null && output.Count > 0)
-            {
-                try
-                {
-                    await EnrichRecommendationsAsync(output);
-                }
-                catch (Exception)
-                {
-                }
-                await DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
-                return output;
-            }
-
+            // The MAL userrecs page is the only source that carries the recommendation
+            // comment (the review text the card shows), so it leads. Tenrai only fills
+            // the metadata the scraper cannot see.
             output = await FetchDescriptionsFromMalAsync(CancellationToken.None);
             if (output != null && output.Count > 0)
             {
@@ -68,6 +66,20 @@ namespace MALClient.XShared.Comm.Anime
                 {
                 }
                 await DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
+                return output;
+            }
+
+            output = await FetchFromTenraiAsync();
+            if (output != null && output.Count > 0)
+            {
+                try
+                {
+                    await EnrichRecommendationsAsync(output);
+                }
+                catch (Exception)
+                {
+                }
+                await DataCache.SaveDirectRecommendationsData(_animeId, output, _animeMode);
             }
             return output ?? new List<DirectRecommendationData>();
         }
@@ -77,7 +89,7 @@ namespace MALClient.XShared.Comm.Anime
             try
             {
                 var endpoint = _animeMode ? $"anime/{_animeId}/recommendations" : $"manga/{_animeId}/recommendations";
-                var data = await TenraiClient.GetDataAsync(endpoint);
+                var data = await TenraiClient.GetDataArrayAsync(endpoint);
                 if (data.ValueKind != JsonValueKind.Array)
                     return null;
 
@@ -199,6 +211,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             var tasks = output
                 .Where(item => item.Id > 0 && string.IsNullOrEmpty(item.MediaType))
+                .Take(MediaTypeEnrichmentBudget)
                 .Select(item => PopulateMediaTypeAsync(item, cancellationToken))
                 .ToArray();
             await Task.WhenAll(tasks);
@@ -269,7 +282,7 @@ namespace MALClient.XShared.Comm.Anime
                         node =>
                             node.Attributes.Contains("class") &&
                             node.Attributes["class"].Value ==
-                            "borderClass").Take(Settings.RecommsToPull);
+                            "borderClass").Take(Settings.RecommsToPull).Take(MaxReturnedItems);
 
                 foreach (var recommNode in recommNodes)
                 {

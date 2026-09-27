@@ -86,6 +86,11 @@ namespace MALClient.XShared.ViewModels.Main
             set
             {
                 _animeItems = value;
+                // The list binds AnimeItems directly, not the display-mode aliases below, so
+                // swapping the instance without notifying it left the CollectionView pointing
+                // at the old, detached collection: coming back from any pushed page showed an
+                // empty grid even though the ViewModel had repopulated the new collection.
+                RaisePropertyChanged(() => AnimeItems);
                 RaisePropertyChanged(() => AnimeListItems);
                 RaisePropertyChanged(() => AnimeCompactItems);
                 RaisePropertyChanged(() => AnimeGridItems);
@@ -104,6 +109,9 @@ namespace MALClient.XShared.ViewModels.Main
         public ObservableCollection<AnimeSeason> SeasonSelection { get; } = new ObservableCollection<AnimeSeason>();
 
         public bool AreThereItemsWaitingForLoad => _animeItemsSet.Count != 0;
+
+        /// <summary>Diagnostics helper: how many items are still queued for the page.</summary>
+        public int PendingItemCount => _animeItemsSet.Count;
 
         public int CurrentStatus
         {
@@ -174,6 +182,37 @@ namespace MALClient.XShared.ViewModels.Main
         public event EmptyEventHander RemoveScrollHandlerRequest;
         public event EmptyEventHander RemoveScrollingConatinerReferenceRequest;
 
+        private bool _pendingWipe;
+
+        /// <summary>
+        /// Wipes the page only when this Init actually points at a different list than the one
+        /// already on screen. A back-nav re-entry re-runs Init with the same identity, and
+        /// FetchData short-circuits on that identity, so wiping here left the grid permanently
+        /// empty with nothing left to repopulate it.
+        /// </summary>
+        private void ResetForInit()
+        {
+            if (!_pendingWipe)
+                return;
+            _pendingWipe = false;
+
+            var sameEntry = _prevListSource == ListSource
+                            && _prevWorkMode == WorkMode
+                            && _prevStatus == (int)GetDesiredStatus();
+            // _animeItemsSet is a queue that UpdatePageSetup drains into AnimeItems, so it is
+            // legitimately empty once the page has content: the check has to be on what is
+            // actually on screen.
+            if (sameEntry && (AnimeItems?.Count ?? 0) > 0)
+            {
+                // Nothing to redo: the items are still loaded and already bound, so keep them.
+                Loading = false;
+                return;
+            }
+
+            _animeItemsSet = new List<AnimeItemAbstraction>();
+            AnimeItems = new SmartObservableCollection<AnimeItemViewModel>();
+        }
+
         public async Task Init(AnimeListPageNavigationArgs args)
         {
             try
@@ -185,9 +224,9 @@ namespace MALClient.XShared.ViewModels.Main
                 Initializing = true;
                 _manuallySelectedViewMode = null;
                 //take out trash
-                _animeItemsSet = new List<AnimeItemAbstraction>();
-                AnimeItems = new SmartObservableCollection<AnimeItemViewModel>();
-                RaisePropertyChanged(() => AnimeItems);
+                // The wipe is deferred until the args have been applied, so we can tell a real
+                // entry change from a plain back-nav re-entry (see ResetForInit).
+                _pendingWipe = true;
                 _randomedIds = new List<int>();
                 _fetching = _fetchingSeasonal = false;
 
@@ -260,6 +299,7 @@ namespace MALClient.XShared.ViewModels.Main
 
                 ViewModelLocator.GeneralHamburger.UpdateAnimeFiltersSelectedIndex();
                 RaisePropertyChanged(() => CurrentlySelectedDisplayMode);
+                ResetForInit();
                 switch (WorkMode)
                 {
                     case AnimeListWorkModes.Manga:
@@ -306,8 +346,7 @@ namespace MALClient.XShared.ViewModels.Main
                         else
                             await FetchData(); //we have source we can fetch
 
-                        break;
-                    case AnimeListWorkModes.SeasonalAnime:
+                        break;                    case AnimeListWorkModes.SeasonalAnime:
                     case AnimeListWorkModes.TopAnime:
                     case AnimeListWorkModes.TopManga:
                     case AnimeListWorkModes.MangaAdapted:
@@ -692,7 +731,6 @@ namespace MALClient.XShared.ViewModels.Main
             //});
             //If we have items then we should hide EmptyNotice
             EmptyNoticeVisibility = _animeItemsSet.Count == 0;
-            DiagnosticsReporter.Info("AnimeList", $"refresh: mode={WorkMode} status={status} set={_animeItemsSet.Count} empty={EmptyNoticeVisibility} query='{query}'");
 
             UpdatePageSetup();
             UpdateUpperStatus();
@@ -1024,7 +1062,6 @@ namespace MALClient.XShared.ViewModels.Main
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("AnimeList", $"seasonal fetch FAILED: mode={WorkMode} page={page} {ex.GetType().Name} {ex.Message}", ex);
                 LoadError = "Could not load this list. Pull down to try again.";
                 LoadErrorVisibility = true;
             }
@@ -1340,7 +1377,6 @@ namespace MALClient.XShared.ViewModels.Main
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("AnimeList", $"fetch FAILED: mode={modeOverride ?? WorkMode} source={ListSource} {ex.GetType().Name} {ex.Message}", ex);
                 LoadError = "Could not load your list. Pull down to try again.";
                 LoadErrorVisibility = true;
             }
@@ -1357,7 +1393,6 @@ namespace MALClient.XShared.ViewModels.Main
         {
             var requestedMode = modeOverride ?? WorkMode;
 
-            DiagnosticsReporter.Info("AnimeList", $"fetch: source={ListSource} mode={requestedMode} force={force} auth={Credentials.Authenticated}");
             global::System.Diagnostics.Debug.WriteLine($"MALPLUS fetch: source={ListSource} mode={requestedMode} force={force} auth={Credentials.Authenticated}");
 
             // The status filter is part of the request, not just the source: ListSource only holds
@@ -1434,7 +1469,6 @@ namespace MALClient.XShared.ViewModels.Main
                     await new LibraryListQuery(ListSource, requestedMode).GetLibrary(force));
                 if (data?.Count == 0)
                 {
-                    DiagnosticsReporter.Error("AnimeList", $"fetch: library query returned 0 items (mode={requestedMode} source={ListSource}) - empty grid first run", null);
                     //no data?
                     RefreshList();
                     return;
@@ -1533,7 +1567,6 @@ namespace MALClient.XShared.ViewModels.Main
             }
 
             _fetching = false;
-            DiagnosticsReporter.Info("AnimeList", $"fetch done: mode={requestedMode} authItems={_animeLibraryDataStorage.AllLoadedAuthAnimeItems.Count} allItems={_animeLibraryDataStorage.AllLoadedAnimeItemAbstractions.Count}");
             if (WorkMode != requestedMode)
                 return; // manga or anime is loaded top manga can proceed loading something else
 

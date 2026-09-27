@@ -70,7 +70,6 @@ namespace MALClient.XShared.BL
                     var res = airDate;
                     lock (_lockObj) _memCache[malId] = (res, now);
                     DataCache.UpdateVolatileDataWithNextAir(malId, res);
-                    DiagnosticsReporter.Info("AirRepo", $"malId={malId} hit=provider nextAirUtc={res:O}");
                     return res;
                 }
 
@@ -82,7 +81,6 @@ namespace MALClient.XShared.BL
                     {
                         lock (_lockObj) _memCache[malId] = (fromEpisodes, now);
                         DataCache.UpdateVolatileDataWithNextAir(malId, fromEpisodes);
-                        DiagnosticsReporter.Info("AirRepo", $"malId={malId} hit=episodes nextAirUtc={fromEpisodes:O}");
                         return fromEpisodes;
                     }
                 }
@@ -92,14 +90,12 @@ namespace MALClient.XShared.BL
                 {
                     lock (_lockObj) _memCache[malId] = (broadcast, now);
                     DataCache.UpdateVolatileDataWithNextAir(malId, broadcast);
-                    DiagnosticsReporter.Info("AirRepo", $"malId={malId} hit=broadcast nextAirUtc={broadcast:O}");
                     return broadcast;
                 }
 
                 lock (_lockObj) _memCache[malId] = (null, now);
                 DataCache.UpdateVolatileDataWithNextAir(malId, null);
                 DataCache.RegisterVolatileDataAiringTimeFetchFailure(malId);
-                DiagnosticsReporter.Info("AirRepo", $"malId={malId} hit=none -> null");
                 return null;
             }
             finally

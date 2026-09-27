@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -34,7 +34,6 @@ namespace MALClient.XShared.Utils
                 if (ex.Message.Contains("429") || ex.Message.Contains("Too Many Requests"))
                 {
                     _rateLimitedUntil = DateTime.UtcNow.AddMinutes(1);
-                    DiagnosticsReporter.Warn("AnimeThemes", $"rate limited (429), backoff 1min: {ex.Message}");
                     return null;
                 }
                 if (ex.Message.Contains("404") || ex.Message.Contains("Not Found"))
@@ -219,7 +218,6 @@ namespace MALClient.XShared.Utils
                 {
                     var videos = await SearchViaAnimeApi(variant,
                         string.Equals(variant, animeTitle?.Trim(), StringComparison.OrdinalIgnoreCase));
-                    DiagnosticsReporter.Info("AnimeThemes", $"SearchViaAnimeApi '{variant}': {videos?.Count ?? 0} videos");
                     AppendThemeDebug($"  SearchViaAnimeApi='{variant}' result={videos?.Count ?? 0}");
                     if (videos.Count > 0)
                     {
@@ -240,12 +238,9 @@ namespace MALClient.XShared.Utils
                 }
                 catch (Exception ex)
                 {
-                    if (ex is OperationCanceledException)
+                    if (ex is not OperationCanceledException)
                     {
-                        DiagnosticsReporter.Warn("AnimeThemes", $"SearchViaAnimeApi cancelled for '{variant}'");
                     }
-                    else
-                        DiagnosticsReporter.Error("AnimeThemes", $"SearchViaAnimeApi failed for '{variant}'", ex);
                 }
             }
 
@@ -259,7 +254,6 @@ namespace MALClient.XShared.Utils
                 try
                 {
                     var videos = await SearchViaLegacySearch(variant);
-                    DiagnosticsReporter.Info("AnimeThemes", $"SearchViaLegacySearch '{variant}': {videos?.Count ?? 0} videos");
                     AppendThemeDebug($"  SearchViaLegacySearch='{variant}' result={videos?.Count ?? 0}");
                     if (videos.Count > 0)
                     {
@@ -273,10 +267,8 @@ namespace MALClient.XShared.Utils
                 {
                     if (ex is OperationCanceledException)
                     {
-                        DiagnosticsReporter.Warn("AnimeThemes", $"SearchViaLegacySearch cancelled for '{variant}'");
                         return new List<ThemeVideo>();
                     }
-                    DiagnosticsReporter.Error("AnimeThemes", $"SearchViaLegacySearch failed for '{variant}'", ex);
                 }
             }
 
@@ -350,12 +342,10 @@ namespace MALClient.XShared.Utils
             if (videos.Count > 0)
                 return videos;
 
-            DiagnosticsReporter.Info("AnimeThemes", $"cache-busting pass for '{variant}'");
             videos = await FetchByVariant(variant, Guid.NewGuid().ToString("N"));
             if (videos.Count > 0)
                 return videos;
 
-            DiagnosticsReporter.Info("AnimeThemes", $"cache-busting pass 2 for '{variant}'");
             return await FetchByVariant(variant, Guid.NewGuid().ToString("N"));
         }
 
@@ -377,17 +367,16 @@ namespace MALClient.XShared.Utils
                 var videos = BuildVideos(keyed?.anime);
                 AppendThemeDebug($"  keyed guess slug='{guessSlug}' result={videos.Count} themes={keyed?.anime?.animethemes?.Count}");
                 if (videos.Count > 0)
-                    DiagnosticsReporter.Info("AnimeThemes", $"keyed slug guess '{guessSlug}': {videos.Count} videos");
                 return videos;
             }
             catch (Exception ex)
             {
                 AppendThemeDebug($"  keyed guess slug='{guessSlug}' EXCEPTION {ex.Message}");
-                DiagnosticsReporter.Error("AnimeThemes", $"keyed slug guess '{guessSlug}' failed", ex);
                 return new List<ThemeVideo>();
             }
-        }
 
+            return new List<ThemeVideo>();
+        }
         private static string GuessSlug(string title)
         {
             if (string.IsNullOrEmpty(title)) return "";
@@ -450,12 +439,10 @@ namespace MALClient.XShared.Utils
                     var keyed = JsonConvert.DeserializeObject<AnimeKeyedApiResponse>(keyedJson);
                     videos = BuildVideos(keyed?.anime);
                     AppendThemeDebug($"  keyed attempt={attempt + 1} themes={keyed?.anime?.animethemes?.Count} result={videos.Count}");
-                    DiagnosticsReporter.Info("AnimeThemes", $"slug rescue '{exact.slug}' attempt {attempt + 1}: {videos.Count} videos");
                 }
                 catch (Exception ex)
                 {
                     AppendThemeDebug($"  keyed attempt={attempt + 1} EXCEPTION {ex.Message}");
-                    DiagnosticsReporter.Error("AnimeThemes", $"slug rescue failed for '{variant}' ({exact.slug}) attempt {attempt + 1}", ex);
                 }
             }
             return videos;
@@ -512,7 +499,14 @@ namespace MALClient.XShared.Utils
             [JsonProperty("type")] public string type { get; set; }
             [JsonProperty("sequence")] public int? sequence { get; set; }
             [JsonProperty("song")] public InlineSong song { get; set; }
+            [JsonProperty("anime")] public InlineThemeAnime anime { get; set; }
             [JsonProperty("animethemeentries")] public List<InlineThemeEntry> animethemeentries { get; set; }
+        }
+
+        private class InlineThemeAnime
+        {
+            [JsonProperty("slug")] public string slug { get; set; }
+            [JsonProperty("name")] public string name { get; set; }
         }
 
         private class InlineSong
@@ -558,11 +552,84 @@ namespace MALClient.XShared.Utils
             return bestScore >= 0.7 ? best : null;
         }
 
+        /// <summary>
+        /// One random theme straight from AnimeThemes, for the Discover "nostalgia gem" tile.
+        /// Reuses the same CDN WebM link the OP/ED path plays.
+        /// </summary>
+        public static async Task<ThemeVideo> GetRandomThemeAsync()
+        {
+            try
+            {
+                const string url =
+                    "https://api.animethemes.moe/animetheme?sort=random&page[size]=1" +
+                    "&include=anime,animethemeentries.videos";
+                var json = await GetStringWithBackoffAsync(url);
+                if (string.IsNullOrEmpty(json))
+                    return null;
+
+                var root = JsonConvert.DeserializeObject<RandomThemeResponse>(json);
+                var theme = root?.data?.FirstOrDefault();
+                if (theme == null)
+                    return null;
+
+                var link = theme.animethemeentries?
+                    .SelectMany(entry => entry.videos ?? new List<InlineVideo>())
+                    .Select(video => video.link)
+                    .FirstOrDefault(l => !string.IsNullOrEmpty(l));
+                if (string.IsNullOrEmpty(link))
+                    return null;
+
+                return new ThemeVideo
+                {
+                    Type = theme.type ?? "OP",
+                    Sequence = theme.sequence ?? 1,
+                    Url = link,
+                    AnimeSlug = theme.anime?.slug,
+                    SongTitle = theme.song?.title
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private class RandomThemeResponse
+        {
+            [JsonProperty("data")] public List<InlineTheme> data { get; set; }
+        }
+
         public static int ParseSequence(string opEdText)
         {
             if (string.IsNullOrEmpty(opEdText)) return 1;
             var match = Regex.Match(opEdText, @"^(\d+):");
             return match.Success ? int.Parse(match.Groups[1].Value) : 1;
+        }
+
+        /// <summary>
+        /// Tenrai hands us the raw theme line, e.g.
+        /// 1: "Sparkle" by RADWIMPS (Japanese) (eps 1-6)
+        /// Pulls out just the song name (kana in parens discarded).
+        /// </summary>
+        public static string ExtractOpEdSong(string opEdText)
+        {
+            if (string.IsNullOrEmpty(opEdText)) return "";
+            var match = Regex.Match(opEdText, "\"\\s*([^\"]+?)\\s*(?:\\([^)]*\\))?\\s*\"");
+            return match.Success ? match.Groups[1].Value.Trim() : "";
+        }
+
+        /// <summary>
+        /// Search query for the YouTube fallback: "song artist" with the Japanese
+        /// glyphs stripped, since they only pollute the query.
+        /// </summary>
+        public static string BuildOpEdSearchQuery(string opEdText)
+        {
+            var song = ExtractOpEdSong(opEdText);
+            var artistMatch = Regex.Match(opEdText ?? "", @"by\s+(.+?)(?:\s*\(eps|\s*$)");
+            var artist = artistMatch.Success ? artistMatch.Groups[1].Value.Trim() : "";
+            var query = $"{song} {artist}".Trim();
+            query = Regex.Replace(query, @"[\u3000-\u9FFF\uFF00-\uFFEF]+", " ").Trim();
+            return Regex.Replace(query, @"\s+", " ");
         }
 
         private class SearchResponse

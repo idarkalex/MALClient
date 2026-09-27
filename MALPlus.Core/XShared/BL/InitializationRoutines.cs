@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -60,7 +60,6 @@ namespace MALClient.XShared.BL
                 try
                 {
                     ResourceLocator.AiringInfoProvider.NotifyUpdated();
-                    DiagnosticsReporter.Info("Startup", $"airing refresh done force={forceAiring} success={ResourceLocator.AiringInfoProvider.InitializationSuccess}");
                 } catch { }
             });
             _ = Task.Run(async () =>

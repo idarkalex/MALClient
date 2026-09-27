@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -180,6 +180,11 @@ namespace MALClient.XShared.ViewModels.Main
                             CatalogueResults.Add(new AnimeSearchItemViewModel(item, ViewModelLocator.AnimeList));
                     EmptyNoticeVisibility = CatalogueResults.Count == 0;
                     IsFirstVisitGridVisible = false;
+                    // The results grid binds CurrentSearchItems, not CatalogueResults: without
+                    // this the genre/studio browse filled a collection nothing was bound to and
+                    // the page came up blank.
+                    _catalogueBrowseActive = true;
+                    RaisePropertyChanged(nameof(CurrentSearchItems));
                 });
             }
             finally
@@ -216,7 +221,6 @@ namespace MALClient.XShared.ViewModels.Main
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("SearchPageCatalogue", $"load-more failed page {_cataloguePage + 1}: {ex.Message}", ex);
             }
             finally
             {
@@ -291,11 +295,17 @@ namespace MALClient.XShared.ViewModels.Main
             }
         }
 
+        private bool _catalogueBrowseActive;
+
         public ObservableCollection<AnimeSearchItemViewModel> CurrentSearchItems =>
-            _animeSearch ? AnimeSearchItemViewModels : MangaSearchItemViewModels;
+            _catalogueBrowseActive
+                ? CatalogueResults
+                : _animeSearch ? AnimeSearchItemViewModels : MangaSearchItemViewModels;
 
         private void PopulateItems()
         {
+            _catalogueBrowseActive = false;
+            RebuildFilterChips();
             AnimeSearchItemViewModels.Clear();
             MangaSearchItemViewModels.Clear();
             foreach (
@@ -448,11 +458,48 @@ namespace MALClient.XShared.ViewModels.Main
         public ICommand LoadMoreCatalogueCommand => _loadMoreCatalogueCommand ?? (_loadMoreCatalogueCommand = new RelayCommand(async () => await LoadMoreCatalogue()));
         private ICommand _loadMoreCatalogueCommand;
 
-        public string Filter1Label => "TV";
-        public string Filter2Label => "Movie";
-        public string Filter3Label => "OVA";
-        public string Filter4Label => "ONA";
-        public string Filter5Label => "Special";
+        private static readonly string[] _filterLabels = { "", "", "", "", "" };
+
+        /// <summary>
+        /// The chip row used to be five hardcoded anime formats, so in Manga every chip
+        /// filtered down to zero results. They now come from the formats actually present in
+        /// the current result set, which is also why they follow the Anime/Manga toggle.
+        /// </summary>
+        public string Filter1Label => _filterLabels[0];
+
+        public string Filter2Label => _filterLabels[1];
+
+        public string Filter3Label => _filterLabels[2];
+
+        public string Filter4Label => _filterLabels[3];
+
+        public string Filter5Label => _filterLabels[4];
+
+        private void RebuildFilterChips()
+        {
+            var source = _animeSearch ? _allAnimeSearchItemViewModels : _allMangaSearchItemViewModels;
+            var types = source
+                .Where(item => !string.IsNullOrWhiteSpace(item.Type))
+                .GroupBy(item => item.Type, StringComparer.CurrentCultureIgnoreCase)
+                .Select(group => new { Type = group.First().Type, Count = group.Count() })
+                .OrderByDescending(entry => entry.Count)
+                .ThenBy(entry => entry.Type, StringComparer.CurrentCultureIgnoreCase)
+                .Take(5)
+                .Select(entry => entry.Type)
+                .ToList();
+
+            for (var i = 0; i < _filterLabels.Length; i++)
+                _filterLabels[i] = i < types.Count ? types[i] : "";
+
+            if (!string.IsNullOrEmpty(_currrentFilter) && !types.Contains(_currrentFilter))
+                _currrentFilter = "";
+
+            RaisePropertyChanged(() => Filter1Label);
+            RaisePropertyChanged(() => Filter2Label);
+            RaisePropertyChanged(() => Filter3Label);
+            RaisePropertyChanged(() => Filter4Label);
+            RaisePropertyChanged(() => Filter5Label);
+        }
 
         private const int RecentSearchesMax = 8;
         public System.Collections.ObjectModel.ObservableCollection<string> RecentSearches { get; } =

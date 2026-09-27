@@ -61,8 +61,8 @@ namespace MALClient.Models.Models
 
 
         //Days
-        public float AnimeDays;
-        public float MangaDays;
+        public float AnimeDays { get; set; }
+        public float MangaDays { get; set; }
         //
         //Anime
         //
@@ -91,13 +91,29 @@ namespace MALClient.Models.Models
         public int MangaVolumes { get; set; }
         public float MangaMean { get; set; }
         //
-        public string AnimeDaysBind => $"Days: {AnimeDays}";
+        public string AnimeDaysBind => "Days: " + AnimeDays.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
 
         public string AnimeMeanBind => $"Mean: {AnimeMean}";
 
-        public string MangaDaysBind => $"Days: {MangaDays}";
+        public string MangaDaysBind => "Days: " + MangaDays.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
 
         public string MangaMeanBind => $"Mean: {MangaMean}";
+
+        /// <summary>
+        /// The five status counts MAL lists under the profile stats block. They were parsed
+        /// and never rendered, so they are collapsed into one bindable line here.
+        /// </summary>
+        // StringFormat in XAML follows the device locale (8,50 on a Spanish phone), so the
+        // scores are formatted here with the invariant culture instead.
+        public string AnimeMeanShort => AnimeMean.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        public string MangaMeanShort => MangaMean.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        public string AnimeChartSummary =>
+            $"Anime: {AnimeCompleted} completed · {AnimeWatching} watching · {AnimePlanned} planned · {AnimeOnHold} on hold · {AnimeDropped} dropped";
+
+        public string MangaChartSummary =>
+            $"Manga: {MangaCompleted} completed · {MangaReading} reading · {MangaPlanned} planned · {MangaOnHold} on hold · {MangaDropped} dropped";
 
         public string HtmlContent { get; set; }
 

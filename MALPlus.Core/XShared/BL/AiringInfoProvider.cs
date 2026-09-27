@@ -115,7 +115,6 @@ namespace MALClient.XShared.BL
             }
 
             if (oldSchema && data != null && data.Any() && !string.IsNullOrEmpty(data.First().Title))
-                DiagnosticsReporter.Info("AiringInfoProvider", $"old-schema cache self-healed: {data.Count} entries have titles");
 
             if (data == null || !data.Any())
             {

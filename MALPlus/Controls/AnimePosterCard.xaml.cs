@@ -18,13 +18,37 @@ public partial class AnimePosterCard : ContentView
         BindableProperty.Create(nameof(BadgeVisible), typeof(bool), typeof(AnimePosterCard), false);
 
     public static readonly BindableProperty BadgeAccentProperty =
-        BindableProperty.Create(nameof(BadgeAccent), typeof(string), typeof(AnimePosterCard), default(string));
+        BindableProperty.Create(nameof(BadgeAccent), typeof(string), typeof(AnimePosterCard), default(string),
+            propertyChanged: OnBadgeChanged);
 
     public static readonly BindableProperty BadgeMainProperty =
-        BindableProperty.Create(nameof(BadgeMain), typeof(string), typeof(AnimePosterCard), default(string));
+        BindableProperty.Create(nameof(BadgeMain), typeof(string), typeof(AnimePosterCard), default(string),
+            propertyChanged: OnBadgeChanged);
 
     public static readonly BindableProperty BadgeExtraProperty =
-        BindableProperty.Create(nameof(BadgeExtra), typeof(string), typeof(AnimePosterCard), default(string));
+        BindableProperty.Create(nameof(BadgeExtra), typeof(string), typeof(AnimePosterCard), default(string),
+            propertyChanged: OnBadgeChanged);
+
+    /// <summary>
+    /// True when at least one badge carries text. The accent/main pill had no visibility of
+    /// its own, so a card with no badges still drew an empty dark blob in the corner.
+    /// </summary>
+    public static readonly BindableProperty HasBadgeProperty =
+        BindableProperty.Create(nameof(HasBadge), typeof(bool), typeof(AnimePosterCard), false);
+
+    public bool HasBadge
+    {
+        get => (bool)GetValue(HasBadgeProperty);
+        private set => SetValue(HasBadgeProperty, value);
+    }
+
+    private static void OnBadgeChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        var card = (AnimePosterCard)bindable;
+        card.HasBadge = !string.IsNullOrWhiteSpace(card.BadgeAccent)
+                        || !string.IsNullOrWhiteSpace(card.BadgeMain)
+                        || !string.IsNullOrWhiteSpace(card.BadgeExtra);
+    }
 
     public static readonly BindableProperty TitleOverlayProperty =
         BindableProperty.Create(nameof(TitleOverlay), typeof(bool), typeof(AnimePosterCard), true);

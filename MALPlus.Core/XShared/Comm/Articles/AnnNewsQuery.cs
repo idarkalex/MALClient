@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -35,7 +35,6 @@ namespace MALClient.XShared.Comm.Articles
                 : await DataCache.RetrieveData<List<MalNewsUnitModel>>("ann_news_index_v7.json", "Articles", 1);
             if (cached != null && cached.Count > 0)
             {
-                DiagnosticsReporter.Info("ANN", $"cache hit: {cached.Count} articles");
                 return cached;
             }
 
@@ -56,7 +55,6 @@ namespace MALClient.XShared.Comm.Articles
             }
             if (string.IsNullOrEmpty(raw))
             {
-                DiagnosticsReporter.Warn("ANN", "RSS fetch returned null/empty after 3 attempts");
                 return new List<MalNewsUnitModel>();
             }
 
@@ -73,7 +71,6 @@ namespace MALClient.XShared.Comm.Articles
                         filled++;
                     }
                 }
-                DiagnosticsReporter.Info("ANN", $"thumb map filled {filled}/{output.Count - output.Count(o => !string.IsNullOrEmpty(o.ImgUrl))} entries from listing scrape");
                 DataCache.SaveData(output, "ann_news_index_v7.json", "Articles");
             }
             return output;
@@ -84,7 +81,6 @@ namespace MALClient.XShared.Comm.Articles
             if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var requestUri) ||
                 (requestUri.Scheme != Uri.UriSchemeHttp && requestUri.Scheme != Uri.UriSchemeHttps))
             {
-                DiagnosticsReporter.Error("ANN", $"article url invalid: \"{url}\" (id={id})");
                 return null;
             }
 
@@ -104,7 +100,6 @@ namespace MALClient.XShared.Comm.Articles
                             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
                         using (var response = await AnnClient.SendAsync(request))
                         {
-                            DiagnosticsReporter.Info("ANN", $"article fetch attempt {attempt}: {url} -> {response.StatusCode}");
                             if (response.IsSuccessStatusCode)
                                 html = await response.Content.ReadAsStringAsync();
                         }
@@ -114,7 +109,6 @@ namespace MALClient.XShared.Comm.Articles
                 }
                 catch (Exception ex)
                 {
-                    DiagnosticsReporter.Error("ANN", $"article fetch attempt {attempt} failed for \"{url}\"", ex);
                     if (attempt < 3)
                         await Task.Delay(TimeSpan.FromSeconds(attempt));
                 }
@@ -202,7 +196,6 @@ namespace MALClient.XShared.Comm.Articles
                     img.SetAttributeValue("onerror", "this.style.display='none'");
                     img.SetAttributeValue("style", "max-width:100%;height:auto;");
                 }
-                DiagnosticsReporter.Info("ANN", $"imgs found: {imgCount} in {url}");
 
                 // ANN keeps the hero image outside the body container: pull og:image
                 var og = Regex.Match(html, "property=\"og:image\"[^>]*content=\"([^\"]+)\"", RegexOptions.IgnoreCase);
@@ -218,7 +211,6 @@ namespace MALClient.XShared.Comm.Articles
                         inner = "<img src=\"" + ogUrl + "\" style=\"max-width:100%;height:auto;\" />" + inner;
                 }
 
-                DiagnosticsReporter.Success("ANN", $"article extracted: {inner.Length} chars from {url}");
                 DataCache.SaveArticleContentData($"ann_v4_{id}", inner, MalNewsType.News);
                 return inner;
             }
@@ -269,7 +261,6 @@ public static async Task<Dictionary<string, string>> FetchThumbMap()
                     {
                         if (!response.IsSuccessStatusCode)
                         {
-                            DiagnosticsReporter.Warn("ANN", $"thumb map fetch failed: {response.StatusCode}");
                             return new Dictionary<string, string>();
                         }
                         var html = await response.Content.ReadAsStringAsync();
@@ -302,14 +293,12 @@ public static async Task<Dictionary<string, string>> FetchThumbMap()
                             if (!map.ContainsKey(id))
                                 map[id] = thumbUrl;
                         }
-                        DiagnosticsReporter.Info("ANN", $"thumb map: {map.Count} entries from listing scrape");
                         return map;
                     }
                 }
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("ANN", "FetchThumbMap exception", ex);
                 return new Dictionary<string, string>();
             }
         }
@@ -367,12 +356,10 @@ public static async Task<Dictionary<string, string>> FetchThumbMap()
                 }
                 catch (Exception ex)
                 {
-                    DiagnosticsReporter.Error("ANN", $"ParseRss item parse failed: {ex.Message}");
                 }
             }
 
             var withImages = output.Count(o => !string.IsNullOrEmpty(o.ImgUrl));
-            DiagnosticsReporter.Info("ANN", $"RSS parsed: {output.Count} entries, {withImages} with images, {output.Count - withImages} without");
             return output;
         }
 

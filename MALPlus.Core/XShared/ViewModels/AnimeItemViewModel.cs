@@ -971,11 +971,6 @@ namespace MALClient.XShared.ViewModels
         {
             var malIdLog = ParentAbstraction?.MalId ?? Id;
             var res = await MALClient.XShared.BL.AiringDatumRepository.GetNextAirUtcAsync(malIdLog);
-            var nowLog = DateTime.UtcNow;
-            if (res.HasValue)
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} viaRepo nextAirUtc={res:O} fmt={AirTimeUtils.FormatAirCountdown(res.Value, nowLog)}");
-            else
-                MALClient.XShared.Utils.DiagnosticsReporter.Info("AirRes", $"malId={malIdLog} viaRepo -> null");
             return res;
         }
 

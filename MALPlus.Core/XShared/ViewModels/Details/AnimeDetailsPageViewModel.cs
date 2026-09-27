@@ -230,8 +230,6 @@ namespace MALClient.XShared.ViewModels.Details
                 // The countdown is a computed value, so log which of the five sources produced it:
                 // only schedules and episodes carry a real air time, the broadcast slot is a weekly
                 // guess. Needed whenever a user doubts the pill in the hero.
-                DiagnosticsReporter.Info("Countdown",
-                    $"hero countdown malId={malId} status='{Status}' source={source} value='{result}'");
 
                 if (_animeItemReference is AnimeItemViewModel itemVm)
                     itemVm.RefreshTimeTillNextAirInBackground();
@@ -279,7 +277,6 @@ namespace MALClient.XShared.ViewModels.Details
                 else if (schedDate.HasValue) { chosenDate = schedDate.Value; chosenEp = schedEp; source = "schedule"; }
                 else { chosenDate = epDate.Value; chosenEp = epNum; source = "episodes"; }
                 LastAired = $"EP {chosenEp} - {chosenDate.ToString("d MMM", CultureInfo.InvariantCulture)}";
-                DiagnosticsReporter.Info("Details", $"UpdateLastAired malId={MalId} source={source} ep={chosenEp} date={chosenDate:O} status='{Status}' result='{LastAired}'");
                 RaisePropertyChanged(() => LastAired);
                 return;
             }
@@ -308,7 +305,6 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 LastAired = "";
             }
-            DiagnosticsReporter.Info("Details", $"UpdateLastAired malId={MalId} source=episodes lastEp={(last != null ? last.EpisodeId.ToString() : "null")} epCount={Episodes.Count} status='{Status}' endDate='{EndDate}' result='{LastAired}'");
             RaisePropertyChanged(() => LastAired);
         }
 
@@ -426,6 +422,10 @@ namespace MALClient.XShared.ViewModels.Details
 
         public ObservableCollection<string> OPs { get; } = new ObservableCollection<string>();
         public ObservableCollection<string> EDs { get; } = new ObservableCollection<string>();
+
+        /// <summary>AnimeThemes results for the current entry, filled in by the OP/ED pre-cache.</summary>
+        public List<AnimeThemesHelper.ThemeVideo> OpEdThemes { get; set; } = new List<AnimeThemesHelper.ThemeVideo>();
+
         public SmartObservableCollection<AnimeEpisode> Episodes { get; } = new SmartObservableCollection<AnimeEpisode>();
 
         public ObservableCollection<AnimeVideoData> AvailableVideos { get;  } = new ObservableCollection<AnimeVideoData>();
@@ -542,7 +542,6 @@ namespace MALClient.XShared.ViewModels.Details
             {
                 _timeTillNextAirCache = itemVm.TimeTillNextAirCache;
             }
-            DiagnosticsReporter.Info("Details", $"nav malId={param.Id} title={param.Title} sameEntry={sameEntry} heroCacheBefore='{heroSyncBefore}' heroCacheAfter='{_timeTillNextAirCache}' itemVmCache='{(_animeItemReference as AnimeItemViewModel)?.TimeTillNextAirCache}'");
             RaisePropertyChanged(() => TimeTillNextAir);
             AnimeMode = param.AnimeMode;
             Id = param.Id;
@@ -723,7 +722,6 @@ namespace MALClient.XShared.ViewModels.Details
             PrevArgs.Source = PageIndex.PageAnimeDetails;
 
             Initialized = true;
-            DiagnosticsReporter.Info("Details", $"InitAsync timings: reset={t1Reset}ms authRef={t2AuthRef - t1Reset}ms fetch={t0.ElapsedMilliseconds - t2AuthRef}ms total={t0.ElapsedMilliseconds}ms id={param.Id}");
         }
 
         private void OpenMalPage()
@@ -1364,7 +1362,6 @@ namespace MALClient.XShared.ViewModels.Details
                 if (!string.IsNullOrEmpty(timeTillNextAir))
                 {
                     DataCache.UpdateVolatileDataWithTimeTillNextAir(MalId, timeTillNextAir);
-                    DiagnosticsReporter.Info("Countdown", $"Saved MalId={MalId}, value={timeTillNextAir}");
                 }
             }
 
@@ -1411,9 +1408,7 @@ namespace MALClient.XShared.ViewModels.Details
             DetailImage = _imgUrl;
             LoadingGlobal = false;
 
-            if (Settings.DetailsAutoLoadDetails || Settings.DetailsAutoLoadReviews ||
-                Settings.DetailsAutoLoadRecomms || Settings.DetailsAutoLoadRelated)
-                _ = PreloadTabsInOrderAsync();
+            _ = PreloadTabsInOrderAsync();
 
             //Launch UI updates without triggering inner update logic -> nothng to update
             UpdateAnimeReferenceUiBindings(Id);
@@ -1482,7 +1477,6 @@ namespace MALClient.XShared.ViewModels.Details
                 _synonyms[i] = Regex.Replace(_synonyms[i], @" ?\(.*?\)", string.Empty);
             //removes string from brackets (sthsth) lol ->  lol
             AllEpisodes = data.AllEpisodes;
-            DiagnosticsReporter.Info("Details", $"episodes data={data.AllEpisodes} ref={(_animeItemReference?.AllEpisodes ?? 0)} id={Id} anime={AnimeMode}");
             if (!AnimeMode)
             {
                 AllVolumes = data.AllVolumes;
@@ -1514,7 +1508,6 @@ namespace MALClient.XShared.ViewModels.Details
                                     : null
                                 : null);
                 ExtractData(data, clearEnrichment);
-                DiagnosticsReporter.Info("Details", $"FetchData completed in {sw.ElapsedMilliseconds}ms id={Id}");
             }
             catch (Exception e)
             {
@@ -1617,33 +1610,30 @@ namespace MALClient.XShared.ViewModels.Details
         }
 
         /// <summary>
-        ///     Warms the network tabs in the order the user actually reaches them
+        ///     Warms the remaining tabs in the order the user actually reaches them
         ///     (Details -> Episodes -> Reviews -> Recommendations -> Related ->
-        ///     Characters/Staff) instead of firing them all at once. The first tab is
-        ///     the visible one, so it wins the connection instead of queueing behind
-        ///     four competing requests on a slow circuit.
+        ///     Characters/Staff) instead of firing them all at once, and keeps one step in
+        ///     flight so the tabs never queue behind each other on a slow circuit.
+        ///     Details is plain text out of the payload we already hold, so it goes first and
+        ///     is effectively free; the network-heavy tabs follow in the background so they
+        ///     are already there when the user taps them.
         /// </summary>
         private async Task PreloadTabsInOrderAsync()
         {
             var entryId = Id;
             var entryMalId = MalId;
             var entryAnimeMode = AnimeMode;
-            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             bool StillCurrent() => Id == entryId && MalId == entryMalId && AnimeMode == entryAnimeMode;
 
-            if (Settings.DetailsAutoLoadDetails)
-            {
-                try { await LoadDetails(); } catch { }
-            }
-
-            if (!StillCurrent()) return;
-
             foreach (var step in new Func<Task>[]
                          {
-                             async () => { if (Settings.DetailsAutoLoadReviews) await LoadReviews(); },
-                             async () => { if (Settings.DetailsAutoLoadRecomms) await LoadRecommendations(); },
-                             async () => { if (Settings.DetailsAutoLoadRelated) await LoadRelatedAnime(); }
+                             async () => await LoadDetails(),
+                             async () => { if (AnimeMode) await LoadEpisodes(); },
+                             async () => { if (AnimeMode) await LoadReviews(); },
+                             async () => { if (AnimeMode) await LoadRecommendations(); },
+                             async () => { if (AnimeMode) await LoadRelatedAnime(); },
+                             async () => await LoadCharacters()
                          })
             {
                 // hand the UI thread back between tabs so the entry stays interactive
@@ -1652,17 +1642,14 @@ namespace MALClient.XShared.ViewModels.Details
                 {
                     await step();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    DiagnosticsReporter.Error("Details", $"preload step failed for {entryMalId}: {e.GetType().Name}", e);
+                    // a tab that fails to warm up is still loadable on tap
                 }
 
                 if (!StillCurrent())
                     return;
             }
-
-            DiagnosticsReporter.Info("Details",
-                $"tab preload done for {entryMalId} in {sw.ElapsedMilliseconds}ms (animeMode={entryAnimeMode})");
         }
 
         private async Task<bool> LoadDetailsCoreAsync(bool force)
@@ -1849,6 +1836,7 @@ namespace MALClient.XShared.ViewModels.Details
             EDs.Clear();
             foreach (var ending in endings)
                 EDs.Add(ending);
+            OpEdThemes = new List<AnimeThemesHelper.ThemeVideo>();
 
             if (string.IsNullOrEmpty(GeneralStudios) && !string.IsNullOrEmpty(studiosBackfill))
                 GeneralStudios = studiosBackfill;
@@ -1882,7 +1870,10 @@ namespace MALClient.XShared.ViewModels.Details
                 Task.Run(async () =>
                 {
                     ResourceLocator.EnglishTitlesProvider.TryGetEnglishTitleForSeries(atId, atAnime, out var english);
-                    await AnimeThemesHelper.SearchAsync(atTitle, english);
+                    var themes = await AnimeThemesHelper.SearchAsync(atTitle, english);
+                    // Keep the result: tapping an OP/ED needs it to match against, and the
+                    // in-memory AnimeThemes cache dies with the process.
+                    OpEdThemes = themes;
                 });
             }
             return true;
@@ -1938,9 +1929,26 @@ namespace MALClient.XShared.ViewModels.Details
                 var display = episodes;
                 var isCurrentlyAiring = string.Equals(Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase);
                 if (isCurrentlyAiring)
-                    display = episodes
+                {
+                    // MAL has not created the last rows of a running cour yet, so project them
+                    // from the cadence and attach the real discussion thread when the forum
+                    // index already has one. Never persisted: these are a view of the schedule.
+                    var topics = await new AnimeEpisodeForumQuery(MalId, true).GetEpisodeTopicsAsync();
+                    var projected = AnimeEpisodeBackfill.Build(episodes, AllEpisodes, DateTime.UtcNow,
+                        topics.Count > 0 ? topics.Keys.Max() : 0);
+                    if (projected.Count > 0)
+                    {
+                        foreach (var ep in projected)
+                            if (topics.TryGetValue((int)ep.EpisodeId, out var topic))
+                                ep.ForumUrl = topic;
+                        display = episodes.Concat(projected).ToList();
+                    }
+                    display = display
                         .OrderByDescending(ep => ep.AiredDate ?? DateTime.MaxValue)
                         .ToList();
+                }
+                foreach (var ep in display)
+                    ep.IsWatched = ep.EpisodeId > 0 && ep.EpisodeId <= MyEpisodes;
                 Episodes.Clear();
                 Episodes.AddRange(display);
                 _loadedEpisodes = true;
@@ -1967,7 +1975,6 @@ namespace MALClient.XShared.ViewModels.Details
                     {
                         DataCache.UpdateVolatileDataWithNextAir(MalId, null);
                         itemVm.TimeTillNextAirCache = "";
-                        DiagnosticsReporter.Info("AirRes", $"malId={MalId} LoadEpisodes cleared nextAir (no schedule, no episodes)");
                     }
                     else
                         itemVm.RefreshTimeTillNextAirInBackground();
@@ -1975,7 +1982,6 @@ namespace MALClient.XShared.ViewModels.Details
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("Details", $"LoadEpisodes failed for anime {MalId} (animeMode={AnimeMode})", ex);
             }
             finally
             {
@@ -1997,7 +2003,6 @@ namespace MALClient.XShared.ViewModels.Details
                     await Task.Run(async () => revs = await new AnimeReviewsQuery(MalId, AnimeMode).GetAnimeReviews(force));
                     if (revs == null)
                     {
-                        DiagnosticsReporter.Warn("Details", $"reviews: null result for anime {MalId}");
                         NoReviewsDataNoticeVisibility = true;
                         return;
                     }
@@ -2005,12 +2010,10 @@ namespace MALClient.XShared.ViewModels.Details
                     _loadedReviews = true;
                     foreach (var rev in revs)
                         Reviews.Add(rev);
-                    DiagnosticsReporter.Info("Details", $"reviews: loaded {revs.Count} items for anime {MalId}");
                     NoReviewsDataNoticeVisibility = Reviews.Count <= 0;
                 }
                 catch (Exception ex)
                 {
-                    DiagnosticsReporter.Error("Details", $"LoadReviews failed for anime {MalId} (animeMode={AnimeMode})", ex);
                 }
                 finally
                 {
@@ -2068,8 +2071,6 @@ namespace MALClient.XShared.ViewModels.Details
                     var done = await Task.WhenAny(fetch, Task.Delay(TimeSpan.FromSeconds(15)));
                     if (done != fetch)
                     {
-                        DiagnosticsReporter.Warn("Details",
-                            $"recommendations: fetch timed out for anime {MalId}, serving previous data");
                         NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
                         return;
                     }
@@ -2077,16 +2078,12 @@ namespace MALClient.XShared.ViewModels.Details
                     await fetch;
                     if (recomm == null)
                     {
-                        DiagnosticsReporter.Warn("Details",
-                            $"recommendations: null result for anime {MalId}, serving previous data");
                         NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
                         return;
                     }
 
                     if (recomm.Count == 0 && hadData && !force)
                     {
-                        DiagnosticsReporter.Info("Details",
-                            $"recommendations: empty refresh for anime {MalId}, keeping {Recommendations.Count} cached items");
                         _loadedRecomm = true;
                         NoRecommDataNoticeVisibility = false;
                         return;
@@ -2099,13 +2096,11 @@ namespace MALClient.XShared.ViewModels.Details
 
                     Recommendations.ReplaceRange(recomm);
                     _loadedRecomm = true;
-                    DiagnosticsReporter.Info("Details", $"recommendations: loaded {recomm.Count} items for anime {MalId}");
                     NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
                 }
                 catch (Exception ex)
                 {
                     NoRecommDataNoticeVisibility = Recommendations.Count <= 0;
-                    DiagnosticsReporter.Error("Details", $"LoadRecommendations failed for anime {MalId} (animeMode={AnimeMode})", ex);
                 }
                 finally
                 {
@@ -2128,7 +2123,6 @@ namespace MALClient.XShared.ViewModels.Details
                     await Task.Run(async () => related = await new AnimeRelatedQuery(MalId, AnimeMode).GetRelatedAnime(force));
                     if (related == null)
                     {
-                        DiagnosticsReporter.Warn("Details", $"related: null result for anime {MalId} (animeMode={AnimeMode})");
                         NoRelatedDataNoticeVisibility = true;
                         return;
                     }
@@ -2140,12 +2134,10 @@ namespace MALClient.XShared.ViewModels.Details
                         RelatedAnime.Add(item);
                     }
 
-                    DiagnosticsReporter.Info("Details", $"related: loaded {related.Count} items for anime {MalId}");
                     NoRelatedDataNoticeVisibility = RelatedAnime.Count <= 0;
                 }
                 catch (Exception ex)
                 {
-                    DiagnosticsReporter.Error("Details", $"LoadRelatedAnime failed for anime {MalId} (animeMode={AnimeMode})", ex);
                 }
                 finally
                 {
@@ -2173,7 +2165,6 @@ namespace MALClient.XShared.ViewModels.Details
                     var data = await new AnimeCharactersStaffQuery(MalId, AnimeMode).GetCharStaffData(force);
                     if (data == null)
                     {
-                        DiagnosticsReporter.Warn("Details", $"GetCharStaffData returned null for anime {MalId}");
                         return;
                     }
                     AnimeStaffData = new AnimeStaffDataViewModels(data);
@@ -2181,7 +2172,6 @@ namespace MALClient.XShared.ViewModels.Details
                     _loadedCharacters = true;
                     var pairCount = AnimeStaffData?.AnimeCharacterPairs?.Count ?? 0;
                     var staffCount = AnimeStaffData?.AnimeStaff?.Count ?? 0;
-                    DiagnosticsReporter.Info("Details", $"characters loaded: {pairCount} pairs, {staffCount} staff for anime {MalId}");
                     CharactersGridVisibility = true;
                 }
                 else
@@ -2189,7 +2179,6 @@ namespace MALClient.XShared.ViewModels.Details
                     var data = await new AnimeCharactersStaffQuery(MalId, AnimeMode).GetMangaCharStaffData(force);
                     if (data == null)
                     {
-                        DiagnosticsReporter.Warn("Details", $"GetMangaCharStaffData returned null for manga {MalId}");
                         return;
                     }
                     MangaCharacterData = data.AnimeCharacterPairs
@@ -2197,13 +2186,11 @@ namespace MALClient.XShared.ViewModels.Details
                         .ToList();
                     AnimeStaffData = null;
                     _loadedCharacters = true;
-                    DiagnosticsReporter.Info("Details", $"manga characters loaded: {MangaCharacterData.Count} for manga {MalId}");
                     MangaCharacterGridVisibility = true;
                 }
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("Details", $"LoadCharacters failed for id {MalId} (animeMode={AnimeMode})", ex);
             }
             finally
             {

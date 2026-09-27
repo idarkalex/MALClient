@@ -21,6 +21,7 @@ namespace MALPlus.Views;
 public partial class AnimeDetailsPage : ContentPage
 {
     private const int ProgressiveChunkSize = 40;
+    private const int RecommendationChunkSize = 8;
     private const double HeroExpandedHeight = 460;
     private const double HeroCollapsedHeight = 210;
     private const double HeroCollapseRange = HeroExpandedHeight - HeroCollapsedHeight;
@@ -70,6 +71,7 @@ public partial class AnimeDetailsPage : ContentPage
 
     public ObservableCollection<AnimeEpisode> DisplayedEpisodes { get; } = new();
     public ObservableCollection<AnimeReviewData> DisplayedReviews { get; } = new();
+    public ObservableCollection<DirectRecommendationData> DisplayedRecommendations { get; } = new();
     public ObservableCollection<AnimeCharacterCard> DisplayedCharacters { get; } = new();
     public ObservableCollection<MangaCharacterCard> DisplayedMangaCharacters { get; } = new();
     public ObservableCollection<StaffCard> DisplayedStaff { get; } = new();
@@ -104,6 +106,22 @@ public partial class AnimeDetailsPage : ContentPage
     public bool RelatedErrorVisible => !string.IsNullOrWhiteSpace(_relatedError);
     public bool RelatedEmptyVisible => Vm != null && !Vm.LoadingRelated && !RelatedErrorVisible && Vm.RelatedAnime.Count == 0;
     public bool RelatedContentVisible => Vm != null && !Vm.LoadingRelated && !RelatedErrorVisible && Vm.RelatedAnime.Count > 0;
+
+    /// <summary>
+    /// The related grid lives inside the page ScrollView, so it cannot take its height from
+    /// a scroller: it has to be told exactly how tall it is. Three cards per row, 195 tall,
+    /// with the 4dp card margin the template sets.
+    /// </summary>
+    public double RelatedGridHeight
+    {
+        get
+        {
+            var count = Vm?.RelatedAnime?.Count ?? 0;
+            if (count == 0) return 0;
+            var rows = (int)Math.Ceiling(count / 3d);
+            return rows * 203d;
+        }
+    }
 
     public string CharactersErrorText => EmptyStateText(_charactersError, "Unable to load characters.");
     public bool CharactersErrorVisible => !string.IsNullOrWhiteSpace(_charactersError);
@@ -155,8 +173,10 @@ public partial class AnimeDetailsPage : ContentPage
             vm.EDs.CollectionChanged += OnDetailsSourceChanged;
             vm.Recommendations.CollectionChanged += OnRecommendationsSourceChanged;
             vm.RelatedAnime.CollectionChanged += OnRelatedSourceChanged;
+            vm.RequestVideoPlayback += ShowVideoOverlay;
             RefreshDisplayedEpisodes(false);
             RefreshDisplayedReviews(false);
+            RefreshDisplayedRecommendations(false);
         }
 #if ANDROID
         if (!_videoHandlerSubscribed)
@@ -195,6 +215,7 @@ public partial class AnimeDetailsPage : ContentPage
         _subscribedVm.EDs.CollectionChanged -= OnDetailsSourceChanged;
         _subscribedVm.Recommendations.CollectionChanged -= OnRecommendationsSourceChanged;
         _subscribedVm.RelatedAnime.CollectionChanged -= OnRelatedSourceChanged;
+        _subscribedVm.RequestVideoPlayback -= ShowVideoOverlay;
         _subscribedVm = null;
     }
 
@@ -208,17 +229,6 @@ public partial class AnimeDetailsPage : ContentPage
                 return;
             VideoWebViewHelper.ConfigurePlatformView(platformView);
             VideoWebViewHelper.Resume(platformView);
-        }
-        catch { }
-    }
-
-    private void ResumeVideoWebView()
-    {
-        try
-        {
-            var platformView = VideoWebView?.Handler?.PlatformView as global::Android.Views.View;
-            if (platformView != null)
-                VideoWebViewHelper.Resume(platformView);
         }
         catch { }
     }
@@ -238,7 +248,6 @@ public partial class AnimeDetailsPage : ContentPage
         catch { }
     }
 #else
-    private void ResumeVideoWebView() { }
     private static void SetSystemBars(bool video) { }
 #endif
 
@@ -509,6 +518,7 @@ public partial class AnimeDetailsPage : ContentPage
     {
         DisplayedEpisodes.Clear();
         DisplayedReviews.Clear();
+        DisplayedRecommendations.Clear();
         DisplayedCharacters.Clear();
         DisplayedMangaCharacters.Clear();
         DisplayedStaff.Clear();
@@ -559,7 +569,10 @@ public partial class AnimeDetailsPage : ContentPage
                     {
                         await Vm.LoadRecommendations(false);
                         if (entryId == _initializedId && entryAnimeMode == _initializedAnimeMode)
+                        {
                             _recommendationsLoaded = Vm.RecommendationsLoaded;
+                            RefreshDisplayedRecommendations(false);
+                        }
                     }
                     break;
                 case 5:
@@ -617,7 +630,10 @@ public partial class AnimeDetailsPage : ContentPage
         => NotifyStateProperties();
 
     private void OnRecommendationsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
-        => NotifyStateProperties();
+    {
+        RefreshDisplayedRecommendations(false);
+        NotifyStateProperties();
+    }
 
     private void OnRelatedSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
         => NotifyStateProperties();
@@ -652,6 +668,18 @@ public partial class AnimeDetailsPage : ContentPage
             return;
         foreach (var review in Vm.Reviews)
             review.IsExpanded = false;
+    }
+
+    private void RefreshDisplayedRecommendations(bool reset)
+    {
+        var source = Vm?.Recommendations;
+        if (source == null)
+            return;
+        if (reset || source.Count < DisplayedRecommendations.Count)
+            DisplayedRecommendations.Clear();
+        var target = Math.Min(source.Count, Math.Max(RecommendationChunkSize, DisplayedRecommendations.Count));
+        for (var index = DisplayedRecommendations.Count; index < target; index++)
+            DisplayedRecommendations.Add(source[index]);
     }
 
     private async void OnEpisodeTapped(object sender, TappedEventArgs e)
@@ -704,15 +732,11 @@ public partial class AnimeDetailsPage : ContentPage
     {
         try
         {
-            if (sender is not Button button || button.CommandParameter is not AnimeReviewData review || Vm == null)
-                return;
-            var reviews = Vm.Reviews;
-            var boundary = reviews.IndexOf(review);
-            if (boundary < 0)
-                return;
-            var expanded = !review.IsExpanded;
-            for (var index = 0; index < reviews.Count; index++)
-                reviews[index].IsExpanded = expanded && index >= boundary;
+            // CommandParameter already carries the exact review instance bound to the row,
+            // so it is the only one that may flip. Walking the collection by index used to
+            // expand every review from this one downwards.
+            if (sender is Button button && button.CommandParameter is AnimeReviewData review)
+                review.IsExpanded = !review.IsExpanded;
         }
         catch (Exception ex)
         {
@@ -812,18 +836,61 @@ public partial class AnimeDetailsPage : ContentPage
         }
     }
 
-    private void OnOpEdTapped(object sender, TappedEventArgs e)
+    private async void OnOpEdTapped(object sender, TappedEventArgs e)
     {
+        if (e.Parameter is not string text || string.IsNullOrWhiteSpace(text) || Vm == null)
+            return;
         try
         {
-            if (e.Parameter is not string text || string.IsNullOrWhiteSpace(text))
+            // The OP and ED lists share one handler, so recover which list the row came from.
+            var isOp = Vm.OPs.Contains(text);
+            var sequence = AnimeThemesHelper.ParseSequence(text);
+            var song = AnimeThemesHelper.ExtractOpEdSong(text);
+            var query = AnimeThemesHelper.BuildOpEdSearchQuery(text);
+            var entryId = Vm.Id;
+            var entryTitle = Vm.Title;
+            var animeMode = Vm.AnimeMode;
+
+            ShowVideoLoading();
+
+            var url = await Task.Run(async () =>
+            {
+                // 1) AnimeThemes: direct WebM, exact match, plays in the overlay.
+                var themes = Vm.OpEdThemes;
+                if (themes == null || themes.Count == 0)
+                {
+                    ResourceLocator.EnglishTitlesProvider.TryGetEnglishTitleForSeries(
+                        entryId, animeMode, out var english);
+                    themes = await AnimeThemesHelper.SearchAsync(entryTitle, english);
+                }
+                var match = AnimeThemesHelper.FindMatch(themes, isOp, sequence, query, song);
+                if (!string.IsNullOrEmpty(match?.Url))
+                    return match.Url;
+
+                // 2) YouTube search scrape.
+                var videoId = await VideoWebViewHelper.SearchYouTubeVideoId(query);
+                if (!string.IsNullOrEmpty(videoId))
+                    return $"https://www.youtube.com/watch?v={videoId}";
+
+                return null;
+            });
+
+            if (!string.IsNullOrEmpty(url))
+            {
+                ShowVideoOverlay(url);
                 return;
-            var query = Uri.EscapeDataString(text);
-            ShowVideoOverlay($"https://www.youtube.com/results?search_query={query}");
+            }
+
+            // 3) Nothing resolved: hand the search to the YouTube app.
+            HideVideoLoading();
+            await global::Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(
+                new Uri("https://www.youtube.com/results?search_query=" +
+                        System.Net.WebUtility.UrlEncode(query)));
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS OnOpEdTapped failed: " + ex.GetType().Name);
+            HideVideoLoading();
+            global::Android.Util.Log.Warn("MALPlus Video", "OnOpEdTapped: " + ex.GetType().Name);
         }
     }
 
@@ -935,26 +1002,42 @@ public partial class AnimeDetailsPage : ContentPage
     {
         try
         {
+            if (VideoOverlay == null || string.IsNullOrWhiteSpace(url))
+                return;
+            var webView = EnsureVideoWebView();
+            VideoOverlay.IsVisible = true;
+            VideoWebViewHelper.Resume(webView.Handler?.PlatformView as global::Android.Views.View);
+            // Single source of truth: routes YouTube to the iframe and direct media
+            // (AnimeThemes WebM) to its own <video> player, with the working BaseUrl.
+            webView.Source = VideoWebViewHelper.BuildSource(url);
+            SetSystemBars(true);
+        }
+        catch (Exception ex)
+        {
+            global::Android.Util.Log.Warn("MALPlus Video", "ShowVideoOverlay: " + ex.GetType().Name);
+        }
+    }
+
+    private void ShowVideoLoading()
+    {
+        try
+        {
             if (VideoOverlay == null)
                 return;
             var webView = EnsureVideoWebView();
             VideoOverlay.IsVisible = true;
             VideoWebViewHelper.Resume(webView.Handler?.PlatformView as global::Android.Views.View);
-            var embed = BuildYouTubeEmbed(url);
             webView.Source = new HtmlWebViewSource
             {
-                Html = VideoWebViewHelper.BuildEmbedHtml(embed),
+                Html = VideoWebViewHelper.BuildLoadingHtml(),
                 BaseUrl = "https://myanimelist.net"
             };
             SetSystemBars(true);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("MALPLUS ShowVideoOverlay failed: " + ex.GetType().Name);
-        }
+        catch { }
     }
 
-    private void CloseVideoOverlay(object sender, EventArgs e)
+    private void HideVideoLoading()
     {
         try
         {
@@ -967,30 +1050,9 @@ public partial class AnimeDetailsPage : ContentPage
         catch { }
     }
 
-    private static string BuildYouTubeEmbed(string url)
+    private void CloseVideoOverlay(object sender, EventArgs e)
     {
-        try
-        {
-            if (string.IsNullOrEmpty(url))
-                return url;
-            var match = System.Text.RegularExpressions.Regex.Match(url, @"youtube\.com/watch\?v=([\w\-]+)");
-            if (match.Success)
-                return $"https://www.youtube.com/embed/{match.Groups[1].Value}";
-            match = System.Text.RegularExpressions.Regex.Match(url, @"youtu\.be/([\w\-]+)");
-            if (match.Success)
-                return $"https://www.youtube.com/embed/{match.Groups[1].Value}";
-            match = System.Text.RegularExpressions.Regex.Match(url, @"/embed/([\w\-]+)");
-            if (match.Success)
-                return url;
-            match = System.Text.RegularExpressions.Regex.Match(url, @"search_query=([^&]+)");
-            if (match.Success)
-                return $"https://www.youtube.com/embed/results?search_query={match.Groups[1].Value}";
-            return url;
-        }
-        catch
-        {
-            return url;
-        }
+        HideVideoLoading();
     }
 
     private void OnTabTapped(object sender, TappedEventArgs e)
@@ -1255,6 +1317,14 @@ public partial class AnimeDetailsPage : ContentPage
                         DisplayedReviews.Add(Vm.Reviews[index]);
                 }
                 break;
+            case 4:
+                if (Vm.Recommendations.Count > DisplayedRecommendations.Count)
+                {
+                    var target = Math.Min(Vm.Recommendations.Count, DisplayedRecommendations.Count + RecommendationChunkSize);
+                    for (var index = DisplayedRecommendations.Count; index < target; index++)
+                        DisplayedRecommendations.Add(Vm.Recommendations[index]);
+                }
+                break;
         }
     }
 
@@ -1312,6 +1382,7 @@ public partial class AnimeDetailsPage : ContentPage
         OnPropertyChanged(nameof(RelatedErrorVisible));
         OnPropertyChanged(nameof(RelatedEmptyVisible));
         OnPropertyChanged(nameof(RelatedContentVisible));
+        OnPropertyChanged(nameof(RelatedGridHeight));
         OnPropertyChanged(nameof(CharactersErrorText));
         OnPropertyChanged(nameof(CharactersErrorVisible));
         OnPropertyChanged(nameof(CharactersEmptyVisible));

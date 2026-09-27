@@ -22,8 +22,7 @@
                    TextColor="{StaticResource BrushText}" Padding="16,12" />
 
             <RefreshView Grid.Row="1" IsRefreshing="{Binding LoadingTopics}" Refreshing="OnRefreshing">
-                <CollectionView ItemsSource="{Binding Topics}" SelectionMode="Single"
-                                SelectionChanged="OnTopicTapped">
+                <CollectionView ItemsSource="{Binding Topics}">
                     <CollectionView.EmptyView>
                         <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
                             <Label Text="Could not load this board" FontFamily="InterSemiBold" FontSize="14"
@@ -41,6 +40,9 @@
                             <Border Margin="16,4" BackgroundColor="{StaticResource EmSheet}"
                                     Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8" Padding="12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTopicRowTapped" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
                                 <Grid RowDefinitions="Auto,Auto" RowSpacing="4">
                                     <Label Grid.Row="0" Text="{Binding Data.Title}" FontFamily="InterBold" FontSize="14"
                                            TextColor="{StaticResource BrushText}" MaxLines="2"

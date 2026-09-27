@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Name="SettingsPageRoot"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
              x:Class="MALPlus.Views.SettingsPage"
@@ -217,8 +218,26 @@
                            TextColor="{StaticResource BrushText}" />
                     <Label Text="MALClient fork by idarkalex, ported to .NET MAUI"
                            FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
-                     <Label Text="Built with .NET MAUI"
+                    <Label Text="Built with .NET MAUI"
                             FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Account: signing out is the only way to get back to the login form, and the
+                 website session cookies that the community sections need are dropped with it. -->
+            <Border BackgroundColor="{StaticResource EmSheet}"
+                    Stroke="{StaticResource EmBorder}" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 8" Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="ACCOUNT" FontFamily="InterBold" FontSize="11"
+                           TextColor="#A0FFFFFF" />
+                    <Label x:Name="AccountNameLabel" FontFamily="InterBold" FontSize="14"
+                           TextColor="{StaticResource BrushText}" />
+                    <Button x:Name="LogOutButton" Text="Sign out" Clicked="OnLogOutClicked"
+                            IsVisible="{Binding LogOutButtonVisibility, Source={x:Reference SettingsPageRoot}}"
+                            FontFamily="InterSemiBold" FontSize="13" TextColor="White"
+                            BackgroundColor="#141d2b" BorderColor="#29FFFFFF" BorderWidth="1"
+                            CornerRadius="10" HeightRequest="44" Margin="0,6,0,0" />
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

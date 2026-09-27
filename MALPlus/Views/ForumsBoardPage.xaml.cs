@@ -38,7 +38,7 @@ public partial class ForumsBoardPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS ForumsBoardPage Init failed: " + ex.Message);
+            global::Android.Util.Log.Info("MALPlus", "MALPLUS ForumsBoardPage Init failed: " + ex.Message);
         }
     }
 
@@ -53,20 +53,20 @@ public partial class ForumsBoardPage : ContentPage
         catch { }
     }
 
-    private async void OnTopicTapped(object sender, SelectionChangedEventArgs e)
+    private async void OnTopicRowTapped(object sender, TappedEventArgs e)
     {
         try
         {
-            if (e.CurrentSelection.FirstOrDefault() is ForumTopicEntryViewModel item)
-            {
-                ((CollectionView)sender).SelectedItem = null;
-                await Shell.Current.GoToAsync(
-                    $"forumtopic?id={item.Data.Id}");
-            }
+            if (e.Parameter is ForumTopicEntryViewModel item)
+                await NavigateToTopicAsync(item);
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine("MALPLUS topic nav failed: " + ex.Message);
         }
+    }
+
+    private static async Task NavigateToTopicAsync(ForumTopicEntryViewModel item)
+    {
+        await Shell.Current.GoToAsync($"forumtopic?id={item.Data.Id}");
     }
 }

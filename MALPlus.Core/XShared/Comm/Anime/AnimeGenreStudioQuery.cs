@@ -71,7 +71,6 @@ namespace MALClient.XShared.Comm.Anime
             }
             catch (Exception ex)
             {
-                DiagnosticsReporter.Error("AnimeGenreStudioQuery", $"error for {(_genreMode ? _genre.ToString() : _studio.ToString())}: {ex.Message}", ex);
                 return output;
             }
 

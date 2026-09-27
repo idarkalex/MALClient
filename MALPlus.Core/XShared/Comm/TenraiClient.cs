@@ -127,6 +127,63 @@ namespace MALClient.XShared.Comm
             return await GetDataSingleFlightAsync(endpoint, timeout);
         }
 
+        /// <summary>
+        /// Same contract as <see cref="GetDataAsync"/> but for endpoints whose "data" is an
+        /// array (/recommendations, /characters, /staff). GetDataAsync rejects arrays on
+        /// purpose so it can apply its truncated-payload guard, which meant every array
+        /// endpoint silently threw and fell through to the HTML scraper.
+        /// </summary>
+        public static Task<JsonElement> GetDataArrayAsync(string endpoint)
+        {
+            return GetDataArraySingleFlightAsync(endpoint);
+        }
+
+        private static async Task<JsonElement> GetDataArraySingleFlightAsync(string endpoint)
+        {
+            lock (_cacheLock)
+            {
+                if (_dataCache.TryGetValue(endpoint, out var cached) && DateTime.UtcNow - cached.fetchedAt < TimeSpan.FromMinutes(DataCacheTtlMinutes))
+                    return cached.data.Clone();
+            }
+
+            if (_inFlight.TryGetValue(endpoint, out var existing))
+                return (await existing).Clone();
+
+            var task = GetDataArrayCoreAsync(endpoint);
+            if (!_inFlight.TryAdd(endpoint, task))
+                return (await _inFlight[endpoint]).Clone();
+
+            try
+            {
+                var result = await task;
+                return result.Clone();
+            }
+            finally
+            {
+                _inFlight.TryRemove(endpoint, out _);
+            }
+        }
+
+        private static async Task<JsonElement> GetDataArrayCoreAsync(string endpoint)
+        {
+            var json = await GetStringAsync(endpoint);
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            if (root.ValueKind != JsonValueKind.Object ||
+                root.TryGetProperty("status", out _) ||
+                root.TryGetProperty("error", out _))
+                throw new InvalidOperationException(
+                    $"Tenrai returned no data for '{endpoint}': {json.Substring(0, System.Math.Min(160, json.Length))}");
+
+            var result = root.GetProperty("data").Clone();
+            if (result.ValueKind != JsonValueKind.Array || result.GetArrayLength() == 0)
+                throw new InvalidOperationException($"Tenrai payload looks empty for '{endpoint}'");
+
+            lock (_cacheLock) _dataCache[endpoint] = (result.Clone(), DateTime.UtcNow);
+            return result;
+        }
+
         private static async Task<JsonElement> GetDataSingleFlightAsync(string endpoint, TimeSpan? timeout)
         {
             lock (_cacheLock)

@@ -37,7 +37,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS login Init failed: " + ex.Message);
         }
         try
         {
@@ -51,7 +50,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS login prewarm failed: " + ex.Message);
         }
     }
 
@@ -92,7 +90,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS auto signin failed: " + ex.Message);
             ResetToForm("Could not start login. Try again.");
         }
     }
@@ -112,7 +109,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS login form load failed: " + ex.Message);
         }
     }
 
@@ -140,7 +136,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS auth webview setup failed: " + ex.Message);
         }
     }
 
@@ -170,7 +165,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS cookie wipe failed: " + ex.Message);
         }
 #endif
     }
@@ -193,6 +187,13 @@ public partial class LogInPage : ContentPage
         try
         {
             var url = e.Url ?? string.Empty;
+            if (url.StartsWith("https://myanimelist.net") && !url.Contains("maloauth") &&
+                !url.Contains("/v1/oauth2/"))
+            {
+                // Loaded pages are the reliable moment: the login response Set-Cookie is already
+                // applied by the time the navigation completes.
+                CaptureSessionCookies(url);
+            }
             Probe("NAVIGATED " + url);
             if (url.Contains("login.php"))
                 _loginPageReady = true;
@@ -221,7 +222,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS auth navigated failed: " + ex.Message);
         }
     }
 
@@ -251,7 +251,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS page check failed: " + ex.Message);
         }
     }
 
@@ -263,7 +262,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS autofill failed: " + ex.Message);
             FallbackToManual("Could not fill the login form. Continue here.");
         }
     }
@@ -326,7 +324,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS autofill failed: " + ex.Message);
             FallbackToManual("Could not fill the login form.");
         }
     }
@@ -352,7 +349,6 @@ public partial class LogInPage : ContentPage
             }
             catch (Exception ex)
             {
-                Console.WriteLine("MALPLUS submit " + attempt.Name + " failed: " + ex.Message);
             }
             for (var waited = 0; waited < 12; waited++)
             {
@@ -403,7 +399,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS diagnose failed: " + ex.Message);
             FailAuto("Wrong username or password.");
         }
     }
@@ -453,7 +448,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS " + what + " click failed: " + ex.Message);
             return false;
         }
     }
@@ -513,7 +507,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS fallback failed: " + ex.Message);
         }
     }
 
@@ -533,7 +526,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS manual login failed: " + ex.Message);
         }
     }
 
@@ -562,7 +554,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS reset form failed: " + ex.Message);
         }
     }
 
@@ -591,29 +582,38 @@ public partial class LogInPage : ContentPage
     }
 
     private string _cookies;
+    private bool _reportedEmptyJar;
 
     /// <summary>
     /// Reads the MAL session cookies and keeps the longest blob seen. Only the length is logged,
     /// never the value: these cookies are the website session.
     /// </summary>
-    private void CaptureSessionCookies()
+    private void CaptureSessionCookies(string url = "")
     {
 #if ANDROID
         try
         {
             var jar = Android.Webkit.CookieManager.Instance.GetCookie("https://myanimelist.net");
             if (string.IsNullOrWhiteSpace(jar))
+            {
+                // The CookieManager applies the Set-Cookie of the login response asynchronously, so
+                // on the very first navigation after the form post the jar can still be empty. The
+                // capture is retried on every later navigation, so this is not fatal.
+                if (!_reportedEmptyJar)
+                {
+                    _reportedEmptyJar = true;
+                }
                 return;
+            }
+            _reportedEmptyJar = false;
             if (_cookies != null && jar.Length <= _cookies.Length)
                 return;
             _cookies = jar;
             var hasSession = jar.Contains("MAL_SESSION") || jar.Contains("p MAL_") ||
                              jar.Contains("mal_session") || jar.Contains("token=");
-            Console.WriteLine($"MALPLUS session cookies captured len={jar.Length} looksAuthenticated={hasSession}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS cookie read failed: " + ex.Message);
         }
 #endif
     }
@@ -656,6 +656,9 @@ public partial class LogInPage : ContentPage
                 {
                     e.Cancel = true;
                     Probe("oauth code captured");
+                    // Last chance to pick the session cookies up: by now the whole login round trip
+                    // is done, so the jar is guaranteed to hold the MAL session.
+                    CaptureSessionCookies("maloauth callback");
                     ShowBusy(true, "Signing you in…");
                     Vm.SignIn(_cookies ?? string.Empty, match[0].Groups[1].Value);
                 }
@@ -675,7 +678,7 @@ public partial class LogInPage : ContentPage
             if (url.StartsWith("https://myanimelist.net") && !url.Contains("maloauth") &&
                 !url.Contains("/v1/oauth2/"))
             {
-                CaptureSessionCookies();
+                CaptureSessionCookies(url);
             }
             if (url == "https://myanimelist.net/" || url == "https://myanimelist.net/#"
                 || url.StartsWith("https://myanimelist.net/#"))
@@ -718,7 +721,6 @@ public partial class LogInPage : ContentPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine("MALPLUS auth nav failed: " + ex.Message);
         }
     }
 }

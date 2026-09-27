@@ -1,147 +1,155 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:converters="clr-namespace:MALPlus.Converters"
              xmlns:controls="clr-namespace:MALPlus.Controls"
              x:Class="MALPlus.Views.DiscoverPage"
-             Title="Discover"
              BackgroundColor="{StaticResource EmBackground}">
+
     <ContentPage.Resources>
-        <converters:StringToImageSourceConverter x:Key="ImageConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolVis" />
+        <Style x:Key="TileStyle" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{StaticResource EmSheet}" />
+            <Setter Property="Stroke" Value="{StaticResource EmBorder}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        </Style>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="*,Auto">
-    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing" Grid.Row="0">
-        <ScrollView x:Name="MainScroll">
-            <VerticalStackLayout Padding="0,12,0,32" Spacing="20">
+    <Grid RowDefinitions="Auto,*">
+        <!-- Fixed header: the old title lived inside the scroll and scrolled away -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="16,20,16,6" ColumnSpacing="12">
+            <Label Grid.Column="0" Text="Discover" FontFamily="InterBold" FontSize="26"
+                   TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+            <ActivityIndicator x:Name="HeaderSpinner" Grid.Column="1" Color="#0066FF"
+                               WidthRequest="22" HeightRequest="22" IsRunning="False" />
+        </Grid>
 
-                <Label Text="Discover" FontFamily="InterBold" FontSize="24"
-                       TextColor="{StaticResource BrushText}" Padding="16,4" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="12,8,12,24" Spacing="10">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                      ColumnSpacing="10" RowSpacing="10">
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSearchTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Search" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="Anime, manga, characters" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                <!-- Seasonal -->
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="SEASONAL" FontFamily="InterBold" FontSize="11"
-                           TextColor="#A0FFFFFF" Padding="16,0" />
-                    <CollectionView x:Name="SeasonalRow" HeightRequest="240"
-                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid WidthRequest="140" Padding="0,0,0,8">
-                                    <Border WidthRequest="140" HeightRequest="200"
-                                            StrokeShape="RoundRectangle 8"
-                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                               Aspect="AspectFill" />
-                                    </Border>
-                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
-                                                         BackgroundColor="#B3051522"
-                                                         Margin="0,0,0,0">
-                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
-                                               TextColor="White" MaxLines="2"
-                                               LineBreakMode="TailTruncation" />
-                                    </VerticalStackLayout>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
+                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTrendingTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Trending" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="What the community is watching" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                <!-- Top Anime -->
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="TOP ANIME" FontFamily="InterBold" FontSize="11"
-                           TextColor="#A0FFFFFF" Padding="16,0" />
-                    <CollectionView x:Name="TopAnimeRow" HeightRequest="240"
-                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid WidthRequest="140" Padding="0,0,0,8">
-                                    <Border WidthRequest="140" HeightRequest="200"
-                                            StrokeShape="RoundRectangle 8"
-                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                               Aspect="AspectFill" />
-                                    </Border>
-                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
-                                                         BackgroundColor="#B3051522">
-                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
-                                               TextColor="White" MaxLines="2"
-                                               LineBreakMode="TailTruncation" />
-                                    </VerticalStackLayout>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
+                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnUpcomingAllTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Upcoming" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="Global calendar" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                <!-- Top Manga -->
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="TOP MANGA" FontFamily="InterBold" FontSize="11"
-                           TextColor="#A0FFFFFF" Padding="16,0" />
-                    <CollectionView x:Name="TopMangaRow" AutomationId="TopMangaRow" HeightRequest="240"
-                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid WidthRequest="140" Padding="0,0,0,8">
-                                    <Border WidthRequest="140" HeightRequest="200"
-                                            StrokeShape="RoundRectangle 8"
-                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                               Aspect="AspectFill" />
-                                    </Border>
-                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
-                                                         BackgroundColor="#B3051522">
-                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
-                                               TextColor="White" MaxLines="2"
-                                               LineBreakMode="TailTruncation" />
-                                    </VerticalStackLayout>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnUpcomingMineTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Your calendar" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="From your list" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                <!-- Adapted -->
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="ADAPTED TO ANIME" FontFamily="InterBold" FontSize="11"
-                           TextColor="#A0FFFFFF" Padding="16,0" />
-                    <CollectionView x:Name="AdaptedRow" AutomationId="AdaptedRow" HeightRequest="240"
-                                    SelectionMode="Single" SelectionChanged="OnItemTapped">
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Horizontal" Span="1" HorizontalItemSpacing="8" />
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid WidthRequest="140" Padding="0,0,0,8">
-                                    <Border WidthRequest="140" HeightRequest="200"
-                                            StrokeShape="RoundRectangle 8"
-                                            Stroke="{StaticResource EmBorder}" StrokeThickness="1">
-                                        <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                               Aspect="AspectFill" />
-                                    </Border>
-                                    <VerticalStackLayout VerticalOptions="End" Padding="6,4"
-                                                         BackgroundColor="#B3051522">
-                                        <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="11"
-                                               TextColor="White" MaxLines="2"
-                                               LineBreakMode="TailTruncation" />
-                                    </VerticalStackLayout>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
+                    <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnRandomAnimeTapped" />
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                <Label Text="Random anime" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                                <Label x:Name="RandomAnimeSummary" Text="No filters" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1" Text="⚙" Clicked="OnRandomAnimeSettingsTapped" BackgroundColor="Transparent"
+                                    BorderWidth="0" TextColor="#7AB4FF" FontSize="17" WidthRequest="34" HeightRequest="34"
+                                    Padding="0" VerticalOptions="Start" />
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnRandomMangaTapped" />
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                <Label Text="Random manga" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                                <Label x:Name="RandomMangaSummary" Text="No filters" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1" Text="⚙" Clicked="OnRandomMangaSettingsTapped" BackgroundColor="Transparent"
+                                    BorderWidth="0" TextColor="#7AB4FF" FontSize="17" WidthRequest="34" HeightRequest="34"
+                                    Padding="0" VerticalOptions="Start" />
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnGemTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Random gem" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="Great and underrated" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnNewsTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="News" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="MAL announcements" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="4" Grid.Column="1" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBecauseYouLikedTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Because you liked…" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="Cross recommendations" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="5" Grid.Column="0" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSeasonThemesTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Season OP/ED" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="From what is airing" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="5" Grid.Column="1" Style="{StaticResource TileStyle}" Padding="14,16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnRandomThemeTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Random theme" FontFamily="InterBold" FontSize="16" TextColor="{StaticResource BrushText}" />
+                            <Label Text="Nostalgia gem" FontFamily="Inter" FontSize="12" TextColor="#80FFFFFF" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
             </VerticalStackLayout>
         </ScrollView>
-    </RefreshView>
-    <controls:BottomNavBar Grid.Row="1" />
+
+        <controls:BottomNavBar Grid.Row="1" VerticalOptions="End" />
     </Grid>
 </ContentPage>

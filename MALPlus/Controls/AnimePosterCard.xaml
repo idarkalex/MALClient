@@ -35,7 +35,8 @@
                              HorizontalOptions="End" VerticalOptions="Start">
             <Border BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
                     StrokeShape="RoundRectangle 12" Padding="6,3"
-                    HorizontalOptions="End">
+                    HorizontalOptions="End"
+                    IsVisible="{Binding HasBadge, Source={x:Reference PosterCard}}">
                 <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                     <Label Text="{Binding BadgeAccent, Source={x:Reference PosterCard}}"
                            FontFamily="InterBold" FontSize="9"

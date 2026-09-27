@@ -33,13 +33,10 @@
                    FontSize="12" TextColor="#B3FFFFFF" HorizontalOptions="Center" />
         </VerticalStackLayout>
 
-        <ScrollView IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">            <VerticalStackLayout Spacing="14" Padding="16,12,16,32">
-
-                <!-- Pull-to-refresh wrapper -->
-                <RefreshView IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing">
-                    <Label Text="↓ pull to refresh" FontFamily="Inter" FontSize="11"
-                           TextColor="#40FFFFFF" HorizontalOptions="Center" Padding="0,0,0,4" />
-                </RefreshView>
+        <RefreshView IsRefreshing="{Binding LoadingVisibility}" Refreshing="OnRefreshing"
+                     IsVisible="{Binding LoadingVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <ScrollView>
+                <VerticalStackLayout Spacing="14" Padding="16,12,16,32">
 
                 <!-- Header: avatar + name + stats summary -->
                 <Border BackgroundColor="{StaticResource EmSheet}"
@@ -63,10 +60,6 @@
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Center">
-                            <Button Text="↻" Clicked="OnRefreshClicked" WidthRequest="36" HeightRequest="36"
-                                    FontFamily="InterBold" FontSize="16"
-                                    BackgroundColor="#141d2b" TextColor="White"
-                                    BorderColor="#29FFFFFF" BorderWidth="1" CornerRadius="8" Padding="0" />
                             <Button Text="⇄" Clicked="OnCompareClicked" WidthRequest="36" HeightRequest="36"
                                     FontFamily="InterBold" FontSize="16"
                                     BackgroundColor="#141d2b" TextColor="{StaticResource EmAccent}"
@@ -106,8 +99,10 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="ABOUT ME" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
+                        <!-- WebView with no fixed height: a WebView with a hard height inside a
+                             ScrollView is a nested scroller that never gets the gesture. -->
                         <WebView Source="{Binding AboutMeHtmlContent, Converter={StaticResource HtmlSource}}"
-                                 HeightRequest="200" />
+                                 HeightRequest="{Binding ComputedHtmlHeight}" />
                     </VerticalStackLayout>
                 </Border>
 
@@ -356,20 +351,82 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Stats summary -->
+                <!-- Library statistics. Every number here was already being parsed off the
+                     MAL profile page and then thrown away; this is the first thing that
+                     actually shows it. -->
                 <Border BackgroundColor="{StaticResource EmSheet}"
                         Stroke="{StaticResource EmBorder}" StrokeThickness="1"
                         StrokeShape="RoundRectangle 8" Padding="14">
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="STATS" FontFamily="InterBold" FontSize="10"
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="LIBRARY STATISTICS" FontFamily="InterBold" FontSize="10"
                                TextColor="#A0FFFFFF" />
-                        <Label Text="{Binding ApproxTimeSpentOnAnime}" FontFamily="InterBold" FontSize="14"
-                               TextColor="{StaticResource EmAccent}" />
-                        <Label Text="{Binding ApproxTimeSpentOnAnimeAndMovies}" FontFamily="Inter" FontSize="12"
-                               TextColor="#80FFFFFF" />
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10"
+                              ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="1">
+                                <Label Text="{Binding CurrentData.AnimeMeanShort}" FontFamily="InterBold" FontSize="18"
+                                       TextColor="{StaticResource EmAccent}" />
+                                <Label Text="Mean anime score" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="1">
+                                <Label Text="{Binding CurrentData.MangaMeanShort}" FontFamily="InterBold" FontSize="18"
+                                       TextColor="{StaticResource EmAccent}" />
+                                <Label Text="Mean manga score" FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="1">
+                                <Label Text="{Binding CurrentData.AnimeTotal, StringFormat='{0} on list'}"
+                                       FontFamily="InterSemiBold" FontSize="14" TextColor="{StaticResource BrushText}" />
+                                <Label Text="{Binding CurrentData.AnimeEpisodes, StringFormat='{0} episodes watched'}"
+                                       FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="1">
+                                <Label Text="{Binding CurrentData.MangaTotal, StringFormat='{0} on list'}"
+                                       FontFamily="InterSemiBold" FontSize="14" TextColor="{StaticResource BrushText}" />
+                                <Label Text="{Binding CurrentData.MangaChapters, StringFormat='{0} chapters read'}"
+                                       FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Row="2" Grid.Column="0" Spacing="1">
+                                <Label Text="{Binding CurrentData.AnimeDaysBind}"
+                                       FontFamily="Inter" FontSize="12" TextColor="#B8C7D8" />
+                                <Label Text="{Binding CurrentData.AnimeRewatched, StringFormat='{0} rewatches'}"
+                                       FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="1">
+                                <Label Text="{Binding CurrentData.MangaDaysBind}"
+                                       FontFamily="Inter" FontSize="12" TextColor="#B8C7D8" />
+                                <Label Text="{Binding CurrentData.MangaReread, StringFormat='{0} rereads'}"
+                                       FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF" />
+                            </VerticalStackLayout>
+
+                            <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                   Text="{Binding CurrentData.AnimeChartSummary}"
+                                   FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF"
+                                   LineBreakMode="WordWrap" />
+                            <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                   Text="{Binding CurrentData.MangaChartSummary}"
+                                   FontFamily="Inter" FontSize="11" TextColor="#80FFFFFF"
+                                   LineBreakMode="WordWrap" />
+                        </Grid>
+
+                        <Label Text="TIME SPENT" FontFamily="InterBold" FontSize="10" TextColor="#A0FFFFFF" />
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="{Binding ApproxTimeSpentOnAnime}" FontFamily="InterSemiBold"
+                                   FontSize="14" TextColor="{StaticResource BrushText}" />
+                            <Label Grid.Column="1" Text="anime watched (estimated)" FontFamily="Inter" FontSize="11"
+                                   TextColor="#80FFFFFF" VerticalOptions="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="{Binding ApproxTimeSpentOnAnimeAndMovies}" FontFamily="InterSemiBold"
+                                   FontSize="14" TextColor="{StaticResource BrushText}" />
+                            <Label Grid.Column="1" Text="including movies" FontFamily="Inter" FontSize="11"
+                                   TextColor="#80FFFFFF" VerticalOptions="Center" />
+                        </Grid>
                     </VerticalStackLayout>
                 </Border>
-            </VerticalStackLayout>
-        </ScrollView>
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
     </Grid>
 </ContentPage>
