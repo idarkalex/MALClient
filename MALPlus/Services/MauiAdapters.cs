@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MALClient.Adapters;
@@ -248,6 +249,7 @@ public class MauiPasswordVault : IPasswordVault
             return;
         lock (Sync)
             Cache[credential.Domain] = credential;
+        WriteFallbackFile(credential);
         // Deliberately not awaited with a short cap. The first SecureStorage write has to
         // create the Tink keyset in the AndroidKeyStore, which on this device takes well
         // over a second and a half, and abandoning it here is exactly why the app came back
@@ -279,12 +281,79 @@ public class MauiPasswordVault : IPasswordVault
                 return cached;
         }
 
-        var credential = TryReadSecureStorage(domain);
+        var credential = TryReadSecureStorage(domain) ?? TryReadFallbackFile(domain);
         if (credential == null)
             throw new Exception("Credential not found.");
         lock (Sync)
             Cache[domain] = credential;
         return credential;
+    }
+
+    /// <summary>
+    /// SecureStorage is EncryptedSharedPreferences + Tink + AndroidKeyStore. It does not always
+    /// come back: on this device every read and even RemoveAll throws, which is how the MAL session
+    /// cookies (the ones the forum endpoints need) got lost on a cold start. The credential is
+    /// therefore mirrored into the app private directory, which is sandboxed like the keystore
+    /// store, and read back whenever the keystore path yields nothing.
+    /// </summary>
+    private static string FallbackPath(string domain)
+    {
+        return Path.Combine(FileSystem.AppDataDirectory, "vault_" + domain + ".dat");
+    }
+
+    private static void WriteFallbackFile(VaultCredential credential)
+    {
+        try
+        {
+            var lines = new[]
+            {
+                credential.Domain ?? string.Empty,
+                credential.UserName ?? string.Empty,
+                credential.Password ?? string.Empty
+            };
+            File.WriteAllLines(FallbackPath(credential.Domain), lines);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS vault fallback write failed: " + ex.GetType().Name);
+        }
+    }
+
+    private static VaultCredential TryReadFallbackFile(string domain)
+    {
+        try
+        {
+            var path = FallbackPath(domain);
+            if (!File.Exists(path))
+                return null;
+            var lines = File.ReadAllLines(path);
+            if (lines.Length < 3 || string.IsNullOrEmpty(lines[1]))
+                return null;
+            Console.WriteLine("MALPLUS vault recovered " + domain + " from the private file store");
+            return new VaultCredential(domain, lines[1], lines[2]);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS vault fallback read failed: " + ex.GetType().Name);
+            return null;
+        }
+    }
+
+    private static void DeleteFallbackFiles()
+    {
+        try
+        {
+            foreach (var domain in new[] {"MALPlus", "MALPlusHum"})
+            {
+                var path = FallbackPath(domain);
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS vault fallback delete failed: " + ex.GetType().Name);
+        }
     }
 
     /// <summary>
@@ -349,6 +418,7 @@ public class MauiPasswordVault : IPasswordVault
     {
         lock (Sync)
             Cache.Clear();
+        DeleteFallbackFiles();
         _ = Task.Run(async () =>
         {
             for (var attempt = 0; attempt < 3; attempt++)

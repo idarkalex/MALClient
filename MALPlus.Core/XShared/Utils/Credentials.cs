@@ -190,6 +190,38 @@ namespace MALClient.XShared.Utils
             return false;
         }
 
+        /// <summary>
+        /// The MAL website session cookies. They are what the community endpoints (forums, clubs,
+        /// wall) authenticate with, and they only ever lived in memory after a sign in, so every
+        /// cold start used to come back with a working official api and a completely dead forum
+        /// section. Restored from the same vault entry that holds them at login time.
+        /// </summary>
+        public static bool TryRestoreWebSession()
+        {
+            if (!string.IsNullOrWhiteSpace(Password))
+                return true;
+
+            foreach (var domain in new[] {"MALPlus", "MALPlusHum"})
+            {
+                try
+                {
+                    var credential = PasswordVault.Get(domain);
+                    if (credential == null || string.IsNullOrWhiteSpace(credential.Password))
+                        continue;
+                    if (string.IsNullOrWhiteSpace(UserName))
+                        UserName = credential.UserName;
+                    Password = credential.Password;
+                    Console.WriteLine("MALPLUS web session restored for " + domain);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("MALPLUS web session restore failed for " + domain + ": " + ex.GetType().Name);
+                }
+            }
+            return false;
+        }
+
         private static async void FillInMissingIdData()
         {
             try

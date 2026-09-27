@@ -592,6 +592,32 @@ public partial class LogInPage : ContentPage
 
     private string _cookies;
 
+    /// <summary>
+    /// Reads the MAL session cookies and keeps the longest blob seen. Only the length is logged,
+    /// never the value: these cookies are the website session.
+    /// </summary>
+    private void CaptureSessionCookies()
+    {
+#if ANDROID
+        try
+        {
+            var jar = Android.Webkit.CookieManager.Instance.GetCookie("https://myanimelist.net");
+            if (string.IsNullOrWhiteSpace(jar))
+                return;
+            if (_cookies != null && jar.Length <= _cookies.Length)
+                return;
+            _cookies = jar;
+            var hasSession = jar.Contains("MAL_SESSION") || jar.Contains("p MAL_") ||
+                             jar.Contains("mal_session") || jar.Contains("token=");
+            Console.WriteLine($"MALPLUS session cookies captured len={jar.Length} looksAuthenticated={hasSession}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS cookie read failed: " + ex.Message);
+        }
+#endif
+    }
+
     private void OnAuthNavigating(object sender, WebNavigatingEventArgs e)
     {
         try
@@ -643,20 +669,19 @@ public partial class LogInPage : ContentPage
                 }
                 return;
             }
+            // Keep the freshest session cookie on every MAL navigation, not only when the redirect
+            // lands exactly on the site root: the community endpoints authenticate with these
+            // cookies, and missing them is what left the forums dead until the next sign in.
+            if (url.StartsWith("https://myanimelist.net") && !url.Contains("maloauth") &&
+                !url.Contains("/v1/oauth2/"))
+            {
+                CaptureSessionCookies();
+            }
             if (url == "https://myanimelist.net/" || url == "https://myanimelist.net/#"
                 || url.StartsWith("https://myanimelist.net/#"))
             {
                 e.Cancel = true;
-#if ANDROID
-                try
-                {
-                    _cookies = Android.Webkit.CookieManager.Instance.GetCookie("https://myanimelist.net");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("MALPLUS cookie read failed: " + ex.Message);
-                }
-#endif
+                CaptureSessionCookies();
                 AuthWebView.Source = "https://myanimelist.net/v1/oauth2/authorize?response_type=code&"
                     + "client_id=030f8e30cb57bce625dda6ca8637b75e&"
                     + "state=signin&"

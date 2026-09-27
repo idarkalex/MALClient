@@ -29,6 +29,10 @@ namespace MALClient.XShared.BL
             // A dropped vault write must not cost the user their session: the refresh token
             // is enough to rebuild it.
             await Credentials.TryRestoreSessionAsync();
+            // The forums and the rest of the community endpoints authenticate with the MAL
+            // website cookies, not with the api token, so they need restoring too.
+            if (Credentials.Authenticated)
+                Credentials.TryRestoreWebSession();
             _ = FavouritesManager.LoadDataAsync();
             await AnimeImageQuery.Init();
             ViewModelLocator.ForumsMain.LoadPinnedTopics();
