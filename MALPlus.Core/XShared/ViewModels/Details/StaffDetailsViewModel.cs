@@ -33,8 +33,8 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _data = value;
-                RaisePropertyChanged(() => Data);
-                RaisePropertyChanged(() => FavouriteViewModel);
+                RaisePropertyChanged(nameof(Data));
+                RaisePropertyChanged(nameof(FavouriteViewModel));
             }
         }
 
@@ -81,7 +81,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _loading = value;
-                RaisePropertyChanged(() => Loading);
+                RaisePropertyChanged(nameof(Loading));
             }
         }
 
@@ -91,7 +91,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _isNoVoiceActingRolesNoticeVisible = value;
-                RaisePropertyChanged(() => IsNoVoiceActingRolesNoticeVisible);
+                RaisePropertyChanged(nameof(IsNoVoiceActingRolesNoticeVisible));
             }
         }
 
@@ -101,7 +101,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _isNoProductionRolesNoticeVisible = value;
-                RaisePropertyChanged(() => IsNoProductionRolesNoticeVisible);
+                RaisePropertyChanged(nameof(IsNoProductionRolesNoticeVisible));
             }
         }
 

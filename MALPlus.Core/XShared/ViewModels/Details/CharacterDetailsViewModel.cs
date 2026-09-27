@@ -40,7 +40,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _data = value;
-                RaisePropertyChanged(() => Data);
+                RaisePropertyChanged(nameof(Data));
             }
         }
 
@@ -50,7 +50,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _voiceActors = value ?? new List<FavouriteViewModel>();
-                RaisePropertyChanged(() => VoiceActors);
+                RaisePropertyChanged(nameof(VoiceActors));
             }
         }
 
@@ -60,7 +60,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _spoilerButtonVisibility = value;
-                RaisePropertyChanged(() => SpoilerButtonVisibility);
+                RaisePropertyChanged(nameof(SpoilerButtonVisibility));
             }
         }
 
@@ -70,7 +70,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _animeographyVisibility = value;
-                RaisePropertyChanged(() => AnimeographyVisibility);
+                RaisePropertyChanged(nameof(AnimeographyVisibility));
             }
         }
 
@@ -80,7 +80,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _mangaographyVisibility = value;
-                RaisePropertyChanged(() => MangaographyVisibility);
+                RaisePropertyChanged(nameof(MangaographyVisibility));
             }
         }
 
@@ -90,7 +90,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _hasAboutContent = value;
-                RaisePropertyChanged(() => HasAboutContent);
+                RaisePropertyChanged(nameof(HasAboutContent));
             }
         }
 
@@ -100,7 +100,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _isAboutExpanded = value;
-                RaisePropertyChanged(() => IsAboutExpanded);
+                RaisePropertyChanged(nameof(IsAboutExpanded));
             }
         }
 
@@ -112,7 +112,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _isSpoilerExpanded = value;
-                RaisePropertyChanged(() => IsSpoilerExpanded);
+                RaisePropertyChanged(nameof(IsSpoilerExpanded));
             }
         }
 
@@ -124,7 +124,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _isOverviewEmpty = value;
-                RaisePropertyChanged(() => IsOverviewEmpty);
+                RaisePropertyChanged(nameof(IsOverviewEmpty));
             }
         }
 
@@ -133,7 +133,7 @@ namespace MALClient.XShared.ViewModels.Details
             (_toggleAboutCommand = new RelayCommand(() =>
             {
                 IsAboutExpanded = !IsAboutExpanded;
-                RaisePropertyChanged(() => AboutToggleText);
+                RaisePropertyChanged(nameof(AboutToggleText));
             }));
 
         public ICommand ToggleSpoilerCommand =>
@@ -141,7 +141,7 @@ namespace MALClient.XShared.ViewModels.Details
             (_toggleSpoilerCommand = new RelayCommand(() =>
             {
                 IsSpoilerExpanded = !IsSpoilerExpanded;
-                RaisePropertyChanged(() => SpoilerToggleText);
+                RaisePropertyChanged(nameof(SpoilerToggleText));
             }));
 
         public ICommand NavigateStaffDetailsCommand =>
@@ -201,7 +201,7 @@ namespace MALClient.XShared.ViewModels.Details
             set
             {
                 _loading = value;
-                RaisePropertyChanged(() => Loading);
+                RaisePropertyChanged(nameof(Loading));
             }
         }
 
@@ -238,7 +238,7 @@ namespace MALClient.XShared.ViewModels.Details
                     .Where(actor => actor != null)
                     .Select(actor => new FavouriteViewModel(actor))
                     .ToList();
-                RaisePropertyChanged(() => FavouriteViewModel);
+                RaisePropertyChanged(nameof(FavouriteViewModel));
                 ViewModelLocator.GeneralMain.CurrentOffStatus = data.Name ?? string.Empty;
                 ViewModelLocator.GeneralMain.IsCurrentStatusSelectable = true;
             }
@@ -262,8 +262,8 @@ namespace MALClient.XShared.ViewModels.Details
             IsOverviewEmpty = true;
             IsAboutExpanded = true;
             IsSpoilerExpanded = false;
-            RaisePropertyChanged(() => AboutToggleText);
-            RaisePropertyChanged(() => SpoilerToggleText);
+            RaisePropertyChanged(nameof(AboutToggleText));
+            RaisePropertyChanged(nameof(SpoilerToggleText));
             AnimeographyVisibility = false;
             MangaographyVisibility = false;
             ViewModelLocator.GeneralMain.CurrentOffStatus = string.Empty;

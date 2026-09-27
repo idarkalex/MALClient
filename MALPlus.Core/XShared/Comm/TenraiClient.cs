@@ -157,9 +157,32 @@ namespace MALClient.XShared.Comm
         {
             var json = timeout.HasValue ? await GetStringAsync(endpoint, timeout.Value) : await GetStringAsync(endpoint);
             using var doc = JsonDocument.Parse(json);
-            var result = doc.RootElement.GetProperty("data").Clone();
+            var root = doc.RootElement;
+
+            // Tenrai answers failures with an error envelope instead of a data object. Caching one
+            // of those (or a truncated body) poisons every reader for the whole TTL, which showed up
+            // as character/staff pages randomly missing their about text and credit lists.
+            if (root.ValueKind != JsonValueKind.Object ||
+                root.TryGetProperty("status", out _) ||
+                root.TryGetProperty("error", out _))
+                throw new InvalidOperationException(
+                    $"Tenrai returned no data for '{endpoint}': {json.Substring(0, System.Math.Min(160, json.Length))}");
+
+            var result = root.GetProperty("data").Clone();
+            if (result.ValueKind != JsonValueKind.Object || CountProperties(result) < 3)
+                throw new InvalidOperationException($"Tenrai payload looks truncated for '{endpoint}'");
+
             lock (_cacheLock) _dataCache[endpoint] = (result.Clone(), DateTime.UtcNow);
             return result;
+        }
+
+        private static int CountProperties(JsonElement element)
+        {
+            var count = 0;
+            foreach (var _ in element.EnumerateObject())
+                if (++count >= 3)
+                    break;
+            return count;
         }
 
         private static async Task<string> GetStringAsync(string endpoint, CancellationToken cancellationToken)

@@ -31,17 +31,21 @@ namespace MALClient.XShared.Comm.Details
                 ? null
                 : await DataCache.RetrieveData<CharacterDetailsData>($"character_details_v4_{_id}.json",
                     "character_details", 30);
-            if (possibleData != null && possibleData.Id == _id && !string.IsNullOrWhiteSpace(possibleData.Name))
+            if (possibleData != null && possibleData.Id == _id && !string.IsNullOrWhiteSpace(possibleData.Name) &&
+                !IsCreditDataEmpty(possibleData) && !string.IsNullOrWhiteSpace(possibleData.Content))
                 return possibleData;
 
             var output = await FetchFromTenraiAsync();
             if (!string.IsNullOrWhiteSpace(output?.Name))
             {
-                if (IsCreditDataEmpty(output))
+                if (IsCreditDataEmpty(output) || string.IsNullOrWhiteSpace(output.Content))
                 {
                     var html = await FetchFromHtmlAsync();
                     MergeMissingCredits(output, html);
                 }
+
+                if (IsCreditDataEmpty(output))
+                    return output;
 
                 await DataCache.SaveData(output, $"character_details_v4_{_id}.json", "character_details");
                 return output;

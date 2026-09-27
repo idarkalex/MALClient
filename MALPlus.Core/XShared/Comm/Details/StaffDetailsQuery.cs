@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -31,19 +31,47 @@ namespace MALClient.XShared.Comm.Details
         {
             var possibleData = force
                 ? null
-                : await DataCache.RetrieveData<StaffDetailsData>($"staff_details_v5_{_id}.json",
+                : await DataCache.RetrieveData<StaffDetailsData>($"staff_details_v6_{_id}.json",
                     "staff_details", 30);
-            if (IsStructuredDataValid(possibleData))
+            if (IsStructuredDataValid(possibleData) && HasCredits(possibleData))
                 return possibleData;
 
             var output = await FetchFromTenraiAsync();
             if (IsStructuredDataValid(output))
             {
-                await DataCache.SaveData(output, $"staff_details_v5_{_id}.json", "staff_details");
+                if (!HasCredits(output))
+                {
+                    var html = await FetchFromHtmlAsync();
+                    MergeMissingCredits(output, html);
+                }
+
+                if (HasCredits(output))
+                    await DataCache.SaveData(output, $"staff_details_v6_{_id}.json", "staff_details");
                 return output;
             }
 
             return await FetchFromHtmlAsync();
+        }
+
+        private static bool HasCredits(StaffDetailsData data)
+        {
+            return data != null && ((data.ShowCharacterPairs?.Count ?? 0) > 0 || (data.StaffPositions?.Count ?? 0) > 0);
+        }
+
+        private static void MergeMissingCredits(StaffDetailsData target, StaffDetailsData fallback)
+        {
+            if (target == null || fallback == null || ReferenceEquals(target, fallback))
+                return;
+
+            if (string.IsNullOrWhiteSpace(target.ImgUrl))
+                target.ImgUrl = fallback.ImgUrl;
+
+            if (target.ShowCharacterPairs.Count == 0 && fallback.ShowCharacterPairs.Count > 0)
+                target.ShowCharacterPairs.AddRange(fallback.ShowCharacterPairs);
+            if (target.StaffPositions.Count == 0 && fallback.StaffPositions.Count > 0)
+                target.StaffPositions.AddRange(fallback.StaffPositions);
+
+            SortCreditsByTitle(target);
         }
 
         private async Task<StaffDetailsData> FetchFromTenraiAsync()
@@ -124,6 +152,7 @@ namespace MALClient.XShared.Comm.Details
                 ParseVoiceRoles(data, output);
                 ParsePositions(data, "anime", output, true);
                 ParsePositions(data, "manga", output, false);
+                SortCreditsByTitle(output);
 
                 return output;
             }
@@ -480,7 +509,26 @@ namespace MALClient.XShared.Comm.Details
                 //sorcery
             }
 
+            SortCreditsByTitle(output);
             return output;
+        }
+
+        private static void SortCreditsByTitle(StaffDetailsData data)
+        {
+            if (data == null)
+                return;
+
+            if (data.ShowCharacterPairs != null)
+                data.ShowCharacterPairs.Sort((left, right) => string.Compare(
+                    left?.AnimeLightEntry?.Title ?? string.Empty,
+                    right?.AnimeLightEntry?.Title ?? string.Empty,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (data.StaffPositions != null)
+                data.StaffPositions.Sort((left, right) => string.Compare(
+                    left?.Title ?? string.Empty,
+                    right?.Title ?? string.Empty,
+                    StringComparison.OrdinalIgnoreCase));
         }
     }
 }

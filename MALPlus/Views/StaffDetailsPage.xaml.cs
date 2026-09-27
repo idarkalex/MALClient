@@ -13,24 +13,12 @@ namespace MALPlus.Views;
 [QueryProperty(nameof(StaffId), "id")]
 public partial class StaffDetailsPage : ContentPage
 {
-    private const int RoleChunkSize = 12;
-    private const double PanActivationDistance = 14;
     private bool _initialized;
     private int _loadedId = -1;
     private StaffDetailsViewModel _subscribedVm;
-    private bool _horizontalPanActive;
     private int _selectedTab;
-    private int _voiceRoleCount;
-    private int _productionRoleCount;
-    private double _lastProgressiveScrollY;
-    private readonly ObservableCollection<ShowCharacterPair> _voiceRoleItems = new ObservableCollection<ShowCharacterPair>();
-    private readonly ObservableCollection<AnimeLightEntry> _productionRoleItems = new ObservableCollection<AnimeLightEntry>();
 
     public string StaffId { get; set; }
-
-    public ObservableCollection<ShowCharacterPair> VoiceRoleItems => _voiceRoleItems;
-
-    public ObservableCollection<AnimeLightEntry> ProductionRoleItems => _productionRoleItems;
 
     private StaffDetailsViewModel Vm => BindingContext as StaffDetailsViewModel;
 
@@ -97,135 +85,10 @@ public partial class StaffDetailsPage : ContentPage
 
     private void ResetRenderedItems()
     {
-        _voiceRoleItems.Clear();
-        _productionRoleItems.Clear();
-        _voiceRoleCount = 0;
-        _productionRoleCount = 0;
-        _lastProgressiveScrollY = 0;
-        AppendVoiceRoles();
-        AppendProductionRoles();
-        UpdateLoadMoreButtons();
-        if ((Vm?.Data?.ShowCharacterPairs?.Count ?? 0) == 0)
+        if ((Vm?.Data?.ShowCharacterPairs?.Count ?? 0) == 0 && (Vm?.Data?.StaffPositions?.Count ?? 0) > 0)
+            _ = SelectTabAsync(2, false);
+        else if ((Vm?.Data?.ShowCharacterPairs?.Count ?? 0) == 0)
             _ = SelectTabAsync(1, false);
-    }
-
-    private void AppendVoiceRoles()
-    {
-        var source = Vm?.Data?.ShowCharacterPairs;
-        if (source == null || _voiceRoleCount >= source.Count)
-            return;
-        int target = System.Math.Min(_voiceRoleCount + RoleChunkSize, source.Count);
-        for (int i = _voiceRoleCount; i < target; i++)
-        {
-            if (source[i] != null)
-                _voiceRoleItems.Add(source[i]);
-        }
-        _voiceRoleCount = target;
-    }
-
-    private void AppendProductionRoles()
-    {
-        var source = Vm?.Data?.StaffPositions;
-        if (source == null || _productionRoleCount >= source.Count)
-            return;
-        int target = System.Math.Min(_productionRoleCount + RoleChunkSize, source.Count);
-        for (int i = _productionRoleCount; i < target; i++)
-        {
-            if (source[i] != null)
-                _productionRoleItems.Add(source[i]);
-        }
-        _productionRoleCount = target;
-    }
-
-    private void UpdateLoadMoreButtons()
-    {
-        VoiceRolesLoadMoreButton.IsVisible = (Vm?.Data?.ShowCharacterPairs?.Count ?? 0) > _voiceRoleCount;
-        ProductionRolesLoadMoreButton.IsVisible = (Vm?.Data?.StaffPositions?.Count ?? 0) > _productionRoleCount;
-    }
-
-    private void AppendForSelectedTab()
-    {
-        if (_selectedTab == 1)
-            AppendVoiceRoles();
-        else if (_selectedTab == 2)
-            AppendProductionRoles();
-        UpdateLoadMoreButtons();
-    }
-
-    private void OnLoadMoreVoiceRolesClicked(object sender, EventArgs e)
-    {
-        AppendVoiceRoles();
-        UpdateLoadMoreButtons();
-    }
-
-    private void OnLoadMoreProductionRolesClicked(object sender, EventArgs e)
-    {
-        AppendProductionRoles();
-        UpdateLoadMoreButtons();
-    }
-
-    private void OnContentScrolled(object sender, ScrolledEventArgs e)
-    {
-        if (ContentScroll.Height <= 0 || e.ScrollY < _lastProgressiveScrollY + ContentScroll.Height * 0.72)
-            return;
-        _lastProgressiveScrollY = e.ScrollY;
-        AppendForSelectedTab();
-    }
-
-    private void OnTabPanUpdated(object sender, PanUpdatedEventArgs e)
-    {
-        if (e.StatusType == GestureStatus.Started)
-        {
-            _horizontalPanActive = false;
-            TabContentHost.TranslationX = 0;
-            return;
-        }
-        if (e.StatusType == GestureStatus.Completed)
-        {
-            _ = CompleteTabPanAsync(e.TotalX, true);
-            return;
-        }
-        if (e.StatusType == GestureStatus.Canceled)
-        {
-            _ = CompleteTabPanAsync(e.TotalX, false);
-            return;
-        }
-        if (e.StatusType != GestureStatus.Running)
-            return;
-
-        double horizontal = System.Math.Abs(e.TotalX);
-        double vertical = System.Math.Abs(e.TotalY);
-        if (!_horizontalPanActive)
-        {
-            if (horizontal < PanActivationDistance || horizontal <= vertical * 1.2)
-            {
-                TabContentHost.TranslationX = 0;
-                return;
-            }
-            _horizontalPanActive = true;
-        }
-
-        bool canMove = e.TotalX < 0 ? _selectedTab < 2 : _selectedTab > 0;
-        double translation = canMove ? e.TotalX : e.TotalX * 0.2;
-        double width = System.Math.Max(TabContentHost.Width, 1);
-        TabContentHost.TranslationX = System.Math.Clamp(translation, -width, width);
-    }
-
-    private async Task CompleteTabPanAsync(double totalX, bool allowSelection)
-    {
-        double threshold = System.Math.Max(80, TabContentHost.Width * 0.18);
-        bool shouldSelect = allowSelection && _horizontalPanActive && System.Math.Abs(totalX) >= threshold;
-        _horizontalPanActive = false;
-        if (shouldSelect)
-        {
-            int target = _selectedTab + (totalX < 0 ? 1 : -1);
-            if (target >= 0 && target <= 2)
-            {
-                await SelectTabAsync(target, true);
-                return;
-            }
-        }
-        await ResetTabTranslationAsync();
     }
 
     private async void OnInfoTabTapped(object sender, TappedEventArgs e)

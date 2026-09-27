@@ -165,15 +165,11 @@
                             </HorizontalStackLayout>
                         </HorizontalStackLayout>
                         <HorizontalStackLayout Spacing="8" IsVisible="{Binding HasJapaneseVoice}">
-                            <Grid WidthRequest="26" HeightRequest="26" VerticalOptions="Center">
-                                <ImageButton Source="{Binding JapaneseVoice.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
-                                             Clicked="OnJapaneseVoiceClicked"
-                                             CommandParameter="{Binding JapaneseVoice.Data.Id}"
-                                             BackgroundColor="Transparent" BorderWidth="0"
-                                             WidthRequest="26" HeightRequest="26" />
-                                <Border StrokeShape="RoundRectangle 13" Stroke="#29FFFFFF" StrokeThickness="1"
-                                        InputTransparent="True" />
-                            </Grid>
+                            <ImageButton Source="{Binding JapaneseVoice.Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                                         Clicked="OnJapaneseVoiceClicked"
+                                         CommandParameter="{Binding JapaneseVoice.Data.Id}"
+                                         BackgroundColor="Transparent" BorderWidth="0" Aspect="AspectFill"
+                                         WidthRequest="26" HeightRequest="26" VerticalOptions="Center" />
                             <Label Text="{Binding JapaneseVoice.Data.Name}" FontFamily="InterSemiBold" FontSize="12"
                                    TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation"
                                    VerticalOptions="Center" WidthRequest="96" />

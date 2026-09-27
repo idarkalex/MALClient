@@ -1,7 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:MALPlus.Converters"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
              x:Name="CharacterDetailsPageRoot"
              x:Class="MALPlus.Views.CharacterDetailsPage"
              BackgroundColor="{StaticResource EmBackground}">
@@ -78,7 +79,7 @@
         </DataTemplate>
     </ContentPage.Resources>
 
-    <Grid>
+    <Grid RowDefinitions="Auto,Auto,*">
         <Grid IsVisible="{Binding Loading}" BackgroundColor="#CC000510" ZIndex="99">
             <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
                 <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
@@ -88,71 +89,66 @@
             </VerticalStackLayout>
         </Grid>
 
-        <ScrollView x:Name="ContentScroll" Scrolled="OnContentScrolled"
-                    IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-            <VerticalStackLayout Spacing="0" Padding="0,0,0,32">
-                <Grid x:Name="FullHero" HeightRequest="300" BackgroundColor="#000000">
-                    <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
-                           Aspect="AspectFill" />
-                    <BoxView>
-                        <BoxView.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#00000000" Offset="0.0" />
-                                <GradientStop Color="#18000000" Offset="0.45" />
-                                <GradientStop Color="#F0051522" Offset="1.0" />
-                            </LinearGradientBrush>
-                        </BoxView.Background>
-                    </BoxView>
-                    <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,18" Spacing="7">
-                        <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="24"
-                               TextColor="White" MaxLines="2" LineBreakMode="TailTruncation" />
-                        <HorizontalStackLayout Spacing="7">
-                            <Border Padding="8,4" BackgroundColor="#260066FF" StrokeShape="RoundRectangle 7">
-                                <Label Text="CHARACTER" FontFamily="InterSemiBold" FontSize="10" TextColor="#80B4FF" />
-                            </Border>
-                            <Border Padding="8,4" BackgroundColor="#26FFD700" StrokeShape="RoundRectangle 7"
-                                    IsVisible="{Binding Data.TotalFavs, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
-                                <Label Text="{Binding Data.TotalFavs, StringFormat='Favorites: {0}'}"
-                                       FontFamily="InterSemiBold" FontSize="10" TextColor="#FFFFD965" />
-                            </Border>
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-                </Grid>
-
-                <BoxView x:Name="HeroSpacer" HeightRequest="8" Color="{StaticResource EmBackground}" />
-
-                <ScrollView HorizontalOptions="Fill" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
-                            Padding="14,0,14,0" BackgroundColor="{StaticResource EmBackground}">
-                    <HorizontalStackLayout Spacing="20">
-                        <Label x:Name="OverviewTabLabel" Text="Overview" Style="{StaticResource CharTabLabelStyle}">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnOverviewTabTapped" />
-                            </Label.GestureRecognizers>
-                        </Label>
-                        <Label x:Name="VoiceActorsTabLabel" Text="Voice Actors" Style="{StaticResource CharTabLabelStyle}">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnVoiceActorsTabTapped" />
-                            </Label.GestureRecognizers>
-                        </Label>
-                        <Label x:Name="AnimeographyTabLabel" Text="Animeography" Style="{StaticResource CharTabLabelStyle}">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnAnimeographyTabTapped" />
-                            </Label.GestureRecognizers>
-                        </Label>
-                        <Label x:Name="MangaographyTabLabel" Text="Mangaography" Style="{StaticResource CharTabLabelStyle}">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnMangaographyTabTapped" />
-                            </Label.GestureRecognizers>
-                        </Label>
+        <Grid Grid.RowSpan="3" RowDefinitions="Auto,Auto,*"
+              IsVisible="{Binding Loading, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+            <Grid x:Name="FullHero" Grid.Row="0" HeightRequest="300" BackgroundColor="#000000">
+                <Image Source="{Binding Data.ImgUrl, Converter={StaticResource ImageConverter}}"
+                       Aspect="AspectFill" />
+                <BoxView>
+                    <BoxView.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0.0" />
+                            <GradientStop Color="#18000000" Offset="0.45" />
+                            <GradientStop Color="#F0051522" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </BoxView.Background>
+                </BoxView>
+                <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,18" Spacing="7">
+                    <Label Text="{Binding Data.Name}" FontFamily="InterBold" FontSize="24"
+                           TextColor="White" MaxLines="2" LineBreakMode="TailTruncation" />
+                    <HorizontalStackLayout Spacing="7">
+                        <Border Padding="8,4" BackgroundColor="#260066FF" StrokeShape="RoundRectangle 7">
+                            <Label Text="CHARACTER" FontFamily="InterSemiBold" FontSize="10" TextColor="#80B4FF" />
+                        </Border>
+                        <Border Padding="8,4" BackgroundColor="#26FFD700" StrokeShape="RoundRectangle 7"
+                                IsVisible="{Binding Data.TotalFavs, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
+                            <Label Text="{Binding Data.TotalFavs, StringFormat='Favorites: {0}'}"
+                                   FontFamily="InterSemiBold" FontSize="10" TextColor="#FFFFD965" />
+                        </Border>
                     </HorizontalStackLayout>
-                </ScrollView>
+                </VerticalStackLayout>
+            </Grid>
 
-                <Grid x:Name="TabContentHost">
-                    <Grid.GestureRecognizers>
-                        <PanGestureRecognizer PanUpdated="OnTabPanUpdated" />
-                    </Grid.GestureRecognizers>
+            <ScrollView Grid.Row="1" HorizontalOptions="Fill" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                        Padding="14,0,14,0" BackgroundColor="{StaticResource EmBackground}">
+                <HorizontalStackLayout Spacing="20">
+                    <Label x:Name="OverviewTabLabel" Text="Overview" Style="{StaticResource CharTabLabelStyle}">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOverviewTabTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label x:Name="VoiceActorsTabLabel" Text="Voice Actors" Style="{StaticResource CharTabLabelStyle}">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnVoiceActorsTabTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label x:Name="AnimeographyTabLabel" Text="Animeography" Style="{StaticResource CharTabLabelStyle}">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnAnimeographyTabTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label x:Name="MangaographyTabLabel" Text="Mangaography" Style="{StaticResource CharTabLabelStyle}">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnMangaographyTabTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+            </ScrollView>
 
-                    <VerticalStackLayout x:Name="OverviewTab" Spacing="12" Padding="16,8,16,32" IsVisible="True">
+            <Grid Grid.Row="2" x:Name="TabContentHost" Padding="16,8,16,0">
+
+                <ScrollView x:Name="OverviewTab">
+                    <VerticalStackLayout Spacing="12">
                         <Border BackgroundColor="{StaticResource EmSheet}" Stroke="{StaticResource EmBorder}"
                                 StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="14"
                                 IsVisible="{Binding HasAboutContent}">
@@ -160,9 +156,10 @@
                                 <Button Text="{Binding AboutToggleText}" Command="{Binding ToggleAboutCommand}"
                                         FontFamily="InterBold" FontSize="11" TextColor="#FFB15C"
                                         BackgroundColor="Transparent" Padding="0" HorizontalOptions="Fill" />
-                                <Label Text="{Binding Data.Content}" IsVisible="{Binding IsAboutExpanded}"
-                                       FontFamily="Inter" FontSize="13" TextColor="{StaticResource BrushText}"
-                                       LineHeight="1.4" />
+                                <controls:SpoilerTextView Text="{Binding Data.Content}"
+                                                           TextColor="{StaticResource BrushText}"
+                                                           TextSize="13" LineHeight="1.4"
+                                                           IsVisible="{Binding IsAboutExpanded}" />
                             </VerticalStackLayout>
                         </Border>
 
@@ -186,104 +183,79 @@
                                    TextColor="#80FFFFFF" />
                         </Border>
                     </VerticalStackLayout>
+                </ScrollView>
 
-                    <VerticalStackLayout x:Name="VoiceActorsTab" Spacing="12" Padding="16,8,16,32" IsVisible="False">
-                        <Border BackgroundColor="{StaticResource EmSheet}" Stroke="{StaticResource EmBorder}"
-                                StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="14">
-                            <VerticalStackLayout Spacing="10">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="VOICE ACTORS" FontFamily="InterBold" FontSize="11" TextColor="#C0FFFFFF" />
-                                    <Label Grid.Column="1" Text="{Binding VoiceActors.Count}" FontFamily="InterSemiBold"
-                                           FontSize="11" TextColor="#80B4FF" />
-                                </Grid>
-                                <FlexLayout Direction="Column" Wrap="NoWrap"
-                                            BindableLayout.ItemsSource="{Binding VoiceActorItems, Source={x:Reference CharacterDetailsPageRoot}}"
-                                            BindableLayout.ItemTemplate="{StaticResource CharacterVoiceActorTemplate}">
-                                    <BindableLayout.EmptyView>
-                                        <Border Padding="14" BackgroundColor="#0AFFFFFF" StrokeShape="RoundRectangle 6">
-                                            <Label Text="No voice actors available." FontFamily="Inter" FontSize="13"
-                                                   TextColor="#80FFFFFF" />
-                                        </Border>
-                                    </BindableLayout.EmptyView>
-                                </FlexLayout>
-                                <Button x:Name="VoiceActorsLoadMoreButton" Text="Load more voice actors"
-                                        Clicked="OnLoadMoreVoiceActorsClicked" IsVisible="False"
-                                        FontFamily="InterSemiBold" FontSize="12" TextColor="#80B4FF"
-                                        BackgroundColor="#1A0066FF" CornerRadius="8" />
-                            </VerticalStackLayout>
-                        </Border>
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout x:Name="AnimeographyTab" Spacing="12" Padding="16,8,16,32" IsVisible="False">
-                        <Border BackgroundColor="{StaticResource EmSheet}" Stroke="{StaticResource EmBorder}"
-                                StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="14"
-                                IsVisible="{Binding AnimeographyVisibility}">
-                            <VerticalStackLayout Spacing="10">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="ANIMEOGRAPHY" FontFamily="InterBold" FontSize="11" TextColor="#C0FFFFFF" />
-                                    <Label Grid.Column="1" Text="{Binding Data.Animeography.Count}" FontFamily="InterSemiBold"
-                                           FontSize="11" TextColor="#80B4FF" />
-                                </Grid>
-                                <FlexLayout Direction="Column" Wrap="NoWrap"
-                                            BindableLayout.ItemsSource="{Binding AnimeographyItems, Source={x:Reference CharacterDetailsPageRoot}}"
-                                            BindableLayout.ItemTemplate="{StaticResource CharacterMediaCardTemplate}">
-                                    <BindableLayout.EmptyView>
-                                        <Border Padding="14" BackgroundColor="#0AFFFFFF" StrokeShape="RoundRectangle 6">
-                                            <Label Text="No anime roles available." FontFamily="Inter" FontSize="13"
-                                                   TextColor="#80FFFFFF" />
-                                        </Border>
-                                    </BindableLayout.EmptyView>
-                                </FlexLayout>
-                                <Button x:Name="AnimeographyLoadMoreButton" Text="Load more anime roles"
-                                        Clicked="OnLoadMoreAnimeographyClicked" IsVisible="False"
-                                        FontFamily="InterSemiBold" FontSize="12" TextColor="#80B4FF"
-                                        BackgroundColor="#1A0066FF" CornerRadius="8" />
-                            </VerticalStackLayout>
-                        </Border>
-                        <Border BackgroundColor="{StaticResource EmSheet}" Stroke="{StaticResource EmBorder}"
-                                StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="16"
-                                IsVisible="{Binding AnimeographyVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-                            <Label Text="No anime roles available." FontFamily="Inter" FontSize="13"
-                                   TextColor="#80FFFFFF" />
-                        </Border>
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout x:Name="MangaographyTab" Spacing="12" Padding="16,8,16,32" IsVisible="False">
-                        <Border BackgroundColor="{StaticResource EmSheet}" Stroke="{StaticResource EmBorder}"
-                                StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="14"
-                                IsVisible="{Binding MangaographyVisibility}">
-                            <VerticalStackLayout Spacing="10">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="MANGAOGRAPHY" FontFamily="InterBold" FontSize="11" TextColor="#C0FFFFFF" />
-                                    <Label Grid.Column="1" Text="{Binding Data.Mangaography.Count}" FontFamily="InterSemiBold"
-                                           FontSize="11" TextColor="#FFFFA45C" />
-                                </Grid>
-                                <FlexLayout Direction="Column" Wrap="NoWrap"
-                                            BindableLayout.ItemsSource="{Binding MangaographyItems, Source={x:Reference CharacterDetailsPageRoot}}"
-                                            BindableLayout.ItemTemplate="{StaticResource CharacterMediaCardTemplate}">
-                                    <BindableLayout.EmptyView>
-                                        <Border Padding="14" BackgroundColor="#0AFFFFFF" StrokeShape="RoundRectangle 6">
-                                            <Label Text="No manga roles available." FontFamily="Inter" FontSize="13"
-                                                   TextColor="#80FFFFFF" />
-                                        </Border>
-                                    </BindableLayout.EmptyView>
-                                </FlexLayout>
-                                <Button x:Name="MangaographyLoadMoreButton" Text="Load more manga roles"
-                                        Clicked="OnLoadMoreMangaographyClicked" IsVisible="False"
-                                        FontFamily="InterSemiBold" FontSize="12" TextColor="#FFFFA45C"
-                                        BackgroundColor="#1AFF6B00" CornerRadius="8" />
-                            </VerticalStackLayout>
-                        </Border>
-                        <Border BackgroundColor="{StaticResource EmSheet}" Stroke="{StaticResource EmBorder}"
-                                StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="16"
-                                IsVisible="{Binding MangaographyVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
-                            <Label Text="No manga roles available." FontFamily="Inter" FontSize="13"
-                                   TextColor="#80FFFFFF" />
-                        </Border>
-                    </VerticalStackLayout>
+                <Grid x:Name="VoiceActorsTab" IsVisible="False" RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Margin="0,0,0,8" BackgroundColor="{StaticResource EmSheet}"
+                            Stroke="{StaticResource EmBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                            Padding="14,12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="VOICE ACTORS" FontFamily="InterBold" FontSize="11" TextColor="#C0FFFFFF" />
+                            <Label Grid.Column="1" Text="{Binding VoiceActors.Count}" FontFamily="InterSemiBold"
+                                   FontSize="11" TextColor="#80B4FF" />
+                        </Grid>
+                    </Border>
+                    <CollectionView Grid.Row="1" x:Name="VoiceActorsList"
+                                    ItemsSource="{Binding VoiceActors}"
+                                    ItemTemplate="{StaticResource CharacterVoiceActorTemplate}">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="0" />
+                        </CollectionView.ItemsLayout>
+                    </CollectionView>
                 </Grid>
-            </VerticalStackLayout>
-        </ScrollView>
 
+                <Grid x:Name="AnimeographyTab" IsVisible="False" RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Margin="0,0,0,8" BackgroundColor="{StaticResource EmSheet}"
+                            Stroke="{StaticResource EmBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                            Padding="14,12" IsVisible="{Binding AnimeographyVisibility}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="ANIMEOGRAPHY" FontFamily="InterBold" FontSize="11" TextColor="#C0FFFFFF" />
+                            <Label Grid.Column="1" Text="{Binding Data.Animeography.Count}" FontFamily="InterSemiBold"
+                                   FontSize="11" TextColor="#80B4FF" />
+                        </Grid>
+                    </Border>
+                    <CollectionView Grid.Row="1" x:Name="AnimeographyList"
+                                    ItemsSource="{Binding Data.Animeography}"
+                                    ItemTemplate="{StaticResource CharacterMediaCardTemplate}"
+                                    IsVisible="{Binding AnimeographyVisibility}">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="0" />
+                        </CollectionView.ItemsLayout>
+                    </CollectionView>
+                    <Border Grid.Row="1" Padding="16" BackgroundColor="{StaticResource EmSheet}"
+                            Stroke="{StaticResource EmBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                            IsVisible="{Binding AnimeographyVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                        <Label Text="No anime roles available." FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" />
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="MangaographyTab" IsVisible="False" RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Margin="0,0,0,8" BackgroundColor="{StaticResource EmSheet}"
+                            Stroke="{StaticResource EmBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                            Padding="14,12" IsVisible="{Binding MangaographyVisibility}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="MANGAOGRAPHY" FontFamily="InterBold" FontSize="11" TextColor="#C0FFFFFF" />
+                            <Label Grid.Column="1" Text="{Binding Data.Mangaography.Count}" FontFamily="InterSemiBold"
+                                   FontSize="11" TextColor="#FFFFA45C" />
+                        </Grid>
+                    </Border>
+                    <CollectionView Grid.Row="1" x:Name="MangaographyList"
+                                    ItemsSource="{Binding Data.Mangaography}"
+                                    ItemTemplate="{StaticResource CharacterMediaCardTemplate}"
+                                    IsVisible="{Binding MangaographyVisibility}">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="0" />
+                        </CollectionView.ItemsLayout>
+                    </CollectionView>
+                    <Border Grid.Row="1" Padding="16" BackgroundColor="{StaticResource EmSheet}"
+                            Stroke="{StaticResource EmBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                            IsVisible="{Binding MangaographyVisibility, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                        <Label Text="No manga roles available." FontFamily="Inter" FontSize="13"
+                               TextColor="#80FFFFFF" />
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
     </Grid>
 </ContentPage>
