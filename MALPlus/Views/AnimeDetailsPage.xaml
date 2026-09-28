@@ -824,9 +824,16 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Button Grid.Row="0" Text="Close" Clicked="CloseVideoOverlay" HorizontalOptions="End"
-                    Margin="0,12,12,0" BackgroundColor="Transparent" TextColor="White"
-                    FontFamily="InterBold" FontSize="14" Padding="8,4" />
+            <Border Grid.Row="0" HorizontalOptions="End" VerticalOptions="Center"
+                    Margin="0,10,10,0" WidthRequest="40" HeightRequest="40"
+                    BackgroundColor="#B3051522" Stroke="#4DFFFFFF" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 20">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="CloseVideoOverlay" />
+                </Border.GestureRecognizers>
+                <Label Text="✕" FontFamily="InterBold" FontSize="18" TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
             <!-- The WebView is created by ShowVideoOverlay, not here: an Android WebView
                  spawns a Chromium child process and costs 100-400ms plus tens of MB, and
                  MAUI builds handlers for the whole tree when the page attaches, so

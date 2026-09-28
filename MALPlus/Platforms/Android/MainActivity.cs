@@ -30,7 +30,24 @@ public class MainActivity : MauiAppCompatActivity
         }
     }
 
-    protected override void OnNewIntent(Intent intent)
+        public override void OnBackPressed()
+        {
+            // An open video overlay gets first refusal: the back gesture must drop the player and
+            // leave the user on the same page instead of popping the navigation stack.
+            try
+            {
+                if (Services.VideoWebViewHelper.BackHandler?.Invoke() == true)
+                    return;
+            }
+            catch (Exception ex)
+            {
+                Android.Util.Log.Warn("MALPLUS", "BackHandler failed: " + ex.GetType().Name);
+            }
+
+            base.OnBackPressed();
+        }
+
+        protected override void OnNewIntent(Intent intent)
     {
         base.OnNewIntent(intent);
         Intent = intent;

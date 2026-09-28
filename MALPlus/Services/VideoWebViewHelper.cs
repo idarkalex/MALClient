@@ -18,6 +18,14 @@ public static class VideoWebViewHelper
         Timeout = TimeSpan.FromSeconds(12)
     };
 
+    /// <summary>
+    ///     Set by an open video overlay so the Android back gesture closes the player instead of
+    ///     navigating away from the page underneath. Returns true when it consumed the back.
+    ///     MAUI 7 has no Page.BackButtonPressed and a SwipeGestureRecognizer never sees the drag
+    ///     because the WebView child consumes it, so MainActivity.OnBackPressed routes here.
+    /// </summary>
+    public static Func<bool> BackHandler { get; set; }
+
     public static void ConfigurePlatformView(global::Android.Views.View platformView)
     {
         if (platformView is not global::Android.Webkit.WebView wv) return;
@@ -34,6 +42,28 @@ public static class VideoWebViewHelper
         catch (Exception ex)
         {
             global::Android.Util.Log.Warn("MALPlus Video", "ConfigurePlatformView: " + ex.GetType().Name);
+        }
+    }
+
+    /// <summary>
+    ///     Must be called AFTER assigning <c>Source</c>. MAUI's WebView handler re-applies the
+    ///     platform settings on every source update and puts
+    ///     <c>MediaPlaybackRequiresUserGesture</c> back to true, which blocked the
+    ///     <c>&lt;video&gt;</c> autoplay and left Chromium's grey placeholder up forever
+    ///     (readyState 0, 0:00 / 0:00, no frames).
+    /// </summary>
+    public static void ApplyMediaSettings(global::Microsoft.Maui.Controls.WebView webView)
+    {
+        if (webView?.Handler?.PlatformView is not global::Android.Webkit.WebView wv) return;
+        try
+        {
+            wv.Settings.MediaPlaybackRequiresUserGesture = false;
+            wv.Settings.AllowFileAccessFromFileURLs = true;
+            wv.Settings.AllowContentAccess = true;
+        }
+        catch (Exception ex)
+        {
+            global::Android.Util.Log.Warn("MALPlus Video", "ApplyMediaSettings: " + ex.GetType().Name);
         }
     }
 
@@ -127,7 +157,7 @@ public static class VideoWebViewHelper
         var autoplayAttr = autoplay ? " autoplay" : "";
         return BuildPlayerShell(
             "<div id='splash'></div>" +
-            "<video id='video' src='" + url + "'" + autoplayAttr + " playsinline webkit-playsinline></video>" +
+            "<video id='video' src='" + url + "'" + autoplayAttr + " preload='auto' playsinline webkit-playsinline></video>" +
             "<div id='controls'>" +
             "<button id='playBtn'>&#9208;</button>" +
             "<div id='progressContainer'><div id='progressFill'></div></div>" +
@@ -145,6 +175,14 @@ public static class VideoWebViewHelper
             "v.ontimeupdate=function(){if(v.duration){fill.style.width=((v.currentTime/v.duration)*100)+'%';time.textContent=fmt(v.currentTime)+' / '+fmt(v.duration)}};" +
             "container.onclick=function(e){e.stopPropagation();var r=container.getBoundingClientRect();v.currentTime=((e.clientX-r.left)/r.width)*v.duration;};" +
             "setTimeout(function(){if(splash.style.opacity!=='0'){splash.style.opacity='0';console.log('DBG: splash timeout');}},5000);" +
+            // Chromium will not start a media element on an attribute alone when the page was not
+            // opened by a gesture, and a rejected play() leaves the grey placeholder up forever.
+            // Kick the load and retry a few times so a slow CDN does not read as "broken".
+            "function kick(){v.load();var p=v.play();if(p&&p.catch){p.catch(function(e){console.log('play-rejected '+e.name);setTimeout(function(){v.play().catch(function(){});},900);});}}" +
+            "v.addEventListener('canplay',function(){kick();},{once:true});" +
+            "v.addEventListener('loadedmetadata',function(){kick();},{once:true});" +
+            "v.addEventListener('error',function(){console.error('video-error code='+(v.error?v.error.code:-1)+' net='+v.networkState);});" +
+            "kick();" +
             "</script>",
             directMedia: true);
     }

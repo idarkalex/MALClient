@@ -1034,9 +1034,9 @@ public partial class AnimeDetailsPage : ContentPage
         if (_videoWebView != null)
             return _videoWebView;
 
-        _videoWebView = new WebView();
-        Grid.SetRow(_videoWebView, 1);
-        VideoOverlay.Add(_videoWebView);
+            _videoWebView = new WebView();
+            Grid.SetRow(_videoWebView, 1);
+            VideoOverlay.Add(_videoWebView);
 #if ANDROID
         _videoWebView.HandlerChanged += OnVideoWebViewHandlerChanged;
 #endif
@@ -1049,13 +1049,15 @@ public partial class AnimeDetailsPage : ContentPage
         {
             if (VideoOverlay == null || string.IsNullOrWhiteSpace(url))
                 return;
-            var webView = EnsureVideoWebView();
-            VideoOverlay.IsVisible = true;
-            VideoWebViewHelper.Resume(webView.Handler?.PlatformView as global::Android.Views.View);
-            // Single source of truth: routes YouTube to the iframe and direct media
-            // (AnimeThemes WebM) to its own <video> player, with the working BaseUrl.
-            webView.Source = VideoWebViewHelper.BuildSource(url);
-            SetSystemBars(true);
+                var webView = EnsureVideoWebView();
+                VideoOverlay.IsVisible = true;
+                VideoWebViewHelper.BackHandler = OnVideoBackPressed;
+                VideoWebViewHelper.Resume(webView.Handler?.PlatformView as global::Android.Views.View);
+                // Single source of truth: routes YouTube to the iframe and direct media
+                // (AnimeThemes WebM) to its own <video> player, with the working BaseUrl.
+                webView.Source = VideoWebViewHelper.BuildSource(url);
+                VideoWebViewHelper.ApplyMediaSettings(webView);
+                SetSystemBars(true);
         }
         catch (Exception ex)
         {
@@ -1072,32 +1074,49 @@ public partial class AnimeDetailsPage : ContentPage
             var webView = EnsureVideoWebView();
             VideoOverlay.IsVisible = true;
             VideoWebViewHelper.Resume(webView.Handler?.PlatformView as global::Android.Views.View);
-            webView.Source = new HtmlWebViewSource
-            {
-                Html = VideoWebViewHelper.BuildLoadingHtml(),
-                BaseUrl = "https://myanimelist.net"
-            };
-            SetSystemBars(true);
+                webView.Source = new HtmlWebViewSource
+                {
+                    Html = VideoWebViewHelper.BuildLoadingHtml(),
+                    BaseUrl = "https://myanimelist.net"
+                };
+                VideoWebViewHelper.ApplyMediaSettings(webView);
+                SetSystemBars(true);
         }
         catch { }
     }
 
     private void HideVideoLoading()
-    {
-        try
         {
-            if (_videoWebView != null)
-                _videoWebView.Source = null;
-            if (VideoOverlay != null)
-                VideoOverlay.IsVisible = false;
-            SetSystemBars(false);
+            try
+            {
+                if (VideoOverlay != null && VideoOverlay.IsVisible)
+                    VideoWebViewHelper.BackHandler = null;
+                if (_videoWebView != null)
+                    _videoWebView.Source = null;
+                if (VideoOverlay != null)
+                    VideoOverlay.IsVisible = false;
+                SetSystemBars(false);
+            }
+            catch { }
         }
-        catch { }
-    }
 
     private void CloseVideoOverlay(object sender, EventArgs e)
     {
         HideVideoLoading();
+    }
+
+    /// <summary>
+    ///     Back gesture / back button while the player is up closes it and cancels navigation, so
+    ///     the swipe drops you back onto the details page instead of leaving the entry. Neither a
+    ///     SwipeGestureRecognizer (the WebView child eats the drag) nor Page.BackButtonPressed
+    ///     (not in MAUI 7) works: this is routed through MainActivity.OnBackPressed.
+    /// </summary>
+    private bool OnVideoBackPressed()
+    {
+        if (VideoOverlay == null || !VideoOverlay.IsVisible)
+            return false;
+        HideVideoLoading();
+        return true;
     }
 
     private void OnTabTapped(object sender, TappedEventArgs e)
