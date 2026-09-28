@@ -59,7 +59,13 @@ namespace MALClient.XShared.ViewModels.Main
             get { return _calendarPivotIndex; }
             set
             {
+                if (_calendarPivotIndex == value)
+                    return;
                 _calendarPivotIndex = value;
+                // The calendar pager binds this TwoWay, so without the notification a day cell
+                // could be tapped and the pager would never move. v2 did not need this because the
+                // fragment subscribed to PivotSelectedIndexChange and paged by hand.
+                RaisePropertyChanged(() => CalendarPivotIndex);
                 PivotSelectedIndexChange?.Invoke();
             }
         }
@@ -170,6 +176,9 @@ namespace MALClient.XShared.ViewModels.Main
             }
             InitPages();
             _initialized = true;
+            // The library can change between builds (the user just added something), so the
+            // membership set backing IsOnMyList cannot be cached across them.
+            _myListIds = null;
             CalendarBuildingVisibility = true;
 
             try
@@ -209,6 +218,14 @@ namespace MALClient.XShared.ViewModels.Main
                             (nextAirDate - nowUtc).TotalDays >= 7)
                             continue;
 
+                        // The provider already told us when this airs, so hand that date straight to
+                        // the item. Season mode has ~297 entries and the grid binds the countdown on
+                        // first paint: without this the pill would be empty until something kicked
+                        // off a fetch per card, which is the exact stampede AirTimeUtils guards
+                        // against. SetNextAirCache is the single writer for this value.
+                        if (nextAirDate != default)
+                            abstraction.ViewModel.SetNextAirCache(nextAirDate);
+
                         if (ResourceLocator.AiringInfoProvider.TryGetAiringDay(abstraction.Id, out DayOfWeek dayOfWeek))
                         {
                             int day = (int) dayOfWeek;
@@ -224,13 +241,17 @@ namespace MALClient.XShared.ViewModels.Main
                             var jst = volatileData.NextAirUtc.Value.AddHours(9);
                             int day = (int) jst.DayOfWeek;
                             if (day >= 0 && day <= 7)
+                            {
+                                abstraction.ViewModel.SetNextAirCache(volatileData.NextAirUtc.Value);
                                 CalendarData[day].Items.Add(abstraction.ViewModel);
+                            }
                         }
                     }
                     catch (Exception e)
                     {
-                        //there are some numm ref crashes and I don't know really know where
+                        // there are some numm ref crashes and I don't know really know where
                         // probably MAL returns some odd stuff and we cannot get details
+                        Console.WriteLine("MALPLUS calendar day placement failed: " + e.GetType().Name);
                     }
                 }
 
@@ -275,6 +296,13 @@ namespace MALClient.XShared.ViewModels.Main
                     }
                 }
 
+                // Hold the summary page by reference. It used to be reached as CalendarData[7],
+                // which is only valid while all seven day pages are still in the collection: with
+                // "remove empty days" on, the removals below shrink the list and that index throws
+                // ArgumentOutOfRangeException, which aborted the whole rebuild and left the
+                // previous calendar on screen. Season mode never hit it because no day is empty.
+                var summaryPage = CalendarData[CalendarData.Count - 1] as CalendarSummaryPivotPage;
+
                 var emptyPages = new List<CalendarPivotPage>();
                 foreach (var calendarPivotPage in CalendarData.Take(CalendarData.Count - 1))
                 {
@@ -288,24 +316,31 @@ namespace MALClient.XShared.ViewModels.Main
                             calendarPivotPage.Sub = "-";
                     }
                     if (calendarPivotPage.Items.Count != 0)
-                        (CalendarData[7] as CalendarSummaryPivotPage).Data.Add(
+                        summaryPage?.Data.Add(
                             new Tuple<string, List<AnimeItemViewModel>>(calendarPivotPage.FullHeader,
                                 calendarPivotPage.Items));
                 }
                 foreach (var emptyPage in emptyPages)
                     CalendarData.Remove(emptyPage);
 
-                // The shared item template binds Items, which the summary subclass
-                // never filled, so the Summary tab always showed "No airing today".
-                if (CalendarData[7] is CalendarSummaryPivotPage summary)
-                    summary.Items = summary.Data.SelectMany(entry => entry.Item2).ToList();
+                // The shared item template binds Items, which the summary subclass never filled,
+                // so the Summary tab always showed "No airing today".
+                if (summaryPage != null)
+                    summaryPage.Items = summaryPage.Data.SelectMany(entry => entry.Item2).ToList();
 
 
                 RaisePropertyChanged(() => CalendarData);
                 await GoToDesiredTab();
+
+                // Safety net only: almost everything already carries a date from the provider.
+                RefreshCountdownsAsync();
             }
             catch (Exception ex)
             {
+                // The shared project cannot reach logcat (the shrink step strips the log calls), and
+                // a silent catch here leaves the previous calendar on screen looking like a mode
+                // switch that did nothing. Surface it instead.
+                BuildError = ex.GetType().Name + ": " + ex.Message;
             }
             finally
             {
@@ -313,6 +348,62 @@ namespace MALClient.XShared.ViewModels.Main
                 CalendarVisibility = true;
             }
         }
+
+        private string _buildError;
+        public string BuildError
+        {
+            get => _buildError;
+            set
+            {
+                _buildError = value;
+                RaisePropertyChanged(() => BuildError);
+            }
+        }
+
+        /// <summary>
+        ///     Kicks a background countdown refresh for the items the provider could not date, so
+        ///     their badge is not blank. The provider path already handled the rest with zero
+        ///     network calls, which is what keeps Season mode (about 300 entries) from stampeding.
+        /// </summary>
+        public void RefreshCountdownsAsync()
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                foreach (var page in CalendarData)
+                {
+                    if (page is CalendarSummaryPivotPage)
+                        continue;
+                    foreach (var item in page.Items)
+                    {
+                        if (string.IsNullOrEmpty(item.TimeTillNextAirCache))
+                            item.RefreshTimeTillNextAirInBackground();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("MALPLUS calendar countdown refresh failed: " + ex.GetType().Name);
+            }
+        }
+
+        /// <summary>
+        ///     Whether a series is already on the user's list. Season mode mixes entries the user
+        ///     follows with ones they do not, and re-running Add on a listed entry resets local
+        ///     progress and score, so the long-press sheet has to know.
+        /// </summary>
+        public bool IsOnMyList(int malId)
+        {
+            if (malId <= 0)
+                return false;
+            if (_myListIds == null)
+                _myListIds = new HashSet<int>(_animeLibraryDataStorage.AllLoadedAuthAnimeItems
+                    .Where(abstraction => abstraction != null)
+                    .Select(abstraction => abstraction.MalId));
+            return _myListIds.Contains(malId);
+        }
+
+        private HashSet<int> _myListIds;
 
         private List<AnimeItemAbstraction> ProviderMyListAbstractions()
         {
@@ -443,14 +534,27 @@ namespace MALClient.XShared.ViewModels.Main
         public async Task GoToDesiredTab()
         {
             await Task.Delay(10);
+            // The summary is the last page, but only while no day was removed: after a rebuild with
+            // "remove empty days" the count no longer means anything, so find it by type.
+            var summaryIndex = -1;
+            for (int i = 0; i < CalendarData.Count; i++)
+                if (CalendarData[i] is CalendarSummaryPivotPage)
+                {
+                    summaryIndex = i;
+                    break;
+                }
+            var fallback = summaryIndex >= 0 ? summaryIndex : CalendarData.Count - 1;
+
             if (Settings.CalendarStartOnToday)
             {
-                //we have to find it because it may have been removed
-                //we will do this by comparing header string
+                // we have to find it because it may have been removed
+                // we will do this by comparing header string
                 string today = Utils.Utilities.DayToString(DateTime.Now.DayOfWeek, true);
-                int index = CalendarData.Count - 1;
-                for (int i = 0; i < CalendarData.Count - 1; i++)
+                int index = fallback;
+                for (int i = 0; i < CalendarData.Count; i++)
                 {
+                    if (i == summaryIndex)
+                        continue;
                     if (CalendarData[i].Header == today)
                     {
                         index = i;
@@ -460,7 +564,7 @@ namespace MALClient.XShared.ViewModels.Main
                 CalendarPivotIndex = index;
             }
             else
-                CalendarPivotIndex = CalendarData.Count - 1;
+                CalendarPivotIndex = fallback;
         }
 
     }

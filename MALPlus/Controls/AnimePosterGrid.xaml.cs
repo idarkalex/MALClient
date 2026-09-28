@@ -37,6 +37,20 @@ public partial class AnimePosterGrid : ContentView
     /// </summary>
     public const double DefaultCellHeight = 195d;
 
+    /// <summary>
+    ///     True when there is nothing to show, so the host can draw its own empty state (the
+    ///     control has no CollectionView.EmptyView to lean on).
+    /// </summary>
+    public static readonly BindableProperty IsEmptyProperty =
+        BindableProperty.Create(nameof(IsEmpty), typeof(bool), typeof(AnimePosterGrid), true,
+            propertyChanged: (b, o, n) => ((AnimePosterGrid)b).ItemsView.IsVisible = !(bool)n);
+
+    public bool IsEmpty
+    {
+        get => (bool)GetValue(IsEmptyProperty);
+        private set => SetValue(IsEmptyProperty, value);
+    }
+
     private bool _spanApplied;
     private double _lastWidth = -1;
 
@@ -101,6 +115,14 @@ public partial class AnimePosterGrid : ContentView
 
     /// <summary>Raised with the bound item when a card is tapped.</summary>
     public event EventHandler<object> ItemTapped;
+
+    /// <summary>
+    ///     Raised with the bound item on a long press. Nothing in the app subscribes by default, so
+    ///     this is inert unless a host wants it: the shared cell template deliberately carries no
+    ///     long-press recognizer, because adding one would change the gesture behaviour of every
+    ///     poster grid in the app. Hosts that want it pass a CellTemplate with the recognizer.
+    /// </summary>
+    public event EventHandler<object> ItemLongPressed;
 
     public IEnumerable ItemsSource
     {
@@ -191,7 +213,12 @@ public partial class AnimePosterGrid : ContentView
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);
-        if (width <= 0 || Math.Abs(width - _lastWidth) < 0.5)
+        if (width <= 0)
+            return;
+        // CellWidth is informational (no cell template sets a width: the layout divides the slot
+        // and the card fills it), but keep it truthful for anything that asks.
+        CellWidth = (width - (EffectiveSpan(width) - 1) * Spacing) / EffectiveSpan(width) - Spacing;
+        if (Math.Abs(width - _lastWidth) < 0.5)
             return;
         _lastWidth = width;
         ApplyLayout(force: true);
@@ -199,14 +226,20 @@ public partial class AnimePosterGrid : ContentView
 
     private void ApplyLayout(bool force)
     {
+        // The empty state has to be correct even before the control has a width, otherwise a grid
+        // that never gets sized would stay hidden forever.
+        var count = (ItemsView.ItemsSource as ICollection)?.Count
+                    ?? (ItemsView.ItemsSource as IEnumerable)?.Cast<object>().Count()
+                    ?? 0;
+        IsEmpty = count == 0;
+
         if (!force && _spanApplied)
             return;
 
-        var available = Width > 0 ? Width : (Window?.Width ?? 0);
-        if (available <= 0)
-            return;
-
-        var span = EffectiveSpan(available);
+        // Span and cell template do NOT depend on the width. A grid hosted inside a CarouselView
+        // can be measured at zero width on its first pass and never get a second one, and bailing
+        // out there left the calendar day pages rendering nothing at all.
+        var span = EffectiveSpan(0);
         if (!_spanApplied || (ItemsView.ItemsLayout is GridItemsLayout grid && grid.Span != span))
         {
             // The gutter lives in the layout, not in a card margin: a margin insets the artwork on
@@ -219,29 +252,27 @@ public partial class AnimePosterGrid : ContentView
             _spanApplied = true;
         }
 
-        var slot = (available - (span - 1) * Spacing) / span;
-        if (slot <= 0)
-            return;
+        // The card template reads these through x:Reference, so no page has to repeat the numbers.
+        ItemsView.ItemTemplate = CellTemplate ?? (DataTemplate)Root.Resources["DefaultCellTemplate"];
 
         CellMargin = new Thickness(0);
         CellHeight = DefaultCellHeight;
         RowHeight = CellHeight + Spacing;
 
-        // The card template reads these through x:Reference, so no page has to repeat the numbers.
-        ItemsView.ItemTemplate = CellTemplate ?? (DataTemplate)Root.Resources["DefaultCellTemplate"];
-
         if (FixedHeight)
-        {
-            var count = (ItemsView.ItemsSource as ICollection)?.Count
-                        ?? (ItemsView.ItemsSource as IEnumerable)?.Cast<object>().Count()
-                        ?? 0;
             HeightRequest = CalculateHeight(count, span, RowHeight);
-        }
     }
 
     private void OnCellTapped(object sender, TappedEventArgs e)
     {
         if (sender is View view && view.BindingContext != null)
             ItemTapped?.Invoke(this, view.BindingContext);
+    }
+
+    /// <summary>Same contract as <see cref="OnCellTapped" /> for hosts with their own cell template.</summary>
+    public void RaiseItemLongPressed(object item)
+    {
+        if (item != null)
+            ItemLongPressed?.Invoke(this, item);
     }
 }

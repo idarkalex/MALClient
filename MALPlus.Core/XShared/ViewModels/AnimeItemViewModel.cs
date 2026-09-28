@@ -467,6 +467,33 @@ namespace MALClient.XShared.ViewModels
         public string MyStatusBind => Utils.Utilities.StatusToString((int)MyStatus, !ParentAbstraction.RepresentsAnime,ParentAbstraction.IsRewatching);
         public string MyStatusBindShort => Utils.Utilities.StatusToShortString((int)MyStatus, !ParentAbstraction.RepresentsAnime,ParentAbstraction.IsRewatching);
 
+        /// <summary>
+        ///     AnimeStatus has no zero member, so anything outside the listed values is an entry the
+        ///     user does not follow (the synthesized season entries the calendar builds land here).
+        /// </summary>
+        public bool IsOnMyList
+        {
+            get
+            {
+                var status = (int)ParentAbstraction.MyStatus;
+                return status is (int)AnimeStatus.Watching or (int)AnimeStatus.Completed
+                    or (int)AnimeStatus.OnHold or (int)AnimeStatus.Dropped
+                    or (int)AnimeStatus.PlanToWatch;
+            }
+        }
+
+        /// <summary>
+        ///     The "status" half of a card badge, blank for entries the user does not follow: those
+        ///     carry no status and the raw value would render as the meaningless "N/A".
+        /// </summary>
+        public string LibraryBadgeAccent => IsOnMyList ? MyStatusBindShort : string.Empty;
+
+        /// <summary>
+        ///     The "episodes watched" half of a card badge, blank for entries the user does not
+        ///     follow, where it would render as the meaningless "0/?".
+        /// </summary>
+        public string LibraryBadgeMain => IsOnMyList ? MyEpisodesBindShort : string.Empty;
+
         public AnimeStatus MyStatus
         {
             get { return ParentAbstraction.MyStatus; }

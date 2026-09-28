@@ -379,6 +379,22 @@ namespace MALClient.XShared.ViewModels
             set => Settings.CalendarShowAllAiring = value;
         }
 
+        /// <summary>
+        ///     Exposed as a string because the settings Entry is text: a bad entry (empty, zero,
+        ///     mid-typing) is ignored instead of writing a broken value into the calendar budget.
+        /// </summary>
+        public string CalendarMaxItems
+        {
+            get => Settings.CalendarMaxItems.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            set
+            {
+                if (int.TryParse(value, out var parsed) && parsed > 0)
+                    Settings.CalendarMaxItems = parsed;
+                else
+                    RaisePropertyChanged();
+            }
+        }
+
         public bool IsCachingEnabled
         {
             get => Settings.IsCachingEnabled;

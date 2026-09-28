@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:MALPlus.Views"
+             xmlns:controls="clr-namespace:MALPlus.Controls"
              xmlns:converters="clr-namespace:MALPlus.Converters"
              x:Class="MALPlus.Views.CalendarPage"
              BackgroundColor="{StaticResource EmBackground}">
@@ -12,25 +13,31 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,Auto,*">
-        <!-- Tab Strip -->
-        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
-                    Padding="16,8" Margin="0,8,0,4">
-            <HorizontalStackLayout Spacing="16" x:Name="TabStrip">
-                <!-- Days will be added dynamically in code-behind -->
-            </HorizontalStackLayout>
-        </ScrollView>
+        <!-- Day strip. A fixed row of equal cells with hairline separators, NOT a ScrollView:
+             seven days plus the summary fit the width without scrolling, and the scroller was
+             swallowing the taps. -->
+        <Grid Grid.Row="0" x:Name="TabStrip" ColumnSpacing="0" Margin="6,8,6,4" />
 
-        <!-- Source filter: everything airing vs only what is on my list -->
-        <HorizontalStackLayout Grid.Row="1" Spacing="8" Padding="16,0,16,4">
-            <Border x:Name="GlobalFilterButton" Padding="14,6" StrokeShape="RoundRectangle 8">
-                <Label x:Name="GlobalFilterLabel" Text="All airing" FontFamily="InterSemiBold"
-                       FontSize="12" />
-            </Border>
-            <Border x:Name="MyListFilterButton" Padding="14,6" StrokeShape="RoundRectangle 8">
-                <Label x:Name="MyListFilterLabel" Text="My list" FontFamily="InterSemiBold"
-                       FontSize="12" />
-            </Border>
-        </HorizontalStackLayout>
+        <!-- Source filter: the whole season vs only what is on my list. Same shape as v2's
+             segmented bar: accent text plus a 3dp underline on the active side. -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="16,0,16,4">
+            <VerticalStackLayout Grid.Column="0" Spacing="4" x:Name="SeasonSection">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSeasonModeTapped" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Label Text="Current Season" x:Name="SeasonFilterLabel" FontFamily="InterSemiBold"
+                       FontSize="14" HorizontalOptions="Center" />
+                <BoxView HeightRequest="3" BackgroundColor="Transparent" x:Name="SeasonFilterIndicator" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="1" Spacing="4" x:Name="MyListSection">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnMyListModeTapped" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Label Text="My List" x:Name="MyListFilterLabel" FontFamily="InterSemiBold"
+                       FontSize="14" HorizontalOptions="Center" />
+                <BoxView HeightRequest="3" BackgroundColor="Transparent" x:Name="MyListFilterIndicator" />
+            </VerticalStackLayout>
+        </Grid>
 
         <!-- Loading overlay -->
         <Grid Grid.Row="2" Grid.RowSpan="2" IsVisible="{Binding CalendarBuildingVisibility}"
@@ -45,6 +52,12 @@
 
         <!-- Calendar Content (pivot) -->
         <Grid Grid.Row="3" IsVisible="{Binding CalendarVisibility}">
+            <!-- The shared project cannot reach logcat and a silent catch left a stale calendar on
+                 screen looking like a mode switch that did nothing, so the failure is shown. -->
+            <Label Text="{Binding BuildError}" IsVisible="{Binding BuildError, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
+                   FontFamily="Inter" FontSize="12" TextColor="#FF6B6B"
+                   Padding="16,4" LineBreakMode="CharacterWrap" />
+
             <CarouselView x:Name="CalendarCarousel"
                           ItemsSource="{Binding CalendarData}"
                           Position="{Binding CalendarPivotIndex, Mode=TwoWay}"
@@ -60,78 +73,42 @@
                                        TextColor="#80FFFFFF" VerticalOptions="Center" />
                             </HorizontalStackLayout>
 
-                            <!-- Items Grid -->
-                            <CollectionView Grid.Row="1" ItemsSource="{Binding Items}"
-                                            SelectionMode="Single"
-                                            SelectionChanged="OnItemTapped"
-                                            ItemsLayout="VerticalList" Margin="0">
-                                <CollectionView.EmptyView>
-                                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
-                                        <Label Text="No airing today" FontFamily="Inter" FontSize="14"
-                                               TextColor="#80FFFFFF" HorizontalOptions="Center" />
-                                    </VerticalStackLayout>
-                                </CollectionView.EmptyView>
-                                <CollectionView.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border BackgroundColor="{StaticResource EmSheet}"
-                                                Stroke="{StaticResource EmBorder}" StrokeThickness="1"
-                                                StrokeShape="RoundRectangle 8" Margin="0,0,0,8" Padding="0">
-                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="12,8" RowSpacing="4">
-                                                <!-- Image -->
-                                                <Image Grid.Column="0" Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
-                                                       WidthRequest="70" HeightRequest="100" Aspect="AspectFill" />
-
-                                                <!-- Title + Info -->
-                                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                                    <Label Text="{Binding Title}" FontFamily="InterBold" FontSize="14"
-                                                           TextColor="{StaticResource BrushText}" MaxLines="2" LineBreakMode="TailTruncation" />
-                                                    <HorizontalStackLayout Spacing="8">
-                                                        <Label Text="{Binding Type}" FontFamily="Inter" FontSize="11"
-                                                               TextColor="#80FFFFFF" />
-                                                        <Label Text="{Binding AllEpisodes, StringFormat='{0} eps'}" FontFamily="Inter" FontSize="11"
-                                                               TextColor="#80FFFFFF" />
-                                                        <Label Text="{Binding Status}" FontFamily="Inter" FontSize="11"
-                                                               TextColor="#00C853" />
-                                                    </HorizontalStackLayout>
-                                                    <Label Text="{Binding TimeTillNextAir}" FontFamily="InterBold" FontSize="12"
-                                                           TextColor="#0066FF" />
-                                                </VerticalStackLayout>
-
-                                                <!-- Add/Export buttons -->
-                                                <VerticalStackLayout Grid.Column="2" Spacing="4" VerticalOptions="Center" Padding="0,0,4,0">
-                                                    <Button Text="+"
-                                                            Command="{Binding AddAnimeCommand}"
-                                                            FontFamily="InterBold" FontSize="16"
-                                                            BackgroundColor="#0066FF" TextColor="White"
-                                                            CornerRadius="6" WidthRequest="32" HeightRequest="32" Padding="0" />
-                                                    <Button Text="📅"
-                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:CalendarPage}}, Path=BindingContext.ExportToCalendarCommand}"
-                                                            CommandParameter="{Binding .}"
-                                                            FontFamily="Inter" FontSize="14"
-                                                            BackgroundColor="#141d2b" TextColor="White"
-                                                            BorderColor="#29FFFFFF" BorderWidth="1"
-                                                            CornerRadius="6" WidthRequest="32" HeightRequest="32" Padding="0" />
-                                                </VerticalStackLayout>
+                            <!-- Items: the same poster grid as the rest of the app. The per-row
+                                 buttons of the old list layout have no place on a poster. -->
+                            <Grid Grid.Row="1">
+                                <controls:AnimePosterGrid x:Name="DayGrid"
+                                    ItemsSource="{Binding Items}">
+                                    <controls:AnimePosterGrid.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid BackgroundColor="Transparent">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnPosterTapped"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+                                                <controls:AnimePosterCard
+                                                    HeightRequest="{Binding Source={x:Reference DayGrid}, Path=CellHeight}"
+                                                    PosterUrl="{Binding ImgUrl}"
+                                                    Title="{Binding Title}"
+                                                    TitleOverlay="True"
+                                                    TypeTag="{Binding TypeTag}"
+                                                    BadgeVisible="True"
+                                                    BadgeAccent="{Binding LibraryBadgeAccent}"
+                                                    BadgeMain="{Binding LibraryBadgeMain}"
+                                                    BadgeExtra="{Binding AirDayTillBind}" />
                                             </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
+                                        </DataTemplate>
+                                    </controls:AnimePosterGrid.CellTemplate>
+                                </controls:AnimePosterGrid>
+
+                                <Label Text="Nothing airing today" FontFamily="Inter" FontSize="14"
+                                       TextColor="#80FFFFFF" HorizontalOptions="Center"
+                                       VerticalOptions="Center"
+                                       IsVisible="{Binding Source={x:Reference DayGrid}, Path=IsEmpty}" />
+                            </Grid>
                         </Grid>
                     </DataTemplate>
                 </CarouselView.ItemTemplate>
             </CarouselView>
-
-            <!-- Loading overlay -->
-            <Grid IsVisible="{Binding CalendarBuildingVisibility}" BackgroundColor="#80000000"
-                  VerticalOptions="Fill" HorizontalOptions="Fill">
-                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
-                    <ActivityIndicator IsRunning="True" Color="{StaticResource EmAccent}"
-                                       WidthRequest="36" HeightRequest="36" />
-                    <Label Text="Building calendar..." FontFamily="Inter" FontSize="13"
-                           TextColor="{StaticResource BrushText}" HorizontalOptions="Center" />
-                </VerticalStackLayout>
-            </Grid>
         </Grid>
     </Grid>
 </ContentPage>

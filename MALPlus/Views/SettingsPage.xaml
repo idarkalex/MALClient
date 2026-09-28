@@ -119,6 +119,27 @@
                                 OnColor="{StaticResource EmAccent}" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                        <Label Grid.Column="0" Text="Open on today's day" FontFamily="Inter" FontSize="14"
+                               TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding CalendarStartOnToday}"
+                                OnColor="{StaticResource EmAccent}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                        <Label Grid.Column="0" Text="Hide days with nothing airing" FontFamily="Inter" FontSize="14"
+                               TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding CalendarRemoveEmptyDays}"
+                                OnColor="{StaticResource EmAccent}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                        <Label Grid.Column="0" Text="Max series in My List" FontFamily="Inter" FontSize="14"
+                               TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
+                        <Entry Grid.Column="1" Text="{Binding CalendarMaxItems}" Keyboard="Numeric"
+                               WidthRequest="72" FontFamily="Inter" FontSize="14"
+                               TextColor="{StaticResource BrushText}"
+                               BackgroundColor="{StaticResource EmBackground}"
+                               PlaceholderColor="#A0FFFFFF" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
                         <Label Grid.Column="0" Text="Show season with type" FontFamily="Inter" FontSize="14"
                                TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
                         <Switch Grid.Column="1" IsToggled="{Binding DisplaySeasonWithType}"
