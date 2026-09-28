@@ -157,7 +157,7 @@ public static class VideoWebViewHelper
         var autoplayAttr = autoplay ? " autoplay" : "";
         return BuildPlayerShell(
             "<div id='splash'></div>" +
-            "<video id='video' src='" + url + "'" + autoplayAttr + " preload='auto' playsinline webkit-playsinline></video>" +
+            "<div id='stage'><video id='video' src='" + url + "'" + autoplayAttr + " preload='auto' playsinline webkit-playsinline></video></div>" +
             "<div id='controls'>" +
             "<button id='playBtn'>&#9208;</button>" +
             "<div id='progressContainer'><div id='progressFill'></div></div>" +
@@ -201,7 +201,8 @@ public static class VideoWebViewHelper
     private static string BuildPlayerShell(string body, string script = null, bool directMedia = false)
     {
         var videoStyle = directMedia
-            ? "#video{position:absolute;top:0;left:0;width:100%;height:calc(100% - 48px);object-fit:contain;background:#000}" +
+            ? "#stage{position:absolute;top:0;left:0;right:0;bottom:48px;display:flex;align-items:center;justify-content:center;background:#000}" +
+              "#video{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;background:#000}" +
               "#splash{position:absolute;top:0;left:0;width:100%;height:100%;background:#000;z-index:20;transition:opacity 0.3s;pointer-events:none}" +
               "#controls{position:absolute;bottom:0;left:0;right:0;height:48px;background:rgba(5,21,34,0.92);display:flex;align-items:center;padding:0 12px;z-index:10}" +
               "#playBtn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;margin-right:10px;padding:4px}" +

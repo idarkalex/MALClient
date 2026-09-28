@@ -103,6 +103,10 @@ public partial class VideosPage : ContentPage
                 ((CollectionView)sender).SelectedItem = null;
                 ResumeVideoWebView();
                 VideoWebView.Source = MALPlus.Services.VideoWebViewHelper.BuildSource(video.YtLink);
+                // MAUI re-applies MediaPlaybackRequiresUserGesture on every source update and puts
+                // it back to true, so the media element would never start without this.
+                MALPlus.Services.VideoWebViewHelper.ApplyMediaSettings(VideoWebView);
+                MALPlus.Services.VideoWebViewHelper.BackHandler = OnVideoBackPressed;
                 SetSystemBars(true);
                 VideoOverlayVisibility = true;
                 VideoOverlay.IsVisible = true;
@@ -119,6 +123,7 @@ public partial class VideosPage : ContentPage
     {
         try
         {
+            MALPlus.Services.VideoWebViewHelper.BackHandler = null;
             VideoWebView.Source = null;
             VideoOverlay.IsVisible = false;
             VideoOverlayVisibility = false;
@@ -126,5 +131,18 @@ public partial class VideosPage : ContentPage
             SetSystemBars(false);
         }
         catch { }
+    }
+
+    /// <summary>
+    ///     Back gesture while the player is up drops it and stays on the promo list instead of
+    ///     popping the page. Routed through MainActivity.OnBackPressed: MAUI 7 has no
+    ///     Page.BackButtonPressed and the WebView child swallows a swipe recognizer.
+    /// </summary>
+    private bool OnVideoBackPressed()
+    {
+        if (VideoOverlay == null || !VideoOverlay.IsVisible)
+            return false;
+        OnCloseVideo(this, EventArgs.Empty);
+        return true;
     }
 }

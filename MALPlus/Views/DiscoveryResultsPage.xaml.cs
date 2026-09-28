@@ -96,6 +96,10 @@ public partial class DiscoveryResultsPage : ContentPage
             VideoOverlay.IsVisible = true;
             VideoWebViewHelper.Resume(webView.Handler?.PlatformView as global::Android.Views.View);
             webView.Source = VideoWebViewHelper.BuildSource(url);
+            // MAUI re-applies MediaPlaybackRequiresUserGesture on every source update and puts it
+            // back to true, so the media element would never start without this.
+            VideoWebViewHelper.ApplyMediaSettings(webView);
+            VideoWebViewHelper.BackHandler = OnVideoBackPressed;
         }
         catch (Exception ex)
         {
@@ -108,7 +112,13 @@ public partial class DiscoveryResultsPage : ContentPage
         if (_videoWebView != null)
             return _videoWebView;
         _videoWebView = new WebView();
-        Grid.SetRow(_videoWebView, 1);
+        // This overlay has no RowDefinitions, so Grid.SetRow is ignored and the WebView lands in
+        // the single implicit row. Without an explicit Fill it also keeps whatever size it was
+        // measured at while the overlay was still hidden, and the <video> renders small and off
+        // centre inside a zero-sized viewport.
+        _videoWebView.HorizontalOptions = LayoutOptions.Fill;
+        _videoWebView.VerticalOptions = LayoutOptions.Fill;
+        _videoWebView.BackgroundColor = Colors.Black;
         VideoOverlay.Add(_videoWebView);
 #if ANDROID
         _videoWebView.HandlerChanged += (s, e) =>
@@ -128,6 +138,7 @@ public partial class DiscoveryResultsPage : ContentPage
     {
         try
         {
+            VideoWebViewHelper.BackHandler = null;
             if (_videoWebView != null)
                 _videoWebView.Source = null;
             VideoOverlay.IsVisible = false;
@@ -135,6 +146,14 @@ public partial class DiscoveryResultsPage : ContentPage
         catch
         {
         }
+    }
+
+    private bool OnVideoBackPressed()
+    {
+        if (VideoOverlay == null || !VideoOverlay.IsVisible)
+            return false;
+        OnCloseVideo(this, EventArgs.Empty);
+        return true;
     }
 
     private async void OnClose(object sender, EventArgs e)
