@@ -147,6 +147,43 @@ public partial class AnimeDetailsPage : ContentPage
 
     public double StaffListHeight => CharacterRowHeight * DisplayedStaff.Count;
 
+    private double _tabListHeight = 520;
+    private bool _tabListHeightSet;
+
+    /// <summary>
+    /// Bounded viewport for the character and staff lists. Sizing these to their content
+    /// (row height times count) is what stopped them virtualising: the viewport then IS the
+    /// list, so MAUI realises every row at once. A shorter box than the content is the whole
+    /// trick - the CollectionView recycles, only the visible rows exist, and the memory stays
+    /// flat no matter how far the user scrolls. It also means these two lists no longer grow
+    /// by chunks, so the scroll driven append in AppendNextProgressiveChunk is not used for
+    /// them; the list scrolls itself.
+    /// </summary>
+    public double TabListHeight
+    {
+        get => _tabListHeight;
+        private set
+        {
+            if (value <= 0 || Math.Abs(value - _tabListHeight) < 0.5)
+                return;
+            _tabListHeight = value;
+            OnPropertyChanged(nameof(TabListHeight));
+        }
+    }
+
+    private void UpdateTabListHeight()
+    {
+        if (PageScroll == null)
+            return;
+        var viewport = PageScroll.Height;
+        if (viewport <= 0 || double.IsNaN(viewport))
+            return;
+        // Big enough to be worth scrolling, small enough to leave the page something to scroll
+        // for the hero. The floor keeps a short list from becoming a two row window.
+        TabListHeight = Math.Clamp(viewport * 0.72, 320, viewport - 120);
+        _tabListHeightSet = true;
+    }
+
     private AnimeDetailsPageViewModel Vm => BindingContext as AnimeDetailsPageViewModel;
 
     public AnimeDetailsPage()
@@ -468,32 +505,36 @@ public partial class AnimeDetailsPage : ContentPage
             var pairs = animeMode ? Vm.AnimeStaffData?.AnimeCharacterPairs : null;
             var mangaCharacters = animeMode ? null : Vm.MangaCharacterData;
             var staff = animeMode ? Vm.AnimeStaffData?.AnimeStaff : null;
-            // This runs on every state sync, not just on load, so the grown counts have to be
-            // carried across the Clear or the list would collapse back to one chunk every time
-            // anything else on the page changed.
-            var charTarget = Math.Min(pairs?.Count ?? 0, _charactersShown);
-            var mangaTarget = Math.Min(mangaCharacters?.Count ?? 0, _mangaCharactersShown);
-            var staffTarget = Math.Min(staff?.Count ?? 0, _staffShown);
+            // Characters and staff are bounded boxes now (TabListHeight), so the CollectionView
+            // recycles and every entry can go in at once: the height no longer tracks the count,
+            // so a full list costs the same as a chunk. Related still grows in chunks, its grid
+            // sizes itself to its content and cannot recycle.
+            var cap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxCharacterPairs;
+            var staffCap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxStaff;
+            var charTarget = Math.Min(cap, pairs?.Count ?? 0);
+            var mangaTarget = Math.Min(cap, mangaCharacters?.Count ?? 0);
+            var staffTarget = Math.Min(staffCap, staff?.Count ?? 0);
             var relatedTarget = Math.Min(Vm.RelatedAnime.Count, _relatedShown);
             DisplayedCharacters.Clear();
             DisplayedMangaCharacters.Clear();
             DisplayedStaff.Clear();
             DisplayedRelated.Clear();
-            var cap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxCharacterPairs;
-            var staffCap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxStaff;
-            foreach (var pair in pairs?.Take(Math.Min(cap, charTarget)) ?? Enumerable.Empty<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>())
+            foreach (var pair in pairs?.Take(charTarget) ?? Enumerable.Empty<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>())
                 DisplayedCharacters.Add(new AnimeCharacterCard(pair));
-            foreach (var character in mangaCharacters?.Take(Math.Min(cap, mangaTarget)) ?? Enumerable.Empty<FavouriteViewModel>())
+            foreach (var character in mangaCharacters?.Take(mangaTarget) ?? Enumerable.Empty<FavouriteViewModel>())
                 DisplayedMangaCharacters.Add(new MangaCharacterCard(character));
-            foreach (var person in staff?.Take(Math.Min(staffCap, staffTarget)) ?? Enumerable.Empty<FavouriteViewModel>())
+            foreach (var person in staff?.Take(staffTarget) ?? Enumerable.Empty<FavouriteViewModel>())
                 DisplayedStaff.Add(new StaffCard(person));
             foreach (var item in Vm.RelatedAnime.Take(relatedTarget))
                 DisplayedRelated.Add(item);
             NotifyStateProperties();
+            if (!_tabListHeightSet)
+                UpdateTabListHeight();
+            OnPropertyChanged(nameof(TabListHeight));
             OnPropertyChanged(nameof(CharactersListHeight));
             OnPropertyChanged(nameof(MangaCharactersListHeight));
             OnPropertyChanged(nameof(StaffListHeight));
-            Console.WriteLine($"MALPlusTabs rows pairs={pairs?.Count ?? 0}/{DisplayedCharacters.Count} manga={mangaCharacters?.Count ?? 0}/{DisplayedMangaCharacters.Count} staff={staff?.Count ?? 0}/{DisplayedStaff.Count} related={Vm.RelatedAnime.Count}/{DisplayedRelated.Count}");
+            Console.WriteLine($"MALPlusTabs rows pairs={pairs?.Count ?? 0}/{DisplayedCharacters.Count} manga={mangaCharacters?.Count ?? 0}/{DisplayedMangaCharacters.Count} staff={staff?.Count ?? 0}/{DisplayedStaff.Count} related={Vm.RelatedAnime.Count}/{DisplayedRelated.Count} tabListH={TabListHeight}");
         }
         catch (Exception ex)
         {
@@ -1434,6 +1475,7 @@ public partial class AnimeDetailsPage : ContentPage
         _lastViewportWidth = width;
         _lastViewportHeight = height;
         ApplyHeroState(PageScroll.ScrollY);
+        UpdateTabListHeight();
         Dispatcher.Dispatch(UpdateHeaderSpacer);
     }
 
@@ -1610,15 +1652,6 @@ public partial class AnimeDetailsPage : ContentPage
                 break;
             case 5:
                 GrowImageTab(Vm.RelatedAnime, DisplayedRelated, ref _relatedShown, MakeRelatedCard);
-                break;
-            case 6:
-                if (Vm.AnimeMode)
-                    GrowImageTab(Vm.AnimeStaffData?.AnimeCharacterPairs, DisplayedCharacters, ref _charactersShown, MakeCharacterCard);
-                else
-                    GrowImageTab(Vm.MangaCharacterData, DisplayedMangaCharacters, ref _mangaCharactersShown, MakeMangaCharacterCard);
-                break;
-            case 7:
-                GrowImageTab(Vm.AnimeStaffData?.AnimeStaff, DisplayedStaff, ref _staffShown, MakeStaffCard);
                 break;
         }
     }

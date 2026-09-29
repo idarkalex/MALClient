@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -21,14 +21,20 @@ namespace MALClient.XShared.Comm.Anime
     public class AnimeCharactersStaffQuery : Query
     {
         /// <summary>
-        /// The characters/staff tab used to pull the entire cast and render it through a
-        /// BindableLayout, which is not virtualised: every row and every nested voice actor
-        /// row became a real view in one layout pass. On a long series that was hundreds of
-        /// views and the tab ANRed the app. The page only ever shows a screenful at a time,
-        /// so the source is trimmed to what is browsable and the page virtualises the rest.
-        /// </summary>
-        public const int MaxCharacterPairs = 60;
-        public const int MaxStaff = 60;
+    /// The characters/staff tab used to pull the entire cast and render it through a
+    /// BindableLayout, which is not virtualised: every row and every nested voice actor
+    /// row became a real view in one layout pass. On a long series that was hundreds of
+    /// views and the tab ANRed the app.
+    ///
+    /// The bound is not about rendering any more. The page paints a chunk at a time and grows
+    /// the list as the user scrolls, and the list height tracks the painted count, so a long
+    /// list no longer means a tall viewport full of realised rows - that was the real cause of
+    /// the 3000ms frames and the ANR. One Piece has 1481 characters and 542 staff in the API
+    /// and the old cap of 60 threw away 96% of them, so the cap is now the browse budget: past
+    /// this the API payload stops growing, and everything below it is reachable by scrolling.
+    /// </summary>
+    public const int MaxCharacterPairs = 200;
+    public const int MaxStaff = 200;
 
         private readonly int _animeId;
         private readonly bool _animeMode;
@@ -49,7 +55,7 @@ namespace MALClient.XShared.Comm.Anime
             throw new InvalidOperationException("Umm you said it's going to be manga...");
         var output = force
             ? new AnimeStaffData()
-            : await DataCache.RetrieveData<AnimeStaffData>($"staff_v5_{_animeId}", "AnimeDetails", 7) ??
+            : await DataCache.RetrieveData<AnimeStaffData>($"staff_v6_{_animeId}", "AnimeDetails", 7) ??
                   new AnimeStaffData();
         if (HasData(output) && !force) return output;
 
@@ -58,7 +64,7 @@ namespace MALClient.XShared.Comm.Anime
             var structured = await GetCharStaffDataStructuredAsync();
             if (HasData(structured))
             {
-                await DataCache.SaveData(structured, $"staff_v5_{_animeId}", "AnimeDetails");
+                await DataCache.SaveData(structured, $"staff_v6_{_animeId}", "AnimeDetails");
                 return structured;
             }
         }
@@ -68,7 +74,7 @@ namespace MALClient.XShared.Comm.Anime
 
         var htmlResult = await GetCharStaffDataHtml(output);
         if (HasData(htmlResult))
-            await DataCache.SaveData(htmlResult, $"staff_v5_{_animeId}", "AnimeDetails");
+            await DataCache.SaveData(htmlResult, $"staff_v6_{_animeId}", "AnimeDetails");
         return htmlResult;
     }
 
@@ -335,7 +341,7 @@ namespace MALClient.XShared.Comm.Anime
         {
             var notes = role ?? "";
             if (favorites > 0)
-                notes = string.IsNullOrEmpty(notes) ? $"{favorites:N0} favorites" : $"{notes} Â· {favorites:N0} favorites";
+                notes = string.IsNullOrEmpty(notes) ? $"{favorites:N0} favorites" : $"{notes} Ã‚Â· {favorites:N0} favorites";
             return notes;
         }
 
