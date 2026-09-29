@@ -579,8 +579,34 @@ namespace MALClient.XShared.Utils
             set => ApplicationDataService[nameof(CalendarShowAllAiring)] = value;
         }
 
-        #endregion Calendar
+        /// <summary>
+        ///     IANA id used to bucket the calendar by weekday. Empty means "follow the device zone".
+        ///     The airing instants themselves are absolute, so this only changes which day column
+        ///     an entry lands in: MAL publishes the broadcast slot in JST, so a 07:30 JST Tuesday
+        ///     show airs Monday night for anyone west of Tokyo.
+        /// </summary>
+        public static string CalendarTimeZoneId
+        {
+            get => ApplicationDataService[nameof(CalendarTimeZoneId)] as string ?? "";
+            set => ApplicationDataService[nameof(CalendarTimeZoneId)] = value ?? "";
+        }
 
+        /// <summary>
+        ///     Tab the details page warms up first. It only changes WHERE the background chain
+        ///     starts, never the order: the canonical sequence is General, Details, Episodes,
+        ///     Reviews, Recommendations, Related, Characters, Staff.
+        /// </summary>
+        public static int DetailsLastTab
+        {
+            get
+            {
+                try { return Math.Max(0, Math.Min(7, (int)(ApplicationDataService[nameof(DetailsLastTab)] ?? 0))); }
+                catch { return 0; }
+            }
+            set => ApplicationDataService[nameof(DetailsLastTab)] = value;
+        }
+
+        #endregion Calendar
         #region Articles
 
         public static bool ArticlesLaunchExternalLinks

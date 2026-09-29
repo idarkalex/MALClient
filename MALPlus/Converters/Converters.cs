@@ -14,16 +14,52 @@ public class StringToImageSourceConverter : IValueConverter
     // a single navigation. One shared instance per URL removes that entirely.
     private static readonly ConcurrentDictionary<string, UriImageSource> Sources = new(StringComparer.Ordinal);
 
+    // Poster variant already on disk, so the decoded copy does not have to survive the view.
+    private static readonly ConcurrentDictionary<string, FileImageSource> LocalSources = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, byte> DownloadStarted = new(StringComparer.Ordinal);
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is not string url || string.IsNullOrWhiteSpace(url))
             return null;
+
+        if (LocalSources.TryGetValue(url, out var local))
+            return local;
+
+        // Start pulling the file down once per URL in the background. The binding keeps the
+        // remote source until the file lands, and later binds pick the local one up.
+        if (DownloadStarted.TryAdd(url, 0))
+            _ = DownloadToDiskAsync(url);
+
         return Sources.GetOrAdd(url, static key => new UriImageSource
         {
             Uri = new Uri(key),
-            CachingEnabled = true,
-            CacheValidity = TimeSpan.FromDays(30)
+            // Bitmaps used to be cached for 30 days with no size cap, so a details page that
+            // warms Related/Recommendations/Characters/Staff held ~380MB of decoded artwork
+            // (measured, all of it in GL mtrack) and got the process killed. The files stay
+            // cached on disk; only the decoded copy is released with the view.
+            CachingEnabled = false
         });
+    }
+
+    private static async Task DownloadToDiskAsync(string url)
+    {
+        try
+        {
+            var name = Math.Abs(url.GetHashCode()).ToString("x8") + ".img";
+            var path = Path.Combine(FileSystem.CacheDirectory, name);
+            if (!File.Exists(path))
+            {
+                using var client = new HttpClient();
+                var bytes = await client.GetByteArrayAsync(url);
+                await File.WriteAllBytesAsync(path, bytes);
+            }
+            LocalSources[url] = new FileImageSource { File = path };
+        }
+        catch
+        {
+            // an image that will not download just keeps using the remote source
+        }
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

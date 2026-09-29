@@ -292,7 +292,7 @@ namespace MALClient.XShared.ViewModels
                     await AirFetchGate.WaitAsync();
                     try
                     {
-                        var nextAir = await GetTimeTillNextAirAsync(null);
+                        var nextAir = await GetTimeTillNextAirAsync();
                         ResourceLocator.DispatcherAdapter.Run(() => ApplyNextAir(nextAir));
                     }
                     finally
@@ -399,7 +399,8 @@ namespace MALClient.XShared.ViewModels
             {
                 var airedEpisodes = "";
                 if (ParentAbstraction.RepresentsAnime &&
-                    ResourceLocator.AiringInfoProvider.TryGetCurrentEpisode(Id, out var eps, DateTime.Today))
+                    ResourceLocator.AiringInfoProvider.TryGetCurrentEpisode(Id, out var eps,
+                        CalendarTimeZone.ToZone(DateTime.UtcNow, CalendarTimeZone.Resolved).Date))
                 {
                     airedEpisodes = $" {eps}/{(AllEpisodes <= 0 ? "?" : AllEpisodes.ToString())}";
                 }
@@ -918,11 +919,52 @@ namespace MALClient.XShared.ViewModels
         private string _timeTillNextAirCache;
         private bool _airFetchInFlight;
         private static readonly SemaphoreSlim AirFetchGate = new SemaphoreSlim(4);
+        /// <summary>
+        ///     The single source of truth for a countdown pill.
+        ///     The grid, the details hero and the related/recommendation chips all resolve through
+        ///     this, because they used to be three separate cascades: the hero also considered the
+        ///     episode list and the weekly broadcast slot, so it could show a date the cards never
+        ///     would, and the chip copy skipped the airing status gate.
+        ///     Deliberately reads only the persisted NextAirUtc and the schedule, both of which
+        ///     AiringDatumRepository owns. Returns "" when nothing trustworthy is known.
+        /// </summary>
+        public static string ResolveAirCountdown(int malId, string lastKnownStatus)
+        {
+            if (malId <= 0)
+                return "";
+            if (AiringOverrides.IsOverriddenAsNotAiring(malId))
+                return "";
+            if (!string.IsNullOrEmpty(lastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(lastKnownStatus))
+                return "";
+
+            var now = DateTime.UtcNow;
+            if (DataCache.TryRetrieveDataForId(malId, out var vd) && vd.NextAirUtc.HasValue &&
+                (vd.NextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(vd.NextAirUtc.Value, now)))
+                return AirTimeUtils.FormatAirCountdown(vd.NextAirUtc.Value, now);
+
+            if (ResourceLocator.AiringInfoProvider.InitializationSuccess &&
+                ResourceLocator.AiringInfoProvider.TryGetNextAirDate(malId, now, out var airDate) &&
+                (airDate > now || AirTimeUtils.IsInAiringWindow(airDate, now)))
+                return AirTimeUtils.FormatAirCountdown(airDate, now);
+
+            return "";
+        }
+
         public string TimeTillNextAirCache
         {
             get
             {
                 var malIdPeek = ParentAbstraction?.MalId ?? Id;
+                if (AiringOverrides.IsOverriddenAsNotAiring(malIdPeek))
+                {
+                    if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                    {
+                        _timeTillNextAirCache = "";
+                        RaisePropertyChanged(() => TimeTillNextAirCache);
+                        RaisePropertyChanged(() => AirDayTillBind);
+                    }
+                    return "";
+                }
                 if (DataCache.TryRetrieveDataForId(malIdPeek, out var vdPeek) && !string.IsNullOrEmpty(vdPeek.LastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(vdPeek.LastKnownStatus))
                 {
                     if (!string.IsNullOrEmpty(_timeTillNextAirCache))
@@ -994,7 +1036,7 @@ namespace MALClient.XShared.ViewModels
                 RaisePropertyChanged(() => AirDayTillBind);
             }
         }
-        public async Task<DateTime?> GetTimeTillNextAirAsync(TimeZoneInfo zoneInfo)
+        public async Task<DateTime?> GetTimeTillNextAirAsync()
         {
             var malIdLog = ParentAbstraction?.MalId ?? Id;
             var res = await MALClient.XShared.BL.AiringDatumRepository.GetNextAirUtcAsync(malIdLog);

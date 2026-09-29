@@ -265,6 +265,24 @@ namespace MALClient.XShared.Comm.Anime
         }
 
         /// <summary>
+        /// Picks the tiny variant, for the 26x26 seiyuu avatar on a character row. That one went
+        /// through GetBestImage and pulled the 225x320 original for every voice actor, so a sixty
+        /// row character list decoded sixty full size bitmaps on the UI thread to draw circles
+        /// barely bigger than a favicon. Falls back to GetBestImage when the payload has no small
+        /// variant, so an image is never lost.
+        /// </summary>
+        private static string GetSmallImage(JsonElement entry, string owner)
+        {
+            var small = CleanImage(GetNestedString(entry, owner, "images", "webp", "small_image_url"));
+            if (!string.IsNullOrEmpty(small))
+                return small;
+            small = CleanImage(GetNestedString(entry, owner, "images", "jpg", "small_image_url"));
+            if (!string.IsNullOrEmpty(small))
+                return small;
+            return GetBestImage(entry, owner);
+        }
+
+        /// <summary>
         /// Tenrai stuffs the episodes into the position text, e.g.
         /// "Storyboard (eps 376, 379, 381)". The episode list is noise on a row that shows
         /// the role, so it goes.
@@ -299,7 +317,7 @@ namespace MALClient.XShared.Comm.Anime
                     {
                         Id = GetNestedString(voice, "person", "mal_id"),
                         Name = name,
-                        ImgUrl = GetBestImage(voice, "person"),
+                        ImgUrl = GetSmallImage(voice, "person"),
                         Favorites = GetInt(voice, "person", "favorites"),
                         Language = "Japanese"
                     };

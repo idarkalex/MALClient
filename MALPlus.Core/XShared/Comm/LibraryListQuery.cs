@@ -46,6 +46,7 @@ namespace MALClient.XShared.Comm
                 var i = 0;
                 var loop = true; //loop_noop
                 var failedOnce = false;
+                Exception lastError = null;
 
                 string rawAnime = null;
 
@@ -513,14 +514,22 @@ namespace MALClient.XShared.Comm
                         catch (Exception e)
                         {
                             ResourceLocator.TelemetryProvider.TrackException(e);
-                            //Console.WriteLine($"Failed to read anime list, {e}");
+                            lastError = e;
+                            Console.WriteLine("MALPLUS library read failed: " + e);
                             if (failedOnce)
                             {
                                 loop = false;
 
+                                //"sign in again" was shown for EVERY failure here, including plain
+                                //timeouts and rate limits, which made a healthy session look dead.
+                                //Only an actual auth rejection earns that message.
+                                var authFailure = LooksLikeAuthFailure(e);
                                 ResourceLocator.DispatcherAdapter.Run(() =>
                                     ResourceLocator.MessageDialogProvider.ShowMessageDialog(
-                                        "Failed to authorize with MyAnimeList, please try signing in again.", "Error"));
+                                        authFailure
+                                            ? "Failed to authorize with MyAnimeList, please try signing in again."
+                                            : "Could not load your list from MyAnimeList. The session is still signed in, this looks like a network or server hiccup.",
+                                        "Error"));
                             }
                             else
                             {
@@ -539,6 +548,15 @@ namespace MALClient.XShared.Comm
             DataCache.SaveDataForUser(_source, output, _mode);
             return output;
         }
+
+        /// <summary>
+        ///     Tells a genuine credential rejection apart from a transient failure. Hummingbird
+        ///     answers 401/403 for a dead token but also throws plain timeouts, 429s and
+        ///     deserialisation errors, and telling the user to sign in again for those makes a
+        ///     perfectly valid session look broken.
+        /// </summary>
+        private static bool LooksLikeAuthFailure(Exception error)
+            => MALClient.XShared.Utils.AuthFailure.LooksLikeAuthFailure(error);
 
         private string FixDate(string date)
         {

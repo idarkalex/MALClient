@@ -139,9 +139,14 @@ namespace MALClient.XShared.BL
                 }
                 catch (Exception e)
                 {
-                    ResourceLocator.DispatcherAdapter.Run(() =>
-                        ResourceLocator.MessageDialogProvider.ShowMessageDialog(
-                            "Failed to authorize with MyAnimeList, please try signing in again.", "Error"));
+                    //A network hiccup while refreshing is not a dead session, and saying it is
+                    //sends the user through a pointless sign-in.
+                    var authFailure = AuthFailure.LooksLikeAuthFailure(e);
+                    Console.WriteLine("MALPLUS auth context failed (auth=" + authFailure + "): " + e);
+                    if (authFailure)
+                        ResourceLocator.DispatcherAdapter.Run(() =>
+                            ResourceLocator.MessageDialogProvider.ShowMessageDialog(
+                                "Failed to authorize with MyAnimeList, please try signing in again.", "Error"));
                     throw;
                 }
 

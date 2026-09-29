@@ -140,6 +140,23 @@
                                PlaceholderColor="#A0FFFFFF" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                        <VerticalStackLayout Grid.Column="0" Spacing="1" VerticalOptions="Center">
+                            <Label Text="Broadcast time zone" FontFamily="Inter" FontSize="14"
+                                   TextColor="{StaticResource BrushText}" />
+                            <Label Text="Which day an airing is filed under" FontFamily="Inter" FontSize="11"
+                                   TextColor="#A0FFFFFF" />
+                        </VerticalStackLayout>
+                        <Picker Grid.Column="1"
+                                ItemsSource="{Binding CalendarTimeZoneOptions}"
+                                SelectedIndex="{Binding CalendarTimeZoneIndex, Mode=TwoWay}"
+                                TitleColor="#A0FFFFFF" TextColor="{StaticResource BrushText}"
+                                WidthRequest="150">
+                            <Picker.ItemDisplayBinding>
+                                <Binding Path="Label" />
+                            </Picker.ItemDisplayBinding>
+                        </Picker>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
                         <Label Grid.Column="0" Text="Show season with type" FontFamily="Inter" FontSize="14"
                                TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
                         <Switch Grid.Column="1" IsToggled="{Binding DisplaySeasonWithType}"

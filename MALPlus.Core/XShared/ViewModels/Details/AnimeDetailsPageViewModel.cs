@@ -100,6 +100,8 @@ namespace MALClient.XShared.ViewModels.Details
         private bool _loadedCharacters;
         private bool _loadedVideos;
         public bool EpisodesLoaded => _loadedEpisodes;
+        public bool DetailsLoaded => _loadedDetails;
+        public bool DetailsRowsLoaded => LeftDetailsRow.Count > 0 || RightDetailsRow.Count > 0;
         public bool ReviewsLoaded => _loadedReviews;
         public bool RecommendationsLoaded => _loadedRecomm;
         public bool RelatedLoaded => _loadedRelated;
@@ -154,6 +156,19 @@ namespace MALClient.XShared.ViewModels.Details
             get
             {
                 var heroMalIdPeek = (_animeItemReference as AnimeItemViewModel)?.ParentAbstraction?.MalId ?? Id;
+                // The manual override has to beat every branch below. One Piece has no announced
+                // next chapter, but its persisted NextAirUtc predates the override, and the old
+                // cascade formatted that straight into the pill, so the hero showed a 4D the grid
+                // never showed for the same entry.
+                if (AiringOverrides.IsOverriddenAsNotAiring(heroMalIdPeek))
+                {
+                    if (!string.IsNullOrEmpty(_timeTillNextAirCache))
+                    {
+                        _timeTillNextAirCache = "";
+                        RaisePropertyChanged(() => TimeTillNextAir);
+                    }
+                    return "";
+                }
                 if (DataCache.TryRetrieveDataForId(heroMalIdPeek, out var heroVdPeek) && !string.IsNullOrEmpty(heroVdPeek.LastKnownStatus) && !AirTimeUtils.IsCurrentlyAiringStatus(heroVdPeek.LastKnownStatus))
                 {
                     if (!string.IsNullOrEmpty(_timeTillNextAirCache))
@@ -205,31 +220,20 @@ namespace MALClient.XShared.ViewModels.Details
                     source = "schedules";
                 }
 
-                if (string.IsNullOrEmpty(result) && AirTimeUtils.IsCurrentlyAiringStatus(Status))
+                if (string.IsNullOrEmpty(result))
                 {
-                    var nextFromEpisodes = ComputeNextAirFromEpisodes(Episodes, now);
-                    if (nextFromEpisodes.HasValue)
-                    {
-                        result = FormatAirCountdown(nextFromEpisodes.Value, now);
-                        source = "episodes";
-                    }
-
-                    if (string.IsNullOrEmpty(result))
-                    {
-                        var nextAirFromBroadcast = ComputeNextAirDate(_broadcast, now);
-                        if (nextAirFromBroadcast.HasValue)
-                        {
-                            result = FormatAirCountdown(nextAirFromBroadcast.Value, now);
-                            source = "broadcast-slot";
-                        }
-                    }
+                    // No second opinion any more. The hero used to fall back to the episode list
+                    // and then to the weekly broadcast slot, sources the cards never consult, so
+                    // the pill in the hero and the pill on the grid could disagree for the same
+                    // anime. Everything now comes from AnimeItemViewModel.ResolveAirCountdown,
+                    // which is also what the chips use.
+                    var status = DataCache.TryRetrieveDataForId(malId, out var statusData)
+                        ? statusData.LastKnownStatus
+                        : Status;
+                    result = AnimeItemViewModel.ResolveAirCountdown(malId, status);
                 }
 
                 _timeTillNextAirCache = result;
-
-                // The countdown is a computed value, so log which of the five sources produced it:
-                // only schedules and episodes carry a real air time, the broadcast slot is a weekly
-                // guess. Needed whenever a user doubts the pill in the hero.
 
                 if (_animeItemReference is AnimeItemViewModel itemVm)
                     itemVm.RefreshTimeTillNextAirInBackground();
@@ -1610,6 +1614,22 @@ namespace MALClient.XShared.ViewModels.Details
         }
 
         /// <summary>
+        ///     Waits for MalId to be resolved before a network tab runs. Init leaves it at -1
+        ///     ("we will find this thing later") and the real id only lands with the details
+        ///     payload, so a tab asked for too early would query with a bogus id.
+        /// </summary>
+        private async Task<bool> WaitForMalIdAsync(int entryId)
+        {
+            for (var i = 0; i < 40; i++)
+            {
+                if (Id != entryId) return false;
+                if (MalId > 0) return true;
+                await Task.Delay(100);
+            }
+            return MalId > 0;
+        }
+
+        /// <summary>
         ///     Warms the remaining tabs in the order the user actually reaches them
         ///     (Details -> Episodes -> Reviews -> Recommendations -> Related ->
         ///     Characters/Staff) instead of firing them all at once, and keeps one step in
@@ -1621,21 +1641,57 @@ namespace MALClient.XShared.ViewModels.Details
         private async Task PreloadTabsInOrderAsync()
         {
             var entryId = Id;
-            var entryMalId = MalId;
             var entryAnimeMode = AnimeMode;
 
-            bool StillCurrent() => Id == entryId && MalId == entryMalId && AnimeMode == entryAnimeMode;
+            //MalId is deliberately NOT part of this guard. Init sets it to -1 and the real value
+            //only arrives with the details payload, so comparing it here aborted the whole chain
+            //right after the first tab: the tabs then only ever loaded when tapped, because the
+            //page's TabSelected path has no such guard.
+            bool StillCurrent() => Id == entryId && AnimeMode == entryAnimeMode;
 
-            foreach (var step in new Func<Task>[]
+            //Details belongs to the immediate open (first tab the user expects to be there on
+            //arrival) but its scrape is the slowest call on the page. It is started FIRST and
+            //NOT awaited before the chain moves on: serialising every other tab behind it is
+            //what left them all cold until they were tapped.
+            var detailsLoad = LoadDetails();
+
+            var steps = new Func<Task>[]
                          {
-                             async () => await LoadDetails(),
-                             async () => { if (AnimeMode) await LoadEpisodes(); },
-                             async () => { if (AnimeMode) await LoadReviews(); },
-                             async () => { if (AnimeMode) await LoadRecommendations(); },
-                             async () => { if (AnimeMode) await LoadRelatedAnime(); },
-                             async () => await LoadCharacters()
-                         })
+                             async () => { if (AnimeMode && await WaitForMalIdAsync(entryId)) await LoadEpisodes(); },
+                             async () => { if (AnimeMode && await WaitForMalIdAsync(entryId)) await LoadReviews(); },
+                             async () => { if (AnimeMode && await WaitForMalIdAsync(entryId)) await LoadRecommendations(); },
+                             async () => { if (AnimeMode && await WaitForMalIdAsync(entryId)) await LoadRelatedAnime(); },
+                             async () => { if (await WaitForMalIdAsync(entryId)) await LoadCharacters(); }
+                         };
+
+            //The remembered tab goes FIRST, and the rest keep the canonical order. Rotating the
+            //whole chain used to push Episodes and Reviews behind the slow poster grids, which is
+            //precisely the "the tabs only load when I tap them" behaviour. Tab 0 is General
+            //(already on screen) and tab 1 is Details (started above), so tab N maps to step N-2.
+            var preferred = -1;
+            try { preferred = Settings.DetailsLastTab - 2; }
+            catch { }
+            if (preferred < 0 || preferred >= steps.Length)
+                preferred = -1;
+
+            if (preferred >= 0)
             {
+                await Task.Delay(1);
+                try
+                {
+                    await steps[preferred]();
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            for (var i = 0; i < steps.Length; i++)
+            {
+                if (i == preferred)
+                    continue;
+                var step = steps[i];
+
                 // hand the UI thread back between tabs so the entry stays interactive
                 await Task.Delay(1);
                 try
@@ -1648,8 +1704,11 @@ namespace MALClient.XShared.ViewModels.Details
                 }
 
                 if (!StillCurrent())
-                    return;
+                    break;
             }
+
+            try { await detailsLoad; }
+            catch { }
         }
 
         private async Task<bool> LoadDetailsCoreAsync(bool force)
@@ -1879,6 +1938,21 @@ namespace MALClient.XShared.ViewModels.Details
             return true;
         }
 
+        /// <summary>
+        ///     Puts a partial episode list on screen while the full one is still being fetched.
+        ///     The tab stops showing a bare loading panel as soon as there is anything to read.
+        /// </summary>
+        private void PublishEpisodes(List<AnimeEpisode> source)
+        {
+            if (source == null || source.Count == 0)
+                return;
+            Episodes.Clear();
+            foreach (var ep in source)
+                Episodes.Add(ep);
+            RaisePropertyChanged(() => Episodes);
+            RaisePropertyChanged(() => EpisodesLoaded);
+        }
+
         public async Task LoadEpisodes(bool force = false)
         {
             if (!AnimeMode) return;
@@ -1889,6 +1963,21 @@ namespace MALClient.XShared.ViewModels.Details
                 var isAiring = string.Equals(Status, "Currently Airing", StringComparison.CurrentCultureIgnoreCase);
                 var cached = force ? null : await DataCache.RetrieveAnimeEpisodes(MalId, isAiring);
                 List<AnimeEpisode> episodes = null;
+
+                // A long-runner has a dozen pages of episodes, so waiting for all of them left the
+                // tab blank for seconds. Pull the newest page first (two requests instead of
+                // twelve) and publish it, then let the full list land behind it.
+                if (!force && isAiring && (AllEpisodes > 60 || MalId == 21))
+                {
+                    var head = await new AnimeEpisodesQuery().GetLastEpisodesAsync(MalId);
+                    if (head != null && head.Count > 0)
+                    {
+                        foreach (var ep in head)
+                            ep.IsWatched = ep.EpisodeId > 0 && ep.EpisodeId <= MyEpisodes;
+                        PublishEpisodes(head);
+                    }
+                }
+
                 if (isAiring)
                 {
                     episodes = await new AnimeEpisodesQuery().GetEpisodes(MalId, force);
@@ -2022,32 +2111,24 @@ namespace MALClient.XShared.ViewModels.Details
             });
         }
 
+        private const int MaxRelatedEntries = 30;
+
         private string ComputeAirCountdown(int id)
         {
             if (id <= 0)
                 return "";
             try
             {
-                var now = DateTime.UtcNow;
-                if (DataCache.TryRetrieveDataForId(id, out var volatileData) &&
-                    volatileData.NextAirUtc.HasValue &&
-                    (volatileData.NextAirUtc.Value > now || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, now)))
-                {
-                    if (!string.IsNullOrEmpty(volatileData.LastKnownStatus) &&
-                        !AirTimeUtils.IsCurrentlyAiringStatus(volatileData.LastKnownStatus))
-                        return "";
-                    return AirTimeUtils.FormatAirCountdown(volatileData.NextAirUtc.Value, now);
-                }
-                if (ResourceLocator.AiringInfoProvider.InitializationSuccess &&
-                    ResourceLocator.AiringInfoProvider.TryGetNextAirDate(id, now, out DateTime airDate) &&
-                    (airDate > now || AirTimeUtils.IsInAiringWindow(airDate, now)))
-                    return AirTimeUtils.FormatAirCountdown(airDate, now);
+                var status = DataCache.TryRetrieveDataForId(id, out var volatileData)
+                    ? volatileData.LastKnownStatus
+                    : null;
+                return AnimeItemViewModel.ResolveAirCountdown(id, status);
             }
             catch (Exception)
             {
                 // best-effort countdown
+                return "";
             }
-            return "";
         }
 
         public Task LoadRecommendations(bool force = false)
@@ -2126,6 +2207,15 @@ namespace MALClient.XShared.ViewModels.Details
                         NoRelatedDataNoticeVisibility = true;
                         return;
                     }
+
+                    // A long-runner returns a huge related list and every entry is an image cell.
+                    // Binding all of them the moment the tab becomes visible blocked the main
+                    // thread for over five seconds and the system killed the app with an ANR
+                    // ("Input dispatching timed out", 269 slow frame callbacks). The grid
+                    // virtualises, but the first batch still has to be measured and decoded, so
+                    // the list itself has to be bounded.
+                    if (related.Count > MaxRelatedEntries)
+                        related = related.Take(MaxRelatedEntries).ToList();
 
                     _loadedRelated = true;
                     foreach (var item in related)

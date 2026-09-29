@@ -14,7 +14,9 @@ namespace MALClient.XShared.BL
     public class AiringInfoProvider : IAiringInfoProvider
     {
         private const string UpdateStorakeKey = "AiringInfoProviderLastUpdateDate";
-        private const string CacheFileName = "airing_data.json";
+        //v2: the stored episode timestamps used to be written through a local-time conversion,
+        //so every cached entry carried a date shifted by the device UTC offset. New name drops them.
+        private const string CacheFileName = "airing_data_v2.json";
 
         private readonly IDataCache _dataCache;
         private readonly IApplicationDataService _applicationDataService;
@@ -134,7 +136,8 @@ namespace MALClient.XShared.BL
                 if (airingData.Episodes != null)
                     airingData.Episodes = airingData.Episodes.OrderBy(episode => episode.Timestamp).ToList();
             }
-            AiringShows = data.GroupBy(x => x.MalId).Select(g => g.First()).ToList();
+            AiringShows = data.Where(x => !AiringOverrides.IsOverriddenAsNotAiring(x.MalId))
+                              .GroupBy(x => x.MalId).Select(g => g.First()).ToList();
             InitializationSuccess = true;
         }
 
@@ -156,8 +159,9 @@ namespace MALClient.XShared.BL
                 else
                 {
                     var todaysMatch =
-                        data.Episodes.FirstOrDefault(ep => Utilities.ConvertFromUnixTimestamp(ep.Timestamp).DayOfYear ==
-                                                           forDay.Value.DayOfYear);
+                        data.Episodes.FirstOrDefault(ep => CalendarTimeZone.ToZoneDayOfYear(
+                                                               Utilities.ConvertFromUnixTimestamp(ep.Timestamp),
+                                                               CalendarTimeZone.Resolved) == forDay.Value.DayOfYear);
                     if (todaysMatch != null)
                         episode = todaysMatch.EpisodeNumber;
                     else
@@ -216,8 +220,9 @@ namespace MALClient.XShared.BL
             try
             {
                 var todaysMatch =
-                    data.Episodes.FirstOrDefault(ep => Utilities.ConvertFromUnixTimestamp(ep.Timestamp).DayOfYear ==
-                                                       forDay.DayOfYear);
+                    data.Episodes.FirstOrDefault(ep => CalendarTimeZone.ToZoneDayOfYear(
+                                                           Utilities.ConvertFromUnixTimestamp(ep.Timestamp),
+                                                           CalendarTimeZone.Resolved) == forDay.DayOfYear);
                 if (todaysMatch != null)
                     date = Utilities.ConvertFromUnixTimestamp(todaysMatch.Timestamp);
                 else
@@ -251,8 +256,10 @@ namespace MALClient.XShared.BL
             if (data == null || !data.Episodes.Any())
                 return false;
 
-            var jst = DateTimeOffset.FromUnixTimeSeconds(data.Episodes[0].Timestamp).ToOffset(TimeSpan.FromHours(9));
-            day = jst.DayOfWeek;
+            //MAL publishes the broadcast slot in JST, but the weekday an entry is filed under has
+            //to be the one the viewer is actually on, so this follows the chosen calendar zone.
+            day = CalendarTimeZone.ToZoneDay(
+                Utilities.ConvertFromUnixTimestamp(data.Episodes[0].Timestamp), CalendarTimeZone.Resolved);
 
             return true;
         }

@@ -52,8 +52,9 @@
 
         <!-- Calendar Content (pivot) -->
         <Grid Grid.Row="3" IsVisible="{Binding CalendarVisibility}">
-            <!-- The shared project cannot reach logcat and a silent catch left a stale calendar on
-                 screen looking like a mode switch that did nothing, so the failure is shown. -->
+            <!-- Swipe is off on purpose: the day strip above already picks the day, and a
+                 horizontal drag on the pager was being claimed from the poster grid's vertical
+                 scroll, so scrolling a day jumped to another one. -->
             <Label Text="{Binding BuildError}" IsVisible="{Binding BuildError, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}"
                    FontFamily="Inter" FontSize="12" TextColor="#FF6B6B"
                    Padding="16,4" LineBreakMode="CharacterWrap" />
@@ -61,21 +62,16 @@
             <CarouselView x:Name="CalendarCarousel"
                           ItemsSource="{Binding CalendarData}"
                           Position="{Binding CalendarPivotIndex, Mode=TwoWay}"
+                          IsSwipeEnabled="False"
                           Loop="False">
                 <CarouselView.ItemTemplate>
                     <DataTemplate>
-                        <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="12">
-                            <!-- Day Header -->
-                            <HorizontalStackLayout Grid.Row="0" Spacing="8" VerticalOptions="Center">
-                                <Label Text="{Binding Header}" FontFamily="InterBold" FontSize="20"
-                                       TextColor="{StaticResource BrushText}" VerticalOptions="Center" />
-                                <Label Text="{Binding Sub}" FontFamily="Inter" FontSize="14"
-                                       TextColor="#80FFFFFF" VerticalOptions="Center" />
-                            </HorizontalStackLayout>
-
-                            <!-- Items: the same poster grid as the rest of the app. The per-row
-                                 buttons of the old list layout have no place on a poster. -->
-                            <Grid Grid.Row="1">
+                        <Grid Padding="16">
+                            <!-- No day header here: the fixed strip above already names the day
+                                 and shows its count, so repeating it inside the pager was pure
+                                 duplication. It also left a blank band on the summary page, whose
+                                 header never had any text to show. -->
+                            <Grid>
                                 <controls:AnimePosterGrid x:Name="DayGrid"
                                     ItemsSource="{Binding Items}">
                                     <controls:AnimePosterGrid.CellTemplate>

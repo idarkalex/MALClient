@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using MALClient.Models.Enums;
@@ -20,8 +20,25 @@ namespace MALPlus.Views;
 [QueryProperty(nameof(InitialTabIndex), "tab")]
 public partial class AnimeDetailsPage : ContentPage
 {
-    private const int ProgressiveChunkSize = 40;
+    //First paint shows five rows; the rest is already in the VM and gets appended as the user
+    //scrolls. The number is deliberately small: a long-runner has well over a thousand episodes
+    //and painting forty of them on the tap is what made the tab feel like it hung.
+    private const int ProgressiveChunkSize = 5;
     private const int RecommendationChunkSize = 8;
+    //Characters, staff and related were the three tabs that still froze on first paint. Their
+    //CollectionViews sit inside the page ScrollView with a HeightRequest sized to the whole list,
+    //so the viewport is as tall as the data (sixty character rows is 6480px) and MAUI realises
+    //every row in one layout pass: sixty portraits plus sixty seiyuu avatars, all decoded on the
+    //UI thread. Measured 3000ms frames at p95 on a cold open. Growing them from the page scroll is
+    //not an option, the scroll threshold says nothing about where these lists are, and an earlier
+    //attempt at it appended forty rows per frame and was reverted. So the height is bounded and
+    //the rest is reached with the Show more button instead.
+    private const int ImageTabChunkSize = 12;
+    private double _lastProgressiveAppendScrollY = double.NaN;
+    private int _charactersShown = ImageTabChunkSize;
+    private int _mangaCharactersShown = ImageTabChunkSize;
+    private int _staffShown = ImageTabChunkSize;
+    private int _relatedShown = ImageTabChunkSize;
     private const double HeroExpandedHeight = 460;
     private const double HeroCollapsedHeight = 210;
     private const double HeroCollapseRange = HeroExpandedHeight - HeroCollapsedHeight;
@@ -75,6 +92,7 @@ public partial class AnimeDetailsPage : ContentPage
     public ObservableCollection<AnimeCharacterCard> DisplayedCharacters { get; } = new();
     public ObservableCollection<MangaCharacterCard> DisplayedMangaCharacters { get; } = new();
     public ObservableCollection<StaffCard> DisplayedStaff { get; } = new();
+    public ObservableCollection<RelatedAnimeData> DisplayedRelated { get; } = new();
 
     public string GeneralErrorText => EmptyStateText(_generalError, "Unable to load general details.");
     public bool GeneralErrorVisible => !string.IsNullOrWhiteSpace(_generalError);
@@ -90,22 +108,22 @@ public partial class AnimeDetailsPage : ContentPage
     public string EpisodesErrorText => EmptyStateText(_episodesError, "Unable to load episodes.");
     public bool EpisodesErrorVisible => !string.IsNullOrWhiteSpace(_episodesError);
     public bool EpisodesEmptyVisible => Vm != null && !Vm.LoadingEpisodes && !EpisodesErrorVisible && Vm.Episodes.Count == 0;
-    public bool EpisodesContentVisible => Vm != null && !Vm.LoadingEpisodes && !EpisodesErrorVisible && Vm.Episodes.Count > 0;
+    public bool EpisodesContentVisible => Vm != null && !EpisodesErrorVisible && Vm.Episodes.Count > 0;
 
     public string ReviewsErrorText => EmptyStateText(_reviewsError, "Unable to load reviews.");
     public bool ReviewsErrorVisible => !string.IsNullOrWhiteSpace(_reviewsError);
     public bool ReviewsEmptyVisible => Vm != null && !Vm.LoadingReviews && !ReviewsErrorVisible && Vm.Reviews.Count == 0;
-    public bool ReviewsContentVisible => Vm != null && !Vm.LoadingReviews && !ReviewsErrorVisible && Vm.Reviews.Count > 0;
+    public bool ReviewsContentVisible => Vm != null && !ReviewsErrorVisible && Vm.Reviews.Count > 0;
 
     public string RecommendationsErrorText => EmptyStateText(_recommendationsError, "Unable to load recommendations.");
     public bool RecommendationsErrorVisible => !string.IsNullOrWhiteSpace(_recommendationsError);
     public bool RecommendationsEmptyVisible => Vm != null && !Vm.LoadingRecommendations && !RecommendationsErrorVisible && Vm.Recommendations.Count == 0;
-    public bool RecommendationsContentVisible => Vm != null && !Vm.LoadingRecommendations && !RecommendationsErrorVisible && Vm.Recommendations.Count > 0;
+    public bool RecommendationsContentVisible => Vm != null && !RecommendationsErrorVisible && Vm.Recommendations.Count > 0;
 
     public string RelatedErrorText => EmptyStateText(_relatedError, "Unable to load related titles.");
     public bool RelatedErrorVisible => !string.IsNullOrWhiteSpace(_relatedError);
     public bool RelatedEmptyVisible => Vm != null && !Vm.LoadingRelated && !RelatedErrorVisible && Vm.RelatedAnime.Count == 0;
-    public bool RelatedContentVisible => Vm != null && !Vm.LoadingRelated && !RelatedErrorVisible && Vm.RelatedAnime.Count > 0;
+    public bool RelatedContentVisible => Vm != null && !RelatedErrorVisible && Vm.RelatedAnime.Count > 0;
 
     public string CharactersErrorText => EmptyStateText(_charactersError, "Unable to load characters.");
     public bool CharactersErrorVisible => !string.IsNullOrWhiteSpace(_charactersError);
@@ -135,6 +153,8 @@ public partial class AnimeDetailsPage : ContentPage
     {
         InitializeComponent();
         BindingContext = ViewModelLocator.AnimeDetails;
+        if (RelatedGrid?.Inner != null)
+            RelatedGrid.Inner.SelectionChanged += OnRelatedSelectionChanged;
         ApplyTabActiveState();
         UpdateHeroMetaLayout();
     }
@@ -448,24 +468,32 @@ public partial class AnimeDetailsPage : ContentPage
             var pairs = animeMode ? Vm.AnimeStaffData?.AnimeCharacterPairs : null;
             var mangaCharacters = animeMode ? null : Vm.MangaCharacterData;
             var staff = animeMode ? Vm.AnimeStaffData?.AnimeStaff : null;
+            // This runs on every state sync, not just on load, so the grown counts have to be
+            // carried across the Clear or the list would collapse back to one chunk every time
+            // anything else on the page changed.
+            var charTarget = Math.Min(pairs?.Count ?? 0, _charactersShown);
+            var mangaTarget = Math.Min(mangaCharacters?.Count ?? 0, _mangaCharactersShown);
+            var staffTarget = Math.Min(staff?.Count ?? 0, _staffShown);
+            var relatedTarget = Math.Min(Vm.RelatedAnime.Count, _relatedShown);
             DisplayedCharacters.Clear();
             DisplayedMangaCharacters.Clear();
             DisplayedStaff.Clear();
-            // The query already trims both to MaxCharacterPairs/MaxStaff, and the three
-            // lists are virtualised now, so there is nothing left to page in: fill them
-            // once. ProgressiveChunkSize applies to Episodes and Reviews, whose sources
-            // really do run into the thousands.
+            DisplayedRelated.Clear();
             var cap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxCharacterPairs;
-            foreach (var pair in pairs?.Take(cap) ?? Enumerable.Empty<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>())
+            var staffCap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxStaff;
+            foreach (var pair in pairs?.Take(Math.Min(cap, charTarget)) ?? Enumerable.Empty<AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel>())
                 DisplayedCharacters.Add(new AnimeCharacterCard(pair));
-            foreach (var character in mangaCharacters?.Take(cap) ?? Enumerable.Empty<FavouriteViewModel>())
+            foreach (var character in mangaCharacters?.Take(Math.Min(cap, mangaTarget)) ?? Enumerable.Empty<FavouriteViewModel>())
                 DisplayedMangaCharacters.Add(new MangaCharacterCard(character));
-            foreach (var person in staff?.Take(cap) ?? Enumerable.Empty<FavouriteViewModel>())
+            foreach (var person in staff?.Take(Math.Min(staffCap, staffTarget)) ?? Enumerable.Empty<FavouriteViewModel>())
                 DisplayedStaff.Add(new StaffCard(person));
+            foreach (var item in Vm.RelatedAnime.Take(relatedTarget))
+                DisplayedRelated.Add(item);
             NotifyStateProperties();
             OnPropertyChanged(nameof(CharactersListHeight));
             OnPropertyChanged(nameof(MangaCharactersListHeight));
             OnPropertyChanged(nameof(StaffListHeight));
+            Console.WriteLine($"MALPlusTabs rows pairs={pairs?.Count ?? 0}/{DisplayedCharacters.Count} manga={mangaCharacters?.Count ?? 0}/{DisplayedMangaCharacters.Count} staff={staff?.Count ?? 0}/{DisplayedStaff.Count} related={Vm.RelatedAnime.Count}/{DisplayedRelated.Count}");
         }
         catch (Exception ex)
         {
@@ -479,6 +507,12 @@ public partial class AnimeDetailsPage : ContentPage
         _reviewsLoaded = false;
         _charactersLoaded = false;
         _recommendationsLoaded = false;
+        // A new entry starts at the first chunk again; carrying the grown count over would
+        // hand the next anime a list that is already past its own first paint.
+        _charactersShown = ImageTabChunkSize;
+        _mangaCharactersShown = ImageTabChunkSize;
+        _staffShown = ImageTabChunkSize;
+        _relatedShown = ImageTabChunkSize;
         _relatedLoaded = false;
         ResetReviewExpansionState();
     }
@@ -514,6 +548,13 @@ public partial class AnimeDetailsPage : ContentPage
         var loadingKey = (tabIndex, entryVersion);
         if (!_loadingTabs.Add(loadingKey))
             return;
+
+        // Breadcrumb: "warm" means the background chain had already filled this tab before the
+        // user touched it, "cold" means the tap is what triggered the fetch. This is how we tell
+        // a preload that works from one that silently never ran.
+        global::Android.Util.Log.Info("MALPlusTabs",
+            $"tap tab={tabIndex} warm={IsTabWarm(tabIndex)} entry={_initializedId}");
+        LogMemory($"tab{tabIndex}-tap");
 
         var entryId = _initializedId;
         var entryAnimeMode = _initializedAnimeMode;
@@ -620,7 +661,21 @@ public partial class AnimeDetailsPage : ContentPage
     }
 
     private void OnRelatedSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
-        => NotifyStateProperties();
+    {
+        // The grid binds to the paged DisplayedRelated, not straight to the source, so it has to
+        // be filled here. The load path clears the VM collection and then adds the entries one by
+        // one, so this runs once per item and appends only what the current chunk size allows.
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+            DisplayedRelated.Clear();
+        var source = Vm?.RelatedAnime;
+        if (source != null)
+        {
+            var target = Math.Min(source.Count, _relatedShown);
+            for (var index = DisplayedRelated.Count; index < target; index++)
+                DisplayedRelated.Add(source[index]);
+        }
+        NotifyStateProperties();
+    }
 
     private void RefreshDisplayedEpisodes(bool reset)
     {
@@ -748,10 +803,32 @@ public partial class AnimeDetailsPage : ContentPage
     }
 
     private async void OnRecommendationTapped(object sender, TappedEventArgs e)
+        => await NavigateToRelatedItem(e.Parameter as IDetailsPageArgs);
+
+    private async void OnRelatedSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         try
         {
-            if (e.Parameter is not IDetailsPageArgs item || item.Id <= 0)
+            if (RelatedGrid?.Inner == null)
+                return;
+            // Clear it straight away, otherwise the same card stays selected and tapping it again
+            // raises no SelectionChanged.
+            RelatedGrid.Inner.SelectedItem = null;
+            if (e.CurrentSelection.Count == 0)
+                return;
+            await NavigateToRelatedItem(e.CurrentSelection[0] as IDetailsPageArgs);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MALPLUS OnRelatedSelectionChanged failed: " + ex.GetType().Name);
+        }
+    }
+
+    private async Task NavigateToRelatedItem(IDetailsPageArgs item)
+    {
+        try
+        {
+            if (item == null || item.Id <= 0)
                 return;
             var animeMode = item.Type != RelatedItemType.Manga;
             var args = new AnimeDetailsPageNavigationArgs(item.Id, item.Title, null, null, null)
@@ -1127,28 +1204,156 @@ public partial class AnimeDetailsPage : ContentPage
         _ = SelectTabAsync(tabIndex, direction);
     }
 
+    private bool IsTabWarm(int tabIndex)
+    {
+        if (Vm == null) return false;
+        switch (tabIndex)
+        {
+            case 1: return Vm.DetailsLoaded || Vm.DetailsRowsLoaded;
+            case 2: return Vm.EpisodesLoaded;
+            case 3: return Vm.ReviewsLoaded;
+            case 4: return Vm.RecommendationsLoaded;
+            case 5: return Vm.RelatedLoaded;
+            case 6:
+            case 7: return Vm.CharactersLoaded;
+            default: return true;
+        }
+    }
+
+    /// <summary>
+    ///     Memory breadcrumb. The details page used to sit at ~900MB RSS on a long-runner and we
+    ///     need to tell apart the three things that can dominate it: decoded artwork (Android
+    ///     graphics), the managed heap (which lives in NATIVE memory under Mono/AOT, so it shows
+    ///     up as Native Heap and not as a managed counter) and one Java peer object per view.
+    /// </summary>
+    public static void LogMemory(string label)
+    {
+        try
+        {
+            long managed = GC.GetTotalMemory(false);
+            long committed = GC.GetGCMemoryInfo().TotalCommittedBytes;
+            global::Android.Util.Log.Info("MALPlusMem",
+                $"{label} gcHeap={managed / 1048576}MB committed={committed / 1048576}MB");
+        }
+        catch (Exception e)
+        {
+            global::Android.Util.Log.Warn("MALPlusMem", "LogMemory failed: " + e.GetType().Name);
+        }
+    }
+
+    /// <summary>
+    ///     Remembers the tab the user picked by hand. Only the START of the background warm-up
+    ///     chain moves: the sequence itself is always General, Details, Episodes, Reviews,
+    ///     Recommendations, Related, Characters, Staff.
+    /// </summary>
+    private void RememberPreferredTab(int tabIndex)
+    {
+        try { Settings.DetailsLastTab = tabIndex; }
+        catch { }
+    }
+
     private async Task SelectTabAsync(int tabIndex, int direction)
     {
         if (Vm == null || tabIndex < 0 || tabIndex > 7 || !IsTabVisible(tabIndex))
             return;
         var changed = Vm.DetailsPivotSelectedIndex != tabIndex;
         if (changed)
+        {
             Vm.DetailsPivotSelectedIndex = tabIndex;
+            RememberPreferredTab(tabIndex);
+        }
         ApplyTabActiveState();
         if (changed)
             await AnimateTabTransitionAsync(direction);
+        if (tabIndex >= 2)
+            await TopUpTabUntilScrollable(tabIndex);
+    }
+
+    /// <summary>
+    ///     A list tab opens with one chunk, and on a tall screen that chunk is shorter than the
+    ///     viewport. A ScrollView with nothing to scroll raises no Scrolled event, so the scroll
+    ///     driven growth in OnPageScrolled never fires and the rest of the list is unreachable.
+    ///     This tops the list up in chunks, with a beat between them so each chunk paints on its
+    ///     own, until it is tall enough to scroll; from there normal scrolling takes over and
+    ///     keeps appending. Applies to every growing tab, not just the poster grids: they all
+    ///     hang off the same page scroll and all of them used to stall at the first chunk.
+    /// </summary>
+    private async Task TopUpTabUntilScrollable(int tabIndex)
+    {
+        // Related is the one tab that cannot be left to the scroll. Its grid is a ContentView
+        // wrapping a CollectionView inside the page ScrollView, and the inner list wins the
+        // nested gesture arbitration: the page moves about forty pixels and then the drag is
+        // gone, so anything past that point would be unreachable. It is also the shortest list
+        // (thirty entries), so it is simply filled completely. The list tabs below are the ones
+        // that keep loading as the user scrolls.
+        var fillCompletely = tabIndex == 5;
+        for (var pass = 0; pass < 12; pass++)
+        {
+            if (Vm == null || Vm.DetailsPivotSelectedIndex != tabIndex)
+                return;
+            if (!fillCompletely && IsTabContentScrollable())
+            {
+                Console.WriteLine($"MALPlusTabs topup tab={tabIndex} pass={pass} scrollable viewport={PageScroll?.Height} content={PageScroll?.ContentSize.Height}");
+                return;
+            }
+            _lastProgressiveAppendScrollY = double.NaN;
+            var before = DisplayedCountFor(tabIndex);
+            AppendNextProgressiveChunk();
+            if (fillCompletely && DisplayedCountFor(tabIndex) == before)
+                return;
+            // The HeightRequest is a binding, so the list has to remeasure before it can be
+            // judged against the viewport.
+            await Task.Delay(90);
+        }
+    }
+
+    private int DisplayedCountFor(int tabIndex)
+    {
+        if (Vm == null)
+            return 0;
+        return tabIndex switch
+        {
+            2 => DisplayedEpisodes.Count,
+            3 => DisplayedReviews.Count,
+            4 => DisplayedRecommendations.Count,
+            5 => DisplayedRelated.Count,
+            6 => Vm.AnimeMode ? DisplayedCharacters.Count : DisplayedMangaCharacters.Count,
+            7 => DisplayedStaff.Count,
+            _ => 0
+        };
+    }
+
+    private bool IsTabContentScrollable()
+    {
+        if (PageScroll == null)
+            return false;
+        var viewport = PageScroll.Height;
+        if (viewport <= 0 || double.IsNaN(viewport))
+            return false;
+        var content = PageScroll.ContentSize.Height;
+        if (content <= 0 || double.IsNaN(content))
+            return false;
+        // Two screens, not one. A single screen of content is technically scrollable, but the
+        // Related grid's inner CollectionView wins the nested gesture arbitration and the page
+        // stops after a few pixels, so on that tab the list has to already be long enough to
+        // browse without the scroll carrying the load.
+        return content > viewport * 2;
     }
 
     private async Task AnimateTabTransitionAsync(int direction)
     {
         if (TabContentHost == null)
             return;
-        var offset = direction < 0 ? -28 : 28;
-        TabContentHost.Opacity = 0.35;
+        //Dimming the whole host before switching (Opacity 0.35 + a 28px slide) was the visible
+        //half of "tapping a tab takes ages": the fade only starts once the new tab has already
+        //been laid out, so the screen sat dimmed and offset for the whole layout pass. A short
+        //slide alone reads as responsive and does not hide the content while it measures.
+        var offset = direction < 0 ? -20 : 20;
         TabContentHost.TranslationX = offset;
+        TabContentHost.Opacity = 1;
         await Task.WhenAll(
-            TabContentHost.FadeTo(1, TabTransitionLength),
-            TabContentHost.TranslateTo(0, 0, TabTransitionLength, Easing.CubicOut));
+            TabContentHost.TranslateTo(0, 0, TabTransitionLength, Easing.CubicOut),
+            TabContentHost.FadeTo(1, TabTransitionLength / 2));
     }
 
     private int? FindAdjacentVisibleTab(int current, int direction)
@@ -1263,8 +1468,23 @@ public partial class AnimeDetailsPage : ContentPage
     private void OnPageScrolled(object sender, ScrolledEventArgs e)
     {
         ApplyHeroState(e.ScrollY);
-        if (IsNearPageBottom(e.ScrollY))
-            AppendNextProgressiveChunk();
+        var near = IsNearPageBottom(e.ScrollY);
+        if (!near)
+        {
+            // Away from the tail, so the next approach to the bottom may append again.
+            _lastProgressiveAppendScrollY = double.NaN;
+            return;
+        }
+        // IsNearPageBottom is deliberately generous (three quarters of the viewport), so a single
+        // fling fires it on many consecutive frames. Without this guard each of those frames
+        // appended a chunk, which is what made this tab unusable when it was tried before: forty
+        // rows per frame. One append per 120px of real scrolling is the same endless list with
+        // none of the stampede.
+        if (!double.IsNaN(_lastProgressiveAppendScrollY) &&
+            e.ScrollY - _lastProgressiveAppendScrollY < 120)
+            return;
+        _lastProgressiveAppendScrollY = e.ScrollY;
+        AppendNextProgressiveChunk();
     }
 
     private void ResetHeaderLayoutState()
@@ -1358,11 +1578,10 @@ public partial class AnimeDetailsPage : ContentPage
     private void AppendNextProgressiveChunk()
     {
         var tab = Vm?.DetailsPivotSelectedIndex ?? -1;
-        // Only the tabs whose list IS the page content can be measured by the page scroll.
-        // Characters (6) and Staff (7) render into their own virtualised lists, so "page
-        // near its bottom" said nothing about them: every scroll frame past the threshold
-        // appended another 40 rows, which is what made the tab unusable. They are bounded
-        // by the query instead (MaxCharacterPairs / MaxStaff).
+        // Only the active tab grows, so scrolling a long Episodes list never quietly appends
+        // rows to a list nobody is looking at. OnPageScrolled keeps one append per 120px of
+        // scroll, which is what makes this safe to run for the three grid tabs as well: their
+        // rows are a portrait each, so an unbounded append is a stutter, not a few lines of text.
         switch (tab)
         {
             case 2:
@@ -1389,8 +1608,51 @@ public partial class AnimeDetailsPage : ContentPage
                         DisplayedRecommendations.Add(Vm.Recommendations[index]);
                 }
                 break;
+            case 5:
+                GrowImageTab(Vm.RelatedAnime, DisplayedRelated, ref _relatedShown, MakeRelatedCard);
+                break;
+            case 6:
+                if (Vm.AnimeMode)
+                    GrowImageTab(Vm.AnimeStaffData?.AnimeCharacterPairs, DisplayedCharacters, ref _charactersShown, MakeCharacterCard);
+                else
+                    GrowImageTab(Vm.MangaCharacterData, DisplayedMangaCharacters, ref _mangaCharactersShown, MakeMangaCharacterCard);
+                break;
+            case 7:
+                GrowImageTab(Vm.AnimeStaffData?.AnimeStaff, DisplayedStaff, ref _staffShown, MakeStaffCard);
+                break;
         }
     }
+
+    private delegate TCard TCardFactory<TSource, TCard>(TSource source);
+
+    private static void GrowImageTab<TSource, TCard>(IReadOnlyList<TSource> source, ObservableCollection<TCard> target,
+        ref int shown, TCardFactory<TSource, TCard> factory)
+    {
+        if (source == null || target == null)
+            return;
+        // One chunk per pass, and never past what the query already trimmed.
+        var cap = MALClient.XShared.Comm.Anime.AnimeCharactersStaffQuery.MaxCharacterPairs;
+        var next = Math.Min(source.Count, Math.Min(cap, shown + ImageTabChunkSize));
+        if (next <= target.Count)
+            return;
+        for (var index = target.Count; index < next; index++)
+            target.Add(factory(source[index]));
+        shown = next;
+        Console.WriteLine($"MALPlusTabs grow rows={target.Count} of {source.Count} (shown={shown})");
+    }
+
+    private static AnimeCharacterCard MakeCharacterCard(
+        AnimeDetailsPageViewModel.AnimeStaffDataViewModels.AnimeCharacterStaffModelViewModel pair)
+        => new AnimeCharacterCard(pair);
+
+    private static MangaCharacterCard MakeMangaCharacterCard(FavouriteViewModel character)
+        => new MangaCharacterCard(character);
+
+    private static StaffCard MakeStaffCard(FavouriteViewModel person)
+        => new StaffCard(person);
+
+    private static RelatedAnimeData MakeRelatedCard(RelatedAnimeData item)
+        => item;
 
     private void SetTabError(int tabIndex, Exception exception)
     {

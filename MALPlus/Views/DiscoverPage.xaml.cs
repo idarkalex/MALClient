@@ -137,7 +137,8 @@ public partial class DiscoverPage : ContentPage
         {
             // The community thresholds (members/popularity) are ignored server side by
             // Tenrai, so the ceiling is applied client side after a filtered page.
-            var items = await DiscoveryRandomQuery.GetAsync(false, null, 75, 1500, 20);
+            // minScore must stay 0: it is a 0-10 scale and anything above 10 is a 400.
+            var items = await DiscoveryRandomQuery.GetAsync(false, null, 0, 1500, 20);
             if (items.Count == 0)
                 await Alert("No gems matched those filters.");
             else

@@ -49,7 +49,12 @@ namespace MALClient.XShared.Comm.Anime
 
                         for (int i = 0; i < 52; i++)
                         {
-                            var airDate = firstAir.Value.AddDays(i * 7);
+                            //ComputeNextAirDate already returns UTC, but with Kind=Unspecified.
+                            //ConvertToUnixTimestamp calls ToUniversalTime(), which treats
+                            //Unspecified as LOCAL time, so without this the stored instant is
+                            //shifted by the device UTC offset and every countdown comes out
+                            //that many hours off. Specifying Utc makes the conversion a no-op.
+                            var airDate = DateTime.SpecifyKind(firstAir.Value.AddDays(i * 7), DateTimeKind.Utc);
                             airingData.Episodes.Add(new AiringInfoProvider.Episode
                             {
                                 Timestamp = Utilities.ConvertToUnixTimestamp(airDate),

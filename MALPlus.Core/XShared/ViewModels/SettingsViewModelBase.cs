@@ -395,6 +395,51 @@ namespace MALClient.XShared.ViewModels
             }
         }
 
+        /// <summary>
+        ///     Zone the calendar buckets weekdays in. Empty follows the device. The airing instants
+        ///     are absolute and the countdown never changes, only the day column does.
+        /// </summary>
+        public string CalendarTimeZoneId
+        {
+            get => Settings.CalendarTimeZoneId;
+            set
+            {
+                if (Settings.CalendarTimeZoneId == value)
+                    return;
+                Settings.CalendarTimeZoneId = value;
+                CalendarTimeZone.Invalidate();
+                RaisePropertyChanged();
+                RaisePropertyChanged(() => CalendarTimeZoneIndex);
+                RaisePropertyChanged(() => CalendarTimeZoneLabel);
+            }
+        }
+
+        public IReadOnlyList<CalendarTimeZone.Option> CalendarTimeZoneOptions => CalendarTimeZone.Options;
+
+        public string CalendarTimeZoneLabel => CalendarTimeZone.LabelFor(Settings.CalendarTimeZoneId);
+
+        public int CalendarTimeZoneIndex
+        {
+            get
+            {
+                var id = Settings.CalendarTimeZoneId;
+                var options = CalendarTimeZone.Options;
+                for (int i = 0; i < options.Count; i++)
+                {
+                    if (options[i].Id == id)
+                        return i;
+                }
+                return 0;
+            }
+            set
+            {
+                var options = CalendarTimeZone.Options;
+                if (value < 0 || value >= options.Count)
+                    return;
+                CalendarTimeZoneId = options[value].Id;
+            }
+        }
+
         public bool IsCachingEnabled
         {
             get => Settings.IsCachingEnabled;

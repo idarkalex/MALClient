@@ -99,22 +99,41 @@ namespace MALClient.XShared.Comm.Discovery
                     return output;
 
                 var englishTitles = ResourceLocator.EnglishTitlesProvider;
-                var tasks = airing.Select(async entry =>
+                //One slot per title, filled in order: the old code appended straight into a shared
+                //List<T> from every concurrent task, which is not thread safe, and it made the
+                //final order depend on which search finished first.
+                var perTitle = new DiscoveryItem[airing.Count][];
+                var tasks = airing.Select(async (entry, index) =>
                 {
+                    var picked = new List<DiscoveryItem>();
                     try
                     {
                         englishTitles.TryGetEnglishTitleForSeries(entry.Id, true, out var english);
                         var themes = await AnimeThemesHelper.SearchAsync(entry.Title, english);
                         if (themes == null || themes.Count == 0)
+                        {
+                            perTitle[index] = picked.ToArray();
                             return;
-                        var picked = themes
+                        }
+                        //Some titles come back with the very same video twice (the same entry
+                        //appears under more than one theme relation), which used to render as two
+                        //identical rows. Dedupe on the video, then on type+sequence+song so two
+                        //genuinely different songs of the same slot both survive.
+                        var seenUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        var seenSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        var candidates = themes
                             .Where(t => !string.IsNullOrEmpty(t?.Url))
                             .OrderBy(t => t.Sequence)
-                            .ThenBy(t => t.Type)
-                            .Take(themesPerTitle)
-                            .ToList();
-                        foreach (var theme in picked)
-                            output.Add(new DiscoveryItem
+                            .ThenBy(t => t.Type);
+                        foreach (var theme in candidates)
+                        {
+                            if (!seenUrls.Add(theme.Url))
+                                continue;
+                            var slot = theme.Type + " " + theme.Sequence + "|" +
+                                       (theme.SongTitle ?? "");
+                            if (!seenSlots.Add(slot))
+                                continue;
+                            picked.Add(new DiscoveryItem
                             {
                                 Id = entry.Id,
                                 Title = entry.Title,
@@ -123,13 +142,22 @@ namespace MALClient.XShared.Comm.Discovery
                                            (string.IsNullOrEmpty(theme.SongTitle) ? "" : " · " + theme.SongTitle),
                                 ThemeUrl = theme.Url
                             });
+                            if (picked.Count >= themesPerTitle)
+                                break;
+                        }
                     }
                     catch
                     {
                     }
+                    perTitle[index] = picked.ToArray();
                 }).ToArray();
 
                 await Task.WhenAll(tasks);
+                foreach (var group in perTitle)
+                {
+                    if (group != null)
+                        output.AddRange(group);
+                }
             }
             catch
             {

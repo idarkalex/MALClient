@@ -31,8 +31,14 @@ namespace MALClient.XShared.ViewModels.Main
     //just to indicate different data type
     public sealed class CalendarSummaryPivotPage : CalendarPivotPage
     {
-        public new string Header => "Summary";
-        public new string Sub => "";
+        //Header/Sub used to be re-declared here with 'new' read-only properties. That never took
+        //effect: both the day strip and the pager bind them on a CalendarPivotPage-typed
+        //reference, so they always read the base auto-property, which nothing ever assigned.
+        //Now the summary is an ordinary page and gets real values.
+        public CalendarSummaryPivotPage()
+        {
+            Header = "All";
+        }
 
         public List<Tuple<string, List<AnimeItemViewModel>>> Data { get; set; } =
             new List<Tuple<string, List<AnimeItemViewModel>>>();
@@ -208,29 +214,35 @@ namespace MALClient.XShared.ViewModels.Main
                         abstractions = buildTask.Result;
                 }
 
+                //The day columns are bucketed in the zone chosen in settings, not in JST.
+                var timeZone = CalendarTimeZone.Resolve();
+
                 foreach (var abstraction in abstractions)
                 {
                     try
                     {
                         var nowUtc = DateTime.UtcNow;
 
+                        //Flagged by hand as not airing: the source keeps advertising a weekly slot
+                        //for it, so without this it would still land on some day.
+                        if (AiringOverrides.IsOverriddenAsNotAiring(abstraction.Id))
+                            continue;
+
                         if (ResourceLocator.AiringInfoProvider.TryGetNextAirDate(abstraction.Id, nowUtc, out var nextAirDate) &&
                             (nextAirDate - nowUtc).TotalDays >= 7)
                             continue;
 
-                        // The provider already told us when this airs, so hand that date straight to
-                        // the item. Season mode has ~297 entries and the grid binds the countdown on
-                        // first paint: without this the pill would be empty until something kicked
-                        // off a fetch per card, which is the exact stampede AirTimeUtils guards
-                        // against. SetNextAirCache is the single writer for this value.
+                        DateTime airUtc;
                         if (nextAirDate != default)
-                            abstraction.ViewModel.SetNextAirCache(nextAirDate);
-
-                        if (ResourceLocator.AiringInfoProvider.TryGetAiringDay(abstraction.Id, out DayOfWeek dayOfWeek))
                         {
-                            int day = (int) dayOfWeek;
-                            if (day >= 0 && day <= 7)
-                                CalendarData[day].Items.Add(abstraction.ViewModel);
+                            // The provider already told us when this airs, so hand that date
+                            // straight to the item. Season mode has ~297 entries and the grid binds
+                            // the countdown on first paint: without this the pill would be empty
+                            // until something kicked off a fetch per card, which is the exact
+                            // stampede AirTimeUtils guards against. SetNextAirCache is the single
+                            // writer for this value.
+                            abstraction.ViewModel.SetNextAirCache(nextAirDate);
+                            airUtc = nextAirDate;
                         }
                         else if (abstraction.RepresentsAnime &&
                                  DataCache.TryRetrieveDataForId(abstraction.Id, out var volatileData) &&
@@ -238,14 +250,19 @@ namespace MALClient.XShared.ViewModels.Main
                                  (volatileData.NextAirUtc.Value > nowUtc || AirTimeUtils.IsInAiringWindow(volatileData.NextAirUtc.Value, nowUtc)) &&
                                  (volatileData.NextAirUtc.Value - nowUtc).TotalDays < 7)
                         {
-                            var jst = volatileData.NextAirUtc.Value.AddHours(9);
-                            int day = (int) jst.DayOfWeek;
-                            if (day >= 0 && day <= 7)
-                            {
-                                abstraction.ViewModel.SetNextAirCache(volatileData.NextAirUtc.Value);
-                                CalendarData[day].Items.Add(abstraction.ViewModel);
-                            }
+                            abstraction.ViewModel.SetNextAirCache(volatileData.NextAirUtc.Value);
+                            airUtc = volatileData.NextAirUtc.Value;
                         }
+                        else
+                        {
+                            continue;
+                        }
+
+                        // The instant is absolute, but the Japanese weekday is not the day the user
+                        // watches on: a 07:30 JST Tuesday slot airs Monday night west of Tokyo.
+                        var day = (int) CalendarTimeZone.ToZoneDay(airUtc, timeZone);
+                        if (day >= 0 && day <= 6)
+                            CalendarData[day].Items.Add(abstraction.ViewModel);
                     }
                     catch (Exception e)
                     {
@@ -326,7 +343,12 @@ namespace MALClient.XShared.ViewModels.Main
                 // The shared item template binds Items, which the summary subclass never filled,
                 // so the Summary tab always showed "No airing today".
                 if (summaryPage != null)
+                {
                     summaryPage.Items = summaryPage.Data.SelectMany(entry => entry.Item2).ToList();
+                    summaryPage.Sub = summaryPage.Items.Count > 0
+                        ? summaryPage.Items.Count.ToString()
+                        : "-";
+                }
 
 
                 RaisePropertyChanged(() => CalendarData);
@@ -464,7 +486,7 @@ namespace MALClient.XShared.ViewModels.Main
                 {
                     try
                     {
-                        var nextAir = await abstraction.ViewModel.GetTimeTillNextAirAsync(null);
+                        var nextAir = await abstraction.ViewModel.GetTimeTillNextAirAsync();
                         if (nextAir.HasValue &&
                             (nextAir.Value > nowUtc || AirTimeUtils.IsInAiringWindow(nextAir.Value, nowUtc)) &&
                             (nextAir.Value - nowUtc).TotalDays < 7)

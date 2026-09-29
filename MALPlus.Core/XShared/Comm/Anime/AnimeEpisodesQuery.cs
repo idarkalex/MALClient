@@ -18,7 +18,14 @@ namespace MALClient.XShared.Comm.Anime
             return false;
         }
 
-        public async Task<List<AnimeEpisode>> GetEpisodes(int animeId, bool force = false, CancellationToken cancellationToken = default)
+        /// <param name="onFirstBatch">
+        ///     Invoked with the first page as soon as it lands, while the remaining pages are
+        ///     still being fetched. A long-runner has a dozen pages, so waiting for all of them
+        ///     meant the tab stayed empty for seconds; this lets the caller show the newest
+        ///     episodes immediately and fill the rest in as it arrives.
+        /// </param>
+        public async Task<List<AnimeEpisode>> GetEpisodes(int animeId, bool force = false,
+            CancellationToken cancellationToken = default, Action<List<AnimeEpisode>> onFirstBatch = null)
         {
             if (!force && _cache.TryGetValue(animeId, out var cachedFull))
             {
@@ -56,6 +63,13 @@ namespace MALClient.XShared.Comm.Anime
                         if (!hasNext)
                             break;
 
+                        if (onFirstBatch != null && result.Count > 0)
+                        {
+                            try { onFirstBatch(result.ToList()); }
+                            catch { }
+                            onFirstBatch = null;
+                        }
+
                         page++;
                     }
                     catch (OperationCanceledException)
@@ -72,6 +86,7 @@ namespace MALClient.XShared.Comm.Anime
                 }
 
                 _cache[animeId] = (result, DateTime.UtcNow, 1);
+                NotifyOverrideIfResumed(animeId, result);
                 return result;
             }
             catch
@@ -141,12 +156,32 @@ namespace MALClient.XShared.Comm.Anime
                 }
 
                 _cache[animeId] = (result, DateTime.UtcNow, lastPage);
+                NotifyOverrideIfResumed(animeId, result);
                 return result;
             }
             catch
             {
                 return null;
             }
+        }
+
+        //Every real episode fetch funnels through here, so a series that was flagged as
+        //not airing by hand gets its flag dropped the moment a newer episode shows up.
+        //No-op for every anime that has no override.
+        private static void NotifyOverrideIfResumed(int animeId, List<AnimeEpisode> episodes)
+        {
+            try
+            {
+                if (episodes == null || episodes.Count == 0) return;
+                if (!MALClient.XShared.Utils.AiringOverrides.IsOverriddenAsNotAiring(animeId)) return;
+                var latest = episodes.Where(ep => ep.AiredDate.HasValue)
+                    .Select(ep => ep.AiredDate.Value)
+                    .OrderByDescending(d => d)
+                    .FirstOrDefault();
+                if (latest == default) return;
+                MALClient.XShared.Utils.AiringOverrides.ResumeIfAiring(animeId, latest);
+            }
+            catch { }
         }
 
         private static string GetString(JsonElement el, string prop) =>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MALClient.XShared.Comm.Anime;
@@ -30,6 +31,18 @@ namespace MALClient.XShared.BL
         public static async Task<DateTime?> GetNextAirUtcAsync(int malId, bool force = false)
         {
             var now = DateTime.UtcNow;
+            if (AiringOverrides.IsOverriddenAsNotAiring(malId))
+            {
+                //The source keeps advertising a weekly slot for this series even though it
+                //switched to batch releases, so every fallback below would invent a date.
+                //Deliberately NOT re-checked against the local episode cache: that cache is fed by
+                //the seed bundle, whose synthetic weekly dates run past the real last episode and
+                //would read as "it resumed airing". Only a live fetch (AnimeEpisodesQuery) can
+                //lift this, so the override holds until the next cour is really published.
+                lock (_lockObj) _memCache[malId] = (null, now);
+                DataCache.UpdateVolatileDataWithNextAir(malId, null);
+                return null;
+            }
             if (!force && DataCache.TryRetrieveDataForId(malId, out var vd) && vd.NextAirUtc.HasValue)
             {
                 if (!AirTimeUtils.NeedsRefresh(vd.NextAirUtc, vd.NextAirFetchedAtUtc, now))

@@ -165,6 +165,18 @@ namespace MALClient.XShared.Comm.Discovery
             return output;
         }
 
+        //Tenrai recomputes pagination from the page size: anime?sfw reports 27341 pages with
+        //limit=1 but only ~1094 with limit=25, and asking for a page past the real last one is a
+        //400 rather than an empty page. The page count therefore has to be resolved with the very
+        //same limit the fetch uses, or the random page is out of range almost every time.
+        private const int PageSize = 25;
+
+        //last_visible_page is also not a usable bound on its own. manga?sfw advertises 2369 pages
+        //of 25, yet page 1000 (offset 25,000) is served and page 2000 (offset 50,000) is a 400:
+        //there is a hard offset cap that the pagination metadata does not mention. The random pick
+        //is confined to an offset known to be served, which is still a 20k entry pool.
+        private const int MaxOffset = 20000;
+
         public static async Task<List<DiscoveryItem>> GetAsync(bool manga, RandomFilter filter,
             int minScore, int maxPopularityRank, int limit = 20)
         {
@@ -186,12 +198,13 @@ namespace MALClient.XShared.Comm.Discovery
                         System.Globalization.CultureInfo.InvariantCulture));
                 var baseQuery = media + "?" + string.Join("&", parts);
 
-                var lastPage = await ResolveLastPageAsync(media, baseQuery);
+                var lastPage = await ResolveLastPageAsync(media, baseQuery, PageSize);
                 if (lastPage < 1)
                     return output;
 
-                var page = lastPage == 1 ? 1 : Rng.Next(1, lastPage + 1);
-                var raw = await TenraiClient.GetRawJsonAsync($"{baseQuery}&page={page}&limit=25");
+                var maxPage = Math.Max(1, Math.Min(lastPage, MaxOffset / PageSize));
+                var page = maxPage == 1 ? 1 : Rng.Next(1, maxPage + 1);
+                var raw = await TenraiClient.GetRawJsonAsync($"{baseQuery}&page={page}&limit={PageSize}");
                 if (string.IsNullOrEmpty(raw))
                     return output;
 
@@ -220,11 +233,11 @@ namespace MALClient.XShared.Comm.Discovery
             return output;
         }
 
-        private static async Task<int> ResolveLastPageAsync(string media, string baseQuery)
+        private static async Task<int> ResolveLastPageAsync(string media, string baseQuery, int pageSize)
         {
             try
             {
-                var raw = await TenraiClient.GetRawJsonAsync($"{baseQuery}&page=1&limit=1");
+                var raw = await TenraiClient.GetRawJsonAsync($"{baseQuery}&page=1&limit={pageSize}");
                 if (string.IsNullOrEmpty(raw))
                     return 0;
                 using var doc = JsonDocument.Parse(raw);
