@@ -55,7 +55,7 @@ namespace MALClient.XShared.Comm.Anime
             throw new InvalidOperationException("Umm you said it's going to be manga...");
         var output = force
             ? new AnimeStaffData()
-            : await DataCache.RetrieveData<AnimeStaffData>($"staff_v6_{_animeId}", "AnimeDetails", 7) ??
+            : await DataCache.RetrieveData<AnimeStaffData>($"staff_v7_{_animeId}", "AnimeDetails", 7) ??
                   new AnimeStaffData();
         if (HasData(output) && !force) return output;
 
@@ -64,7 +64,7 @@ namespace MALClient.XShared.Comm.Anime
             var structured = await GetCharStaffDataStructuredAsync();
             if (HasData(structured))
             {
-                await DataCache.SaveData(structured, $"staff_v6_{_animeId}", "AnimeDetails");
+                await DataCache.SaveData(structured, $"staff_v7_{_animeId}", "AnimeDetails");
                 return structured;
             }
         }
@@ -74,7 +74,7 @@ namespace MALClient.XShared.Comm.Anime
 
         var htmlResult = await GetCharStaffDataHtml(output);
         if (HasData(htmlResult))
-            await DataCache.SaveData(htmlResult, $"staff_v6_{_animeId}", "AnimeDetails");
+            await DataCache.SaveData(htmlResult, $"staff_v7_{_animeId}", "AnimeDetails");
         return htmlResult;
     }
 
@@ -156,6 +156,10 @@ namespace MALClient.XShared.Comm.Anime
                     if (positions.Count > 0)
                         person.PrimaryPosition = positions[0];
                     person.ExtraPositions = Math.Max(0, positions.Count - 1);
+                    // Keep the whole list. The row used to collapse this to "first +2", which
+                    // hid what the other roles actually were, and the row now has the space to
+                    // show them over two lines.
+                    person.Positions = positions;
                     person.Notes = person.ExtraPositions > 0
                         ? $"{person.PrimaryPosition} +{person.ExtraPositions}"
                         : person.PrimaryPosition;

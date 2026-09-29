@@ -1811,6 +1811,18 @@ public partial class AnimeDetailsPage : ContentPage
             var staff = person?.Data as MALClient.Models.Models.Favourites.AnimeStaffPerson;
             PrimaryPosition = staff?.PrimaryPosition ?? string.Empty;
             ExtraPositions = staff?.ExtraPositions ?? 0;
+            // Up to two lines of roles, the rest folded into a count so a six role person
+            // does not push the row past its height. "+2" on its own said nothing; this says
+            // what the roles are.
+            var roles = staff?.Positions;
+            if (roles != null && roles.Count > 0)
+            {
+                RoleLineOne = roles[0];
+                if (roles.Count > 1)
+                    RoleLineTwo = roles.Count > 2
+                        ? $"{roles[1]}  +{roles.Count - 2} more"
+                        : roles[1];
+            }
         }
 
         public FavouriteViewModel Person { get; }
@@ -1821,6 +1833,10 @@ public partial class AnimeDetailsPage : ContentPage
         public bool HasPrimaryPosition => !string.IsNullOrEmpty(PrimaryPosition);
         public int ExtraPositions { get; }
         public bool HasExtraPositions => ExtraPositions > 0;
+        public string RoleLineOne { get; }
+        public string RoleLineTwo { get; }
+        public bool HasRoleLineOne => !string.IsNullOrEmpty(RoleLineOne);
+        public bool HasRoleLineTwo => !string.IsNullOrEmpty(RoleLineTwo);
     }
 
     public sealed class MangaCharacterCard

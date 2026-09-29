@@ -209,19 +209,15 @@
                         <Image Source="{Binding ImgUrl, Converter={StaticResource ImageConverter}}"
                                Aspect="AspectFill" />
                     </Border>
-                    <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                    <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Start">
                         <Label Text="{Binding Name}" FontFamily="InterBold" FontSize="15"
                                TextColor="{StaticResource BrushText}" MaxLines="1" LineBreakMode="TailTruncation" />
-                        <HorizontalStackLayout Spacing="8">
-                            <Border Padding="7,2" StrokeShape="RoundRectangle 6" BackgroundColor="#0066FF"
-                                    Stroke="Transparent" IsVisible="{Binding HasPrimaryPosition}">
-                                <Label Text="{Binding PrimaryPosition}" FontFamily="InterBold" FontSize="9"
-                                       TextColor="White" MaxLines="1" LineBreakMode="TailTruncation" />
-                            </Border>
-                            <Label Text="{Binding ExtraPositions, StringFormat='+{0}'}"
-                                   FontFamily="InterBold" FontSize="9" TextColor="#8FA8C0" MaxLines="1"
-                                   VerticalOptions="Center" IsVisible="{Binding HasExtraPositions}" />
-                        </HorizontalStackLayout>
+                        <Label Text="{Binding RoleLineOne}" FontFamily="InterSemiBold" FontSize="10"
+                               TextColor="#7AB4FF" MaxLines="1" LineBreakMode="TailTruncation"
+                               IsVisible="{Binding HasRoleLineOne}" />
+                        <Label Text="{Binding RoleLineTwo}" FontFamily="InterSemiBold" FontSize="10"
+                               TextColor="#7AB4FF" MaxLines="1" LineBreakMode="TailTruncation"
+                               IsVisible="{Binding HasRoleLineTwo}" />
                     </VerticalStackLayout>
                 </Grid>
             </Border>

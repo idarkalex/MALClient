@@ -1,4 +1,5 @@
-﻿using MALClient.Models.Enums;
+﻿using System.Collections.Generic;
+using MALClient.Models.Enums;
 
 namespace MALClient.Models.Models.Favourites
 {
@@ -19,10 +20,15 @@ namespace MALClient.Models.Models.Favourites
         /// <summary>
         /// A staff member can hold up to six positions and Tenrai embeds the episodes
         /// inside the text, e.g. "Storyboard (eps 376, 379, 381)". Notes used to be every
-        /// position joined together, which was an unreadable wall of text.
+        /// position joined together, which was an unreadable wall of text, and then it
+        /// collapsed to the first role plus a "+2" that said nothing about what the other two
+        /// were. The full list is kept here so the row can show the roles over two lines.
         /// </summary>
         public string PrimaryPosition { get; set; }
 
         public int ExtraPositions { get; set; }
+
+        /// <summary>Every role this person has, episodes stripped. Empty for a single role.</summary>
+        public List<string> Positions { get; set; } = new List<string>();
     }
 }
