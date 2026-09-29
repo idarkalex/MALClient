@@ -1445,23 +1445,16 @@ public partial class AnimeDetailsPage : ContentPage
         var vm = Vm;
         bool showLastAired = vm != null && AirTimeUtils.IsCurrentlyAiringStatus(vm.Status) &&
                              !string.IsNullOrWhiteSpace(vm.LastAired);
+        // The last aired block is one Grid spanning both rows, so hiding it hides its header and
+        // its value together and leaves the row spacing to the Grid rather than to the items.
         LastAiredMetaGroup.IsVisible = showLastAired;
 
-        var groups = new[] {ScoreMetaGroup, StatusMetaGroup, LastAiredMetaGroup};
-        int visible = 0;
-        View sole = null;
-        foreach (var group in groups)
-        {
-            if (!group.IsVisible)
-                continue;
-            visible++;
-            sole = group;
-        }
-
-        foreach (var group in groups)
-            group.HorizontalOptions = visible == 1 && ReferenceEquals(group, sole)
-                ? LayoutOptions.Fill
-                : LayoutOptions.Start;
+        // When it is the only thing left the row would otherwise sit at the start of a wide grid
+        // and the stepper would drift away from it.
+        var solo = showLastAired ? null : new View[] { ScoreHeaderGroup, ScoreMetaGroup, StatusHeaderGroup, StatusMetaGroup };
+        if (solo != null)
+            foreach (var view in solo)
+                view.HorizontalOptions = LayoutOptions.Start;
     }
 
     private void OnPageViewportSizeChanged(object sender, EventArgs e)

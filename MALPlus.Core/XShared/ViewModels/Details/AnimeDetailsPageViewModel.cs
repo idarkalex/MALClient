@@ -79,6 +79,10 @@ namespace MALClient.XShared.ViewModels.Details
                 RaisePropertyChanged(() => RewatchedLabel);
                 RaisePropertyChanged(() => RewatchingLabel);
                 RaisePropertyChanged(() => AnimeMode);
+                // This page is reused across entries, and the header is read once when the tab is
+                // built. Without the notification it kept the header of the previous entry, so
+                // opening an anime after a manga left it reading CHAPTER.
+                RaisePropertyChanged(() => LastAiredHeader);
             }
         }
 
@@ -247,6 +251,19 @@ namespace MALClient.XShared.ViewModels.Details
 
         public string LastAired { get; private set; } = "";
 
+    /// <summary>
+    /// Header for the value below it. "LAST AIRED" is a label for a date, but the value is an
+    /// episode number and a date, and on a long runner the old "EP 1180 - 27 Sep" ran into the
+    /// episode stepper. The header now says what the pair actually is.
+    /// </summary>
+    public string LastAiredHeader => AnimeMode ? "EPISODE" : "CHAPTER";
+
+    /// <summary>
+    /// Episode number and air date, "1180 Â· 27 Sep". Shorter than the old "EP 1180 - 27 Sep" on
+    /// purpose: this sits next to the stepper and the old form overlapped it.
+    /// </summary>
+    public string LastAiredValue { get; private set; } = "";
+
         private void UpdateLastAired()
         {
             var nowSched = DateTime.UtcNow;
@@ -280,8 +297,9 @@ namespace MALClient.XShared.ViewModels.Details
                 }
                 else if (schedDate.HasValue) { chosenDate = schedDate.Value; chosenEp = schedEp; source = "schedule"; }
                 else { chosenDate = epDate.Value; chosenEp = epNum; source = "episodes"; }
-                LastAired = $"EP {chosenEp} - {chosenDate.ToString("d MMM", CultureInfo.InvariantCulture)}";
+                LastAired = LastAiredValue = $"{chosenEp} · {chosenDate.ToString("d MMM", CultureInfo.InvariantCulture)}";
                 RaisePropertyChanged(() => LastAired);
+                RaisePropertyChanged(() => LastAiredValue);
                 return;
             }
             var last = Episodes
@@ -293,14 +311,14 @@ namespace MALClient.XShared.ViewModels.Details
                 var ep = last.EpisodeId > 0
                     ? last.EpisodeId
                     : Episodes.IndexOf(last) + 1;
-                LastAired = $"EP {ep} - {last.AiredDate.Value.ToString("d MMM", CultureInfo.InvariantCulture)}";
+                LastAired = LastAiredValue = $"{ep} · {last.AiredDate.Value.ToString("d MMM", CultureInfo.InvariantCulture)}";
             }
             else if (!string.IsNullOrEmpty(EndDate) && EndDate != AnimeItemViewModel.InvalidStartEndDate && EndDate != "N/A")
             {
                 if (DateTime.TryParse(EndDate, out var endDt))
                 {
                     var epStr2 = AllEpisodes > 0 ? AllEpisodes.ToString() : "?";
-                    LastAired = $"EP {epStr2} - {endDt.ToString("d MMM", CultureInfo.InvariantCulture)}";
+                    LastAired = LastAiredValue = $"{epStr2} · {endDt.ToString("d MMM", CultureInfo.InvariantCulture)}";
                 }
                 else
                     LastAired = "";
@@ -513,6 +531,7 @@ namespace MALClient.XShared.ViewModels.Details
                 RelatedAnime.Clear();
                 DetailsPivotSelectedIndex = 0;
                 RaisePropertyChanged(() => LastAired);
+                RaisePropertyChanged(() => LastAiredValue);
                 RaisePropertyChanged(() => Synopsis);
                 RaisePropertyChanged(() => Type);
                 RaisePropertyChanged(() => Status);
@@ -2396,7 +2415,7 @@ namespace MALClient.XShared.ViewModels.Details
             }));
         private GalaSoft.MvvmLight.Command.RelayCommand _openTrailerCommand;
 
-        /// <summary>More menu (⋮) — opens a quick-action sheet mirroring v2's AnimeDetailsPageMoreFlyoutBuilder.
+        /// <summary>More menu (â‹®) â€” opens a quick-action sheet mirroring v2's AnimeDetailsPageMoreFlyoutBuilder.
         /// The XAML code-behind (AnimeDetailsPage.xaml.cs) hooks this to a real MAUI DisplayActionSheet
         /// by subscribing to ShowMoreRequested; this command just fires the event.</summary>
         public event Action ShowMoreRequested;
