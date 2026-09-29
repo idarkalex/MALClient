@@ -181,6 +181,7 @@
                                         Title="{Binding Title}"
                                         TitleOverlay="True"
                                         TypeTag="{Binding TypeTag}"
+                                        ScoreTag="{Binding CardScore}"
                                         BadgeVisible="True"
                                         BadgeAccent="{Binding CardBadgeAccent}"
                                         BadgeMain="{Binding CardBadgeMain}">

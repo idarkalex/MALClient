@@ -660,6 +660,21 @@ namespace MALClient.XShared.ViewModels
         public string GlobalScoreBind
             => ParentAbstraction.LoadedVolatile && GlobalScore != 0 ? GlobalScore == 0 ? "N/A" : GlobalScore.ToString("N2") : "";
 
+        /// <summary>
+        /// Mean score as a blue tag under the type tag, on the top charts only. The library list
+        /// shares this card and has no use for a score: there the counter pill already carries
+        /// the user's own status and episode count.
+        /// </summary>
+        public string CardScore
+        {
+            get
+            {
+                var mode = ViewModelLocator.AnimeList?.WorkMode;
+                var isTop = mode is AnimeListWorkModes.TopAnime or AnimeListWorkModes.TopManga;
+                return isTop ? GlobalScoreBind : string.Empty;
+            }
+        }
+
         public float GlobalScore
         {
             get { return ParentAbstraction.GlobalScore; }

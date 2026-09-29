@@ -24,6 +24,16 @@
                        FontFamily="InterBold" FontSize="9" TextColor="White" MaxLines="1" />
             </Border>
 
+            <!-- Mean score, same tag as the type, right under it. Tops and search used to print
+                 "Score 8.72" in the counter pill instead. -->
+            <Border Padding="6,2" StrokeShape="RoundRectangle 6"
+                    BackgroundColor="#0066FF" Stroke="Transparent"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding ScoreTag, Source={x:Reference PosterCard}, Converter={StaticResource BoolVis}, ConverterParameter=nonempty}">
+                <Label Text="{Binding ScoreTag, Source={x:Reference PosterCard}}"
+                       FontFamily="InterBold" FontSize="9" TextColor="White" MaxLines="1" />
+            </Border>
+
             <VerticalStackLayout Spacing="0"
                                  HorizontalOptions="Start"
                                  BindableLayout.ItemsSource="{Binding ChipSource, Source={x:Reference PosterCard}}"

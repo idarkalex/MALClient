@@ -1335,6 +1335,17 @@ namespace MALClient.XShared.ViewModels.Main
         /// </summary>
         private async void ReloadList()
         {
+            await RefreshListAsync();
+        }
+
+        /// <summary>
+        /// The pull to refresh gesture needs to know when the reload is over so it can put its
+        /// spinner away. Going through RefreshCommand lost that: the command wraps an async void,
+        /// so the caller had nothing to await and IsRefreshing stayed true for good, which is
+        /// what left the arrow spinning at the top of the list forever.
+        /// </summary>
+        public async Task RefreshListAsync()
+        {
             if (WorkMode == AnimeListWorkModes.SeasonalAnime || WorkMode == AnimeListWorkModes.TopAnime ||
                 WorkMode == AnimeListWorkModes.TopManga || WorkMode == AnimeListWorkModes.MangaAdapted ||
                 WorkMode == AnimeListWorkModes.AnimeByGenre ||

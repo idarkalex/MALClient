@@ -14,6 +14,14 @@ public partial class AnimePosterCard : ContentView
     public static readonly BindableProperty TypeTagProperty =
         BindableProperty.Create(nameof(TypeTag), typeof(string), typeof(AnimePosterCard), default(string));
 
+    /// <summary>
+    /// Mean score, drawn as a second blue tag under the type tag. Tops and search results used
+    /// to spell it out in the counter pill as "Score 8.72", which put a word where a number
+    /// belongs and left the type tag alone at the top.
+    /// </summary>
+    public static readonly BindableProperty ScoreTagProperty =
+        BindableProperty.Create(nameof(ScoreTag), typeof(string), typeof(AnimePosterCard), default(string));
+
     public static readonly BindableProperty BadgeVisibleProperty =
         BindableProperty.Create(nameof(BadgeVisible), typeof(bool), typeof(AnimePosterCard), false);
 
@@ -97,6 +105,12 @@ public partial class AnimePosterCard : ContentView
     {
         get => (string)GetValue(TypeTagProperty);
         set => SetValue(TypeTagProperty, value);
+    }
+
+    public string ScoreTag
+    {
+        get => (string)GetValue(ScoreTagProperty);
+        set => SetValue(ScoreTagProperty, value);
     }
 
     public bool BadgeVisible

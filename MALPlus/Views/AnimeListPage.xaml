@@ -15,7 +15,11 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="*,Auto">
-        <RefreshView x:Name="ListRefresh" Grid.Row="0" IsRefreshing="{Binding Loading, Mode=OneWay}" Refreshing="OnRefreshing">
+        <!-- No IsRefreshing binding. The gesture sets the flag itself and the reload is awaited
+             in OnRefreshing, which puts it away in a finally; a one way binding to Loading could
+             only fight that and won, because Loading stays true on a list that already has
+             items, and the arrow up top spun forever. -->
+        <RefreshView x:Name="ListRefresh" Grid.Row="0" Refreshing="OnRefreshing">
             <!-- One component for every poster grid in the app: the list, Related, Search and
                  Discover all get their span, cell size and spacing from AnimePosterGrid. -->
             <controls:AnimePosterGrid x:Name="AnimeGrid" ItemsSource="{Binding AnimeItems}" />

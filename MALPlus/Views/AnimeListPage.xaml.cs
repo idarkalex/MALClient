@@ -321,7 +321,7 @@ public partial class AnimeListPage : ContentPage
         }
     }
 
-    private void OnRefreshing(object sender, EventArgs e)
+    private async void OnRefreshing(object sender, EventArgs e)
     {
         try
         {
@@ -330,12 +330,30 @@ public partial class AnimeListPage : ContentPage
                 ListRefresh.IsRefreshing = false;
                 return;
             }
-            Vm.RefreshCommand?.Execute(null);
+            // Awaited, and the spinner is put away in the finally. RefreshCommand wraps an async
+            // void, so there was nothing to await here and IsRefreshing stayed true once the
+            // gesture had set it: the arrow up top spun forever.
+            await Vm.RefreshListAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine("MALPLUS refresh failed: " + ex.Message);
-            ListRefresh.IsRefreshing = false;
+        }
+        finally
+        {
+            // Both flags, not just the view one. Loading is only cleared by UpdatePageSetup, and
+            // a list that already had items never goes through the empty branch that used to
+            // lower it as a backstop.
+            try
+            {
+                ListRefresh.IsRefreshing = false;
+                if (Vm != null)
+                    Vm.Loading = false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("MALPLUS refresh cleanup failed: " + ex.Message);
+            }
         }
     }
 

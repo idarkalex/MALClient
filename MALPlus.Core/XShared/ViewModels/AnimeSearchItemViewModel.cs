@@ -72,8 +72,15 @@ namespace MALClient.XShared.ViewModels
             }
         }
 
-        public string CardBadgeAccent => IsAuth ? MyStatusBindShort : "Score";
-        public string CardBadgeMain => IsAuth ? MyEpisodesBindShort : GlobalScoreBind;
+        public string CardBadgeAccent => MyStatusBindShort;
+        public string CardBadgeMain => MyEpisodesBindShort;
+
+        /// <summary>
+        /// Mean score, only when signed out: signed in the counter pill carries the real progress
+        /// (status and episodes watched) and there is no room for both. It is a tag under the type
+        /// now, not a word inside the pill.
+        /// </summary>
+        public string CardScore => IsAuth || GlobalScore <= 0 ? string.Empty : GlobalScoreBind;
 
         public ICommand NavigateDetailsCommand => new RelayCommand(NavigateDetails);
 
