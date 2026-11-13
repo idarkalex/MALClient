@@ -350,7 +350,7 @@ namespace MALClient.Android.Activities
             {
                 try
                 {
-                    var builder = new Android.App.AlertDialog.Builder(context);
+                    var builder = new AlertDialog.Builder(context);
                     builder.SetTitle("MALClient has moved to MAL+");
                     builder.SetMessage(
                         "MALClient is no longer receiving updates and has reached its end of life.\n\n" +
@@ -362,9 +362,9 @@ namespace MALClient.Android.Activities
                     {
                         try
                         {
-                            var uri = Android.Net.Uri.Parse("https://github.com/idarkalex/MALPlus/releases/latest");
-                            var intent = new Android.Content.Intent(Android.Content.Intent.ActionView, uri);
-                            intent.AddFlags(Android.Content.ActivityFlags.NewTask);
+                            var uri = global::Android.Net.Uri.Parse("https://github.com/idarkalex/MALPlus/releases/latest");
+                            var intent = new Intent(Intent.ActionView, uri);
+                            intent.AddFlags(ActivityFlags.NewTask);
                             context.StartActivity(intent);
                         }
                         catch { }
