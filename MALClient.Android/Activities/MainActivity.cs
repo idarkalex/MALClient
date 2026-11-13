@@ -350,7 +350,7 @@ namespace MALClient.Android.Activities
             {
                 try
                 {
-                    var builder = new AlertDialog.Builder(context);
+                    var builder = new global::Android.Support.V7.App.AlertDialog.Builder(context);
                     builder.SetTitle("MALClient has moved to MAL+");
                     builder.SetMessage(
                         "MALClient is no longer receiving updates and has reached its end of life.\n\n" +
