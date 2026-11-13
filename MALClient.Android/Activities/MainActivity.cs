@@ -283,6 +283,7 @@ namespace MALClient.Android.Activities
             //_videoAd.Resume(this);
             MemoryWatcher.Watcher.Resume(false);
             base.OnResume();
+            PromptDeprecationNotice();
         }
 
         protected override void OnDestroy()
@@ -330,6 +331,60 @@ namespace MALClient.Android.Activities
             ResourceLocator.HandyDataStorage.SaveData();
 #pragma warning restore 4014
             base.OnPause();
+        }
+
+        private static bool _deprecationPromptShown;
+
+        public static void PromptDeprecationNotice()
+        {
+            if (_deprecationPromptShown || Settings.DismissedDeprecationNotice)
+                return;
+
+            var context = MainActivity.CurrentContext;
+            if (context == null)
+                return;
+
+            _deprecationPromptShown = true;
+
+            context.RunOnUiThread(() =>
+            {
+                try
+                {
+                    var builder = new Android.App.AlertDialog.Builder(context);
+                    builder.SetTitle("MALClient has moved to MAL+");
+                    builder.SetMessage(
+                        "MALClient is no longer receiving updates and has reached its end of life.\n\n" +
+                        "Active development continues on our new official app, MAL+, rebuilt from scratch with .NET MAUI, full offline support, modern design, and ongoing updates.\n\n" +
+                        "Would you like to get MAL+ now?");
+                    builder.SetCancelable(true);
+
+                    builder.SetPositiveButton("Get MAL+", (s, e) =>
+                    {
+                        try
+                        {
+                            var uri = Android.Net.Uri.Parse("https://github.com/idarkalex/MALPlus/releases/latest");
+                            var intent = new Android.Content.Intent(Android.Content.Intent.ActionView, uri);
+                            intent.AddFlags(Android.Content.ActivityFlags.NewTask);
+                            context.StartActivity(intent);
+                        }
+                        catch { }
+                    });
+
+                    builder.SetNeutralButton("Don't show again", (s, e) =>
+                    {
+                        Settings.DismissedDeprecationNotice = true;
+                    });
+
+                    builder.SetNegativeButton("Continue", (s, e) => { });
+
+                    var dialog = builder.Create();
+                    dialog.Show();
+                }
+                catch (Exception)
+                {
+                    _deprecationPromptShown = false;
+                }
+            });
         }
 
         private static bool _updatePromptShown;

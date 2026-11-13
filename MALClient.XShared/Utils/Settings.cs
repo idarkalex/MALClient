@@ -777,6 +777,12 @@ namespace MALClient.XShared.Utils
             get => (bool)(ApplicationDataService[nameof(AskBeforeSendingCrashReports)] ?? true);
             set => ApplicationDataService[nameof(AskBeforeSendingCrashReports)] = value;
         }      
+
+        public static bool DismissedDeprecationNotice
+        {
+            get => (bool)(ApplicationDataService[nameof(DismissedDeprecationNotice)] ?? false);
+            set => ApplicationDataService[nameof(DismissedDeprecationNotice)] = value;
+        }
         
         #endregion Android
     }

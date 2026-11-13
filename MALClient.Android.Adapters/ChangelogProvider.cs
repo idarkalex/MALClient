@@ -35,10 +35,8 @@ namespace MALClient.Android.Adapters
 
         public List<string> Changelog => new List<string>
         {
-           "Reviews are now fetched directly from the MyAnimeList website, showing the full review list in the same order as on the site.",
-           "Fixed the season label in the anime details screen.",
-           "Fixed genre browsing returning empty results for several genres.",
-           "Improved API reliability and data freshness.",
+           "MALClient is now deprecated and has been superseded by MAL+.",
+           "Active development continues at https://github.com/idarkalex/MALPlus with full offline support, modern MAUI/.NET architecture, and updated design.",
         };
     }
 }

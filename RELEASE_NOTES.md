@@ -1,3 +1,11 @@
+## What's new in 1.2.2 (Final Release)
+
+### ⚠️ Deprecation Notice — MALClient has moved to MAL+
+- **MALClient is now deprecated and will not receive further updates.**
+- Active development continues on our new official modern app, **[MAL+](https://github.com/idarkalex/MALPlus)**, rebuilt from scratch with .NET MAUI, full offline sync, refreshed design, and active maintenance.
+- Download MAL+ from the [MAL+ GitHub Releases](https://github.com/idarkalex/MALPlus/releases/latest).
+- Added an in-app migration notice with a direct link to MAL+ and a "Don't show again" option.
+
 ## What's new in 1.2.1
 
 ### Bug fixes
