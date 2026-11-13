@@ -1,4 +1,17 @@
-<h1 align="center">MALClient</h1>
+# ⚠️ DEPRECATED — MALClient has moved to MAL+
+
+> [!WARNING]
+> **MALClient is deprecated and no longer actively maintained.**
+>
+> Active development has transitioned to our new modern client, **[MAL+](https://github.com/idarkalex/MALPlus)**, rebuilt from scratch with .NET MAUI, full offline sync, refreshed design, and ongoing updates.
+>
+> 👉 **Download the new app:** [MAL+ Releases](https://github.com/idarkalex/MALPlus/releases/latest) &nbsp;|&nbsp; **Repository:** [idarkalex/MALPlus](https://github.com/idarkalex/MALPlus)
+>
+> The final legacy release of MALClient is [v1.2.2](https://github.com/idarkalex/MALClient/releases/tag/v1.2.2). This repository is now archived and read-only.
+
+---
+
+<h1 align="center">MALClient (Legacy)</h1>
 
 <p align="center">
   <img src="images/app-logo.png" width="150px">
@@ -12,7 +25,9 @@
 
 ### Download
 
-Get the latest signed APK from [Releases](https://github.com/idarkalex/MALClient/releases).
+> **Recommendation:** Download the modern successor app **[MAL+](https://github.com/idarkalex/MALPlus/releases/latest)**.
+
+The final signed APK for this legacy app can be found under [v1.2.2 Releases](https://github.com/idarkalex/MALClient/releases/tag/v1.2.2).
 
 ### Screenshots
 
